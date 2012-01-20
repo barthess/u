@@ -1,0 +1,107 @@
+(PCB "E:/my_projects/eagle/pressure/pressure.brd"
+  (resolution mm 10000)
+  (structure
+    (layer "Top" (type signal) (direction horizontal))
+    (layer "Bottom" (type signal) (direction vertical))
+    (boundary (path "signal" 0.000000 0.000000 8.000000 22.540000 8.000000))
+    (boundary (path "signal" 0.000000 22.540000 8.000000 22.540000 36.500000))
+    (boundary (path "signal" 0.000000 22.540000 36.500000 0.000000 36.500000))
+    (boundary (path "signal" 0.000000 0.000000 36.500000 0.000000 8.000000))
+    (grid wire 1.000000)
+    (grid via 1.000000)
+    (via ViaDefault)
+    (rule (width 0.304800)(clearance 0.304800))
+    (flip_style rotate_first)
+    (colors
+      (color 0   black  0   0   0)
+      (set_color background black)
+    )
+  )
+  (placement
+    (component "C1206$rcl" (place "C1" 7.660000 18.440000 Front 180.000000))
+    (component "C0805$rcl" (place "C2" 17.750000 20.060000 Front 270.000000))
+    (component "482$barthess" (place "DA1" 11.080000 29.510000 Front 0.000000))
+    (component "SOT23-5$linear" (place "DA2" 7.990000 13.630000 Front 180.000000))
+    (component "R0805$rcl" (place "R1" 7.240000 21.590000 Front 0.000000))
+    (component "R0805$rcl" (place "R2" 13.700000 15.570000 Front 0.000000))
+    (component "R0805$rcl" (place "R3" 3.330000 21.085000 Front 270.000000))
+  )
+  (library
+    (image "482$barthess"
+      (outline (path "Top" 0.254000 -5.334000 -6.350000 -5.334000 5.842000))
+      (outline (path "Top" 0.254000 -5.334000 5.842000 6.858000 5.842000))
+      (outline (path "Top" 0.254000 6.858000 5.842000 6.858000 -6.350000))
+      (outline (path "Top" 0.254000 6.858000 -6.350000 -5.334000 -6.350000))
+      (outline(circ "Top" 1.606400 -3.810000 4.318000))
+      (pin "Rectangle1" "1" -7.620000 3.810000)
+      (pin "Rectangle1" "2" -7.620000 1.270000)
+      (pin "Rectangle1" "3" -7.620000 -1.270000)
+      (pin "Rectangle1" "4" -7.620000 -3.810000)
+      (pin "Rectangle1" "5" 9.144000 -3.810000)
+      (pin "Rectangle1" "6" 9.144000 -1.270000)
+      (pin "Rectangle1" "7" 9.144000 1.270000)
+      (pin "Rectangle1" "8" 9.144000 3.810000)
+    )
+    (image "SOT23-5$linear"
+      (outline (path "Top" 0.152400 1.544000 0.713000 1.544000 -0.712000))
+      (outline (path "Top" 0.152400 -1.544000 -0.712000 -1.544000 0.713000))
+      (pin "Rectangle2" "1" -0.950000 -1.306000)
+      (pin "Rectangle2" "2" 0.000000 -1.306000)
+      (pin "Rectangle2" "3" 0.950000 -1.306000)
+      (pin "Rectangle2" "4" 0.950000 1.306000)
+      (pin "Rectangle2" "5" -0.950000 1.306000)
+    )
+    (image "C0805$rcl"
+      (pin "Rectangle3" "1" -0.950000 0.000000)
+      (pin "Rectangle3" "2" 0.950000 0.000000)
+    )
+    (image "C1206$rcl"
+      (pin "Rectangle4" "1" -1.400000 0.000000)
+      (pin "Rectangle4" "2" 1.400000 0.000000)
+    )
+    (image "R0805$rcl"
+      (pin "Rectangle3" "1" -0.950000 0.000000)
+      (pin "Rectangle3" "2" 0.950000 0.000000)
+    )
+    (padstack ViaDefault
+      (shape (circle signal 1.422400 0 0))
+      (shape (circle @sys_drill 0.812800 0 0))
+    )
+    (padstack "Rectangle1"
+      (shape (rect "Top" -1.270000 -0.762000 1.270000 0.762000))
+    )
+    (padstack "Rectangle2"
+      (shape (rect "Top" -0.300000 -0.600000 0.300000 0.600000))
+    )
+    (padstack "Rectangle3"
+      (shape (rect "Top" -0.650000 -0.750000 0.650000 0.750000))
+    )
+    (padstack "Rectangle4"
+      (shape (rect "Top" -0.800000 -0.900000 0.800000 0.900000))
+    )
+  )
+  (network
+    (net "5V"
+      (pins  "DA2"-"5" "DA1"-"2" "C2"-"1")
+    )
+    (net "GND"
+      (pins  "R2"-"2" "R1"-"1" "DA2"-"2" "C1"-"1" "DA1"-"3" "C2"-"2")
+    )
+    (net "N$1"
+      (pins  "R3"-"2" "DA2"-"1" "C1"-"2")
+    )
+    (net "N$2"
+      (pins  "R2"-"1" "DA2"-"3")
+    )
+    (net "N$3"
+      (pins  "DA1"-"4" "R3"-"1")
+    )
+    (net "N$4"
+      (pins  "R1"-"2" "DA2"-"4")
+    )
+    (class "default" "5V" "GND" "N$1" "N$2" "N$3" "N$4"      (circuit (use_via ViaDefault))
+    )
+  )
+  (wiring
+  )
+)
