@@ -1,0 +1,72 @@
+<?xml version='1.0'?>
+<!-- MESSAGE IDs 150 - 240: Space for custom messages in individual projectname_messages.xml files -->
+<mavlink>
+    <include>common.xml</include>
+    <enums>
+        <enum name="UVVU_CUSTOM_MODE">
+            <description>Available UVVU modes</description>
+            <entry name="MODE_AUTOSEND">Automatically send informational packets</entry>
+            <entry name="MODE_PINGPONG">Send data only on requests</entry>
+            <entry name="MODE_CALIBRATION">Setting internal calibration coefficients</entry>
+        </enum>
+    </enums>
+
+
+
+    <messages>
+        <message id="150" name="UVVU_SENSORS_RAW">
+            <description>Accelerometer and Gyro biases from the navigation filter</description>
+            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
+            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
+            <field type="uint64_t"     name="relay">Relay sensors data</field>
+            <field type="uint16_t[16]" name="analog">Analog sensors data</field>
+            <field type="uint8_t"      name="actuators">Actuators state</field>
+            <field type="uint32_t"     name="trip">Vehicle mileage (meters)</field>
+            <field type="uint32_t"     name="motor_uptime">Vehicle motor uptime (seconds)</field>
+            <field type="uint8_t"      name="speed">Vehicle speed</field>
+            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
+        </message>
+
+        <message id="151" name="UVVU_SENSORS_CALCULATED">
+            <description>Accelerometer and Gyro biases from the navigation filter</description>
+            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
+            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
+            <field type="uint64_t"     name="relay">Relay sensors data</field>
+            <field type="uint8_t[16]"  name="analog">Analog sensors data</field>
+            <field type="uint8_t"      name="actuators">Actuators state</field>
+            <field type="uint32_t"     name="trip">Vehicle mileage</field>
+            <field type="uint16_t"     name="motohours">Vehicle motor hours</field>
+            <field type="uint8_t"      name="speed">Vehicle speed</field>
+            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
+        </message>
+
+        <message id="152" name="UVVU_CALIBRATE_DATA">
+            <description>Calibration coefficients</description>
+            <field type="float[16]" name="analog">Analog coefficients</field>
+            <field type="uint64_t"  name="relay">Relay sensors "coefficients" (invert or direct)</field>
+        </message>
+
+        <message id="153" name="UVVU_DIAGNOSTIC_RESULT">
+            <description>Results of diagnostic</description>
+            <field type="uint32_t[3]" name="uniq_id">Uniq 96-bit STM32 id</field>
+            <field type="uint32_t"    name="result">Bit fields. 1 - failed, 0 - ok.</field>
+		</message>
+
+        <message id="154" name="UVVU_SENSORS_RAW_SHORT">
+            <description>Accelerometer and Gyro biases from the navigation filter</description>
+            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
+            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
+            <field type="uint64_t"     name="relay">Relay sensors data</field>
+            <field type="uint8_t"      name="actuators">Actuators state</field>
+            <field type="uint32_t"     name="trip">Vehicle mileage (meters)</field>
+            <field type="uint32_t"     name="motor_uptime">Vehicle motor uptime (seconds)</field>
+            <field type="uint8_t"      name="speed">Vehicle speed</field>
+            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
+		</message>
+
+    </messages>
+</mavlink>
+
+
+
+

@@ -1,0 +1,5 @@
+ arm-none-eabi-gcc -mcpu=cortex-m3 -DTHUMB_PRESENT -mno-thumb-interwork -DTHUMB_NO_INTERWORKING -mthumb -DTHUMB -x assembler-with-cpp -c -g -O -Wa,-alh,-L boot.s -o ch.o
+
+arm-none-eabi-ld -Tboot.ld -o ch.elf ch.o
+
+arm-none-eabi-objcopy.exe -O binary ch.elf  ch.bin
