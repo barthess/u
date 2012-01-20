@@ -24,20 +24,19 @@
 /* Card insertion monitor.                                                   */
 /*===========================================================================*/
 
-/**
- * @brief   Card monitor timer.
- */
-static VirtualTimer tmr;
+/* SDIO configuration. */
+static const SDCConfig sdccfg = {
+  0
+};
 
-/**
- * @brief   Debounce counter.
- */
-static unsigned cnt;
+/* FS object.*/
+static FATFS SDC_FS;
 
-/**
- * @brief   Card event sources.
- */
-static EventSource inserted_event, removed_event;
+/* FS mounted and ready.*/
+static bool_t fs_ready = FALSE;
+
+/* Generic large buffer.*/
+static uint8_t fbuff[8192];
 
 /**
  * @brief   Inserion monitor function.
@@ -66,65 +65,43 @@ bool_t sdc_lld_is_write_protected(SDCDriver *sdcp) {
   return FALSE;
 }
 
-/**
- * @brief   Inserion monitor timer callback function.
- *
- * @param[in] p         pointer to the @p SDCDriver object
- *
- * @notapi
+/*
+ * SD card insertion event.
  */
-static void tmrfunc(void *p) {
-  SDCDriver *sdcp = p;
+static void InsertHandler(void) {
+  FRESULT err;
 
-  if (cnt > 0) {
-    if (sdcIsCardInserted(sdcp)) {
-      if (--cnt == 0) {
-        chEvtBroadcastI(&inserted_event);
-      }
-    }
-    else
-      cnt = SDC_POLLING_INTERVAL;
+  sdcStart(&SDCD1, &sdccfg);
+  /*
+   * On insertion SDC initialization and FS mount.
+   */
+  if (sdcConnect(&SDCD1))
+    return;
+
+  err = f_mount(0, &SDC_FS);
+  if (err != FR_OK) {
+    sdcDisconnect(&SDCD1);
+    sdcStop(&SDCD1);
+    return;
   }
-  else {
-    if (!sdcIsCardInserted(sdcp)) {
-      cnt = SDC_POLLING_INTERVAL;
-      chEvtBroadcastI(&removed_event);
-    }
-  }
-  chVTSetI(&tmr, MS2ST(SDC_POLLING_DELAY), tmrfunc, sdcp);
+  fs_ready = TRUE;
 }
 
-/**
- * @brief   Polling monitor start.
- *
- * @param[in] sdcp      pointer to the @p SDCDriver object
- *
- * @notapi
+/*
+ * SD card removal event.
  */
-static void tmr_init(SDCDriver *sdcp) {
+static void RemoveHandler(void) {
 
-  chEvtInit(&inserted_event);
-  chEvtInit(&removed_event);
-  chSysLock();
-  cnt = SDC_POLLING_INTERVAL;
-  chVTSetI(&tmr, MS2ST(SDC_POLLING_DELAY), tmrfunc, sdcp);
-  chSysUnlock();
+  if (sdcGetDriverState(&SDCD1) == SDC_ACTIVE){
+    sdcDisconnect(&SDCD1);
+    sdcStop(&SDCD1);
+  }
+  fs_ready = FALSE;
 }
 
 /*===========================================================================*/
 /* FatFs related.                                                            */
 /*===========================================================================*/
-
-/**
- * @brief FS object.
- */
-FATFS SDC_FS;
-
-/* FS mounted and ready.*/
-static bool_t fs_ready = FALSE;
-
-/* Generic large buffer.*/
-uint8_t fbuff[8192];
 
 static FRESULT scan_files(BaseChannel *chp, char *path) {
   FRESULT res;
@@ -163,10 +140,7 @@ static FRESULT scan_files(BaseChannel *chp, char *path) {
 /* Command line related.                                                     */
 /*===========================================================================*/
 
-#define SHELL_WA_SIZE   THD_WA_SIZE(2048)
-#define TEST_WA_SIZE    THD_WA_SIZE(256)
-
-static void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
+void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   FRESULT err;
   uint32_t clusters;
   FATFS *fsp;
@@ -193,77 +167,36 @@ static void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   scan_files(chp, (char *)fbuff);
 }
 
-static const ShellCommand commands[] = {
-  {"tree", cmd_tree},
-  {NULL, NULL}
-};
-
-static const ShellConfig shell_cfg1 = {
-  (BaseChannel *)&SD1,
-  commands
-};
-
 /*===========================================================================*/
 /* Main and generic code.                                                    */
 /*===========================================================================*/
 
-/*
- * SD card insertion event.
+/**
+ * Monitors presence of SD card in slot.
  */
-static void InsertHandler(eventid_t id) {
-  FRESULT err;
-
-  (void)id;
-  /*
-   * On insertion SDC initialization and FS mount.
-   */
-  if (sdcConnect(&SDCD1))
-    return;
-
-  err = f_mount(0, &SDC_FS);
-  if (err != FR_OK) {
-    sdcDisconnect(&SDCD1);
-    return;
-  }
-  fs_ready = TRUE;
-}
-
-/*
- * SD card removal event.
- */
-static void RemoveHandler(eventid_t id) {
-
-  (void)id;
-  if (sdcGetDriverState(&SDCD1) == SDC_ACTIVE)
-    sdcDisconnect(&SDCD1);
-  fs_ready = FALSE;
-}
-
-
 void StorageInit(void){
-  static const evhandler_t evhndl[] = {
-    InsertHandler,
-    RemoveHandler
-  };
+  unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
 
-  Thread *shelltp = NULL;
-  struct EventListener el0, el1;
-  /*
-   * Shell manager initialization.
-   */
-  shellInit();
+  while TRUE{
+    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
 
-  /*
-   * Activates the card insertion monitor.
-   */
-  tmr_init(&SDCD1);
+    if (cnt > 0) {
+      if (sdcIsCardInserted(&SDCD1)) {
+        if (--cnt == 0) {
+          InsertHandler();
+        }
+      }
+      else
+        cnt = SDC_POLLING_INTERVAL;
+    }
+    else {
+      if (!sdcIsCardInserted(&SDCD1)) {
+        cnt = SDC_POLLING_INTERVAL;
+        RemoveHandler();
+      }
+    }
+  }
 
-  /*
-   * Normal main() thread activity, in this demo it does nothing except
-   * sleeping in a loop and listen for events.
-   */
-  chEvtRegister(&inserted_event, &el0, 0);
-  chEvtRegister(&removed_event, &el1, 1);
 }
 
 

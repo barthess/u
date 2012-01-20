@@ -7,6 +7,7 @@
 
 #include "message.h"
 #include "cli.h"
+#include "storage.h"
 #include "rtc_pns.h"
 #include "main.h"
 
@@ -77,7 +78,7 @@ static void cmd_dateset(BaseChannel *chp, int argc, char *argv[]){
 static void cmd_reboot(BaseChannel *chp, int argc, char *argv[]){
   (void)argv;
   if (argc > 0) {
-    chprintf(chp, "Usage: rboot\r\n");
+    chprintf(chp, "Usage: reboot\r\n");
     return;
   }
   chprintf(chp, "rebooting...\r\n");
@@ -134,6 +135,7 @@ static const ShellCommand commands[] = {
   {"dateset", cmd_dateset},
   {"dateget", cmd_dateget},
   {"temp", cmd_temp},
+  {"tree", cmd_tree},
   {NULL, NULL}
 };
 
@@ -146,10 +148,10 @@ static SerialConfig cli_ser_cfg = {
     115200,
     0,
     0,//USART_CR2_STOP_1,
-    0,
+    USART_CR3_CTSE,
 };
 
-static WORKING_AREA(waShell, 1024);
+static WORKING_AREA(waShell, 2048);
 
 void CliInit(void){
   sdStart(&SDCLI, &cli_ser_cfg);

@@ -29,9 +29,9 @@ void I2CInit_pns(void){
 
   /* startups */
 //  init_eeprom();
-//  init_tmp75();
+  init_tmp75();
 //  init_max1236();
-  init_mag3110();
+//  init_mag3110();
 //  init_itg3200();
 //  init_mma8451();
 //  init_bmp085();
@@ -50,7 +50,7 @@ msg_t i2c_transmit(I2CDriver *i2cp,
   i2cAcquireBus(i2cp);
   status = i2cMasterTransmitTimeout(i2cp, addr, txbuf, txbytes, rxbuf, rxbytes, MS2ST(5));
   i2cReleaseBus(i2cp);
-  chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
+  //chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
     i2cStart(i2cp, &i2cfg2);

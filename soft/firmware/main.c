@@ -3,9 +3,7 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
-// TODO: уменьшить количество потоков, опрашивающих датчики по I2C
 // TODO: сохранение и вычитка калибровочных коэффициетов для АЦП и ПВД
-// TODO: в бэкап домене сделать флаг, обозначающий запись/чтение лога в EEPROM
 // TODO: загрузка/чтение точек маршрута
 // TODO: сторожевой таймер с использованием памяти с батарейным питанием для расследования пиздецов
 // TODO: менеджер в main(), который регулярно опрашивает все процессы на предмет жизнеспособности
@@ -72,11 +70,6 @@ volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных едини
 volatile uint8_t  cal_CurrentOffset;  /* смещение нуля датчика тока в единицах АЦП */
 volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных единиц в децывольты */
 
-/* события готовности результатов встроенного АЦП */
-EventSource   es_adc;
-eventmask_t   em_adcgyroready  = 0b0001;
-eventmask_t   em_adcpowerready = 0b0010;
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -141,17 +134,17 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
+  ExtiInit();
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
 //  ServoInit();
-//  CliInit();
+  CliInit();
 //  ADCInit_pns();
 //  ImuInit();
 //  GPSInit();
 //  LinkInitXbeeApi();
-  ExtiInit();
 //  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
-  //StorageInit();
+  StorageInit();
 
   #if ENABLE_IRQ_STORM
     chThdSleepMilliseconds(5000);
