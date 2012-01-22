@@ -1,3 +1,4 @@
 *.origin
 *.swp
 *~
+openocd.log

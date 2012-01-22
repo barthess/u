@@ -250,5 +250,4 @@
 #define STM32_SDC_SDIO_IRQ_PRIORITY         9
 #define STM32_SDC_DMA_ERROR_HOOK()          chSysHalt()
 #define STM32_SDC_UNALIGNED_SUPPORT         TRUE
-#define SDC_WRITE_TIMEOUT_MS                250
-#define SDC_READ_TIMEOUT_MS                 5
+

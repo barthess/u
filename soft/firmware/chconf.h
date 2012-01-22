@@ -32,9 +32,8 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
-//#define CORTEX_VTOR_INIT       0x080E0000
-//#define CORTEX_VTOR_INIT  0x00000000
-#define CORTEX_USE_FPU    FALSE
+#define CORTEX_VTOR_INIT      0xE0000
+#define CORTEX_USE_FPU        FALSE
 
 /*===========================================================================*/
 /* Kernel parameters.                                                        */

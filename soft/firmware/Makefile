@@ -73,8 +73,8 @@ include $(CHIBIOS)/ext/fatfs/fatfs.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
-#LDSCRIPT= STM32F407xG_flash_end.ld
-LDSCRIPT= $(PORTLD)/STM32F407xG.ld
+LDSCRIPT= STM32F407xG_flash_end.ld
+#LDSCRIPT= $(PORTLD)/STM32F407xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
