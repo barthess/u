@@ -147,11 +147,11 @@ static const ShellConfig shell_cfg1 = {
 static SerialConfig cli_ser_cfg = {
     115200,
     0,
-    0,//USART_CR2_STOP_1,
+    0,
     USART_CR3_CTSE,
 };
 
-static WORKING_AREA(waShell, 2048);
+static WORKING_AREA(waShell, 8192);
 
 void CliInit(void){
   sdStart(&SDCLI, &cli_ser_cfg);

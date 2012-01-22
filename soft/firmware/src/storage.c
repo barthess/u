@@ -36,7 +36,7 @@ static FATFS SDC_FS;
 static bool_t fs_ready = FALSE;
 
 /* Generic large buffer.*/
-static uint8_t fbuff[8192];
+static uint8_t fbuff[1024];
 
 /**
  * @brief   Inserion monitor function.
@@ -91,6 +91,11 @@ static void InsertHandler(void) {
  * SD card removal event.
  */
 static void RemoveHandler(void) {
+
+  if (fs_ready == TRUE){
+    f_mount(0, NULL);
+    fs_ready = FALSE;
+  }
 
   if (sdcGetDriverState(&SDCD1) == SDC_ACTIVE){
     sdcDisconnect(&SDCD1);
@@ -167,14 +172,14 @@ void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   scan_files(chp, (char *)fbuff);
 }
 
-/*===========================================================================*/
-/* Main and generic code.                                                    */
-/*===========================================================================*/
 
 /**
  * Monitors presence of SD card in slot.
  */
-void StorageInit(void){
+static WORKING_AREA(CardMonitorThreadWA, 8192);
+static msg_t CardMonitorThread(void *arg){
+  (void)arg;
+  chRegSetThreadName("CardMonitor");
   unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
 
   while TRUE{
@@ -196,6 +201,18 @@ void StorageInit(void){
       }
     }
   }
+  return 0;
+}
+
+
+
+
+void StorageInit(void){
+  chThdCreateStatic(CardMonitorThreadWA,
+          sizeof(CardMonitorThreadWA),
+          NORMALPRIO,
+          CardMonitorThread,
+          NULL);
 
 }
 

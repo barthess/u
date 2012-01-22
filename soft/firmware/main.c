@@ -134,8 +134,8 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
-  ExtiInit();
-  I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
+//  ExtiInit();
+//  I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
 //  ServoInit();
   CliInit();
