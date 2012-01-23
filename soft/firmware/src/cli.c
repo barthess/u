@@ -136,6 +136,8 @@ static const ShellCommand commands[] = {
   {"dateget", cmd_dateget},
   {"temp", cmd_temp},
   {"tree", cmd_tree},
+  {"touch", cmd_touch},
+  {"cp", cmd_cp},
   {NULL, NULL}
 };
 
@@ -151,7 +153,7 @@ static SerialConfig cli_ser_cfg = {
     USART_CR3_CTSE,
 };
 
-static WORKING_AREA(waShell, 8192);
+static WORKING_AREA(waShell, 2048);
 
 void CliInit(void){
   sdStart(&SDCLI, &cli_ser_cfg);

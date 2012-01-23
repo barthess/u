@@ -172,11 +172,100 @@ void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   scan_files(chp, (char *)fbuff);
 }
 
+void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
+  FRESULT err;
+  FIL FileObject;
+  uint32_t bytes_written;
+
+  (void)argv;
+  if (argc > 0) {
+    chprintf(chp, "Usage: touch\r\n");
+    return;
+  }
+  if (!fs_ready) {
+    chprintf(chp, "File System not mounted\r\n");
+    return;
+  }
+  err = f_open(&FileObject, "0:test.txt", FA_WRITE | FA_OPEN_ALWAYS);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_open() failed\r\n");
+    return;
+  }
+  err = f_write(&FileObject, "This is test file", 17, (void *)&bytes_written);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_write() failed\r\n");
+    return;
+  }
+  else
+    chprintf(chp, "some bytes written\r\n");
+
+  err = f_sync(&FileObject);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_sync() failed\r\n");
+    return;
+  }
+  else
+    chprintf(chp, "sync success\r\n");
+
+  err = f_close(&FileObject);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_close() failed\r\n");
+    return;
+  }
+  else
+    chprintf(chp, "file closed\r\n");
+}
+
+
+static uint8_t test_buf[16384];
+void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
+  FRESULT err;
+  FIL fsrc, fdst;
+  UINT br, bw;         /* File read/write count */
+
+  (void)argv;
+  if (argc > 0) {
+    chprintf(chp, "Usage: cp\r\n");
+    return;
+  }
+  if (!fs_ready) {
+    chprintf(chp, "File System not mounted\r\n");
+    return;
+  }
+
+  /* Open source file on the drive 1 */
+  err = f_open(&fsrc, "0:ink.7z", FA_OPEN_EXISTING | FA_READ);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_open() of ink.7z failed\r\n");
+    return;
+  }
+
+  /* Create destination file on the drive 0 */
+  err = f_open(&fdst, "0:dstfile.dat", FA_CREATE_ALWAYS | FA_WRITE);
+  if (err != FR_OK) {
+    chprintf(chp, "FS: f_open() of dstfile.dat failed\r\n");
+    return;
+  }
+
+  /* Copy source to destination */
+  for (;;) {
+    err = f_read(&fsrc, test_buf, sizeof(test_buf), &br);    /* Read a chunk of src file */
+      if (err || br == 0) break; /* error or eof */
+      err = f_write(&fdst, test_buf, br, &bw);               /* Write it to the dst file */
+      if (err || bw < br) break; /* error or disk full */
+  }
+
+  /* Close open files */
+  f_close(&fsrc);
+  f_close(&fdst);
+
+  chprintf(chp, "Done.\r\n");
+}
 
 /**
  * Monitors presence of SD card in slot.
  */
-static WORKING_AREA(CardMonitorThreadWA, 8192);
+static WORKING_AREA(CardMonitorThreadWA, 1024);
 static msg_t CardMonitorThread(void *arg){
   (void)arg;
   chRegSetThreadName("CardMonitor");

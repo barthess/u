@@ -5,8 +5,6 @@
 #ifndef LINK_H_
 #define LINK_H_
 
-/* максимальная скорость модема даже слегка недостаточна - пакеты все равно не
- * все приходят из-за внутренних задержек */
 #define BAUDRATE_XBEE 115200
 
 #define xbee_reset_assert() {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
