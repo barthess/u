@@ -30,7 +30,7 @@ void I2CInit_pns(void){
   /* startups */
 //  init_eeprom();
   init_tmp75();
-//  init_max1236();
+  init_max1236();
 //  init_mag3110();
 //  init_itg3200();
 //  init_mma8451();

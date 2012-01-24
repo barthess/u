@@ -6,18 +6,14 @@
  ******************************************************************/
 #define GYRO_CAL  (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
 #define ACCEL_CAL (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
+#define MAG_CAL   (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
 
 /******************************************************************
  * глобальные дефайны
  ******************************************************************/
-/* надо ли фильтровать данные с датчиков */
-#define GET_FILTERED_DATA   TRUE
 
 /* включить стрессовое тестирование */
 #define ENABLE_IRQ_STORM    FALSE
-
-/* тут можно отключить обработку GPS, чтобы освободить один SERIAL для консоли */
-#define ENABLE_GPS          FALSE
 
 /* использовать xbee API вместо MAVLink */
 #define LINK_USE_XBEE_API   TRUE
@@ -25,7 +21,6 @@
 #define pwr5v_power_on()  {palSetPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 #define pwr5v_power_off() {palClearPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 
-// usefull macros
 
 /* stop watchdog timer in debugging mode */
 /*unlock PR register*/

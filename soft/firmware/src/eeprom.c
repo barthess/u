@@ -108,7 +108,7 @@ void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf){
 /**
  * „итает байт по указанному адресу. ¬озвращает байт
  */
-inline uint8_t eeprom_read_byte(uint16_t addr){
+uint8_t eeprom_read_byte(uint16_t addr){
   eeprom_read(addr, 1, eeprom_rxbuf);
   return eeprom_rxbuf[0];
 }
@@ -116,7 +116,7 @@ inline uint8_t eeprom_read_byte(uint16_t addr){
 /**
  * читает 2 байта по указанному адресу. ¬озвращает полуслово
  */
-inline uint16_t eeprom_read_halfword(uint16_t addr){
+uint16_t eeprom_read_halfword(uint16_t addr){
   eeprom_read(addr, 2, eeprom_rxbuf);
   return (eeprom_rxbuf[0] << 8) + eeprom_rxbuf[1];
 }
@@ -124,7 +124,7 @@ inline uint16_t eeprom_read_halfword(uint16_t addr){
 /**
  * читает 4 байта по указанному адресу. ¬озвращает слово
  */
-inline uint32_t eeprom_read_word(uint16_t addr){
+uint32_t eeprom_read_word(uint16_t addr){
   eeprom_read(addr, 4, eeprom_rxbuf);
   return (eeprom_rxbuf[0] << 24) + (eeprom_rxbuf[1] << 16) + (eeprom_rxbuf[2] << 8) + eeprom_rxbuf[3];
 }
@@ -204,7 +204,7 @@ static msg_t EepromManagerThread(void *arg){
 
 
 
-inline void init_eeprom(void){
+void init_eeprom(void){
   chSemInit(&eeprom_sem, 1);
 
   chThdCreateStatic(EepromManagerThreadWA,

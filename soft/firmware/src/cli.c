@@ -58,7 +58,7 @@ static void cmd_dateget(BaseChannel *chp, int argc, char *argv[]){
 
 static void cmd_dateset(BaseChannel *chp, int argc, char *argv[]){
 //  RTCTime timespec;
-  time_t gmt = 1500000000;
+//  time_t gmt = 1500000000;
 
   (void)argv;
   if (argc > 0) {

@@ -40,7 +40,6 @@ including, the "$" and "*".
  * Высота по алгоритму получается в сантиметрах
  */
 
-#if ENABLE_GPS
 
 // указатель на последовательный драйвер, через который подключен gps
 #define SDGPS SD1
@@ -72,14 +71,11 @@ static msg_t gpsRxThread(void *arg){
   (void)arg;
 
   uint32_t n = 0;
-  uint8_t i,j = 0;
 
   while (TRUE) {
 
 EMPTY:
 		n = 0;
-		i = 0;
-		j = 0;
 		while(sdGet(&SDGPS) != '$')
 			; // читаем из буфера до тех пор, пока не найдем знак бакса
 		goto TALKER;
@@ -159,7 +155,7 @@ $GPRMC,115436.000,,,,,,,,,,,A*66
 */
 void parse_gga(uint8_t *ggabuf){
   uint8_t i = 1; /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
-  uint8_t fix = 0, satellites = 0;
+  uint8_t fix = 0, gps_satellites = 0;
 
   gps_time = parse_decimal(&ggabuf[i]);         /* time */
   while(ggabuf[i] != ','){i++;}
@@ -187,7 +183,7 @@ void parse_gga(uint8_t *ggabuf){
   while(ggabuf[i] != ','){i++;}
     i++;
 
-  satellites = parse_decimal(&ggabuf[i]);       /* number of satellites */
+  gps_satellites = parse_decimal(&ggabuf[i]);   /* number of satellites */
   while(ggabuf[i] != ','){i++;}
     i++;
 
@@ -210,6 +206,7 @@ void parse_gga(uint8_t *ggabuf){
 		raw_data.gps_latitude  = gps_latitude;
 		raw_data.gps_longitude = gps_longitude;
 	  raw_data.gps_altitude  = gps_altitude;
+	  raw_data.gps_satellites = gps_satellites;
 
 	  log_item.gps_time      = gps_time / 100; /* откинем доли секунды */
 	  log_item.gps_latitude  = gps_latitude;
@@ -221,6 +218,7 @@ void parse_gga(uint8_t *ggabuf){
 		raw_data.gps_latitude = 0;
 		raw_data.gps_longitude = 0;
 		raw_data.gps_altitude = 0;
+		raw_data.gps_satellites = 0;
 
     log_item.gps_time = 0;
     log_item.gps_latitude = 0;
@@ -338,7 +336,7 @@ static SerialConfig gps_ser_cfg = {
 
 
 
-inline void GPSInit(void){
+void GPSInit(void){
   /* запуск на дефолтной частоте */
   gps_ser_cfg.sc_speed = GPS_DEFAULT_BAUDRATE;
   sdStart(&SDGPS, &gps_ser_cfg);
@@ -371,6 +369,4 @@ inline void GPSInit(void){
           gpsRxThread,
           NULL);
 }
-#else  /* ENABLE_GPS */
-void GPSInit(void){;}
-#endif /* ENABLE_GPS */
+

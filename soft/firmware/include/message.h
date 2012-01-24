@@ -68,57 +68,6 @@ struct ManualDriving {
 };
 
 
-/**Наверх.
- * @brief   Type of a structure representing an telemetry data.
- */
-typedef struct Telemetry Telemetry;
-struct Telemetry{
-  float voltage_main;   // напряжение (V) в ботовой сети
-  float current_main;   // ток (A) в ботовой сети
-  int   rpm;            // частота вращения двигателя (rpm)
-
-  float speed_air;      // скорость воздушная (м/с)
-  float speed_gps;      // скорость по спутникам (м/с)
-  float speed_imu;      // скорость по инерциалке (м/с)
-
-  float roll_accel;     // крен по акселерометру (градусы)
-  float roll_gyro;      // крен по гироскопу (градусы)
-  float pitch_accel;    // тангаж по акселерометру (градусы)
-  float pitch_gyro;     // тангаж по гироскопу (градусы)
-
-  float course_gyro;    // курс по гироскопу (градусы)
-  float course_gps;     // курс по gps (градусы)
-  float couse_magnet;   // магнитный курс (градусы)
-
-  int16_t temperature;  // температура на борту (градусы цельсия).
-                        // Дробь с фиксированной точкой 8.8
-
-  // положения сервоприводов и дросселя (данные из регистров счетчика)
-  int16_t aileron;
-  int16_t elevator;
-  int16_t throttle;
-  int16_t rudder;
-
-  // TODO: токи потребления каждой сервы (A)
-
-  // широта (м)
-  float latitude_gps;		// GPS
-  float latitude_imu;		// IMU
-
-  // долгота (м)
-  float longitude_gps;		// GPS
-  float longitude_imu;		// IMU
-
-  // высота (м)
-  float altitude_gps;       // GPS
-  float altitude_imu;       // IMU
-  float altitude_sonar;     // сонар
-  float altitude_barometer; // барометр
-
-  int time;					// время GPS (c)
-  int cpu_load;				// загрузка CPU (%)
-};
-
 
 /*
  * Вниз. 
@@ -175,6 +124,7 @@ struct RawData{
   int32_t  gps_speed_knots;
   int32_t  gps_course;
   uint32_t gps_time;
+  uint8_t  gps_satellites;
 
   uint32_t rtc_sec;           /* время по внутренним часам. Секунды с начала эпохи */
   uint16_t rtc_msec;          /* дробная часть */

@@ -141,7 +141,7 @@ int main(void) {
   CliInit();
   ADCInit_pns();
 //  ImuInit();
-//  GPSInit();
+  GPSInit();
 //  LinkInitXbeeApi();
 //  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
   StorageInit();
