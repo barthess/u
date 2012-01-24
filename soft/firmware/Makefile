@@ -107,9 +107,9 @@ CSRC = $(PORTSRC) \
        src/irq_storm.c \
        src/storage.c \
        src/adc_pns.c \
+       src/servo.c \
        #src/imu.c \
        src/link_xbee_api.c \
-       src/servo.c \
        src/proto_pns.c \
        src/proto_xbee.c \
        src/autopilot.c \

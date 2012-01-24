@@ -103,11 +103,15 @@ struct RawData{
   int16_t acceleration_x;
   int16_t acceleration_y;
   int16_t acceleration_z;
-  // положения сервоприводов и дросселя (данные из регистров счетчика)
-  uint16_t aileron;
-  uint16_t elevator;
-  uint16_t throttle;
-  uint16_t rudder;
+  // положения сервоприводов (данные из регистров счетчика)
+  uint16_t servo1;
+  uint16_t servo2;
+  uint16_t servo3;
+  uint16_t servo4;
+  uint16_t servo5;
+  uint16_t servo6;
+  uint16_t servo7;
+  uint16_t servo8;
   // напряжение и ток бортовой сети
   uint16_t main_voltage;
   uint16_t main_current;

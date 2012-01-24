@@ -62,9 +62,6 @@ static msg_t eepromwriter_mb_buf[8];
 Mailbox tolink_mb;                    /* сообщения для отправки через модем */
 static msg_t tolink_mb_buf[8];
 
-uint8_t servo_settings_eeprom_buf[SERVO_SETTINGS_SIZE];// буфер для данных, вычитанных из EEPROM
-uint8_t servo_settings_xbee_buf[SERVO_SETTINGS_SIZE];  // буфер для данных, пришедших в модем
-
 /** Переменные для хранения калибровочных данных */
 volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
 volatile uint8_t  cal_CurrentOffset;  /* смещение нуля датчика тока в единицах АЦП */
@@ -137,7 +134,7 @@ int main(void) {
   ExtiInit(); /* I2C датчики используют его */
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
-//  ServoInit();
+  ServoInit();
   CliInit();
   ADCInit_pns();
 //  ImuInit();
