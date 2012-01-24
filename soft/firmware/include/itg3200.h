@@ -22,5 +22,8 @@
 
 
 void init_itg3200(void);
+void gyro_refresh_zeros(void);
+
+
 
 #endif /* ITG3200_H_ */

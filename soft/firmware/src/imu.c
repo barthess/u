@@ -25,9 +25,7 @@ extern uint32_t GlobalFlags;
 extern RawData raw_data;
 extern LogItem log_item;
 
-extern BinarySemaphore gyroadc_sem;
-extern EventSource   es_adc;
-extern eventmask_t   em_adcgyroready;
+extern BinarySemaphore imu_sem;
 
 /*
  ******************************************************************************
@@ -50,7 +48,7 @@ static float Rest[]  = {0.01, 0.01, 0.99};  // проекция вектора тяжести на оси с
  *******************************************************************************
  */
 
-inline void imu_update(int16_t ax, int16_t ay, int16_t az){
+void imu_update(int16_t ax, int16_t ay, int16_t az){
   /* поправочные коэффициенты для не совсем прямого акселерометра */
   int32_t offsetx = 0;
   int32_t offsety = 0;
@@ -175,19 +173,18 @@ inline void imu_update(int16_t ax, int16_t ay, int16_t az){
  * Поток обработки инерациальных данных
  */
 static WORKING_AREA(waImu, 512);
-__attribute__((noreturn))
 static msg_t Imu(void *arg) {
   (void)arg;
 
   chRegSetThreadName("IMU");
-  chEvtRegisterMask(&es_adc, &el_adc, em_adcgyroready);
 
   while (TRUE) {
-    chBSemWait(&gyroadc_sem);
+    chBSemWait(&imu_sem);
     imu_update(raw_data.acceleration_x,
                raw_data.acceleration_y,
                raw_data.acceleration_z);
   }
+  return 0;
 }
 
 
@@ -199,6 +196,14 @@ void ImuInit(void){
 
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO - 5, Imu, NULL);
 }
+
+/**
+ * Сбрасывает всё рассчитанное инерциалкой в начальное состояние
+ */
+void ImuReset(void){
+
+}
+
 
 
 

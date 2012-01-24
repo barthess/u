@@ -5,6 +5,7 @@
 
 #include "i2c_pns.h"
 #include "dsp.h"
+#include "imu.h"
 #include "itg3200.h"
 #include "message.h"
 #include "main.h"
@@ -22,8 +23,10 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 extern RawData raw_data;
 extern BinarySemaphore itg3200_sem;
+extern BinarySemaphore imu_sem;
 
 /*
  ******************************************************************************
@@ -33,6 +36,16 @@ extern BinarySemaphore itg3200_sem;
 static uint8_t rxbuf[GYRO_RX_DEPTH];
 static uint8_t txbuf[GYRO_TX_DEPTH];
 
+// счетчик для выставки нулей
+static uint32_t zero_cnt = 0;
+// счетчик для интегрирования
+static uint32_t gyrosamplecnt = 0;
+
+// массив собранных значений для рассчета интеграла
+static uint32_t gxv[4] = {0,0,0,0};
+static uint32_t gyv[4] = {0,0,0,0};
+static uint32_t gzv[4] = {0,0,0,0};
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -40,7 +53,65 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
  *******************************************************************************
  *******************************************************************************
  */
-/* Поток для запроса акселерометра */
+
+/**
+ * Определение спещения нулей.
+ */
+void gyrozeroing(void){
+  if (zero_cnt > 0){
+    raw_data.gyro_xAvg += raw_data.gyro_x;
+    raw_data.gyro_yAvg += raw_data.gyro_y;
+    raw_data.gyro_zAvg += raw_data.gyro_z;
+    zero_cnt--;
+    return;
+  }
+  else{
+    chSysLock();
+    GlobalFlags &= ~GYRO_CAL;
+    chSysUnlock();
+  }
+}
+
+/**
+ * Функция рассчета интеграла гироскопов по времени.
+ * За каждый заход надо насобирать 3 новых точки,
+ * 4-я точка -- это старая, она должна стать первой в следующем заходе.
+ */
+void gyro_get_angle(void){
+
+  /* Математически упрощенная функция интегрирования Симпсоном 3/8.
+   * Снижение читабельности в угоду производительности.
+   * Вынесем за скобки некоторые множители в обработчике прерывания:
+   * 3 - количество промежутков интегрирования
+   * 8 - делитель из каноничной формулы можно внести в состав GYRO_AVG_SAMPLES_CNT */
+  #define s38(a, b, c, d)      ((a) + 3*((b) + (c)) + (d))
+
+  uint32_t i = 0;
+  gyrosamplecnt++;
+
+  i = gyrosamplecnt & 3;
+  gxv[i] = raw_data.gyro_x * (GYRO_AVG_SAMPLES_CNT / 8);
+  gyv[i] = raw_data.gyro_y * (GYRO_AVG_SAMPLES_CNT / 8);
+  gzv[i] = raw_data.gyro_z * (GYRO_AVG_SAMPLES_CNT / 8);
+  if (i == 3){
+    raw_data.gyro_x_delta = 3 * (s38(gxv[0],gxv[1],gxv[2],gxv[3]) - raw_data.gyro_xAvg);
+    raw_data.gyro_y_delta = 3 * (s38(gyv[0],gyv[1],gyv[2],gyv[3]) - raw_data.gyro_yAvg);
+    raw_data.gyro_z_delta = 3 * (s38(gzv[0],gzv[1],gzv[2],gzv[3]) - raw_data.gyro_zAvg);
+    gxv[0] = gxv[3];
+    gyv[0] = gyv[3];
+    gzv[0] = gzv[3];
+
+    /* у нас готовы свежие дельты углов поворота - будим инерциалку */
+    chSysLock();
+    chBSemSignal(&imu_sem);
+    chSysUnlock();
+  }
+  #undef s38
+}
+
+/**
+ * Поток для опроса хероскопа
+ */
 static WORKING_AREA(PollGyroThreadWA, 256);
 static msg_t PollGyroThread(void *arg){
 
@@ -58,9 +129,15 @@ static msg_t PollGyroThread(void *arg){
       raw_data.gyro_x    = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.gyro_y    = complement2signed(rxbuf[4], rxbuf[5]);
       raw_data.gyro_z    = complement2signed(rxbuf[6], rxbuf[7]);
+
+      if (GlobalFlags & GYRO_CAL)
+        gyrozeroing();
+      else
+        gyro_get_angle();
     }
     else{
-      raw_data.gyro_temp = 0;
+      /* значения, сигнализирующие о сбое */
+      raw_data.gyro_temp = -32000;
       raw_data.gyro_x    = -32000;
       raw_data.gyro_y    = -32000;
       raw_data.gyro_z    = -32000;
@@ -69,7 +146,9 @@ static msg_t PollGyroThread(void *arg){
   return 0;
 }
 
-
+/**
+ *
+ */
 void init_itg3200(void){
 
   #if CH_DBG_ENABLE_ASSERTS
@@ -101,4 +180,24 @@ void init_itg3200(void){
           NORMALPRIO,
           PollGyroThread,
           NULL);
+
+  gyro_refresh_zeros();
 }
+
+/**
+ *
+ */
+void gyro_refresh_zeros(void){
+
+  chSysLock();
+
+  raw_data.gyro_xAvg = 0;
+  raw_data.gyro_yAvg = 0;
+  raw_data.gyro_zAvg = 0;
+
+  zero_cnt = GYRO_AVG_SAMPLES_CNT;
+  GlobalFlags |= GYRO_CAL;
+
+  chSysUnlock();
+}
+

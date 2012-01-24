@@ -17,9 +17,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern LogItem log_item;
 extern Mailbox eeprommanager_mb;
-//extern RTCTime timespec;
 
 /*
  ******************************************************************************
@@ -32,8 +30,6 @@ static Semaphore eeprom_sem;
 // буфера под данные
 static uint8_t eeprom_rxbuf[EEPROM_RX_DEPTH];
 static uint8_t eeprom_txbuf[EEPROM_TX_DEPTH];
-
-static i2cflags_t errors = 0;
 
 /**********************************************************************
 Write cycle time (byte or page) Ч 5 ms
@@ -203,6 +199,7 @@ static msg_t EepromManagerThread(void *arg){
     if (ereq_p->mailbox != NULL)
       chMBPost(ereq_p->mailbox, (msg_t)ereq_p, TIME_IMMEDIATE);
   }
+  return 0;
 }
 
 
@@ -219,5 +216,4 @@ inline void init_eeprom(void){
 
 
 
-#undef I2CD_eeprom
 

@@ -134,11 +134,11 @@ struct RawData{
   int32_t gyro_x_delta;
   int32_t gyro_y_delta;
   int32_t gyro_z_delta;
-  // нули, посчитанные во врем€ калибровки
+  /* смещени€ нулей, посчитанные во врем€ выставки.*/
   uint32_t gyro_xAvg;
   uint32_t gyro_yAvg;
   uint32_t gyro_zAvg;
-  // данные с ј÷ѕ гироскопов
+  // данные с гироскопа
   int16_t gyro_x;
   int16_t gyro_y;
   int16_t gyro_z;

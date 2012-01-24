@@ -244,7 +244,7 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
   err = f_open(&fsrc, "0:ink.7z", FA_OPEN_EXISTING | FA_READ);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_open() of ink.7z failed\r\n");
-    chThdSleepMillisecsonds(50);
+    chThdSleepMilliseconds(50);
     return;
   }
 
@@ -252,7 +252,7 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
   err = f_open(&fdst, "0:dstfile.dat", FA_CREATE_ALWAYS | FA_WRITE);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_open() of dstfile.dat failed\r\n");
-    chThdSleepMillisecsonds(50);
+    chThdSleepMilliseconds(50);
     return;
   }
 

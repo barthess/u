@@ -106,13 +106,13 @@ CSRC = $(PORTSRC) \
        src/checksum.c \
        src/irq_storm.c \
        src/storage.c \
-       #src/link_xbee_api.c \
-       src/servo.c \
        src/adc_pns.c \
+       #src/imu.c \
+       src/link_xbee_api.c \
+       src/servo.c \
        src/proto_pns.c \
        src/proto_xbee.c \
        src/autopilot.c \
-       src/imu.c \
        src/bkp.c \
        src/rtc_pns.c \
        

@@ -46,7 +46,7 @@ LogItem log_item;                     /* структура, содержащая запись для лога *
 RoutePoint route_point;               /* структура для более удобной передачи точек по этапу */
 
 BinarySemaphore link_thd_sem;         /* семафор для синхронизации сеансов связи */
-BinarySemaphore gyroadc_sem;          /* семафор для синхронизации инерциалки и АЦП */
+BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
 
 BinarySemaphore mag3110_sem;
 BinarySemaphore mma8451_sem;
@@ -112,7 +112,7 @@ int main(void) {
 
   /* примитивов синхронизации */
   chBSemInit(&link_thd_sem, TRUE);
-  chBSemInit(&gyroadc_sem,  TRUE);
+  chBSemInit(&imu_sem,      TRUE);
 
   chBSemInit(&mag3110_sem,  TRUE);
   chBSemInit(&mma8451_sem,  TRUE);
@@ -134,12 +134,12 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
-//  ExtiInit();
-//  I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
+  ExtiInit(); /* I2C датчики используют его */
+  I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
 //  ServoInit();
   CliInit();
-//  ADCInit_pns();
+  ADCInit_pns();
 //  ImuInit();
 //  GPSInit();
 //  LinkInitXbeeApi();
