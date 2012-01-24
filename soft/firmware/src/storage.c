@@ -36,7 +36,7 @@ static FATFS SDC_FS;
 static bool_t fs_ready = FALSE;
 
 /* Generic large buffer.*/
-static uint8_t fbuff[1024];
+static uint8_t fbuff[8192];
 
 /**
  * @brief   Inserion monitor function.
@@ -145,6 +145,9 @@ static FRESULT scan_files(BaseChannel *chp, char *path) {
 /* Command line related.                                                     */
 /*===========================================================================*/
 
+/**
+ * Get file tree.
+ */
 void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   FRESULT err;
   uint32_t clusters;
@@ -172,6 +175,9 @@ void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
   scan_files(chp, (char *)fbuff);
 }
 
+/**
+ * Create file.
+ */
 void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
   FRESULT err;
   FIL FileObject;
@@ -216,8 +222,9 @@ void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
     chprintf(chp, "file closed\r\n");
 }
 
-
-static uint8_t test_buf[16384];
+/**
+ * Copy file.
+ */
 void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
   FRESULT err;
   FIL fsrc, fdst;
@@ -237,6 +244,7 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
   err = f_open(&fsrc, "0:ink.7z", FA_OPEN_EXISTING | FA_READ);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_open() of ink.7z failed\r\n");
+    chThdSleepMillisecsonds(50);
     return;
   }
 
@@ -244,15 +252,16 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
   err = f_open(&fdst, "0:dstfile.dat", FA_CREATE_ALWAYS | FA_WRITE);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_open() of dstfile.dat failed\r\n");
+    chThdSleepMillisecsonds(50);
     return;
   }
 
   /* Copy source to destination */
   for (;;) {
-    err = f_read(&fsrc, test_buf, sizeof(test_buf), &br);    /* Read a chunk of src file */
-      if (err || br == 0) break; /* error or eof */
-      err = f_write(&fdst, test_buf, br, &bw);               /* Write it to the dst file */
-      if (err || bw < br) break; /* error or disk full */
+    err = f_read(&fsrc, fbuff, sizeof(fbuff), &br);    /* Read a chunk of src file */
+    if (err || br == 0) break; /* error or eof */
+    err = f_write(&fdst, fbuff, br, &bw);               /* Write it to the dst file */
+    if (err || bw < br) break; /* error or disk full */
   }
 
   /* Close open files */
@@ -293,9 +302,9 @@ static msg_t CardMonitorThread(void *arg){
   return 0;
 }
 
-
-
-
+/**
+ * Init.
+ */
 void StorageInit(void){
   chThdCreateStatic(CardMonitorThreadWA,
           sizeof(CardMonitorThreadWA),
