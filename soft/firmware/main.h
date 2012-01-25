@@ -13,11 +13,12 @@
  * глобальные дефайны
  ******************************************************************/
 
+/* максимальная скорость модема даже слегка недостаточна - пакеты все равно не
+ * все приходят из-за внутренних задержек */
+#define BAUDRATE_XBEE 115200
+
 /* включить стрессовое тестирование */
 #define ENABLE_IRQ_STORM    FALSE
-
-/* использовать xbee API вместо MAVLink */
-#define LINK_USE_XBEE_API   TRUE
 
 #define pwr5v_power_on()  {palSetPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 #define pwr5v_power_off() {palClearPad(GPIOA, GPIOA_5V_DOMAIN_EN);}

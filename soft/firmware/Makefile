@@ -108,6 +108,7 @@ CSRC = $(PORTSRC) \
        src/storage.c \
        src/adc_pns.c \
        src/servo.c \
+       src/link.c \
        #src/imu.c \
        src/link_xbee_api.c \
        src/proto_pns.c \
@@ -151,13 +152,17 @@ TCPPSRC =
 # List ASM source files here
 ASMSRC = $(PORTASM)
 
+# Dir with mavlink headers
+MAVLINKDIR = ../mavlink/C
+
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
          include \
-         #mavlink/include \
-         #mavlink/include/common \
-
+         $(MAVLINKDIR) \
+         $(MAVLINKDIR)/common \
+         $(MAVLINKDIR)/bart
+         
 #
 # Project, sources and paths
 ##############################################################################

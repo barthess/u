@@ -9,9 +9,8 @@
 #include "cli.h"
 #include "storage.h"
 #include "rtc_pns.h"
+#include "link.h"
 #include "main.h"
-
-#if !ENABLE_GPS
 
 /*
  ******************************************************************************
@@ -161,8 +160,6 @@ void CliInit(void){
   shellInit();
   shellCreateStatic(&shell_cfg1, waShell, sizeof(waShell), NORMALPRIO);
 }
-#else
-void CliInit(void){;}
-#endif /* !ENABLE_GPS */
+
 
 
