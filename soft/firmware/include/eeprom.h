@@ -62,7 +62,7 @@ uint16_t eeprom_read_halfword(uint16_t addr);
 uint32_t eeprom_read_word(uint16_t addr);
 
 void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf);
-void eeprom_write(uint16_t addr, uint16_t len, uint8_t *buf);
+void eeprom_write(uint16_t addr, uint8_t len, uint8_t *buf);
 
 void eeprom_write_log(uint16_t nr, RawData *buf);
 

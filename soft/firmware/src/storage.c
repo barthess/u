@@ -36,7 +36,7 @@ static FATFS SDC_FS;
 static bool_t fs_ready = FALSE;
 
 /* Generic large buffer.*/
-static uint8_t fbuff[8192];
+static uint8_t fbuff[2048];
 
 /**
  * @brief   Inserion monitor function.

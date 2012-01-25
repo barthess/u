@@ -69,7 +69,6 @@ __attribute__((noreturn))
 static msg_t gpsRxThread(void *arg){
   chRegSetThreadName("gpsRx");
   (void)arg;
-
   uint32_t n = 0;
 
   while (TRUE) {

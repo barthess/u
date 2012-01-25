@@ -56,9 +56,6 @@ BinarySemaphore itg3200_sem;
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];
 
-Mailbox eeprommanager_mb;             /* сообщения для писалки еепром */
-static msg_t eepromwriter_mb_buf[8];
-
 Mailbox tolink_mb;                    /* сообщения для отправки через модем */
 static msg_t tolink_mb_buf[8];
 
@@ -118,7 +115,6 @@ int main(void) {
 
   /* очереди сообщений */
   chMBInit(&autopilot_mb, autopilot_mb_buf, (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
-  chMBInit(&eeprommanager_mb, eepromwriter_mb_buf, (sizeof(eepromwriter_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb, tolink_mb_buf, (sizeof(tolink_mb_buf)/sizeof(msg_t)));
 
   /* источники событий */

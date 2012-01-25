@@ -4,9 +4,9 @@
 #include "hal.h"
 
 #include "eeprom.h"
-#include "rtc.h"
-#include "bkp.h"
 #include "message.h"
+#include "i2c_pns.h"
+#include "main.h"
 
 
 #define I2CD_eeprom I2CD2
@@ -17,7 +17,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox eeprommanager_mb;
+extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -25,11 +25,11 @@ extern Mailbox eeprommanager_mb;
  ******************************************************************************
  */
 // семафор для реализации задержек при записи в eeprom
-static Semaphore eeprom_sem;
+static BinarySemaphore eeprom_sem;
 
 // буфера под данные
-static uint8_t eeprom_rxbuf[EEPROM_RX_DEPTH];
-static uint8_t eeprom_txbuf[EEPROM_TX_DEPTH];
+static uint8_t rxbuf[EEPROM_RX_DEPTH];
+static uint8_t txbuf[EEPROM_TX_DEPTH];
 
 /**********************************************************************
 Write cycle time (byte or page) — 5 ms
@@ -94,41 +94,47 @@ proceed with the next Read or Write command.
  * @param[in] ext_rxbuf pointer to data buffer
  */
 void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf){
+  msg_t status = RDY_OK;
+
   chDbgCheck(((len + addr) < EEPROM_SIZE), "Addres is out of bounds");
 
-  eeprom_split_addr(eeprom_txbuf, addr);
+  eeprom_split_addr(txbuf, addr);
 
-  chSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
-  i2cAcquireBus(&I2CD_eeprom);
-  i2cMasterTransmit(&I2CD_eeprom, eeprom_addr, eeprom_txbuf, 2, ext_rxbuf, len);
-  i2cReleaseBus(&I2CD_eeprom);
-  chSemSignal(&eeprom_sem);
+  chBSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
+
+  status = i2c_transmit(&I2CD_eeprom, eeprom_addr, txbuf, 2, ext_rxbuf, len);
+  if (status  != RDY_OK){
+    chSysLock();
+    GlobalFlags |= EEPROM_FAILED;
+    chSysUnlock();
+  }
+
+  chBSemSignal(&eeprom_sem);
 }
 
 /**
  * Читает байт по указанному адресу. Возвращает байт
  */
 uint8_t eeprom_read_byte(uint16_t addr){
-  eeprom_read(addr, 1, eeprom_rxbuf);
-  return eeprom_rxbuf[0];
+  eeprom_read(addr, 1, rxbuf);
+  return rxbuf[0];
 }
 
 /**
  * читает 2 байта по указанному адресу. Возвращает полуслово
  */
 uint16_t eeprom_read_halfword(uint16_t addr){
-  eeprom_read(addr, 2, eeprom_rxbuf);
-  return (eeprom_rxbuf[0] << 8) + eeprom_rxbuf[1];
+  eeprom_read(addr, 2, rxbuf);
+  return (rxbuf[0] << 8) + rxbuf[1];
 }
 
 /**
  * читает 4 байта по указанному адресу. Возвращает слово
  */
 uint32_t eeprom_read_word(uint16_t addr){
-  eeprom_read(addr, 4, eeprom_rxbuf);
-  return (eeprom_rxbuf[0] << 24) + (eeprom_rxbuf[1] << 16) + (eeprom_rxbuf[2] << 8) + eeprom_rxbuf[3];
+  eeprom_read(addr, 4, rxbuf);
+  return (rxbuf[0] << 24) + (rxbuf[1] << 16) + (rxbuf[2] << 8) + rxbuf[3];
 }
-
 
 /**
  * @brief   EEPROM write routine.
@@ -139,79 +145,46 @@ uint32_t eeprom_read_word(uint16_t addr){
  * @param[in] len   number of bytes to be write
  * @param[in] buf   pointer to data
  */
-void eeprom_write(uint16_t addr, uint16_t len, uint8_t *buf){
+void eeprom_write(uint16_t addr, uint8_t len, uint8_t *buf){
+  msg_t status = RDY_OK;
   uint8_t i = 0;
 
   chDbgCheck((len <= (128 - addr % 128)), "Data buffer is not alligned to one eeprom page");
   chDbgCheck(((len + addr) <= EEPROM_SIZE), "Addres is out of bounds");
 
-  eeprom_split_addr(eeprom_txbuf, addr);
+  eeprom_split_addr(txbuf, addr);
 
   while (i < len){
-    eeprom_txbuf[i+2] = buf[i];
+    txbuf[i+2] = buf[i];
     i++;
   }
 
-  chSemWait(&eeprom_sem);
+  chBSemWait(&eeprom_sem);
 
-  i2cAcquireBus(&I2CD_eeprom);
-  i2cMasterTransmit(&I2CD_eeprom, eeprom_addr, eeprom_txbuf, (len + 2), eeprom_rxbuf, 0);
-  i2cReleaseBus(&I2CD_eeprom);
+  status = i2c_transmit(&I2CD_eeprom, eeprom_addr, txbuf, (len + 2), rxbuf, 0);
+  if (status  != RDY_OK){
+    chSysLock();
+    GlobalFlags |= EEPROM_FAILED;
+    chSysUnlock();
+  }
 
   chThdSleepMilliseconds(5); // задержка, необходимая для записи данных
-  chSemSignal(&eeprom_sem);
+  chBSemSignal(&eeprom_sem);
 }
 
-
-
-/* Поток для обслуживания запросов записи и чтения из EEPROM
- * Хапает сообещения из почтового ящики и по месту определяет, что надо делать */
-static WORKING_AREA(EepromManagerThreadWA, 256);
-static msg_t EepromManagerThread(void *arg){
-  chRegSetThreadName("EepromManager");
-  (void)arg;
-  msg_t msg; /* для временного хранения сообщения */
-
-  uint8_t   *buf = NULL;
-  uint16_t  len  = 0;
-  uint16_t  addr = 0;
-  EepromReq *ereq_p = NULL;
-
-  while(TRUE){
-    chMBFetch(&eeprommanager_mb, &msg, TIME_INFINITE);
-    ereq_p = (EepromReq *)msg;
-
-    addr = ereq_p->addr;
-    len  = ereq_p->len;
-    buf  = ereq_p->bufp;
-
-    if(len & 0x8000){
-      len &= 0x7FFF;                /* не забываем откусить бит записи */
-      eeprom_read(addr, len, buf);
-    }
-    else
-      eeprom_write(addr, len, buf);
-
-    ereq_p->bufp = NULL;              /* флаг готовности к приему новых данных */
-
-    /* в качестве подтверждения в почтовый ящик бросается указатель на
-     * ЕЕПРОМ запрос, тот самый, что был получен в начале */
-    if (ereq_p->mailbox != NULL)
-      chMBPost(ereq_p->mailbox, (msg_t)ereq_p, TIME_IMMEDIATE);
-  }
-  return 0;
-}
-
-
-
+/**
+ * Запускатор
+ */
 void init_eeprom(void){
-  chSemInit(&eeprom_sem, 1);
 
-  chThdCreateStatic(EepromManagerThreadWA,
-          sizeof(EepromManagerThreadWA),
-          NORMALPRIO,
-          EepromManagerThread,
-          NULL);
+#if CH_DBG_ENABLE_ASSERTS
+  // clear bufers. Just to be safe.
+  uint8_t i = 0;
+  for (i = 0; i < EEPROM_TX_DEPTH; i++){txbuf[i] = 0x55;}
+  for (i = 0; i < EEPROM_RX_DEPTH; i++){rxbuf[i] = 0x55;}
+#endif
+
+  chBSemInit(&eeprom_sem, FALSE);
 }
 
 
