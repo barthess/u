@@ -4,8 +4,6 @@
 #include "link.h"
 #include "rtc.h"
 #include "message.h"
-#include "proto_xbee.h"
-#include "proto_pns.h"
 
 #include <mavlink.h>
 #include <common.h>
@@ -23,7 +21,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern LogItem log_item;
+//extern LogItem log_item;
 
 /*
  ******************************************************************************
@@ -56,11 +54,11 @@ static msg_t LinkThread(void *arg){
   mavlink_system.type   = MAV_TYPE_FIXED_WING;   ///< This system is an airplane / fixed wing
 
   // Define the system type, in this case an airplane
-  uint8_t system_type     = MAV_TYPE_GROUND_ROVER;
-  uint8_t autopilot_type  = MAV_AUTOPILOT_GENERIC;
-  uint8_t system_mode     = MAV_MODE_PREFLIGHT; ///< Booting up
-  uint32_t custom_mode    = 0;                 ///< Custom mode, can be defined by user/adopter
-  uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
+//  uint8_t system_type     = MAV_TYPE_GROUND_ROVER;
+//  uint8_t autopilot_type  = MAV_AUTOPILOT_GENERIC;
+//  uint8_t system_mode     = MAV_MODE_PREFLIGHT; ///< Booting up
+//  uint32_t custom_mode    = 0;                 ///< Custom mode, can be defined by user/adopter
+//  uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
 
   // Initialize the required buffers
   mavlink_message_t msg;
