@@ -14,9 +14,8 @@
  * DEFINES
  ******************************************************************************
  */
-#define I2CDmag3110  I2CD2
-#define mag3110_addr 0b0001110
-#define OVERDOSE ((uint16_t)25000) // предел, после которого надо ресетить датчик
+#define mag3110addr 0b0001110
+#define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
 
 /*
  ******************************************************************************
@@ -59,8 +58,8 @@ static msg_t PollMagThread(void *arg){
 
     /* посмотрим, чё там померялось */
     txbuf[0] = MAG_OUT_DATA;
-    if (i2c_transmit(&I2CDmag3110, mag3110_addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
-                                                          sem_status == RDY_OK){
+    if (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
+                                           sem_status == RDY_OK){
       raw_data.magnetic_x = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.magnetic_y = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.magnetic_z = complement2signed(rxbuf[4], rxbuf[5]);
@@ -80,7 +79,7 @@ static msg_t PollMagThread(void *arg){
         abs(raw_data.magnetic_z) > OVERDOSE){
       txbuf[0] = MAG_CTRL_REG2;
       txbuf[1] = MAG_RST;
-      i2c_transmit(&I2CDmag3110, mag3110_addr, txbuf, 2, rxbuf, 0);
+      i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
     }
   }
 
@@ -103,13 +102,13 @@ void init_mag3110(void){
    to change any of the fields within CTRL_REG1 (0x10). */
   txbuf[0] = MAG_CTRL_REG1; // register address
   txbuf[1] = 0b11001;       // выводим из спящего режима, настраиваем чувствительность
-  while(i2c_transmit(&I2CDmag3110, mag3110_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   /* произведём сервисный сброс датчика */
   txbuf[0] = MAG_CTRL_REG2;
   txbuf[1] = MAG_RST;
-  while(i2c_transmit(&I2CDmag3110, mag3110_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   chThdCreateStatic(PollMagThreadWA,

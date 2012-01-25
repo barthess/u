@@ -12,7 +12,6 @@
  * DEFINES
  ******************************************************************************
  */
-#define I2CDtmp75 I2CD2
 #define tmp75addr 0b1001000
 
 /*
@@ -50,7 +49,7 @@ static msg_t PollTmp75Thread(void *arg){
     /* скорость опроса термодатчика надо подбирать в зависимости от разрешени€
      * при 12 Bits (0.0625∞C) данные обновл€ютс€ каждые 220 мс*/
 
-    if (i2c_receive(&I2CDtmp75, tmp75addr, rxbuf, 2) == RDY_OK){
+    if (i2c_receive(tmp75addr, rxbuf, 2) == RDY_OK){
       /* ÷ела€ часть будет записана в лог и отправлена телеметрией */
       log_item.temp_onboard = rxbuf[0];
 
@@ -90,11 +89,11 @@ additional data is required.*/
 void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
   txbuf[1] = 0b01100000; // OS R1 R0 F1 F0 POL TM SD
-  while(i2c_transmit(&I2CDtmp75, tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while(i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   txbuf[0] = 0; // point to temperature register
-  while(i2c_transmit(&I2CDtmp75, tmp75addr, txbuf, 1, rxbuf, 0) != RDY_OK)
+  while(i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 0) != RDY_OK)
     ;
 
   chThdCreateStatic(PollTmp75ThreadWA,

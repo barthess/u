@@ -8,9 +8,12 @@
 #include "i2c_pns.h"
 #include "main.h"
 
-
-#define I2CD_eeprom I2CD2
-#define eeprom_addr 0b1010000
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+#define eepromaddr 0b1010000
 
 /*
  ******************************************************************************
@@ -102,7 +105,7 @@ void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf){
 
   chBSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
 
-  status = i2c_transmit(&I2CD_eeprom, eeprom_addr, txbuf, 2, ext_rxbuf, len);
+  status = i2c_transmit(eepromaddr, txbuf, 2, ext_rxbuf, len);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;
@@ -161,7 +164,7 @@ void eeprom_write(uint16_t addr, uint8_t len, uint8_t *buf){
 
   chBSemWait(&eeprom_sem);
 
-  status = i2c_transmit(&I2CD_eeprom, eeprom_addr, txbuf, (len + 2), rxbuf, 0);
+  status = i2c_transmit(eepromaddr, txbuf, (len + 2), rxbuf, 0);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;

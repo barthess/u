@@ -15,8 +15,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define I2CD_itg3200 I2CD2
-#define itg3200_addr 0b1101000
+#define itg3200addr 0b1101000
 
 /*
  ******************************************************************************
@@ -123,8 +122,8 @@ static msg_t PollGyroThread(void *arg){
     sem_status = chBSemWaitTimeout(&itg3200_sem, MS2ST(20));
 
     txbuf[0] = GYRO_OUT_DATA;     // register address
-    if (i2c_transmit(&I2CD_itg3200, itg3200_addr, txbuf, 1, rxbuf, 8) == RDY_OK &&
-                                                           sem_status == RDY_OK){
+    if (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK &&
+                                            sem_status == RDY_OK){
       raw_data.gyro_temp = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.gyro_x    = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.gyro_y    = complement2signed(rxbuf[4], rxbuf[5]);
@@ -160,19 +159,19 @@ void init_itg3200(void){
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
-  while (i2c_transmit(&I2CD_itg3200, itg3200_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 1; /* select clock source */
-  while (i2c_transmit(&I2CD_itg3200, itg3200_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   txbuf[0] = GYRO_SMPLRT_DIV;
   txbuf[1] = 9; /* sample rate (1000 / (9 +1)) = 100Hz*/
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота внутреннего фильтра */
   txbuf[3] = 1; /* enable interrupts */
-  while (i2c_transmit(&I2CD_itg3200, itg3200_addr, txbuf, 4, rxbuf, 0) != RDY_OK)
+  while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
     ;
 
   chThdCreateStatic(PollGyroThreadWA,

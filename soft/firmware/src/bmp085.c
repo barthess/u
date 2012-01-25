@@ -11,8 +11,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define I2CD_bmp085         I2CD2
-#define bmp085_addr         0b1110111
+#define bmp085addr          0b1110111
 #define TEMPERATURE_ERROR   0// флаг того, что при измерении температуры произошла ошибка
 #define PRESSURE_ERROR      0// флаг того, что при измерении довления произошла ошибка
 
@@ -141,7 +140,7 @@ ERROR:
 static uint32_t get_temperature(void){
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
-  if (i2c_transmit(&I2CD_bmp085, bmp085_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  if (i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     return TEMPERATURE_ERROR;
 
   /* wait temperature results (datasheet says 4.5 ms) */
@@ -150,7 +149,7 @@ static uint32_t get_temperature(void){
 
   /* read measured value */
   txbuf[0] = BOSCH_ADC_MSB;
-  if (i2c_transmit(&I2CD_bmp085, bmp085_addr, txbuf, 1, rxbuf, 2) != RDY_OK)
+  if (i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 2) != RDY_OK)
     return TEMPERATURE_ERROR;
 
   return (rxbuf[0] << 8) + rxbuf[1];
@@ -163,7 +162,7 @@ static uint32_t get_pressure(void){
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = (0x34 + (OSS<<6));
-  if (i2c_transmit(&I2CD_bmp085, bmp085_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  if (i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     return PRESSURE_ERROR;
 
   /* wait temperature results (datasheet says 25.5 ms) */
@@ -172,7 +171,7 @@ static uint32_t get_pressure(void){
 
   /* acqure pressure */
   txbuf[0] = BOSCH_ADC_MSB;
-  if (i2c_transmit(&I2CD_bmp085, bmp085_addr, txbuf, 1, rxbuf, 3) != RDY_OK)
+  if (i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 3) != RDY_OK)
     return PRESSURE_ERROR;
 
   return ((rxbuf[0] << 16) + (rxbuf[1] << 8) + rxbuf[2]) >> (8 - OSS);
@@ -204,7 +203,7 @@ static msg_t PollBaroThread(void *arg){
 void init_bmp085(void){
 
   txbuf[0] = 0xAA;
-  while(i2c_transmit(&I2CD_bmp085, bmp085_addr, txbuf, 1, rxbuf, 22) != RDY_OK)
+  while(i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22) != RDY_OK)
     ;
   ac1 = (rxbuf[0]  << 8) + rxbuf[1];
   ac2 = (rxbuf[2]  << 8) + rxbuf[3];

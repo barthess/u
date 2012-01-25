@@ -17,8 +17,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define I2CD_max1236 I2CD2
-#define max1236_addr 0b0110100
+#define max1236addr 0b0110100
 
 /**сонар выдает Vcc/1024 вольт на см
  * разрешающая способность АЦП Vcc/4096
@@ -87,7 +86,7 @@ static msg_t PollMax1236Thread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(20);
 
-    if (i2c_receive(&I2CD_max1236, max1236_addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
+    if (i2c_receive(max1236addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
        /* Process the results */
       int16_t max0 = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       int16_t max1 = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
@@ -138,7 +137,7 @@ void init_max1236(void){
   txbuf[0] = 0b11110011;
   txbuf[1] = 0b00000101;
 
-  while(i2c_transmit(&I2CD_max1236, max1236_addr, txbuf, 2, rxbuf, 0) != RDY_OK)
+  while(i2c_transmit(max1236addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
   chThdCreateStatic(PollMax1236ThreadWA,
