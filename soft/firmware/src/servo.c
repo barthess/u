@@ -245,14 +245,28 @@ void CarThrottle(uint8_t angle){
 
   throttle = __USAT((angle - (128 + dz/2)), 8);
   throttle = (throttle * SERVO_MAX) / (128 - dz/2);
-  break_ = (SERVO_MAX * angle) / (128 - dz/2);
-  break_ = __USAT((SERVO_MAX - break_), 16);
+  break_   = (SERVO_MAX * angle) / (128 - dz/2);
+  break_   = __USAT((SERVO_MAX - break_), 16);
 
   cartrottlecfg.current = (uint16_t)(throttle & 0xFFFF);
   carbreakcfg.current   = (uint16_t)(break_   & 0xFFFF);
 
   servo_refresh(&cartrottlecfg);
   servo_refresh(&carbreakcfg);
+}
+
+/**
+ * Поток для обслуживания серв
+ */
+static WORKING_AREA(ServoThreadWA, 256);
+static msg_t ServoThread(void *arg){
+  chRegSetThreadName("Servo");
+  (void)arg;
+
+  while (TRUE) {
+    chThdSleepMilliseconds(250);
+  }
+  return 0;
 }
 
 /**
@@ -277,6 +291,12 @@ void ServoInit(){
 	pwmStart(&PWMD4, &pwm4cfg);
 
 	ServoNeutral();   /* запуск серв в нейтральном положении */
+
+  chThdCreateStatic(ServoThreadWA,
+          sizeof(ServoThreadWA),
+          NORMALPRIO,
+          ServoThread,
+          NULL);
 }
 
 /* внешний API */
