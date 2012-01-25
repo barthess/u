@@ -147,7 +147,7 @@ static const ShellConfig shell_cfg1 = {
 };
 
 static SerialConfig cli_ser_cfg = {
-    115200,
+    BAUDRATE_XBEE,
     0,
     0,
     USART_CR3_CTSE,
