@@ -22,6 +22,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox toservo_mb;
 
 /*
  ******************************************************************************
@@ -52,29 +53,83 @@ static msg_t LinkOutThread(void *arg){
 
   uint8_t buf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
-  Mail* tolinkmailp = NULL;
+  mavlink_message_t *msgp = NULL;
   msg_t tmp = 0;
 
   while (TRUE) {
     chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
-    tolinkmailp = (Mail*)tmp;
-    len = mavlink_msg_to_send_buffer(buf, tolinkmailp->payload);
+    msgp = (mavlink_message_t*)tmp;
+    len = mavlink_msg_to_send_buffer(buf, msgp);
     sdWrite(&LINKSD, buf, len);
+    msgp->magic = 0;/* данные обработаны */
   }
 
   return 0;
 }
 
 
-static WORKING_AREA(LinkInThreadWA, 1024);
+
+
+/**
+ * ѕоток разбора вход€щих данных.
+ * ћавлинк проводит парсинг и валидацию данных.
+ * ћы рассылаем письма по почтовым €щикам.
+ * ѕодтверждение факта приЄма €вл€етс€ обнуленное поле "magic" сообщени€,
+ * в стандарте - 0х55.
+ */
+#define MSG_BUF_LEN 4
+static WORKING_AREA(LinkInThreadWA, 1024 + MSG_BUF_LEN * MAVLINK_MAX_PACKET_LEN);
 static msg_t LinkInThread(void *arg){
   chRegSetThreadName("MAVLinkIn");
   (void)arg;
+
+  mavlink_message_t msg[MSG_BUF_LEN];
+  mavlink_status_t status;
+  uint32_t n, i;
+
+  /* занул€ем поле magic, как знак того, что буфер пустой */
+  for (i = 0; i < MSG_BUF_LEN; i++)
+    msg[i].magic = 0;
+
+  n = 0;
+  i = 0;
+
   while (TRUE) {
-    chThdSleepMilliseconds(666);
+    // Try to get a new message
+    if (mavlink_parse_char(MAVLINK_COMM_0, sdGet(&LINKSD), &(msg[i]), &status)) {
+      // Handle message
+      switch(msg[i].msgid){
+      case MAVLINK_MSG_ID_HEARTBEAT:
+        break;
+      case MAVLINK_MSG_ID_BART_SERVO_TUNING:
+        chMBPost(&toservo_mb, (msg_t)(&msg[i]), TIME_IMMEDIATE);
+        break;
+      default:
+        //Do nothing
+        break;
+      }
+
+      /* ≈сли попали сюда, значит пакет успешно выловлен и брошен в нужный €щик.
+         ¬ыбираем ближайший свободный буфер, в норме это должен быть следующий же. */
+      do {
+        n++;
+        i = n & 3;
+      }
+      while (msg[i].magic != 0);
+
+    }
   }
   return 0;
 }
+
+
+
+
+
+
+
+
+
 
 
 static SerialConfig xbee_ser_cfg = {

@@ -290,17 +290,17 @@ static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
   msg_t status;
-  mavlink_message_t servo_msg;
-  Mail servo_tune_mail = {NULL, &servo_msg};
+  mavlink_message_t mav_msg;
+  mav_msg.magic = 0; /* ноль означает, что данные из буфера забрали */
 
   while (TRUE) {
     chThdSleepMilliseconds(250);
     servo_get_tune_to_mavlink();
     mavlink_msg_bart_servo_tuning_encode(mavlink_system.sysid,
                                          mavlink_system.compid,
-                                         &servo_msg,
+                                         &mav_msg,
                                          &servo_struct);
-    status = chMBPost(&tolink_mb, (msg_t)&servo_tune_mail, TIME_IMMEDIATE);
+    status = chMBPost(&tolink_mb, (msg_t)&mav_msg, TIME_IMMEDIATE);
 
     if (status != RDY_OK)
       chThdSleepMilliseconds(250);

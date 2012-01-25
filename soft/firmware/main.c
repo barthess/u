@@ -57,9 +57,10 @@ BinarySemaphore itg3200_sem;
 
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];
-
 Mailbox tolink_mb;                    /* сообщения для отправки через модем */
 static msg_t tolink_mb_buf[8];
+Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
+static msg_t toservo_mb_buf[1];
 
 /** Переменные для хранения калибровочных данных */
 volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
@@ -119,6 +120,7 @@ int main(void) {
   /* очереди сообщений */
   chMBInit(&autopilot_mb, autopilot_mb_buf, (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb, tolink_mb_buf, (sizeof(tolink_mb_buf)/sizeof(msg_t)));
+  chMBInit(&toservo_mb, toservo_mb_buf, (sizeof(toservo_mb_buf)/sizeof(msg_t)));
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
