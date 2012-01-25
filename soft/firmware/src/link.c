@@ -6,8 +6,8 @@
 #include "message.h"
 
 #include <mavlink.h>
-#include <common.h>
 #include <bart.h>
+#include <common.h>
 
 /*
  ******************************************************************************
@@ -21,7 +21,7 @@
  * EXTERNS
  ******************************************************************************
  */
-//extern LogItem log_item;
+extern Mailbox tolink_mb;
 
 /*
  ******************************************************************************
@@ -37,41 +37,28 @@
  *******************************************************************************
  */
 
+// Define the system type, in this case an airplane
+//static uint8_t system_type     = MAV_TYPE_GROUND_ROVER;
+//static uint8_t autopilot_type  = MAV_AUTOPILOT_GENERIC;
+//static uint8_t system_mode     = MAV_MODE_PREFLIGHT; ///< Booting up
+//static uint32_t custom_mode    = 0;                 ///< Custom mode, can be defined by user/adopter
+//static uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
 
 
-
-
-
-static WORKING_AREA(LinkThreadWA, 1024);
-static msg_t LinkThread(void *arg){
-  chRegSetThreadName("MAVLink");
+static WORKING_AREA(LinkOutThreadWA, 1024);
+static msg_t LinkOutThread(void *arg){
+  chRegSetThreadName("MAVLinkOut");
   (void)arg;
 
-  mavlink_system_t mavlink_system;
-
-  mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
-  mavlink_system.compid = MAV_COMP_ID_IMU;     ///< The component sending the message is the IMU, it could be also a Linux process
-  mavlink_system.type   = MAV_TYPE_FIXED_WING;   ///< This system is an airplane / fixed wing
-
-  // Define the system type, in this case an airplane
-//  uint8_t system_type     = MAV_TYPE_GROUND_ROVER;
-//  uint8_t autopilot_type  = MAV_AUTOPILOT_GENERIC;
-//  uint8_t system_mode     = MAV_MODE_PREFLIGHT; ///< Booting up
-//  uint32_t custom_mode    = 0;                 ///< Custom mode, can be defined by user/adopter
-//  uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
-
-  // Initialize the required buffers
-  mavlink_message_t msg;
   uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-
-  mavlink_bart_servo_tuning_t raw;
-
   uint16_t len = 0;
-  while (TRUE) {
-    chThdSleepMilliseconds(40);
+  Mail* tolinkmailp = NULL;
+  msg_t tmp = 0;
 
-    mavlink_msg_uvvu_bart_servo_tuning_encode(mavlink_system.sysid, mavlink_system.compid, &msg, &raw);
-    len = mavlink_msg_to_send_buffer(buf, &msg);
+  while (TRUE) {
+    chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
+    tolinkmailp = (Mail*)tmp;
+    len = mavlink_msg_to_send_buffer(buf, tolinkmailp->payload);
     sdWrite(&LINKSD, buf, len);
   }
 
@@ -79,6 +66,15 @@ static msg_t LinkThread(void *arg){
 }
 
 
+static WORKING_AREA(LinkInThreadWA, 1024);
+static msg_t LinkInThread(void *arg){
+  chRegSetThreadName("MAVLinkIn");
+  (void)arg;
+  while (TRUE) {
+    chThdSleepMilliseconds(666);
+  }
+  return 0;
+}
 
 
 static SerialConfig xbee_ser_cfg = {
@@ -97,10 +93,16 @@ void LinkInit(void){
 
   chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
 
-  chThdCreateStatic(LinkThreadWA,
-          sizeof(LinkThreadWA),
+  chThdCreateStatic(LinkOutThreadWA,
+          sizeof(LinkOutThreadWA),
           NORMALPRIO,
-          LinkThread,
+          LinkOutThread,
+          NULL);
+
+  chThdCreateStatic(LinkInThreadWA,
+          sizeof(LinkInThreadWA),
+          NORMALPRIO,
+          LinkInThread,
           NULL);
 }
 

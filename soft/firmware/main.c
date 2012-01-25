@@ -30,6 +30,10 @@
 #include "cli.h"
 #include "imu.h"
 
+#include <mavlink.h>
+#include <common.h>
+#include <bart.h>
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -42,7 +46,6 @@ uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
 LogItem log_item;                     /* структура, содержащая запись для лога */
-RoutePoint route_point;               /* структура для более удобной передачи точек по этапу */
 
 BinarySemaphore link_thd_sem;         /* семафор для синхронизации сеансов связи */
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
@@ -62,6 +65,8 @@ static msg_t tolink_mb_buf[8];
 volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
 volatile uint8_t  cal_CurrentOffset;  /* смещение нуля датчика тока в единицах АЦП */
 volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных единиц в децывольты */
+
+mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -106,7 +111,6 @@ int main(void) {
   /* примитивов синхронизации */
   chBSemInit(&link_thd_sem, TRUE);
   chBSemInit(&imu_sem,      TRUE);
-
   chBSemInit(&mag3110_sem,  TRUE);
   chBSemInit(&mma8451_sem,  TRUE);
   chBSemInit(&bmp085_sem,   TRUE);
@@ -116,8 +120,10 @@ int main(void) {
   chMBInit(&autopilot_mb, autopilot_mb_buf, (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb, tolink_mb_buf, (sizeof(tolink_mb_buf)/sizeof(msg_t)));
 
-  /* источники событий */
-  //chEvtInit(&es_adc);
+  /* первоначальная настройка мавлинка */
+  mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
+  mavlink_system.compid = MAV_COMP_ID_IMU;     ///< The component sending the message is the IMU, it could be also a Linux process
+  mavlink_system.type   = MAV_TYPE_FIXED_WING;   ///< This system is an airplane / fixed wing
 
   /* раздача питалова нуждающимся */
   pwr5v_power_on();
@@ -134,7 +140,7 @@ int main(void) {
   ADCInit_pns();
 //  ImuInit();
   GPSInit();
-//  LinkInitXbeeApi();
+  LinkInit();
 //  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
   StorageInit();
 

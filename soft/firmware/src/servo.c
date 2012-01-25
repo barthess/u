@@ -11,15 +11,18 @@
 #include "main.h"
 #include "eeprom.h"
 
+#include <mavlink.h>
+#include <bart.h>
+#include <common.h>
+
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
-extern BinarySemaphore link_thd_sem;
-extern Mailbox eeprommanager_mb;
+extern Mailbox tolink_mb;
+extern mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -40,15 +43,12 @@ extern Mailbox eeprommanager_mb;
 
 /*
  ******************************************************************************
- * PROTOTYPES
- ******************************************************************************
- */
-
-/*
- ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+
+// Initialize the required buffers
+static mavlink_bart_servo_tuning_t servo_struct;
 
 static const PWMConfig pwm1cfg = {
     PWM_FREQ,
@@ -196,9 +196,6 @@ static void servo_set_tune(ServoConfig *scfg, uint8_t *buf){
   scfg->neutral = (buf[n] << 8) + buf[n+1];
 }
 
-/**
- * Read settings from servo config to buffer.
- */
 static void servo_get_tune(ServoConfig *scfg, uint8_t *buf){
   uint8_t n = 0;
 
@@ -211,6 +208,36 @@ static void servo_get_tune(ServoConfig *scfg, uint8_t *buf){
   buf[n]   = (uint8_t)((scfg->neutral) >> 8);
   buf[n+1] = (uint8_t)((scfg->neutral) & 0xFF);
   n += 2;
+}
+
+/**
+ * Read settings from servo config to buffer.
+ */
+static void servo_get_tune_to_mavlink(void){
+  servo_struct.servo1min     = servo1cfg.min;
+  servo_struct.servo1max     = servo1cfg.max;
+  servo_struct.servo1neutral = servo1cfg.neutral;
+  servo_struct.servo2min     = servo2cfg.min;
+  servo_struct.servo2max     = servo2cfg.max;
+  servo_struct.servo2neutral = servo2cfg.neutral;
+  servo_struct.servo3min     = servo3cfg.min;
+  servo_struct.servo3max     = servo3cfg.max;
+  servo_struct.servo3neutral = servo3cfg.neutral;
+  servo_struct.servo4min     = servo4cfg.min;
+  servo_struct.servo4max     = servo4cfg.max;
+  servo_struct.servo4neutral = servo4cfg.neutral;
+  servo_struct.servo5min     = servo5cfg.min;
+  servo_struct.servo5max     = servo5cfg.max;
+  servo_struct.servo5neutral = servo5cfg.neutral;
+  servo_struct.servo6min     = servo6cfg.min;
+  servo_struct.servo6max     = servo6cfg.max;
+  servo_struct.servo6neutral = servo6cfg.neutral;
+  servo_struct.servo7min     = servo7cfg.min;
+  servo_struct.servo7max     = servo7cfg.max;
+  servo_struct.servo7neutral = servo7cfg.neutral;
+  servo_struct.servo8min     = servo8cfg.min;
+  servo_struct.servo8max     = servo8cfg.max;
+  servo_struct.servo8neutral = servo8cfg.neutral;
 }
 
 /*
@@ -258,13 +285,25 @@ void CarThrottle(uint8_t angle){
 /**
  * Поток для обслуживания серв
  */
-static WORKING_AREA(ServoThreadWA, 256);
+static WORKING_AREA(ServoThreadWA, 1024);
 static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
+  msg_t status;
+  mavlink_message_t servo_msg;
+  Mail servo_tune_mail = {NULL, &servo_msg};
 
   while (TRUE) {
     chThdSleepMilliseconds(250);
+    servo_get_tune_to_mavlink();
+    mavlink_msg_bart_servo_tuning_encode(mavlink_system.sysid,
+                                         mavlink_system.compid,
+                                         &servo_msg,
+                                         &servo_struct);
+    status = chMBPost(&tolink_mb, (msg_t)&servo_tune_mail, TIME_IMMEDIATE);
+
+    if (status != RDY_OK)
+      chThdSleepMilliseconds(250);
   }
   return 0;
 }

@@ -65,15 +65,31 @@
 		</message>
 
 		<message id="155" name="BART_SERVO_TUNING">
-            <description>Tuning parameters for servos (4 uint8_t packed in 1 uint32_t).</description>
-            <field type="uint32_t"     name="servo1">Servo 1 tune parameters</field>
-            <field type="uint32_t"     name="servo2">Servo 2 tune parameters</field>
-            <field type="uint32_t"     name="servo3">Servo 3 tune parameters</field>
-            <field type="uint32_t"     name="servo4">Servo 4 tune parameters</field>
-            <field type="uint32_t"     name="servo5">Servo 5 tune parameters</field>
-            <field type="uint32_t"     name="servo6">Servo 6 tune parameters</field>
-            <field type="uint32_t"     name="servo7">Servo 7 tune parameters</field>
-            <field type="uint32_t"     name="servo8">Servo 8 tune parameters</field>
+            <description>Tuning parameters for servos.</description>
+            <field type="uint16_t"     name="servo1min">Servo 1 tune parameters</field>
+            <field type="uint16_t"     name="servo1max">Servo 1 tune parameters</field>
+			<field type="uint16_t"     name="servo1neutral">Servo 1 tune parameters</field>
+            <field type="uint16_t"     name="servo2min">Servo 2 tune parameters</field>
+            <field type="uint16_t"     name="servo2max">Servo 2 tune parameters</field>
+			<field type="uint16_t"     name="servo2neutral">Servo 2 tune parameters</field>
+            <field type="uint16_t"     name="servo3min">Servo 3 tune parameters</field>
+            <field type="uint16_t"     name="servo3max">Servo 3 tune parameters</field>
+			<field type="uint16_t"     name="servo3neutral">Servo 3 tune parameters</field>
+            <field type="uint16_t"     name="servo4min">Servo 4 tune parameters</field>
+            <field type="uint16_t"     name="servo4max">Servo 4 tune parameters</field>
+			<field type="uint16_t"     name="servo4neutral">Servo 4 tune parameters</field>
+            <field type="uint16_t"     name="servo5min">Servo 5 tune parameters</field>
+            <field type="uint16_t"     name="servo5max">Servo 5 tune parameters</field>
+			<field type="uint16_t"     name="servo5neutral">Servo 5 tune parameters</field>
+            <field type="uint16_t"     name="servo6min">Servo 6 tune parameters</field>
+            <field type="uint16_t"     name="servo6max">Servo 6 tune parameters</field>
+			<field type="uint16_t"     name="servo6neutral">Servo 6 tune parameters</field>
+            <field type="uint16_t"     name="servo7min">Servo 7 tune parameters</field>
+            <field type="uint16_t"     name="servo7max">Servo 7 tune parameters</field>
+			<field type="uint16_t"     name="servo7neutral">Servo 7 tune parameters</field>
+            <field type="uint16_t"     name="servo8min">Servo 8 tune parameters</field>
+            <field type="uint16_t"     name="servo8max">Servo 8 tune parameters</field>
+            <field type="uint16_t"     name="servo8neutral">Servo 8 tune parameters</field>
 		</message>
 
     </messages>

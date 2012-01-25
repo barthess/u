@@ -1,71 +1,5 @@
-/*
- * message.h
- *
- *  Created on: 24.03.2011
- *      Author: barthess
- *
- *  Файл описывает всякие глобальные структуры данных
- */
 #ifndef MESSAGE_H_
 #define MESSAGE_H_
-
-#define HEADER_LENGTH 2
-#define LENGTH_LENGTH 1
-#define CRC_LENGTH 1 // 1 байт
-// масимальная длинна данных
-#define FRAME_LENGTH (64 - LENGTH_LENGTH - HEADER_LENGTH - CRC_LENGTH)
-
-// смещения служебных данных
-#define HEADER_OFFSET 0
-#define LENGTH_OFFSET (HEADER_OFFSET + HEADER_LENGTH)
-
-#define FRAME_OFFSET (LENGTH_OFFSET + LENGTH_LENGTH)
-
-// буфер под входящие данные
-#define UART_BUF_DEPTH (FRAME_LENGTH + CRC_LENGTH + LENGTH_LENGTH + HEADER_LENGTH)
-
-
-/*
- * Допустимые идентификаторы пакетов
- */
-typedef enum {
-  TEST           = 0, /* Тестовый пакет, может быть что угодно */
-  MANUALDRIVING  = 1, /* Пакет с данными ручного управления */
-  TELEMETRY      = 2, /* Телеметрия */
-  RAWDATA        = 3, /* Структура данных для отладки */
-  LOGITEM        = 4, /* Структура данных из тех, что пишется в EEPROM */
-  ROUTEPOINT     = 5, /* Точка маршрута */
-  CONTROL        = 6, /* Переключение режимов на лету */
-  SETTINGS_SERVO = 7, /* Настройки серв */
-  SETTINGS_OTHER = 8, /* Настройки остальной хрени */
-  DATE           = 9, /* Установка времени */
-} packet_id;
-
-
-/**
- * Направление данных.
- * Применяется только в пакетах, входящих в кунээску.
- */
-typedef enum {
-  READ  = 0,
-  WRITE = 1,
-} packet_direction;
-
-
-/*
- * Наверх.
- * Данные ручного управления с земли.
- */
-typedef struct ManualDriving ManualDriving;
-struct ManualDriving {
-  uint8_t aileron;
-  uint8_t elevator;
-  uint8_t throttle;
-  uint8_t rudder;
-
-  // переключатели. Пока что просто пустышка.
-//  bool_t self_annihilation;
-};
 
 
 
@@ -186,49 +120,14 @@ struct LogItem{
   int8_t  temp_onboard;       /* температура c tmp75. Целые градусы. */
 };
 
-/**
- * Двунаправленный. 
- * Точка маршрута. Одна точка на сообщение.  При запросе точки необходимо
- * прислать ее номер. Остальные поля тоже должны быть, но их содержимое будет
- * проигнорировано. Рекомендуется установить их содержимое в ноль.
- */
-typedef struct RoutePoint RoutePoint;
-struct RoutePoint{
-  // широта, долгота, высота (TODO: над уровнем хуй знает чего, надо уточнять)
-  int32_t latitude; // in units of 10^(-5) degrees
-  int32_t longitude;// in units of 10^(-5) degrees
-  int16_t altitude; // метры
-
-  // скорость.
-  uint8_t speed; //TODO: относительно воздуха или земли. Уточнить
-  // номер точки.
-  uint8_t number;
-  // контрольная сумма точки
-  uint8_t crc;
-};
 
 
-/*
- * Наверх. 
- * Пакеты для переключения режимов ПОНИЭС (автопилот\ручное, автоматическая
- * выдача данных\по запросу и т.д. и т.п.)
- */
-typedef struct Control Control;
-struct Control{
-  // переключатель на ручное управление
-  bool_t manual_driving;
-  // автоматическое присылание телеметрии
-  bool_t telemetry_auto_send;
-  // автоматический подбор скорости для минимального энергопотребления
-  // при этом скорости, заданные в RoutePoint игнорируются
-  bool_t power_saving;
-};
 
 /**
- * структура определяет формат сообщений для менеджера xbee.
+ * структура определяет формат сообщений типа "письмо" для обмена данными.
  */
-typedef struct XbeeMsg XbeeMsg;
-struct XbeeMsg{
+typedef struct Mail Mail;
+struct Mail{
   /**
    * Указатель на почтовый ящик, в который надо прислать подтверждение
    * успешного выполнения. Аналогия обратного адреса на конверте письма.
@@ -241,20 +140,9 @@ struct XbeeMsg{
    * стороной, указатель устанавливается в NULL. Это будет сигналом для
    * дающей стороны.
    */
-  uint8_t *bufp;
-  /**
-   * сколько байт транзакция
-   * @details старший байт является признаком R/W
-   *          0 - write
-   *          1 - read
-   *          точно так же, как и для I2C
-   */
-  uint16_t  len;
-  /**
-   * Идентификатор пакета.
-   */
-  packet_id id;
+  void *payload;
 };
+
 
 
 
