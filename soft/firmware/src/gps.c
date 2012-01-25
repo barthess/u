@@ -42,7 +42,7 @@ including, the "$" and "*".
 
 
 // указатель на последовательный драйвер, через который подключен gps
-#define SDGPS SD1
+#define GPSSD SD1
 
 
 extern RawData raw_data;
@@ -75,22 +75,22 @@ static msg_t gpsRxThread(void *arg){
 
 EMPTY:
 		n = 0;
-		while(sdGet(&SDGPS) != '$')
+		while(sdGet(&GPSSD) != '$')
 			; // читаем из буфера до тех пор, пока не найдем знак бакса
 		goto TALKER;
 
 TALKER:
-		n = sdGet(&SDGPS) << 8;
-		n = n + sdGet(&SDGPS);
+		n = sdGet(&GPSSD) << 8;
+		n = n + sdGet(&GPSSD);
 		if (n != GP_TALKER)
 			goto EMPTY;
 		else
 			goto SENTENCE;
 
 SENTENCE: // определим тип сообщения
-		n = sdGet(&SDGPS) << 16;
-		n = n + (sdGet(&SDGPS) << 8);
-		n = n + sdGet(&SDGPS);
+		n = sdGet(&GPSSD) << 16;
+		n = n + (sdGet(&GPSSD) << 8);
+		n = n + sdGet(&GPSSD);
 		if (n == GGA_SENTENCE)
 			goto GGA;
 		if (n == RMC_SENTENCE)
@@ -118,14 +118,14 @@ uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
 		i++;
 		if (i >= GPS_MSG_LEN)   /* если данных больше, чем поместится в буфер длинной len */
 			return 1;
-		byte = sdGet(&SDGPS);
+		byte = sdGet(&GPSSD);
 		if (byte == '*')        /* как только натыкаемся на * - выходим из цикла */
 			break;
 		checksum ^= byte;
 		*buf++ = byte;
 	}
-	checksum ^= from_hex(sdGet(&SDGPS)) * 16; /* читаем 2 байта контрольной суммы */
-	checksum ^= from_hex(sdGet(&SDGPS));
+	checksum ^= from_hex(sdGet(&GPSSD)) * 16; /* читаем 2 байта контрольной суммы */
+	checksum ^= from_hex(sdGet(&GPSSD));
 
 	if(checksum == 0)    /* сошлась */
 		return 0;
@@ -338,7 +338,7 @@ static SerialConfig gps_ser_cfg = {
 void GPSInit(void){
   /* запуск на дефолтной частоте */
   gps_ser_cfg.sc_speed = GPS_DEFAULT_BAUDRATE;
-  sdStart(&SDGPS, &gps_ser_cfg);
+  sdStart(&GPSSD, &gps_ser_cfg);
 
   /* смена скорости ПРИЁМНИКА на повышенную */
   //  sdWrite(&SDGPS, GPS_HI_BAUDRATE_STR, GPS_HI_BAUDRATE_STR_LEN);
@@ -350,16 +350,16 @@ void GPSInit(void){
   //  sdStart(&SDGPS, &gps_ser_cfg);
 
   /* установка выдачи только GGA и RMC */
-  sdWrite(&SDGPS, GPS_MSG_STR, GPS_MSG_STR_LEN);
+  sdWrite(&GPSSD, GPS_MSG_STR, GPS_MSG_STR_LEN);
   chThdSleepMilliseconds(byte2msec(GPS_MSG_STR_LEN, GPS_DEFAULT_BAUDRATE));
 
   /* установка частоты обновления 5 Гц */
-  sdWrite(&SDGPS, GPS_FIX_PERIOD_STR, GPS_FIX_PERIOD_STR_LEN);
+  sdWrite(&GPSSD, GPS_FIX_PERIOD_STR, GPS_FIX_PERIOD_STR_LEN);
   chThdSleepMilliseconds(byte2msec(GPS_FIX_PERIOD_STR_LEN, GPS_DEFAULT_BAUDRATE));
 
   /* зачистка входной очереди после всех манипуляций. На всякий случай */
   chSysLock();
-  chIQResetI( &(SDGPS.iqueue));
+  chIQResetI( &(GPSSD.iqueue));
   chSysUnlock();
 
   chThdCreateStatic(gpsRxThreadWA,
