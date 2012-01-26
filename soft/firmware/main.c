@@ -124,8 +124,10 @@ int main(void) {
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
-  mavlink_system.compid = MAV_COMP_ID_IMU;     ///< The component sending the message is the IMU, it could be also a Linux process
-  mavlink_system.type   = MAV_TYPE_FIXED_WING;   ///< This system is an airplane / fixed wing
+  mavlink_system.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
+  mavlink_system.type   = MAV_TYPE_GROUND_ROVER;
+  mavlink_system.state  = 0;
+  mavlink_system.mode   = 0;
 
   /* раздача питалова нуждающимся */
   pwr5v_power_on();

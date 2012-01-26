@@ -61,7 +61,7 @@ static msg_t LinkOutThread(void *arg){
     msgp = (mavlink_message_t*)tmp;
     len = mavlink_msg_to_send_buffer(buf, msgp);
     sdWrite(&LINKSD, buf, len);
-    msgp->magic = 0;/* данные обработаны */
+    msgp->magic = 0;/* данные засунуты в канал связи */
   }
 
   return 0;

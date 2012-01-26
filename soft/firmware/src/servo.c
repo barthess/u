@@ -20,6 +20,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 extern RawData raw_data;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
@@ -47,8 +48,8 @@ extern mavlink_system_t mavlink_system;
  ******************************************************************************
  */
 
-// Initialize the required buffers
 static mavlink_bart_servo_tuning_t servo_struct;
+
 
 static const PWMConfig pwm1cfg = {
     PWM_FREQ,
@@ -186,6 +187,7 @@ static ServoConfig carbreakcfg = {// TIM1
 /**
  * Apply new settings to servo config.
  */
+/*
 static void servo_set_tune(ServoConfig *scfg, uint8_t *buf){
   uint8_t n = 0;
 
@@ -195,7 +197,6 @@ static void servo_set_tune(ServoConfig *scfg, uint8_t *buf){
   n += 2;
   scfg->neutral = (buf[n] << 8) + buf[n+1];
 }
-
 static void servo_get_tune(ServoConfig *scfg, uint8_t *buf){
   uint8_t n = 0;
 
@@ -209,10 +210,11 @@ static void servo_get_tune(ServoConfig *scfg, uint8_t *buf){
   buf[n+1] = (uint8_t)((scfg->neutral) & 0xFF);
   n += 2;
 }
+*/
 
 /**
  * Read settings from servo config to buffer.
- */
+ *//*
 static void servo_get_tune_to_mavlink(void){
   servo_struct.servo1min     = servo1cfg.min;
   servo_struct.servo1max     = servo1cfg.max;
@@ -238,7 +240,7 @@ static void servo_get_tune_to_mavlink(void){
   servo_struct.servo8min     = servo8cfg.min;
   servo_struct.servo8max     = servo8cfg.max;
   servo_struct.servo8neutral = servo8cfg.neutral;
-}
+}*/
 
 /*
  * ”станавливает угол сервы (поле current в структуре конфига)
@@ -283,27 +285,52 @@ void CarThrottle(uint8_t angle){
 }
 
 /**
+ * макро-сокращение дл€ удобства
+ */
+#define hearbeat(msg) {                                                       \
+    mavlink_msg_heartbeat_pack(mavlink_system.sysid,                          \
+                               MAV_COMP_ID_SERVOBLOCK,                        \
+                               (msg),                                         \
+                               mavlink_system.type,                           \
+                               0,                                             \
+                               mavlink_system.mode,                           \
+                               0,                                             \
+                               mavlink_system.state);                         \
+}
+
+/**
  * ѕоток дл€ обслуживани€ серв
  */
 static WORKING_AREA(ServoThreadWA, 1024);
 static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
-  msg_t status;
-  mavlink_message_t mav_msg;
-  mav_msg.magic = 0; /* ноль означает, что данные из буфера забрали */
+
+  mavlink_message_t heartbeat_msg;
+  heartbeat_msg.magic = 0; /* ноль означает, что данные из буфера забрали */
 
   while (TRUE) {
-    chThdSleepMilliseconds(250);
-    servo_get_tune_to_mavlink();
-    mavlink_msg_bart_servo_tuning_encode(mavlink_system.sysid,
-                                         mavlink_system.compid,
-                                         &mav_msg,
-                                         &servo_struct);
-    status = chMBPost(&tolink_mb, (msg_t)&mav_msg, TIME_IMMEDIATE);
 
-    if (status != RDY_OK)
-      chThdSleepMilliseconds(250);
+    chThdSleepMilliseconds(1000);
+    if (heartbeat_msg.magic != 0){
+      chSysLock();
+      GlobalFlags |= POSTAGE_FAILED;
+      chSysUnlock();
+    }
+    hearbeat(&heartbeat_msg);
+    chMBPost(&tolink_mb, (msg_t)&heartbeat_msg, TIME_IMMEDIATE);
+
+//mavlink_message_t mav_msg;
+//    chThdSleepMilliseconds(250);
+//    servo_get_tune_to_mavlink();
+//    mavlink_msg_bart_servo_tuning_encode (mavlink_system.sysid,
+//                                          MAV_COMP_ID_SERVOBLOCK,
+//                                          &mav_msg,
+//                                          &servo_struct);
+//    status = chMBPost(&tolink_mb, (msg_t)&mav_msg, TIME_IMMEDIATE);
+//
+//    if (status != RDY_OK)
+//      chThdSleepMilliseconds(250);
   }
   return 0;
 }
