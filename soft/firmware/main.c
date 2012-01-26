@@ -47,7 +47,6 @@ uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
 LogItem log_item;                     /* структура, содержащая запись для лога */
 
-BinarySemaphore link_thd_sem;         /* семафор для синхронизации сеансов связи */
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
 
 BinarySemaphore mag3110_sem;
@@ -110,7 +109,6 @@ int main(void) {
   //chThdCreateStatic(waBlink, sizeof(waBlink), LOWPRIO, Blink, NULL);
 
   /* примитивов синхронизации */
-  chBSemInit(&link_thd_sem, TRUE);
   chBSemInit(&imu_sem,      TRUE);
   chBSemInit(&mag3110_sem,  TRUE);
   chBSemInit(&mma8451_sem,  TRUE);
