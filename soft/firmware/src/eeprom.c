@@ -89,6 +89,12 @@ proceed with the next Read or Write command.
   (txbuf)[1] = ((uint8_t)(addr & 0xFF));                      \
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
 /**
  * @brief   EEPROM read routine.
  *

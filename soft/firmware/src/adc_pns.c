@@ -122,7 +122,11 @@ static msg_t PollADCThread(void *arg){
   return 0;
 }
 
-
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 void ADCInit_pns(void){
 
   adcStart(&ADCD1, &adccfg);

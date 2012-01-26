@@ -200,9 +200,13 @@ static const EXTConfig extcfg = {
 };
 
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 
-
-inline void ExtiInit(void){
+void ExtiInit(void){
   chSysLock();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   chSysUnlock();

@@ -15,6 +15,13 @@
 #define TEMPERATURE_ERROR   0// флаг того, что при измерении температуры произошла ошибка
 #define PRESSURE_ERROR      0// флаг того, что при измерении довления произошла ошибка
 
+// sensor precision (see datasheet)
+#define OSS 3 // 3 -- max
+
+// filtering constants
+#define N_AWG      32 // Averaging values count
+#define FIX_FORMAT 5  // 32 == 2^5 to replace division by shift
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -37,16 +44,11 @@ static uint8_t txbuf[BMP085_TX_DEPTH] = {0x55,0x55};
 static int16_t  ac1=0, ac2=0, ac3=0, b1=0, b2=0, mb=0, mc=0, md=0;
 static uint16_t ac4=0, ac5=0, ac6=0;
 
-// sensor precision (see datasheet)
-#define OSS 3 // 3 -- max
-
 // uncompensated temperature and pressure values
 static uint32_t up = 0, ut = 0;
 
-// filtering constants
-#define N_AWG      32 // Averaging values count
-#define FIX_FORMAT 5  // 32 == 2^5 to replace division by shift
-static uint32_t pres_awg = 10UL << FIX_FORMAT; // aweraged value
+// aweraged value
+static uint32_t pres_awg = 10UL << FIX_FORMAT;
 
 /*
  *******************************************************************************
@@ -181,7 +183,6 @@ static uint32_t get_pressure(void){
  * Polling thread
  */
 static WORKING_AREA(PollBaroThreadWA, 256);
-
 static msg_t PollBaroThread(void *arg){
   chRegSetThreadName("PollBaro");
   (void)arg;
@@ -199,7 +200,11 @@ static msg_t PollBaroThread(void *arg){
   return 0;
 }
 
-
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 void init_bmp085(void){
 
   txbuf[0] = 0xAA;

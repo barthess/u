@@ -19,9 +19,7 @@ typedef struct ServoConfig ServoConfig;
 
 void ServoInit(void);
 void ServoNeutral(void);
-
 void CarThrottle(uint8_t angle);
-
 void Servo1SetAngle(uint8_t angle);
 void Servo2SetAngle(uint8_t angle);
 void Servo3SetAngle(uint8_t angle);

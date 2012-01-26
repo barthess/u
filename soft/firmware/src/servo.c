@@ -263,6 +263,26 @@ static void servo_set_angle(ServoConfig *scfg, uint8_t angle){
   servo_refresh(scfg);
 }
 
+/**
+ * Поток для обслуживания серв
+ */
+static WORKING_AREA(ServoThreadWA, 1024);
+static msg_t ServoThread(void *arg){
+  chRegSetThreadName("Servo");
+  (void)arg;
+
+  while (TRUE) {
+    chThdSleepMilliseconds(1000);
+  }
+  return 0;
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
 /* для установки газа/тормоза машинки, размазанного на 2 канала */
 void CarThrottle(uint8_t angle){
   uint8_t dz = 32; /* мертвая зона */
@@ -279,21 +299,6 @@ void CarThrottle(uint8_t angle){
 
   servo_refresh(&cartrottlecfg);
   servo_refresh(&carbreakcfg);
-}
-
-
-/**
- * Поток для обслуживания серв
- */
-static WORKING_AREA(ServoThreadWA, 1024);
-static msg_t ServoThread(void *arg){
-  chRegSetThreadName("Servo");
-  (void)arg;
-
-  while (TRUE) {
-    chThdSleepMilliseconds(1000);
-  }
-  return 0;
 }
 
 /**

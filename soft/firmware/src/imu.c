@@ -69,7 +69,11 @@ static msg_t Imu(void *arg) {
   return 0;
 }
 
-
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 void ImuInit(void){
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
 }

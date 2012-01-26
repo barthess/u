@@ -11,6 +11,11 @@
 #include "storage.h"
 #include "message.h"
 
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
 #define SDC_POLLING_INTERVAL            20
 #define SDC_POLLING_DELAY               5
 
@@ -20,9 +25,11 @@
  ******************************************************************************
  */
 
-/*===========================================================================*/
-/* Card insertion monitor.                                                   */
-/*===========================================================================*/
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 
 /* SDIO configuration. */
 static const SDCConfig sdccfg = {
@@ -37,6 +44,14 @@ static bool_t fs_ready = FALSE;
 
 /* Generic large buffer.*/
 static uint8_t fbuff[2048];
+
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * LOCAL FUNCTIONS
+ *******************************************************************************
+ *******************************************************************************
+ */
 
 /**
  * @brief   Inserion monitor function.
@@ -68,7 +83,7 @@ bool_t sdc_lld_is_write_protected(SDCDriver *sdcp) {
 /*
  * SD card insertion event.
  */
-static void InsertHandler(void) {
+static void insert_handler(void) {
   FRESULT err;
 
   sdcStart(&SDCD1, &sdccfg);
@@ -90,7 +105,7 @@ static void InsertHandler(void) {
 /*
  * SD card removal event.
  */
-static void RemoveHandler(void) {
+static void remove_handler(void) {
 
   if (fs_ready == TRUE){
     f_mount(0, NULL);
@@ -104,9 +119,42 @@ static void RemoveHandler(void) {
   fs_ready = FALSE;
 }
 
-/*===========================================================================*/
-/* FatFs related.                                                            */
-/*===========================================================================*/
+/**
+ * Monitors presence of SD card in slot.
+ */
+static WORKING_AREA(CardMonitorThreadWA, 1024);
+static msg_t CardMonitorThread(void *arg){
+  (void)arg;
+  chRegSetThreadName("CardMonitor");
+  unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
+
+  while TRUE{
+    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
+
+    if (cnt > 0) {
+      if (sdcIsCardInserted(&SDCD1)) {
+        if (--cnt == 0) {
+          insert_handler();
+        }
+      }
+      else
+        cnt = SDC_POLLING_INTERVAL;
+    }
+    else {
+      if (!sdcIsCardInserted(&SDCD1)) {
+        cnt = SDC_POLLING_INTERVAL;
+        remove_handler();
+      }
+    }
+  }
+  return 0;
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 
 static FRESULT scan_files(BaseChannel *chp, char *path) {
   FRESULT res;
@@ -140,10 +188,6 @@ static FRESULT scan_files(BaseChannel *chp, char *path) {
   }
   return res;
 }
-
-/*===========================================================================*/
-/* Command line related.                                                     */
-/*===========================================================================*/
 
 /**
  * Get file tree.
@@ -272,37 +316,6 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
 }
 
 /**
- * Monitors presence of SD card in slot.
- */
-static WORKING_AREA(CardMonitorThreadWA, 1024);
-static msg_t CardMonitorThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("CardMonitor");
-  unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
-
-  while TRUE{
-    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
-
-    if (cnt > 0) {
-      if (sdcIsCardInserted(&SDCD1)) {
-        if (--cnt == 0) {
-          InsertHandler();
-        }
-      }
-      else
-        cnt = SDC_POLLING_INTERVAL;
-    }
-    else {
-      if (!sdcIsCardInserted(&SDCD1)) {
-        cnt = SDC_POLLING_INTERVAL;
-        RemoveHandler();
-      }
-    }
-  }
-  return 0;
-}
-
-/**
  * Init.
  */
 void StorageInit(void){
@@ -311,9 +324,6 @@ void StorageInit(void){
           NORMALPRIO,
           CardMonitorThread,
           NULL);
-
 }
-
-
 
 

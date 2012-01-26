@@ -63,6 +63,11 @@ static msg_t PollTmp75Thread(void *arg){
   return 0;
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 
 /*Accessing a particular register on the TMP175 and TMP75
 is accomplished by writing the appropriate value to the

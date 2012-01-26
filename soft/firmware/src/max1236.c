@@ -121,6 +121,11 @@ static msg_t PollMax1236Thread(void *arg) {
   return 0;
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 
 /**
  * see datasheet on page 13 how to initialize ADC

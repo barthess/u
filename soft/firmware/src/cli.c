@@ -27,13 +27,28 @@
 extern RawData raw_data;
 //extern RTCTime timespec;
 
-/*===========================================================================*/
-/* Command line related.                                                     */
-/*===========================================================================*/
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
+
 static struct tm timp;
 
+static SerialConfig cli_ser_cfg = {
+    BAUDRATE_XBEE,
+    0,
+    0,
+    USART_CR3_CTSE,
+};
 
-
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * LOCAL FUNCTIONS
+ *******************************************************************************
+ *******************************************************************************
+ */
 static void cmd_dateget(BaseChannel *chp, int argc, char *argv[]){
   time_t time = 0;
 
@@ -140,20 +155,18 @@ static const ShellCommand commands[] = {
   {NULL, NULL}
 };
 
+
 static const ShellConfig shell_cfg1 = {
   (BaseChannel *)&SDCLI,
   commands
 };
 
-static SerialConfig cli_ser_cfg = {
-    BAUDRATE_XBEE,
-    0,
-    0,
-    USART_CR3_CTSE,
-};
-
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 static WORKING_AREA(waShell, 2048);
-
 void CliInit(void){
   sdStart(&SDCLI, &cli_ser_cfg);
 

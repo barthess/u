@@ -20,7 +20,11 @@ static const I2CConfig i2cfg2 = {
     FAST_DUTY_CYCLE_16_9, //STD_DUTY_CYCLE, //
 };
 
-
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
 void I2CInit_pns(void){
 
   i2cStart(&I2CD2, &i2cfg2);
