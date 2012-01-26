@@ -10,6 +10,8 @@
 #define EEPROM_FAILED   (1UL << 3)  /* единица означает сбой в EEPROM */
 #define POSTAGE_FAILED  (1UL << 4)  /* —бой в системе отправки сообщений */
 
+#define set_flag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
+#define clear_flag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
 /******************************************************************
  * глобальные дефайны
  ******************************************************************/

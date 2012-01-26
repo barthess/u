@@ -50,6 +50,8 @@ static msg_t Imu(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if (tolink_mail.payload == NULL){
+      clear_flag(POSTAGE_FAILED);
+
       mavlink_raw_imu_struct.time_usec = 0;
       mavlink_raw_imu_struct.xacc = raw_data.acceleration_x;
       mavlink_raw_imu_struct.yacc = raw_data.acceleration_y;
@@ -64,7 +66,8 @@ static msg_t Imu(void *arg) {
       chMBPost(&tolink_mb, (msg_t)&tolink_mail, TIME_IMMEDIATE);
     }
     else
-      GlobalFlags |= POSTAGE_FAILED;
+      set_flag(POSTAGE_FAILED);
+
   }
   return 0;
 }

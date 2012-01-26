@@ -53,6 +53,8 @@ static msg_t SanityControlThread(void *arg) {
     chThdSleepMilliseconds(950);
 
     if (tolink_mail.payload == NULL){
+      clear_flag(POSTAGE_FAILED);
+
       tolink_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail, TIME_IMMEDIATE);
 
@@ -60,7 +62,7 @@ static msg_t SanityControlThread(void *arg) {
       chThdSleepMilliseconds(50);
     }
     else
-      GlobalFlags |= POSTAGE_FAILED;
+      set_flag(POSTAGE_FAILED);
 
   }
   return 0;
