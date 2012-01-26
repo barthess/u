@@ -40,7 +40,7 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 /**
  * ѕоток обработки инерациальных данных
  */
-static WORKING_AREA(waImu, 512);
+static WORKING_AREA(waImu, 256);
 static msg_t Imu(void *arg) {
   (void)arg;
   chRegSetThreadName("IMU");

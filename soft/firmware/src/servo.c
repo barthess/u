@@ -266,7 +266,7 @@ static void servo_set_angle(ServoConfig *scfg, uint8_t angle){
 /**
  * Поток для обслуживания серв
  */
-static WORKING_AREA(ServoThreadWA, 1024);
+static WORKING_AREA(ServoThreadWA, 256);
 static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
