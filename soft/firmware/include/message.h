@@ -29,7 +29,7 @@ struct RawData{
   // значения с внешнего АЦП
   uint16_t pressure_dynamic;
   uint16_t altitude_sonar;
-  //магнитомерт
+  //магнитометр
   int16_t magnetic_x;
   int16_t magnetic_y;
   int16_t magnetic_z;
