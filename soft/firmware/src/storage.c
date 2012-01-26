@@ -122,7 +122,7 @@ static void remove_handler(void) {
 /**
  * Monitors presence of SD card in slot.
  */
-static WORKING_AREA(CardMonitorThreadWA, 1024);
+static WORKING_AREA(CardMonitorThreadWA, 256);
 static msg_t CardMonitorThread(void *arg){
   (void)arg;
   chRegSetThreadName("CardMonitor");
@@ -321,7 +321,7 @@ void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
 void StorageInit(void){
   chThdCreateStatic(CardMonitorThreadWA,
           sizeof(CardMonitorThreadWA),
-          NORMALPRIO,
+          NORMALPRIO - 5,
           CardMonitorThread,
           NULL);
 }
