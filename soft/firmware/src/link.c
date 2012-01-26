@@ -9,8 +9,6 @@
 #include <bart.h>
 #include <common.h>
 
-/* test string */
-/* new test string */
 /*
  ******************************************************************************
  * DEFINES
