@@ -14,6 +14,7 @@
 #include "hal.h"
 
 #include "main.h"
+#include "sanity.h"
 #include "irq_storm.h"
 #include "i2c_pns.h"
 #include "adc_pns.h"
@@ -66,7 +67,11 @@ volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных едини
 volatile uint8_t  cal_CurrentOffset;  /* смещение нуля датчика тока в единицах АЦП */
 volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных единиц в децывольты */
 
-mavlink_system_t mavlink_system;
+/* переменные, касающиеся мавлинка */
+mavlink_system_t            mavlink_system;
+mavlink_raw_imu_t           mavlink_raw_imu_struct;
+mavlink_bart_servo_tuning_t mavlink_bart_servo_tuning_struct;
+mavlink_heartbeat_t         mavlink_heartbeat_struct;
 
 /*
  ******************************************************************************
@@ -80,20 +85,6 @@ mavlink_system_t mavlink_system;
  *******************************************************************************
  *******************************************************************************
  */
-
-/* Red LEDs blinker thread. */
-//static WORKING_AREA(waBlink, 128);
-//static msg_t Blink(void *arg) {
-//  chRegSetThreadName("Blink");
-//  (void)arg;
-//  while (TRUE) {
-//    palClearPad(IOPORT3, GPIOC_LED);
-//    chThdSleepMilliseconds(500);
-//    palSetPad(IOPORT3, GPIOC_LED);
-//    chThdSleepMilliseconds(500);
-//  }
-//  return 0;
-//}
 
 
 int main(void) {
@@ -124,8 +115,8 @@ int main(void) {
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
   mavlink_system.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
   mavlink_system.type   = MAV_TYPE_GROUND_ROVER;
-  mavlink_system.state  = 0;
-  mavlink_system.mode   = 0;
+  mavlink_system.state  = MAV_STATE_UNINIT;
+  mavlink_system.mode   = MAV_MODE_PREFLIGHT;
 
   /* раздача питалова нуждающимся */
   pwr5v_power_on();
@@ -134,6 +125,7 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
+  SanityControlInit();
   ExtiInit(); /* I2C датчики используют его */
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
@@ -152,8 +144,7 @@ int main(void) {
   #endif /* ENABLE_IRQ_STORM */
 
   while (TRUE){
-    chThdSleepMilliseconds(200);
-    palTogglePad(GPIOB, GPIOB_LED_R);
+    chThdSleepMilliseconds(2000);
   }
 
   return 0;

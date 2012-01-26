@@ -24,6 +24,8 @@
 extern Mailbox tolink_mb;
 extern Mailbox toservo_mb;
 
+extern mavlink_system_t mavlink_system;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -46,22 +48,63 @@ extern Mailbox toservo_mb;
 //static uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
 
 
+/**
+ * Определяет, что пришло в почтовом ящике.
+ * Пакует в содержимое ящика в мавлинковое сообщение.
+ * ЗаNULLяет указатель на содержимое, как знак того, что данные обработаны.
+ */
+static uint16_t pack_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
+  uint16_t len;
+
+  switch(mailp->invoice){
+
+  case MAVLINK_MSG_ID_HEARTBEAT:
+    len = mavlink_msg_heartbeat_encode(mavlink_system.sysid,
+                                       MAV_COMP_ID_ALL,
+                                       mavlink_msgbuf,
+                                       (const mavlink_heartbeat_t*)(mailp->payload));
+    mailp->payload = NULL;
+    return len;
+    break;
+
+  case MAVLINK_MSG_ID_RAW_IMU:
+    len = mavlink_msg_raw_imu_encode (mavlink_system.sysid,
+                                      MAV_COMP_ID_IMU,
+                                      mavlink_msgbuf,
+                                      (const mavlink_raw_imu_t*)(mailp->payload));
+    mailp->payload = NULL;
+    return len;
+    break;
+
+  default:
+    break;
+  }
+  return 0;
+}
+
+/**
+ * Поток отправки сообещиний через канал связи.
+ */
 static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *arg){
   chRegSetThreadName("MAVLinkOut");
   (void)arg;
 
-  uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+  /* Переменная для формирования сообщения. Используется всеми,
+     поскольку сообещиня обрабатываются по одному. */
+  mavlink_message_t mavlink_msgbuf;
+  /* выходной буфер для отправки данных */
+  uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
-  mavlink_message_t *msgp = NULL;
+  Mail *mailp;
   msg_t tmp = 0;
 
   while (TRUE) {
     chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
-    msgp = (mavlink_message_t*)tmp;
-    len = mavlink_msg_to_send_buffer(buf, msgp);
-    sdWrite(&LINKSD, buf, len);
-    msgp->magic = 0;/* данные засунуты в канал связи */
+    mailp = (Mail*)tmp;
+    pack_mail(mailp, &mavlink_msgbuf);
+    len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
+    sdWrite(&LINKSD, sendbuf, len);
   }
 
   return 0;

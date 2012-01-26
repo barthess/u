@@ -109,8 +109,9 @@ CSRC = $(PORTSRC) \
        src/adc_pns.c \
        src/servo.c \
        src/link.c \
-       #src/imu.c \
-       src/autopilot.c \
+       src/imu.c \
+       src/sanity.c \
+       #src/autopilot.c \
        src/bkp.c \
        src/rtc_pns.c \
        

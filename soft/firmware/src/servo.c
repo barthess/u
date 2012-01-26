@@ -20,10 +20,10 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+//extern uint32_t GlobalFlags;
 extern RawData raw_data;
-extern Mailbox tolink_mb;
-extern mavlink_system_t mavlink_system;
+//extern Mailbox tolink_mb;
+//extern mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -47,9 +47,6 @@ extern mavlink_system_t mavlink_system;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
-static mavlink_bart_servo_tuning_t servo_struct;
-
 
 static const PWMConfig pwm1cfg = {
     PWM_FREQ,
@@ -284,19 +281,6 @@ void CarThrottle(uint8_t angle){
   servo_refresh(&carbreakcfg);
 }
 
-/**
- * макро-сокращение для удобства
- */
-#define hearbeat(msg) {                                                       \
-    mavlink_msg_heartbeat_pack(mavlink_system.sysid,                          \
-                               MAV_COMP_ID_SERVOBLOCK,                        \
-                               (msg),                                         \
-                               mavlink_system.type,                           \
-                               0,                                             \
-                               mavlink_system.mode,                           \
-                               0,                                             \
-                               mavlink_system.state);                         \
-}
 
 /**
  * Поток для обслуживания серв
@@ -306,31 +290,8 @@ static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
 
-  mavlink_message_t heartbeat_msg;
-  heartbeat_msg.magic = 0; /* ноль означает, что данные из буфера забрали */
-
   while (TRUE) {
-
     chThdSleepMilliseconds(1000);
-    if (heartbeat_msg.magic != 0){
-      chSysLock();
-      GlobalFlags |= POSTAGE_FAILED;
-      chSysUnlock();
-    }
-    hearbeat(&heartbeat_msg);
-    chMBPost(&tolink_mb, (msg_t)&heartbeat_msg, TIME_IMMEDIATE);
-
-//mavlink_message_t mav_msg;
-//    chThdSleepMilliseconds(250);
-//    servo_get_tune_to_mavlink();
-//    mavlink_msg_bart_servo_tuning_encode (mavlink_system.sysid,
-//                                          MAV_COMP_ID_SERVOBLOCK,
-//                                          &mav_msg,
-//                                          &servo_struct);
-//    status = chMBPost(&tolink_mb, (msg_t)&mav_msg, TIME_IMMEDIATE);
-//
-//    if (status != RDY_OK)
-//      chThdSleepMilliseconds(250);
   }
   return 0;
 }
@@ -350,7 +311,11 @@ void ServoNeutral(void){
 }
 
 
-void ServoInit(){
+void ServoInit(void){
+
+  /* этот 2 строки нужны только чтобы избавиться от варнинга */
+  pwmStart(&PWMD1, &pwm1carcfg);
+  pwmStop(&PWMD1);
 
   /* по умолчанию ШИМы запускаются с самолетными конфигами */
 	pwmStart(&PWMD1, &pwm1cfg);
