@@ -110,9 +110,6 @@ CSRC = $(PORTSRC) \
        src/servo.c \
        src/link.c \
        #src/imu.c \
-       src/link_xbee_api.c \
-       src/proto_pns.c \
-       src/proto_xbee.c \
        src/autopilot.c \
        src/bkp.c \
        src/rtc_pns.c \
@@ -173,7 +170,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 
 # -lm - это указание линкеру для подключения математической либы.
 # добавлено именно здесь, потому что больше некуда
-MCU  = cortex-m4 #-lm
+MCU  = cortex-m4 -lm
 #MCU  = cortex-m3
 
 #TRGT = arm-elf-

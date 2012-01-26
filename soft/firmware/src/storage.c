@@ -11,8 +11,8 @@
 #include "storage.h"
 #include "message.h"
 
-#define SDC_POLLING_INTERVAL            10
-#define SDC_POLLING_DELAY               10
+#define SDC_POLLING_INTERVAL            20
+#define SDC_POLLING_DELAY               5
 
 /*
  ******************************************************************************
