@@ -49,16 +49,18 @@ static msg_t SanityControlThread(void *arg) {
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 
   while (TRUE) {
+    palClearPad(GPIOB, GPIOB_LED_R);
+    chThdSleepMilliseconds(50);
+    palSetPad(GPIOB, GPIOB_LED_R);
+    chThdSleepMilliseconds(950);
+
     if (tolink_mail.payload == NULL){
       tolink_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail, TIME_IMMEDIATE);
-      palClearPad(GPIOB, GPIOB_LED_R);
-      chThdSleepMilliseconds(100);
-      palSetPad(GPIOB, GPIOB_LED_R);
-      chThdSleepMilliseconds(900);
     }
     else
       GlobalFlags |= POSTAGE_FAILED;
+
   }
   return 0;
 }
