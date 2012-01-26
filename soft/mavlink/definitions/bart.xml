@@ -3,14 +3,12 @@
 <mavlink>
     <include>common.xml</include>
     <enums>
-        <enum name="BART_CUSTOM_MODE">
-            <description>Available UVVU modes</description>
-            <entry name="MODE_AUTOSEND">Automatically send informational packets</entry>
-            <entry name="MODE_PINGPONG">Send data only on requests</entry>
-            <entry name="MODE_CALIBRATION">Setting internal calibration coefficients</entry>
-        </enum>
+		<enum name="MAV_COMPONENT">
+		   <entry value="139" name="MAV_COMP_ID_SERVOBLOCK">
+			   <description>All servos via one unit</description>
+		   </entry>
+		</enum>
     </enums>
-
 
 
     <messages>
