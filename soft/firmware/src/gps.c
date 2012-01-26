@@ -58,14 +58,15 @@ static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
 static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
 
 // для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
-int32_t gps_latitude = 0,     gps_longitude = 0,   gps_altitude = 0;
-int32_t gps_altitude_sep = 0, gps_speed_knots = 0, gps_course = 0;
-
-uint32_t gps_time;
+static int32_t  gps_latitude = 0;
+static int32_t  gps_longitude = 0;
+static int32_t  gps_altitude = 0;
+static int32_t  gps_altitude_sep = 0;
+static int32_t  gps_speed_knots = 0;
+static int32_t  gps_course = 0;
+static uint32_t gps_time = 0;
 
 static WORKING_AREA(gpsRxThreadWA, 256);
-//Thread *gps_rx_tp = NULL;
-__attribute__((noreturn))
 static msg_t gpsRxThread(void *arg){
   chRegSetThreadName("gpsRx");
   (void)arg;
@@ -77,37 +78,30 @@ EMPTY:
 		n = 0;
 		while(sdGet(&GPSSD) != '$')
 			; // читаем из буфера до тех пор, пока не найдем знак бакса
-		goto TALKER;
 
-TALKER:
 		n = sdGet(&GPSSD) << 8;
 		n = n + sdGet(&GPSSD);
 		if (n != GP_TALKER)
 			goto EMPTY;
-		else
-			goto SENTENCE;
 
-SENTENCE: // определим тип сообщения
+		// определим тип сообщения
 		n = sdGet(&GPSSD) << 16;
 		n = n + (sdGet(&GPSSD) << 8);
 		n = n + sdGet(&GPSSD);
-		if (n == GGA_SENTENCE)
-			goto GGA;
-		if (n == RMC_SENTENCE)
-			goto RMC;
+		if (n == GGA_SENTENCE){
+	    if (get_gps_sentence(ggabuf, ggachecksum) == 0)
+	      parse_gga(ggabuf);
+	    goto EMPTY;
+		}
+		if (n == RMC_SENTENCE){
+	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0)
+	      parse_rmc(rmcbuf);
+	    goto EMPTY;
+		}
 		else
 			goto EMPTY;
-
-GGA:
-		if (get_gps_sentence(ggabuf, ggachecksum) == 0)
-			parse_gga(ggabuf);
-		goto EMPTY;
-
-RMC:
-		if (get_gps_sentence(rmcbuf, rmcchecksum) == 0)
-			parse_rmc(rmcbuf);
-		goto EMPTY;
   }
+  return 0;
 }
 
 
