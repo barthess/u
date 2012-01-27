@@ -125,18 +125,18 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
+  LinkInit();
   SanityControlInit();
   ExtiInit(); /* I2C датчики используют его */
   I2CInit_pns();    /* ƒолжно идти пораньше, т.к. через него читаютс€ настройки из EEPROM */
 //  RtcPnsInit();
   ServoInit();
-//  CliInit();
-//  ADCInit_pns();
-//  ImuInit();
-//  GPSInit();
-//  LinkInit();
+  CliInit();
+  ADCInit_pns();
+  ImuInit();
+  GPSInit();
 //  AutopilotInit();  /* автопилот должен стартовать только после установки св€зи */
-//  StorageInit();
+  StorageInit();
 
   #if ENABLE_IRQ_STORM
     chThdSleepMilliseconds(5000);
@@ -144,7 +144,7 @@ int main(void) {
   #endif /* ENABLE_IRQ_STORM */
 
   while (TRUE){
-    chThdSleepMilliseconds(2000);
+    chThdSleepMilliseconds(666);
   }
 
   return 0;

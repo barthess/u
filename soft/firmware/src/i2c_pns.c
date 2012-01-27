@@ -49,13 +49,13 @@ void I2CInit_pns(void){
   chThdSleepMilliseconds(25); /* wait untill all devices ready */
 
   /* startups */
-//  init_eeprom();
-//  init_tmp75();
-//  init_max1236();
-//  init_mag3110();
-//  init_itg3200();
-//  init_mma8451();
-//  init_bmp085();
+  init_eeprom();
+  init_tmp75();
+  init_max1236();
+  init_mag3110();
+  init_itg3200();
+  init_mma8451();
+  init_bmp085();
 }
 
 
@@ -63,9 +63,10 @@ void I2CInit_pns(void){
 msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
                    uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
+//  i2cflags_t flags = I2CD_NO_ERROR;
 
   i2cAcquireBus(&I2CD2);
-  status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, MS2ST(5));
+  status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   //chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
   if (status == RDY_TIMEOUT){
@@ -74,15 +75,19 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
     setGlobalFlag(I2C_RESTARTED);
     return status;
   }
+//  if (status == RDY_RESET){
+//    flags = I2CD2.errors;
+//  }
   return status;
 }
 
 /* обертка запускатор транзакции */
 msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
+//  i2cflags_t flags = I2CD_NO_ERROR;
 
   i2cAcquireBus(&I2CD2);
-  status = i2cMasterReceiveTimeout(&I2CD2, addr, rxbuf, rxbytes, MS2ST(3));
+  status = i2cMasterReceiveTimeout(&I2CD2, addr, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
   if (status == RDY_TIMEOUT){
@@ -91,5 +96,8 @@ msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
     setGlobalFlag(I2C_RESTARTED);
     return status;
   }
+//  if (status == RDY_RESET){
+//    flags = I2CD2.errors;
+//  }
   return status;
 }
