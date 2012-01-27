@@ -62,6 +62,7 @@ static msg_t Imu(void *arg) {
       mavlink_raw_imu_struct.xmag = raw_data.magnetic_x;
       mavlink_raw_imu_struct.ymag = raw_data.magnetic_y;
       mavlink_raw_imu_struct.zmag = raw_data.magnetic_z;
+
       tolink_mail.payload = &mavlink_raw_imu_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail, TIME_IMMEDIATE);
     }

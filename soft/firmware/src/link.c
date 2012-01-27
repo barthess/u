@@ -99,6 +99,8 @@ static msg_t LinkOutThread(void *arg){
   Mail *mailp;
   msg_t tmp = 0;
 
+  chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
+
   while (TRUE) {
     chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
     mailp = (Mail*)tmp;
@@ -129,6 +131,8 @@ static msg_t LinkInThread(void *arg){
   mavlink_message_t msg[MSG_BUF_LEN];
   mavlink_status_t status;
   uint32_t n, i;
+
+  chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
 
   /* зануляем поле magic, как знак того, что буфер пустой */
   for (i = 0; i < MSG_BUF_LEN; i++)
@@ -166,15 +170,6 @@ static msg_t LinkInThread(void *arg){
 }
 
 
-
-
-
-
-
-
-
-
-
 static SerialConfig xbee_ser_cfg = {
     BAUDRATE_XBEE,
     0,
@@ -192,8 +187,6 @@ void LinkInit(void){
 
   /* запуск на дефолтной частоте */
   sdStart(&LINKSD, &xbee_ser_cfg);
-
-  chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
 
   chThdCreateStatic(LinkOutThreadWA,
           sizeof(LinkOutThreadWA),
