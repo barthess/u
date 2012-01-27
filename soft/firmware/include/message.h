@@ -141,7 +141,7 @@ struct Mail{
    * успешного выполнения. Аналогия обратного адреса на конверте письма.
    * Может быть NULL
    */
-  Mailbox *mailbox;
+  Mailbox *confirmbox;
 };
 
 
@@ -175,7 +175,7 @@ struct EepromReq{
    * успешного выполнения. Аналогия обратного адреса на конверте письма.
    * Может быть NULL
    */
-  Mailbox *mailbox;
+  Mailbox *confirmbox;
 };
 
 
