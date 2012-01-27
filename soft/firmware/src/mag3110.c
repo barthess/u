@@ -110,11 +110,13 @@ void init_mag3110(void){
     ;
 
   /* произведём сервисный сброс датчика */
+  chThdSleepMilliseconds(2);
   txbuf[0] = MAG_CTRL_REG2;
   txbuf[1] = MAG_RST;
   while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   chThdCreateStatic(PollMagThreadWA,
           sizeof(PollMagThreadWA),
           NORMALPRIO,

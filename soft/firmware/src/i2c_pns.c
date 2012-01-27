@@ -12,7 +12,24 @@
 #include "bmp085.h"
 #include "mag3110.h"
 
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
 
+/*
+ ******************************************************************************
+ * EXTERNS
+ ******************************************************************************
+ */
+extern uint32_t GlobalFlags;
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 /* interface #2 */
 static const I2CConfig i2cfg2 = {
     OPMODE_I2C,
@@ -54,6 +71,7 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
     i2cStart(&I2CD2, &i2cfg2);
+    setGlobalFlag(I2C_RESTARTED);
     return status;
   }
   return status;
@@ -70,6 +88,7 @@ msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
     i2cStart(&I2CD2, &i2cfg2);
+    setGlobalFlag(I2C_RESTARTED);
     return status;
   }
   return status;

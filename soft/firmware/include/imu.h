@@ -2,7 +2,7 @@
 #define IMU_H_
 
 /* сколько взять сэмплов для определения нуля гироскопов */
-#define GYRO_AVG_SAMPLES_CNT 8192
+#define GYRO_AVG_SAMPLES_CNT 1024
 
 
 void ImuInit(void);

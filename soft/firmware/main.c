@@ -130,13 +130,13 @@ int main(void) {
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
   ServoInit();
-  CliInit();
-  ADCInit_pns();
+//  CliInit();
+//  ADCInit_pns();
 //  ImuInit();
-  GPSInit();
-  LinkInit();
+//  GPSInit();
+//  LinkInit();
 //  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
-  StorageInit();
+//  StorageInit();
 
   #if ENABLE_IRQ_STORM
     chThdSleepMilliseconds(5000);

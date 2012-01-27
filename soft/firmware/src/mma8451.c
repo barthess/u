@@ -89,36 +89,43 @@ void init_mma8451(void){
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG1;
   txbuf[1] = 0b0; //set standby to allow configure device
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_XYZ_DATA_CFG;
   txbuf[1] = 0b1;// 4g mode
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG2;
   txbuf[1] = 0b10; //High Resolution
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG3;
   txbuf[1] = 0b10; //Interrupt active high
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG4;
   txbuf[1] = 0b01; //Interrupt on data ready
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG1;
   txbuf[1] = 0b11101; //100Hz, low noice, active
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   chThdCreateStatic(PollAccelThreadWA,
           sizeof(PollAccelThreadWA),
           NORMALPRIO,

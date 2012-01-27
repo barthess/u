@@ -10,17 +10,17 @@
 typedef struct RawData RawData;
 struct RawData{
   /* Углы поворота с момента включения устройства. Фиксированная точка -- полный поворот == 2^32 */
-  uint32_t gyro_xI;
-  uint32_t gyro_yI;
-  uint32_t gyro_zI;
+  int32_t gyro_xI;
+  int32_t gyro_yI;
+  int32_t gyro_zI;
   // шаги поворота, посчитанные через интеграл
   int32_t gyro_x_delta;
   int32_t gyro_y_delta;
   int32_t gyro_z_delta;
   /* смещения нулей, посчитанные во время выставки.*/
-  uint32_t gyro_xAvg;
-  uint32_t gyro_yAvg;
-  uint32_t gyro_zAvg;
+  int32_t gyro_xAvg;
+  int32_t gyro_yAvg;
+  int32_t gyro_zAvg;
   // данные с гироскопа
   int16_t gyro_x;
   int16_t gyro_y;

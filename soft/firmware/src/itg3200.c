@@ -41,9 +41,9 @@ static uint32_t zero_cnt = 0;
 static uint32_t gyrosamplecnt = 0;
 
 // массив собранных значений для рассчета интеграла
-static uint32_t gxv[4] = {0,0,0,0};
-static uint32_t gyv[4] = {0,0,0,0};
-static uint32_t gzv[4] = {0,0,0,0};
+static int32_t gxv[4] = {0,0,0,0};
+static int32_t gyv[4] = {0,0,0,0};
+static int32_t gzv[4] = {0,0,0,0};
 
 /*
  *******************************************************************************
@@ -65,9 +65,7 @@ void gyrozeroing(void){
     return;
   }
   else{
-    chSysLock();
-    GlobalFlags &= ~GYRO_CAL;
-    chSysUnlock();
+    clearGlobalFlag(GYRO_CAL);
   }
 }
 
@@ -101,9 +99,7 @@ void gyro_get_angle(void){
     gzv[0] = gzv[3];
 
     /* у нас готовы свежие дельты углов поворота - будим инерциалку */
-    chSysLock();
     chBSemSignal(&imu_sem);
-    chSysUnlock();
   }
   #undef s38
 }
@@ -167,16 +163,18 @@ void init_itg3200(void){
   txbuf[1] = 0b1000000; /* soft reset */
   while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
+  chThdSleepMilliseconds(55);
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 1; /* select clock source */
   while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
+  chThdSleepMilliseconds(2);
 
   txbuf[0] = GYRO_SMPLRT_DIV;
   txbuf[1] = 9; /* sample rate (1000 / (9 +1)) = 100Hz*/
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота внутреннего фильтра */
-  txbuf[3] = 1; /* enable interrupts */
+  txbuf[3] = 0b110001; /* configure and enable interrupts */
   while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
     ;
 
