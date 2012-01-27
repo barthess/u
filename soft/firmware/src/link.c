@@ -59,22 +59,34 @@ static uint16_t pack_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   switch(mailp->invoice){
 
   case MAVLINK_MSG_ID_HEARTBEAT:
-    len = mavlink_msg_heartbeat_encode(mavlink_system.sysid,
-                                       MAV_COMP_ID_ALL,
-                                       mavlink_msgbuf,
-                                       (const mavlink_heartbeat_t*)(mailp->payload));
+    len = mavlink_msg_heartbeat_encode(
+        mavlink_system.sysid,
+        MAV_COMP_ID_ALL,
+        mavlink_msgbuf,
+        (const mavlink_heartbeat_t*)(mailp->payload));
     mailp->payload = NULL;
     return len;
     break;
 
   case MAVLINK_MSG_ID_RAW_IMU:
-    len = mavlink_msg_raw_imu_encode (mavlink_system.sysid,
-                                      MAV_COMP_ID_IMU,
-                                      mavlink_msgbuf,
-                                      (const mavlink_raw_imu_t*)(mailp->payload));
+    len = mavlink_msg_raw_imu_encode (
+        mavlink_system.sysid,
+        MAV_COMP_ID_IMU,
+        mavlink_msgbuf,
+        (const mavlink_raw_imu_t*)(mailp->payload));
     mailp->payload = NULL;
     return len;
     break;
+
+  case MAVLINK_MSG_ID_BART_RAW_PRESSURE:
+      len = mavlink_msg_bart_raw_pressure_encode (
+          mavlink_system.sysid,
+          MAV_COMP_ID_IMU,
+          mavlink_msgbuf,
+          (const mavlink_bart_raw_pressure_t*)(mailp->payload));
+      mailp->payload = NULL;
+      return len;
+      break;
 
   default:
     break;

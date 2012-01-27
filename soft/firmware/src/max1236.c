@@ -47,6 +47,41 @@ static uint8_t txbuf[MAX1236_TX_DEPTH];
  *******************************************************************************
  *******************************************************************************
  */
+
+/* воздушна€ скорость */
+// TODO: заменить термокомпенсацию if'ми какой-нибудь квадратичной функцией
+static void calc_air_speed(uint16_t press_diff_raw){
+
+  int32_t pres_diff_scale;
+  uint32_t pres_dyn_offset; // смещение шкалы, завис€щее от температуры
+
+  if(raw_data.temp_tmp75 > 2600)
+    pres_dyn_offset = 1540 + (115 * raw_data.temp_tmp75) / 1000;
+  else
+    pres_dyn_offset = 1540 + (110 * raw_data.temp_tmp75) / 1000;
+
+  pres_diff_scale = (press_diff_raw - pres_dyn_offset) * 245;
+  pres_diff_scale = __USAT(pres_diff_scale, 31);
+  raw_data.pressure_dynamic = (uint16_t)(pres_diff_scale / 1000); // (ѕа)
+
+  /* допустим, что входное значение не превышает 4096, тогда сдвигами
+   * на 3 позиции влево переведем входное значение в "виртульную" область
+   * а сдвигом на 3^2 позиции после вычислени€ корн€ переведем обратно в "реальную"
+   * это получаетс€ после упрощени€ выражени€:
+   * (arm_sqrt_q15((х * 2^18)/32768)) / 2^9      */
+  q15_t in = (2L * pres_diff_scale / 1225L) << 3;
+  q15_t out = 0;
+  arm_sqrt_q15(in, &out);
+  //log_item.air_speed = (uint8_t)__USAT((out >> 9), 8); // дл€ получени€ целых
+  log_item.air_speed = (uint8_t)__USAT((out >> 6), 8); // дл€ получени€ фиксированной точки 5:3
+}
+
+
+
+
+
+
+
 /** ќпрос max1236
  * после настройки достаточно просто читать из него данные, по 2 байта на канал
  * после отправки запроса ј÷ѕ занимает линию примерно на 8.3uS, после чего
@@ -80,41 +115,15 @@ static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
 
-  int32_t pres_dyn;         // динамическое давление
-  uint32_t pres_dyn_offset; // смещение шкалы, завис€щее от температуры
-
   while (TRUE) {
     chThdSleepMilliseconds(20);
 
     if (i2c_receive(max1236addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
-       /* Process the results */
-      int16_t max0 = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
-      int16_t max1 = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
-
-      /* воздушна€ скорость */
-      // TODO: заменить термокомпенсацию if'ми какой-нибудь квадратичной функцией
-      if(raw_data.temp_tmp75 > 2600)
-        pres_dyn_offset = 1540 + (115 * raw_data.temp_tmp75) / 1000;
-      else
-        pres_dyn_offset = 1540 + (110 * raw_data.temp_tmp75) / 1000;
-
-      pres_dyn = (max0 - pres_dyn_offset) * 245;
-      pres_dyn = __USAT(pres_dyn, 31);
-      raw_data.pressure_dynamic = (uint16_t)(pres_dyn / 1000); // (ѕа)
-
-      /* допустим, что входное значение не превышает 4096, тогда сдвигами
-       * на 3 позиции влево переведем входное значение в "виртульную" область
-       * а сдвигом на 3^2 позиции после вычислени€ корн€ переведем обратно в "реальную"
-       * это получаетс€ после упрощени€ выражени€:
-       * (arm_sqrt_q15((х * 2^18)/32768)) / 2^9      */
-      q15_t in = (2L * pres_dyn / 1225L) << 3;
-      q15_t out = 0;
-      arm_sqrt_q15(in, &out);
-      //log_item.air_speed = (uint8_t)__USAT((out >> 9), 8); // дл€ получени€ целых
-      log_item.air_speed = (uint8_t)__USAT((out >> 6), 8); // дл€ получени€ фиксированной точки 5:3
+      int16_t press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
+      int16_t sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
       /* высота по сонару */
-      raw_data.altitude_sonar = max1;
+      raw_data.altitude_sonar = sonar_raw;
       log_item.altitude_sonar = raw_data.altitude_sonar; // save to log
     }
   }

@@ -1,66 +1,55 @@
 <?xml version='1.0'?>
 <!-- MESSAGE IDs 150 - 240: Space for custom messages in individual projectname_messages.xml files -->
 <mavlink>
-    <include>common.xml</include>
-    <enums>
-		<enum name="MAV_COMPONENT">
-		   <entry value="139" name="MAV_COMP_ID_SERVOBLOCK">
-			   <description>All servos via one unit</description>
-		   </entry>
-		</enum>
-    </enums>
-
-
-    <messages>
-        <message id="150" name="BART_PRESSURE_RAW">
-            <description>Uncompensated values of pressure and sensors' temperature</description>
-            <field type="uint64_t"  name="time_usec">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
-			<field type="uint32_t"	name="press_abs">Raw absolute pressure in Pa (BMP085)</field>
-			<field type="int16_t"	name="temperature_abs">Raw temperature of absolute pressure sensor in 0.1 celsius</field>
-			<field type="uint16_t"	name="press_diff">Raw differential pressure</field>
-			<field type="int16_t"	name="temperature_diff">Raw temperature of differental pressure sensor in 0.01 celsius (from TMP75)</field>
-        </message>
-
-        <message id="151" name="BART_PRESSURE_SCALED">
-			<description></description>
-			<field type="uint32_t"	name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
-			<field type="uint32_t"	name="press_abs">Scaled absolute pressure in Pa (like in weather forecast)</field>	
-			<field type="uint16_t"	name="press_diff">Scaled differential pressure in Pa</field>
-        </message>
-
-
-
-		<message id="155" name="BART_SERVO_TUNING">
-            <description>Tuning parameters for servos.</description>
-            <field type="uint16_t"     name="servo1min">Servo 1 tune parameters</field>
-            <field type="uint16_t"     name="servo1max">Servo 1 tune parameters</field>
-			<field type="uint16_t"     name="servo1neutral">Servo 1 tune parameters</field>
-            <field type="uint16_t"     name="servo2min">Servo 2 tune parameters</field>
-            <field type="uint16_t"     name="servo2max">Servo 2 tune parameters</field>
-			<field type="uint16_t"     name="servo2neutral">Servo 2 tune parameters</field>
-            <field type="uint16_t"     name="servo3min">Servo 3 tune parameters</field>
-            <field type="uint16_t"     name="servo3max">Servo 3 tune parameters</field>
-			<field type="uint16_t"     name="servo3neutral">Servo 3 tune parameters</field>
-            <field type="uint16_t"     name="servo4min">Servo 4 tune parameters</field>
-            <field type="uint16_t"     name="servo4max">Servo 4 tune parameters</field>
-			<field type="uint16_t"     name="servo4neutral">Servo 4 tune parameters</field>
-            <field type="uint16_t"     name="servo5min">Servo 5 tune parameters</field>
-            <field type="uint16_t"     name="servo5max">Servo 5 tune parameters</field>
-			<field type="uint16_t"     name="servo5neutral">Servo 5 tune parameters</field>
-            <field type="uint16_t"     name="servo6min">Servo 6 tune parameters</field>
-            <field type="uint16_t"     name="servo6max">Servo 6 tune parameters</field>
-			<field type="uint16_t"     name="servo6neutral">Servo 6 tune parameters</field>
-            <field type="uint16_t"     name="servo7min">Servo 7 tune parameters</field>
-            <field type="uint16_t"     name="servo7max">Servo 7 tune parameters</field>
-			<field type="uint16_t"     name="servo7neutral">Servo 7 tune parameters</field>
-            <field type="uint16_t"     name="servo8min">Servo 8 tune parameters</field>
-            <field type="uint16_t"     name="servo8max">Servo 8 tune parameters</field>
-            <field type="uint16_t"     name="servo8neutral">Servo 8 tune parameters</field>
-		</message>
-
-    </messages>
+     <include>common.xml</include>
+     <enums>
+          <enum name="MAV_COMPONENT">
+               <entry value="139" name="MAV_COMP_ID_SERVOBLOCK">
+                    <description>All servos via one unit</description>
+               </entry>
+          </enum>
+     </enums>
+     <messages>
+          <message id="150" name="BART_RAW_PRESSURE">
+               <description>Uncompensated values of pressure and sensors' temperature</description>
+               <field type="uint64_t" name="time_usec">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
+               <field type="uint32_t" name="press_abs">Raw absolute pressure in Pa (BMP085)</field>
+               <field type="int16_t" name="temperature_abs">Raw temperature of absolute pressure sensor in 0.1 celsius</field>
+               <field type="uint16_t" name="press_diff">Raw differential pressure</field>
+               <field type="int16_t" name="temperature_diff">Raw temperature of differental pressure sensor in 0.01 celsius (from TMP75)</field>
+          </message>
+          <message id="151" name="BART_SCALED_PRESSURE">
+               <description/>
+               <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+               <field type="uint32_t" name="press_abs">Scaled absolute pressure in Pa (like in weather forecast)</field>
+               <field type="uint16_t" name="press_diff">Scaled differential pressure in Pa</field>
+          </message>
+          <message id="155" name="BART_SERVO_TUNING">
+               <description>Tuning parameters for servos.</description>
+               <field type="uint16_t" name="servo1min">Servo 1 tune parameters</field>
+               <field type="uint16_t" name="servo1max">Servo 1 tune parameters</field>
+               <field type="uint16_t" name="servo1neutral">Servo 1 tune parameters</field>
+               <field type="uint16_t" name="servo2min">Servo 2 tune parameters</field>
+               <field type="uint16_t" name="servo2max">Servo 2 tune parameters</field>
+               <field type="uint16_t" name="servo2neutral">Servo 2 tune parameters</field>
+               <field type="uint16_t" name="servo3min">Servo 3 tune parameters</field>
+               <field type="uint16_t" name="servo3max">Servo 3 tune parameters</field>
+               <field type="uint16_t" name="servo3neutral">Servo 3 tune parameters</field>
+               <field type="uint16_t" name="servo4min">Servo 4 tune parameters</field>
+               <field type="uint16_t" name="servo4max">Servo 4 tune parameters</field>
+               <field type="uint16_t" name="servo4neutral">Servo 4 tune parameters</field>
+               <field type="uint16_t" name="servo5min">Servo 5 tune parameters</field>
+               <field type="uint16_t" name="servo5max">Servo 5 tune parameters</field>
+               <field type="uint16_t" name="servo5neutral">Servo 5 tune parameters</field>
+               <field type="uint16_t" name="servo6min">Servo 6 tune parameters</field>
+               <field type="uint16_t" name="servo6max">Servo 6 tune parameters</field>
+               <field type="uint16_t" name="servo6neutral">Servo 6 tune parameters</field>
+               <field type="uint16_t" name="servo7min">Servo 7 tune parameters</field>
+               <field type="uint16_t" name="servo7max">Servo 7 tune parameters</field>
+               <field type="uint16_t" name="servo7neutral">Servo 7 tune parameters</field>
+               <field type="uint16_t" name="servo8min">Servo 8 tune parameters</field>
+               <field type="uint16_t" name="servo8max">Servo 8 tune parameters</field>
+               <field type="uint16_t" name="servo8neutral">Servo 8 tune parameters</field>
+          </message>
+     </messages>
 </mavlink>
-
-
-
-
