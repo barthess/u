@@ -12,55 +12,23 @@
 
 
     <messages>
-        <message id="150" name="BART_SENSORS_RAW">
-            <description>Accelerometer and Gyro biases from the navigation filter</description>
-            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
-            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
-            <field type="uint64_t"     name="relay">Relay sensors data</field>
-            <field type="uint16_t[16]" name="analog">Analog sensors data</field>
-            <field type="uint8_t"      name="actuators">Actuators state</field>
-            <field type="uint32_t"     name="trip">Vehicle mileage (meters)</field>
-            <field type="uint32_t"     name="motor_uptime">Vehicle motor uptime (seconds)</field>
-            <field type="uint8_t"      name="speed">Vehicle speed</field>
-            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
+        <message id="150" name="BART_PRESSURE_RAW">
+            <description>Uncompensated values of pressure and sensors' temperature</description>
+            <field type="uint64_t"  name="time_usec">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
+			<field type="uint32_t"	name="press_abs">Raw absolute pressure in Pa (BMP085)</field>
+			<field type="int16_t"	name="temperature_abs">Raw temperature of absolute pressure sensor in 0.1 celsius</field>
+			<field type="uint16_t"	name="press_diff">Raw differential pressure</field>
+			<field type="int16_t"	name="temperature_diff">Raw temperature of differental pressure sensor in 0.01 celsius (from TMP75)</field>
         </message>
 
-        <message id="151" name="BART_SENSORS_CALCULATED">
-            <description>Accelerometer and Gyro biases from the navigation filter</description>
-            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
-            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
-            <field type="uint64_t"     name="relay">Relay sensors data</field>
-            <field type="uint8_t[16]"  name="analog">Analog sensors data</field>
-            <field type="uint8_t"      name="actuators">Actuators state</field>
-            <field type="uint32_t"     name="trip">Vehicle mileage</field>
-            <field type="uint16_t"     name="motohours">Vehicle motor hours</field>
-            <field type="uint8_t"      name="speed">Vehicle speed</field>
-            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
+        <message id="151" name="BART_PRESSURE_SCALED">
+			<description></description>
+			<field type="uint32_t"	name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+			<field type="uint32_t"	name="press_abs">Scaled absolute pressure in Pa (like in weather forecast)</field>	
+			<field type="uint16_t"	name="press_diff">Scaled differential pressure in Pa</field>
         </message>
 
-        <message id="152" name="BART_CALIBRATE_DATA">
-            <description>Calibration coefficients</description>
-            <field type="float[16]" name="analog">Analog coefficients</field>
-            <field type="uint64_t"  name="relay">Relay sensors "coefficients" (invert or direct)</field>
-        </message>
 
-        <message id="153" name="BART_DIAGNOSTIC_RESULT">
-            <description>Results of diagnostic</description>
-            <field type="uint32_t[3]" name="uniq_id">Uniq 96-bit STM32 id</field>
-            <field type="uint32_t"    name="result">Bit fields. 1 - failed, 0 - ok.</field>
-		</message>
-
-        <message id="154" name="BART_SENSORS_RAW_SHORT">
-            <description>No description</description>
-            <field type="uint32_t"     name="sec">Timestamp (seconds part)</field>
-            <field type="uint16_t"     name="msec">Timestamp (milliseconds part)</field>
-            <field type="uint64_t"     name="relay">Relay sensors data</field>
-            <field type="uint8_t"      name="actuators">Actuators state</field>
-            <field type="uint32_t"     name="trip">Vehicle mileage (meters)</field>
-            <field type="uint32_t"     name="motor_uptime">Vehicle motor uptime (seconds)</field>
-            <field type="uint8_t"      name="speed">Vehicle speed</field>
-            <field type="uint16_t"     name="rpm">Vehicle engine RPM</field>
-		</message>
 
 		<message id="155" name="BART_SERVO_TUNING">
             <description>Tuning parameters for servos.</description>
