@@ -99,9 +99,6 @@ int main(void) {
   raw_data.gyro_yI = 0;
   raw_data.gyro_zI = 0;
 
-  // Creates the blinker thread.
-  //chThdCreateStatic(waBlink, sizeof(waBlink), LOWPRIO, Blink, NULL);
-
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);
   chBSemInit(&mag3110_sem,  TRUE);
