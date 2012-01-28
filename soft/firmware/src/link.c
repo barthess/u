@@ -4,6 +4,7 @@
 #include "link.h"
 #include "rtc.h"
 #include "message.h"
+#include "parameters.h"
 
 #include <mavlink.h>
 #include <bart.h>
@@ -22,8 +23,6 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern Mailbox toservo_mb;
-
 extern mavlink_system_t mavlink_system;
 
 /*
@@ -129,10 +128,6 @@ static msg_t LinkOutThread(void *arg){
 
 /**
  * Поток разбора входящих данных.
- * Мавлинк проводит парсинг и валидацию данных.
- * Мы рассылаем письма по почтовым ящикам.
- * Подтверждение факта приёма является обнуленное поле "magic" сообщения,
- * в стандарте - 0х55.
  */
 #define MSG_BUF_LEN 4
 static WORKING_AREA(LinkInThreadWA, 1024 + MSG_BUF_LEN * MAVLINK_MAX_PACKET_LEN);
@@ -140,15 +135,12 @@ static msg_t LinkInThread(void *arg){
   chRegSetThreadName("MAVLinkIn");
   (void)arg;
 
+  mavlink_param_set_t param_set;
   mavlink_message_t msg[MSG_BUF_LEN];
   mavlink_status_t status;
   uint32_t n, i;
 
   chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
-
-  /* зануляем поле magic, как знак того, что буфер пустой */
-  for (i = 0; i < MSG_BUF_LEN; i++)
-    msg[i].magic = 0;
 
   n = 0;
   i = 0;
@@ -156,26 +148,24 @@ static msg_t LinkInThread(void *arg){
   while (TRUE) {
     // Try to get a new message
     if (mavlink_parse_char(MAVLINK_COMM_0, sdGet(&LINKSD), &(msg[i]), &status)) {
-      // Handle message
-      switch(msg[i].msgid){
-      case MAVLINK_MSG_ID_HEARTBEAT:
-        break;
-      case MAVLINK_MSG_ID_BART_SERVO_TUNING:
-        chMBPost(&toservo_mb, (msg_t)(&msg[i]), TIME_IMMEDIATE);
-        break;
-      default:
-        //Do nothing
-        break;
-      }
+      if (msg[i].sysid == mavlink_system.sysid){
+        // Handle message
+        switch(msg[i].msgid){
+        case MAVLINK_MSG_ID_HEARTBEAT:
+          break;
+        case MAVLINK_MSG_ID_BART_SERVO_TUNING:
+          break;
 
-      /* Если попали сюда, значит пакет успешно выловлен и брошен в нужный ящик.
-         Выбираем ближайший свободный буфер, в норме это должен быть следующий же. */
-      do {
-        n++;
-        i = n & 3;
-      }
-      while (msg[i].magic != 0);
+        case MAVLINK_MSG_ID_PARAM_SET:
+          mavlink_msg_param_set_decode(&(msg[i]), &param_set);
+          set_global_mavlink_value(&param_set);
+          break;
 
+        default:
+          //Do nothing
+          break;
+        }
+      }
     }
   }
   return 0;

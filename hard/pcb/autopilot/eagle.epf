@@ -1,7 +1,7 @@
 [Eagle]
 Version="05 11 00"
 Platform="Windows"
-Serial="1EED3BED12-LSR-WLM-NCP"
+Serial="65395449B6-LSR-WLM-NCP"
 Globals="Globals"
 Desktop="Desktop"
 
@@ -48,12 +48,6 @@ PadsSameType=0
 Layer=16
 
 [Win_2]
-Type="Control Panel"
-Loc="88 92 927 521"
-State=2
-Number=0
-
-[Win_3]
 Type="Schematic Editor"
 Loc="242 242 841 641"
 State=1
@@ -94,8 +88,14 @@ Layer=91
 Views=" 1: 2219569 -1745312 3739527 -692638"
 Sheet=1
 
+[Win_3]
+Type="Control Panel"
+Loc="88 92 927 521"
+State=2
+Number=0
+
 [Desktop]
-Screen="1280 1024"
+Screen="1280 960"
 Window="Win_1"
 Window="Win_2"
 Window="Win_3"

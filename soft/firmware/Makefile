@@ -111,6 +111,7 @@ CSRC = $(PORTSRC) \
        src/link.c \
        src/imu.c \
        src/sanity.c \
+       src/parameters.c \
        #src/autopilot.c \
        src/bkp.c \
        src/rtc_pns.c \
