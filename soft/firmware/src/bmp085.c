@@ -253,7 +253,7 @@ void init_bmp085(void){
 
   chThdCreateStatic(PollBaroThreadWA,
           sizeof(PollBaroThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO,
           PollBaroThread,
           NULL);
 }

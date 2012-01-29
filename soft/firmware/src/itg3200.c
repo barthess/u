@@ -180,7 +180,7 @@ void init_itg3200(void){
 
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO + 1,
           PollGyroThread,
           NULL);
 

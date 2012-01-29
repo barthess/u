@@ -4,6 +4,7 @@
 #include "hal.h"
 
 #include "message.h"
+#include "main.h"
 #include "i2c_pns.h"
 #include "tmp75.h"
 
@@ -103,7 +104,7 @@ void init_tmp75(void){
 
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO,
           PollTmp75Thread,
           NULL);
   chThdSleepMilliseconds(1);

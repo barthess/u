@@ -128,7 +128,7 @@ void init_mma8451(void){
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollAccelThreadWA,
           sizeof(PollAccelThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO,
           PollAccelThread,
           NULL);
 }

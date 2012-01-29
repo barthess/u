@@ -119,7 +119,7 @@ void init_mag3110(void){
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollMagThreadWA,
           sizeof(PollMagThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO,
           PollMagThread,
           NULL);
 }

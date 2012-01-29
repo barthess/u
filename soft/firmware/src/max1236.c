@@ -156,7 +156,7 @@ void init_max1236(void){
 
   chThdCreateStatic(PollMax1236ThreadWA,
           sizeof(PollMax1236ThreadWA),
-          NORMALPRIO,
+          I2C_THREADS_PRIO,
           PollMax1236Thread,
           NULL);
 }
