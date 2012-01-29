@@ -4,6 +4,7 @@
 #include "link.h"
 #include "rtc.h"
 #include "message.h"
+#include "main.h"
 #include "parameters.h"
 
 #include <mavlink.h>
@@ -23,6 +24,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox param_mb;
 extern mavlink_system_t mavlink_system;
 
 /*
@@ -30,6 +32,17 @@ extern mavlink_system_t mavlink_system;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+/* переменные для установки параметров присланных с земли */
+static mavlink_param_set_t param_set;
+static mavlink_param_request_list_t param_request_list;
+static Mail param_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
+
+static SerialConfig xbee_ser_cfg = {
+    BAUDRATE_XBEE,
+    0,
+    0,
+    USART_CR3_CTSE,
+};
 
 /*
  *******************************************************************************
@@ -48,11 +61,22 @@ extern mavlink_system_t mavlink_system;
 
 
 /**
- * Определяет, что пришло в почтовом ящике.
- * Пакует в содержимое ящика в мавлинковое сообщение.
+ * @brief Helper function.
+ *
+ * Определяет тип сообщения, чтобы применить правильную функцию упаковки.
+ * Пакует письмо из ящика в мавлинковое сообщение.
  * ЗаNULLяет указатель на содержимое, как знак того, что данные обработаны.
+ * Возвращает длинну сообщения получившегося сообщения.
  */
-static uint16_t pack_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
+#define finalize_receive() {                                                  \
+  mailp->payload = NULL;                                                      \
+  if (mailp->confirmbox != NULL){                                             \
+    chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);                         \
+  }                                                                           \
+  return len;                                                                 \
+}
+
+static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   uint16_t len;
 
   switch(mailp->invoice){
@@ -63,18 +87,24 @@ static uint16_t pack_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_ALL,
         mavlink_msgbuf,
         (const mavlink_heartbeat_t*)(mailp->payload));
-    mailp->payload = NULL;
-    return len;
+    finalize_receive();
+    break;
+
+  case MAVLINK_MSG_ID_PARAM_VALUE:
+    len = mavlink_msg_param_value_encode(
+        mavlink_system.sysid,
+        MAV_COMP_ID_ALL,
+        mavlink_msgbuf,
+        (const mavlink_param_value_t*)(mailp->payload));
+    finalize_receive();
     break;
 
   case MAVLINK_MSG_ID_RAW_IMU:
-    len = mavlink_msg_raw_imu_encode (
-        mavlink_system.sysid,
+    len = mavlink_msg_raw_imu_encode (mavlink_system.sysid,
         MAV_COMP_ID_IMU,
         mavlink_msgbuf,
         (const mavlink_raw_imu_t*)(mailp->payload));
-    mailp->payload = NULL;
-    return len;
+    finalize_receive();
     break;
 
 //  case MAVLINK_MSG_ID_BART_RAW_PRESSURE:
@@ -92,9 +122,10 @@ static uint16_t pack_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   }
   return 0;
 }
+#undef finalize_receive
 
 /**
- * Поток отправки сообещиний через канал связи.
+ * Поток отправки сообещиний через канал связи на землю.
  */
 static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *arg){
@@ -115,7 +146,7 @@ static msg_t LinkOutThread(void *arg){
   while (TRUE) {
     chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
     mailp = (Mail*)tmp;
-    pack_mail(mailp, &mavlink_msgbuf);
+    receive_mail(mailp, &mavlink_msgbuf);
     len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
     sdWrite(&LINKSD, sendbuf, len);
   }
@@ -125,46 +156,81 @@ static msg_t LinkOutThread(void *arg){
 
 
 
+/* определяет, кому пришло это сообщение и кидает в соотверствующий почтовый ящик */
+static bool_t handle_message(mavlink_message_t *msg){
+  msg_t status = RDY_OK;
+
+  switch(msg->msgid){
+  case MAVLINK_MSG_ID_HEARTBEAT:
+    break;
+
+  case MAVLINK_MSG_ID_BART_SERVO_TUNING:
+    break;
+
+  case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+    mavlink_msg_param_request_list_decode(msg, &param_request_list);
+    if (param_mail.payload == NULL){
+      param_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_LIST;
+      param_mail.payload = &param_request_list;
+      status = chMBPost(&param_mb, (msg_t)&param_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
+    break;
+
+  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+    break;
+
+  case MAVLINK_MSG_ID_PARAM_SET:
+    mavlink_msg_param_set_decode(msg, &param_set);
+    if (param_mail.payload == NULL){
+      param_mail.invoice = MAVLINK_MSG_ID_PARAM_SET;
+      param_mail.payload = &param_set;
+      status = chMBPost(&param_mb, (msg_t)&param_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
+    else
+      return FAILED;
+    break;
+
+  default:
+    //Do nothing
+    break;
+  }
+
+  return SUCCESS;
+}
+
+
 
 /**
  * Поток разбора входящих данных.
  */
-#define MSG_BUF_LEN 4
-static WORKING_AREA(LinkInThreadWA, 1024 + MSG_BUF_LEN * MAVLINK_MAX_PACKET_LEN);
+static WORKING_AREA(LinkInThreadWA, 1024);
 static msg_t LinkInThread(void *arg){
   chRegSetThreadName("MAVLinkIn");
   (void)arg;
 
-  mavlink_param_set_t param_set;
-  mavlink_message_t msg[MSG_BUF_LEN];
+  mavlink_message_t msg;
   mavlink_status_t status;
-  uint32_t n, i;
+  uint8_t c = 0;
 
   chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
 
-  n = 0;
-  i = 0;
+//  chSysLock();
+//  chIQResetI(&LINKSD.iqueue);
+//  chSysUnlock();
 
   while (TRUE) {
     // Try to get a new message
-    if (mavlink_parse_char(MAVLINK_COMM_0, sdGet(&LINKSD), &(msg[i]), &status)) {
-      if (msg[i].sysid == mavlink_system.sysid){
-        // Handle message
-        switch(msg[i].msgid){
-        case MAVLINK_MSG_ID_HEARTBEAT:
-          break;
-        case MAVLINK_MSG_ID_BART_SERVO_TUNING:
-          break;
-
-        case MAVLINK_MSG_ID_PARAM_SET:
-          mavlink_msg_param_set_decode(&(msg[i]), &param_set);
-          set_global_mavlink_value(&param_set);
-          break;
-
-        default:
-          //Do nothing
-          break;
-        }
+    c = sdGet(&LINKSD);
+    if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
+      if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
+        handle_message(&msg);
+//        chSysLock();
+//        chIQResetI(&LINKSD.iqueue);
+//        chSysUnlock();
       }
     }
   }
@@ -172,12 +238,7 @@ static msg_t LinkInThread(void *arg){
 }
 
 
-static SerialConfig xbee_ser_cfg = {
-    BAUDRATE_XBEE,
-    0,
-    0,
-    USART_CR3_CTSE,
-};
+
 
 
 /*
@@ -192,13 +253,13 @@ void LinkInit(void){
 
   chThdCreateStatic(LinkOutThreadWA,
           sizeof(LinkOutThreadWA),
-          NORMALPRIO,
+          LINK_THREADS_PRIO,
           LinkOutThread,
           NULL);
 
   chThdCreateStatic(LinkInThreadWA,
           sizeof(LinkInThreadWA),
-          NORMALPRIO,
+          LINK_THREADS_PRIO,
           LinkInThread,
           NULL);
 }

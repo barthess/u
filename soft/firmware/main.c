@@ -14,6 +14,7 @@
 #include "hal.h"
 
 #include "main.h"
+#include "parameters.h"
 #include "sanity.h"
 #include "irq_storm.h"
 #include "i2c_pns.h"
@@ -61,6 +62,8 @@ Mailbox tolink_mb;                    /* сообщения для отправки через модем */
 static msg_t tolink_mb_buf[8];
 Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
+Mailbox param_mb;                     /* сообщения с параметрами */
+static msg_t param_mb_buf[2];
 
 /** Переменные для хранения калибровочных данных */
 volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
@@ -106,10 +109,11 @@ int main(void) {
   chBSemInit(&bmp085_sem,   TRUE);
   chBSemInit(&itg3200_sem,  TRUE);
 
-  /* очереди сообщений */
-  chMBInit(&autopilot_mb, autopilot_mb_buf, (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
-  chMBInit(&tolink_mb, tolink_mb_buf, (sizeof(tolink_mb_buf)/sizeof(msg_t)));
-  chMBInit(&toservo_mb, toservo_mb_buf, (sizeof(toservo_mb_buf)/sizeof(msg_t)));
+  /* почтовые ящики */
+  chMBInit(&autopilot_mb,   autopilot_mb_buf,   (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
+  chMBInit(&tolink_mb,      tolink_mb_buf,      (sizeof(tolink_mb_buf)/sizeof(msg_t)));
+  chMBInit(&toservo_mb,     toservo_mb_buf,     (sizeof(toservo_mb_buf)/sizeof(msg_t)));
+  chMBInit(&param_mb,       param_mb_buf,       (sizeof(param_mb_buf)/sizeof(msg_t)));
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
@@ -125,13 +129,14 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
+  ParametersInit();
   LinkInit();
   SanityControlInit();
   ExtiInit(); /* I2C датчики используют его */
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
 //  RtcPnsInit();
   ServoInit();
-  CliInit();
+//  CliInit();
   ADCInit_pns();
   ImuInit();
   GPSInit();

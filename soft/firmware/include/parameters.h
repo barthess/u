@@ -1,6 +1,8 @@
 #ifndef PARAMETERS_H_
 #define PARAMETERS_H_
 
+#include <string.h>
+
 #include <mavlink.h>
 #include <common.h>
 #include <bart.h>
@@ -30,7 +32,14 @@
 //};
 
 
-int32_t key_value_search(char* key);
-void set_global_mavlink_value(mavlink_param_set_t *set);
+typedef struct GlobalStruct_t GlobalStruct_t;
+struct GlobalStruct_t
+{
+  float *value;
+  const char **name;
+};
+
+
+void ParametersInit(void);
 
 #endif /* PARAMETERS_H_ */
