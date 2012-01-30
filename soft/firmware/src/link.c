@@ -218,26 +218,17 @@ static msg_t LinkInThread(void *arg){
 
   chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
 
-//  chSysLock();
-//  chIQResetI(&LINKSD.iqueue);
-//  chSysUnlock();
-
   while (TRUE) {
     // Try to get a new message
     c = sdGet(&LINKSD);
     if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
       if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
         handle_message(&msg);
-//        chSysLock();
-//        chIQResetI(&LINKSD.iqueue);
-//        chSysUnlock();
       }
     }
   }
   return 0;
 }
-
-
 
 
 

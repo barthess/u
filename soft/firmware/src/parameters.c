@@ -23,6 +23,7 @@
 #define PARAM_SYSTEM_ID           0
 #define PARAM_COMPONENT_ID        1
 #define ONBOARD_PARAM_NAME_LENGTH 14
+#define ONBOARD_PARAM_COUNT       (sizeof(global_data) / sizeof(GlobalParam_t))
 
 /*
  ******************************************************************************
@@ -50,24 +51,24 @@ static msg_t param_confirm_mb_buf[1];
  */
 
 
-
-//struct global_struct
-//{
-//  float param[ONBOARD_PARAM_COUNT];
-//  char param_name[ONBOARD_PARAM_COUNT][MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN];
-//};
-//
-//struct global_struct global_data;
-
-
-float value[] = {0.1, 0.2, 0.3};
-const char *name[] = {"IMU_g1", "IMU_g2", "IMU_g3", NULL};
-
-GlobalStruct_t global_data = {
-    value,
-    name,
+GlobalParam_t global_data[] = {
+    {"SYS_ID",          20,    1,     255,    MAVLINK_TYPE_UINT32_T},
+    /* IMU - inertial measurement unit */
+    {"IMU_g1",          0.1,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    {"IMU_g2",          0.2,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    {"IMU_g3",          0.3,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    /* PMU - pressure measurement unit */
+    {"PMU_D_offset",    3,     -1100, 1024,   MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
+    {"PMU_D_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
+    {"PMU_A_offset",    3,     -1000, 1224,   MAVLINK_TYPE_INT32_T},   /* absolute pressure */
+    {"PMU_A_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
+    /* ADC coefficients */
+    {"ADC_I_offset",    1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
+    {"ADC_I_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
+    /* fake field with 14 symbols name */
+    {"fake_14_bytes_",  1048,  0,     1224,   MAVLINK_TYPE_FLOAT},
 };
-#define ONBOARD_PARAM_COUNT  (sizeof(value) / sizeof(value[0]))
+
 
 /**
  * @brief   Performs key-value search.
@@ -79,38 +80,15 @@ static int32_t key_value_search(char* key){
   uint32_t i = 0;
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    if (strcmp(key, global_data.name[i]) == 0)
+    if (strcmp(key, global_data[i].name) == 0)
       return i;
   }
   return -1;
 }
 
-
-
 /**
- * @brief   Performs key-value search.
- *
- * @return      Index in dictionary.
- * @retval -1   key not found.
+ * Checks parameter and writes it to global struct.
  */
-//static int32_t key_value_search(char* key){
-//  uint32_t i = 0;
-//  uint32_t j = 0;
-//
-//  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-//    for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++){
-//      // Compare keys
-//      if (global_data.name[i][j] != key[j])
-//        break;
-//      // End matching if null termination is reached
-//      if (global_data.name[i][j] == '\0')
-//        return i;
-//    }
-//  }
-//  return -1;
-//}
-
-
 static bool_t set_parameter(mavlink_param_set_t *set){
   int32_t index = -1;
 
@@ -124,11 +102,20 @@ static bool_t set_parameter(mavlink_param_set_t *set){
         (isnan(set->param_value) || isinf(set->param_value))){
       return FAILED;
     }
-    if (global_data.value[index] == set->param_value){
+    if (global_data[index].value == set->param_value){
       return FAILED;
     }
+    /* If value fall out of min..max bound than just silently nearest allowable value */
+    if (set->param_value > global_data[index].max){
+      global_data[index].value = global_data[index].max;
+      return SUCCESS;
+    }
+    if (set->param_value < global_data[index].min){
+      global_data[index].value = global_data[index].min;
+      return SUCCESS;
+    }
 
-    global_data.value[index] = set->param_value;
+    global_data[index].value = set->param_value;
     return SUCCESS;
   }
 
@@ -137,7 +124,10 @@ static bool_t set_parameter(mavlink_param_set_t *set){
 }
 
 /**
+ * @brief   Sends mails to communication thread
  *
+ * @param[in] key   if NULL than perform search by index
+ * @param[in] n     search index
  */
 static bool_t send_value(Mail *param_value_mail,
                          mavlink_param_value_t *param_value_struct,
@@ -155,12 +145,12 @@ static bool_t send_value(Mail *param_value_mail,
 
   if ((index >= 0) && (index <= ONBOARD_PARAM_COUNT)){
     /* fill all fields */
-    param_value_struct->param_value = global_data.value[index];
+    param_value_struct->param_value = global_data[index].value;
     param_value_struct->param_count = ONBOARD_PARAM_COUNT;
     param_value_struct->param_index = index;
     param_value_struct->param_type  = MAVLINK_TYPE_FLOAT;
     for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++)
-      param_value_struct->param_id[j] = global_data.name[index][j];
+      param_value_struct->param_id[j] = global_data[index].name[j];
 
     /* send */
     param_value_mail->payload = param_value_struct;
@@ -177,6 +167,9 @@ static bool_t send_value(Mail *param_value_mail,
   return SUCCESS;
 }
 
+/**
+ * Send all values one by one.
+ */
 static void send_all_values(Mail *param_value_mail,
            mavlink_param_value_t *param_value_struct){
   uint32_t i = 0;
@@ -224,14 +217,15 @@ static msg_t ParametersThread(void *arg){
       break;
 
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+      /* запрос всех параметров */
       list = (mavlink_param_request_list_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (list->target_system == mavlink_system.sysid)
         send_all_values(&param_value_mail, &param_value_struct);
-
       break;
 
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+      /* запрос одного параметра */
       read = (mavlink_param_request_read_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (read->param_index >= 0)
@@ -256,8 +250,11 @@ void ParametersInit(void){
   /* check names lengths */
   uint32_t i = 0;
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    if (sizeof (*(global_data.name[i])) > ONBOARD_PARAM_NAME_LENGTH)
-      chDbgPanic("value name is too long");
+    if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
+      chDbgPanic("name too long");
+    if ((global_data[i].value < global_data[i].min) ||
+        (global_data[i].value > global_data[i].max))
+      chDbgPanic("value out of bounds");
   }
 
   chThdCreateStatic(ParametersThreadWA,
@@ -270,3 +267,58 @@ void ParametersInit(void){
 
 
 
+
+
+/*****************************************************************************/
+// Old junc
+
+
+//typedef struct GlobalStruct_t GlobalStruct_t;
+//struct GlobalStruct_t
+//{
+//  float *value;
+//  const char **name;
+//};
+
+
+//struct global_struct
+//{
+//  float param[ONBOARD_PARAM_COUNT];
+//  char param_name[ONBOARD_PARAM_COUNT][MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN];
+//};
+//
+//struct global_struct global_data;
+
+
+//float value[] = {0.1, 0.2, 0.3};
+//const char *name[] = {"IMU_g1", "IMU_g2", "IMU_g3", NULL};
+//
+//GlobalStruct_t global_data = {
+//    value,
+//    name,
+//};
+//#define ONBOARD_PARAM_COUNT  (sizeof(value) / sizeof(value[0]))
+
+
+/**
+ * @brief   Performs key-value search.
+ *
+ * @return      Index in dictionary.
+ * @retval -1   key not found.
+ */
+//static int32_t key_value_search(char* key){
+//  uint32_t i = 0;
+//  uint32_t j = 0;
+//
+//  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+//    for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++){
+//      // Compare keys
+//      if (global_data.name[i][j] != key[j])
+//        break;
+//      // End matching if null termination is reached
+//      if (global_data.name[i][j] == '\0')
+//        return i;
+//    }
+//  }
+//  return -1;
+//}
