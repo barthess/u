@@ -107,7 +107,7 @@ static void bmp085_calc(void){
   b5 = x1 + x2;
   tval = (b5 + 8) >> 4;
   raw_data.temp_bmp085 = (int16_t)tval;
-  mavlink_bart_raw_pressure_struct.temperature_abs = (int16_t)tval;
+  mavlink_bart_raw_pressure_struct.temp_abs = (int16_t)tval;
 
   b6 = b5 - 4000;
   x1 = (b2 * (b6 * b6 >> 12)) >> 11;

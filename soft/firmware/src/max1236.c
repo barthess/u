@@ -12,6 +12,10 @@
 
 #include "max1236.h"
 
+#include <mavlink.h>
+#include <bart.h>
+#include <common.h>
+
 /*
  ******************************************************************************
  * DEFINES
@@ -31,6 +35,8 @@
  */
 extern RawData raw_data;
 extern LogItem log_item;
+extern Mailbox tolink_mb;
+extern mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -110,22 +116,38 @@ static void calc_air_speed(uint16_t press_diff_raw){
  * при комнатной температуре смещение нуля 0.201 V, вычитаемое значение 0.183 V,
  * на выходе усилителя 0.167 V
  */
-static WORKING_AREA(PollMax1236ThreadWA, 256);
+static WORKING_AREA(PollMax1236ThreadWA, 512);
 static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
+  int16_t press_diff_raw;
+  int16_t sonar_raw;
+  mavlink_raw_pressure_t pres_data;
+
+  Mail air_data_mail;
+  air_data_mail.payload = NULL;
+  air_data_mail.invoice = MAVLINK_MSG_ID_RAW_PRESSURE;
+  air_data_mail.confirmbox = NULL;
+
+  uint32_t n = 0;
 
   while (TRUE) {
     chThdSleepMilliseconds(20);
 
     if (i2c_receive(max1236addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
-      int16_t press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
-      int16_t sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
+      press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
+      sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
       /* высота по сонару */
       raw_data.altitude_sonar = sonar_raw;
       log_item.altitude_sonar = raw_data.altitude_sonar; // save to log
     }
+    pres_data.press_diff1 = press_diff_raw;
+    if (((n & 7) == 7) && (air_data_mail.payload == NULL)){
+      air_data_mail.payload = &pres_data;
+      chMBPost(&tolink_mb, (msg_t)&air_data_mail, TIME_IMMEDIATE);
+    }
+    n++;
   }
   return 0;
 }

@@ -107,15 +107,14 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     finalize_receive();
     break;
 
-//  case MAVLINK_MSG_ID_BART_RAW_PRESSURE:
-//      len = mavlink_msg_bart_raw_pressure_encode (
-//          mavlink_system.sysid,
-//          MAV_COMP_ID_IMU,
-//          mavlink_msgbuf,
-//          (const mavlink_bart_raw_pressure_t*)(mailp->payload));
-//      mailp->payload = NULL;
-//      return len;
-//      break;
+  case MAVLINK_MSG_ID_RAW_PRESSURE:
+    len = mavlink_msg_raw_pressure_encode (
+        mavlink_system.sysid,
+        MAV_COMP_ID_IMU,
+        mavlink_msgbuf,
+        (const mavlink_raw_pressure_t*)(mailp->payload));
+    finalize_receive();
+    break;
 
   default:
     break;
@@ -162,9 +161,6 @@ static bool_t handle_message(mavlink_message_t *msg){
 
   switch(msg->msgid){
   case MAVLINK_MSG_ID_HEARTBEAT:
-    break;
-
-  case MAVLINK_MSG_ID_BART_SERVO_TUNING:
     break;
 
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
