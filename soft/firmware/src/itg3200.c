@@ -132,10 +132,10 @@ static msg_t PollGyroThread(void *arg){
     }
     else{
       /* значения, сигнализирующие о сбое */
-      raw_data.gyro_temp = -32000;
-      raw_data.gyro_x    = -32000;
-      raw_data.gyro_y    = -32000;
-      raw_data.gyro_z    = -32000;
+      raw_data.gyro_temp = -32768;
+      raw_data.gyro_x    = -32768;
+      raw_data.gyro_y    = -32768;
+      raw_data.gyro_z    = -32768;
     }
   }
   return 0;

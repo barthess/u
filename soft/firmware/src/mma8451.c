@@ -57,9 +57,9 @@ static msg_t PollAccelThread(void *arg){
       raw_data.acceleration_z = complement2signed(rxbuf[5], rxbuf[6]);
     }
     else{
-      raw_data.acceleration_x = -32000;
-      raw_data.acceleration_y = -32000;
-      raw_data.acceleration_z = -32000;
+      raw_data.acceleration_x = -32768;
+      raw_data.acceleration_y = -32768;
+      raw_data.acceleration_z = -32768;
     }
   }
   return 0;

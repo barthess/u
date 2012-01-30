@@ -65,10 +65,10 @@ static msg_t PollMagThread(void *arg){
       raw_data.magnetic_z = complement2signed(rxbuf[4], rxbuf[5]);
     }
     else{
-      /* выставляем нули как знамение ошибки */
-      raw_data.magnetic_x = 0;
-      raw_data.magnetic_y = 0;
-      raw_data.magnetic_z = 0;
+      /* выставляем знамение ошибки */
+      raw_data.magnetic_x = -32768;
+      raw_data.magnetic_y = -32768;
+      raw_data.magnetic_z = -32768;
     }
 
     /* если датчик передознулся - надо произвести сброс. В принципе,
