@@ -6,7 +6,11 @@
 #include "hal.h"
 #include "message.h"
 #include "gps.h"
-#include "../main.h"
+#include "main.h"
+
+#include <mavlink.h>
+#include <bart.h>
+#include <common.h>
 
 /**
  * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,
@@ -55,29 +59,13 @@ including, the "$" and "*".
  */
 extern RawData raw_data;
 extern LogItem log_item;
+//extern Mailbox tolink_mb;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
-// буфера под принятые сообщения
-static uint8_t ggabuf[GPS_MSG_LEN];
-static uint8_t rmcbuf[GPS_MSG_LEN];
-
-// заготовки контрльных сумм
-static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
-static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
-
-// для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
-static int32_t  gps_latitude = 0;
-static int32_t  gps_longitude = 0;
-static int32_t  gps_altitude = 0;
-static int32_t  gps_altitude_sep = 0;
-static int32_t  gps_speed_knots = 0;
-static int32_t  gps_course = 0;
-static uint32_t gps_time = 0;
 
 /*
  *******************************************************************************
@@ -86,36 +74,57 @@ static uint32_t gps_time = 0;
  *******************************************************************************
  *******************************************************************************
  */
-static WORKING_AREA(gpsRxThreadWA, 256);
+static WORKING_AREA(gpsRxThreadWA, 512);
 static msg_t gpsRxThread(void *arg){
   chRegSetThreadName("gpsRx");
   (void)arg;
-  uint32_t n = 0;
+  uint32_t tmp = 0;
+  // буфера под принятые сообщения
+  static uint8_t ggabuf[GPS_MSG_LEN];
+  static uint8_t rmcbuf[GPS_MSG_LEN];
+  // заготовки контрольных сумм
+  static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
+  static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
+  /* сообщение для менеджера связи */
+  Mail gps_mail;
+  gps_mail.payload = NULL;
+  gps_mail.invoice = MAVLINK_MSG_ID_GPS_RAW_INT;
+  gps_mail.confirmbox = NULL;
+
+  mavlink_gps_raw_int_t gps_raw_struct;
+  gps_raw_struct.time_usec = 0;
+  gps_raw_struct.alt = 0;
+  gps_raw_struct.cog = 65535;
+  gps_raw_struct.eph = 65535;
+  gps_raw_struct.epv = 65535;
+  gps_raw_struct.vel = 65535;
+  gps_raw_struct.fix_type = 0;
+  gps_raw_struct.satellites_visible = 255;
 
   while (TRUE) {
 
 EMPTY:
-		n = 0;
+		tmp = 0;
 		while(sdGet(&GPSSD) != '$')
 			; // читаем из буфера до тех пор, пока не найдем знак бакса
 
-		n = sdGet(&GPSSD) << 8;
-		n = n + sdGet(&GPSSD);
-		if (n != GP_TALKER)
+		tmp = sdGet(&GPSSD) << 8;
+		tmp = tmp + sdGet(&GPSSD);
+		if (tmp != GP_TALKER)
 			goto EMPTY;
 
 		// определим тип сообщения
-		n = sdGet(&GPSSD) << 16;
-		n = n + (sdGet(&GPSSD) << 8);
-		n = n + sdGet(&GPSSD);
-		if (n == GGA_SENTENCE){
+		tmp = sdGet(&GPSSD) << 16;
+		tmp = tmp + (sdGet(&GPSSD) << 8);
+		tmp = tmp + sdGet(&GPSSD);
+		if (tmp == GGA_SENTENCE){
 	    if (get_gps_sentence(ggabuf, ggachecksum) == 0)
-	      parse_gga(ggabuf);
+	      parse_gga(ggabuf, &gps_raw_struct);
 	    goto EMPTY;
 		}
-		if (n == RMC_SENTENCE){
+		if (tmp == RMC_SENTENCE){
 	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0)
-	      parse_rmc(rmcbuf);
+	      parse_rmc(rmcbuf, &gps_raw_struct);
 	    goto EMPTY;
 		}
 		else
@@ -166,7 +175,13 @@ $GPRMC,115436.000,A,5354.713670,N,02725.690517,E,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,,,,,,A*66
 */
-void parse_gga(uint8_t *ggabuf){
+void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
+  // для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
+  int32_t  gps_latitude = 0;
+  int32_t  gps_longitude = 0;
+  int32_t  gps_altitude = 0;
+  uint32_t gps_time = 0;
+
   uint8_t i = 1; /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
   uint8_t fix = 0, gps_satellites = 0;
 
@@ -210,8 +225,7 @@ void parse_gga(uint8_t *ggabuf){
   while(ggabuf[i] != ','){i++;}                 /* units of altitude */
     i++;
 
-  gps_altitude_sep = parse_decimal(&ggabuf[i]); /* geoidal separation */
-  while(ggabuf[i] != ','){i++;}
+  while(ggabuf[i] != ','){i++;}                 /* geoidal separation */
     i++;
 
 	if (fix > 0){  /* если есть достоверные координаты */
@@ -242,7 +256,10 @@ void parse_gga(uint8_t *ggabuf){
 
 
 
-void parse_rmc(uint8_t *rmcbuf){
+void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
+  int32_t  gps_speed_knots = 0;
+  int32_t  gps_course = 0;
+
   uint8_t i = 1;  /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
   uint8_t valid = 'V';
 
