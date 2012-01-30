@@ -34,10 +34,7 @@
  */
 extern RawData raw_data;
 extern LogItem log_item;
-extern uint32_t GlobalFlags;
-extern Mailbox tolink_mb;
 extern BinarySemaphore bmp085_sem;
-extern mavlink_bart_raw_pressure_t mavlink_bart_raw_pressure_struct;
 
 /*
  ******************************************************************************
@@ -107,7 +104,6 @@ static void bmp085_calc(void){
   b5 = x1 + x2;
   tval = (b5 + 8) >> 4;
   raw_data.temp_bmp085 = (int16_t)tval;
-  mavlink_bart_raw_pressure_struct.temp_abs = (int16_t)tval;
 
   b6 = b5 - 4000;
   x1 = (b2 * (b6 * b6 >> 12)) >> 11;
@@ -132,7 +128,6 @@ static void bmp085_calc(void){
   // end of black magic
 
   raw_data.pressure_static = pval;
-  mavlink_bart_raw_pressure_struct.press_abs = pval;
 
   // refresh aweraged pressure value
   pres_awg = pres_awg - (pres_awg >> FIX_FORMAT) + pval;
@@ -142,8 +137,7 @@ static void bmp085_calc(void){
 
 ERROR:
   raw_data.pressure_static = 0;
-  mavlink_bart_raw_pressure_struct.press_abs = 0;
-  log_item.baro_altitude = -32000;
+  log_item.baro_altitude = -32768;
   return;
 }
 
@@ -191,19 +185,6 @@ static uint32_t get_pressure(void){
 }
 
 /**
- * Отправлялка данных
- */
-static void send_raw_pressure(Mail *tolink_mail){
-  if (tolink_mail->payload == NULL){
-    clearGlobalFlag(POSTAGE_FAILED);
-    tolink_mail->payload = &mavlink_bart_raw_pressure_struct;
-    chMBPost(&tolink_mb, (msg_t)tolink_mail, TIME_IMMEDIATE);
-  }
-  else
-    setGlobalFlag(POSTAGE_FAILED);
-}
-
-/**
  * Polling thread
  */
 static WORKING_AREA(PollBaroThreadWA, 256);
@@ -211,7 +192,6 @@ static msg_t PollBaroThread(void *arg){
   chRegSetThreadName("PollBaro");
   (void)arg;
   uint32_t t = 0;
-  Mail tolink_mail = {NULL, MAVLINK_MSG_ID_BART_RAW_PRESSURE, NULL};
 
   while (TRUE) {
     /* we get temperature every 0x1F cycle */
@@ -220,9 +200,6 @@ static msg_t PollBaroThread(void *arg){
 
     up = get_pressure();
     bmp085_calc();
-
-    if ((t & 0x3) == 0x3)
-      send_raw_pressure(&tolink_mail);
 
     t++;
   }
