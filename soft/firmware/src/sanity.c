@@ -19,7 +19,6 @@
 extern uint32_t GlobalFlags;
 //extern RawData raw_data;
 extern Mailbox tolink_mb;
-extern mavlink_heartbeat_t mavlink_heartbeat_struct;
 
 /*
  ******************************************************************************
@@ -45,8 +44,10 @@ static WORKING_AREA(SanityControlThreadWA, 256);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
-
+  mavlink_heartbeat_t mavlink_heartbeat_struct;
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
+
+  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
 
   while (TRUE) {
     palSetPad(GPIOB, GPIOB_LED_R);
@@ -75,8 +76,6 @@ static msg_t SanityControlThread(void *arg) {
  *******************************************************************************
  */
 void SanityControlInit(void){
-
-  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
 
   chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),

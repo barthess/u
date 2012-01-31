@@ -2,24 +2,37 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "shell.h"
-#include "chprintf.h"
 
-#include "rtc_pns.h"
+#include "timekeeping.h"
 #include "main.h"
-
-
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
+#define SOFT_RTC_PERIOD 10
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
+ */
+extern uint64_t TimeUsec; /* Timestamp (microseconds since UNIX epoch) */
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
+static VirtualTimer timekeeping_vt;
+
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * LOCAL FUNCTIONS
+ *******************************************************************************
+ *******************************************************************************
  */
 
 /**
@@ -75,8 +88,34 @@ void tm2bcd(struct tm *timp, RTCTime *timespec){
  */
 
 /**
- * Настройка всяких параметров часов.
+ * Function incrementing global time value by TIMEKEEPING_VT_PERIOD_SEC
  */
-void RtcPnsInit(void){
-  ;
+static void vtcb(void *arg) {
+  (void)arg;
+  chSysLockFromIsr();
+  if (!chVTIsArmedI(&timekeeping_vt)){
+    chVTSetI(&timekeeping_vt, MS2ST(SOFT_RTC_PERIOD), vtcb, NULL);
+    TimeUsec += 1000 * SOFT_RTC_PERIOD;
+  }
+  chSysUnlockFromIsr();
+}
+
+/**
+ * Читает время из RTC
+ * Конвертает в счетчик микросекунд
+ */
+void TimekeepingInit(void){
+  RTCTime  timespec;
+  struct tm timp;
+  time_t t = 0;
+
+  rtc_lld_get_time(&RTCD1, &timespec);
+  bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
+  t = mktime(&timp);
+  if (t != -1){
+    TimeUsec = t * 1000000;
+    chVTSetI(&timekeeping_vt, S2ST(SOFT_RTC_PERIOD), vtcb, NULL);
+  }
+  else
+    chDbgPanic("time collapsed");
 }

@@ -112,9 +112,10 @@ CSRC = $(PORTSRC) \
        src/imu.c \
        src/sanity.c \
        src/parameters.c \
+       src/timekeeping.c \
        #src/autopilot.c \
-       src/bkp.c \
-       src/rtc_pns.c \
+       src/bkp.c 
+       
        
 
 DSPSRC = cortex_dsp

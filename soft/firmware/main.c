@@ -3,7 +3,7 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
-// TODO: функции для получения текущего времени RTC и времени с момента запуская.
+// TODO: синхронизация программных часов с аппаратными, аппаратных с GPS.
 // TODO: сторожевой таймер с использованием памяти с батарейным питанием для расследования пиздецов
 
 
@@ -18,7 +18,7 @@
 #include "irq_storm.h"
 #include "i2c_pns.h"
 #include "adc_pns.h"
-#include "rtc_pns.h"
+#include "timekeeping.h"
 #include "link.h"
 #include "gps.h"
 #include "servo.h"
@@ -40,8 +40,7 @@
  * EXTERNS
  ******************************************************************************
  */
-
-//RTCTime  timespec;                    /* тут будет храниться время */
+uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoch) */
 
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
@@ -71,10 +70,7 @@ volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных едини
 
 /* переменные, касающиеся мавлинка */
 mavlink_system_t            mavlink_system;
-mavlink_raw_imu_t           mavlink_raw_imu_struct;
-mavlink_heartbeat_t         mavlink_heartbeat_struct;
 mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
-
 mavlink_bart_raw_pressure_t mavlink_bart_raw_pressure_struct;
 
 /*
@@ -130,9 +126,9 @@ int main(void) {
   ParametersInit();
   LinkInit();
   SanityControlInit();
-  ExtiInit(); /* I2C датчики используют его */
+  ExtiInit(); /* I2C и RTC используют его */
+  TimekeepingInit();
   I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
-//  RtcPnsInit();
   ServoInit();
 //  CliInit();
   ADCInit_pns();

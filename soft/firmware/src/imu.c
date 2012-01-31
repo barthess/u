@@ -16,11 +16,10 @@
  * EXTERNS
  ******************************************************************************
  */
-
 extern uint32_t GlobalFlags;
 extern Mailbox tolink_mb;
 extern RawData raw_data;
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern uint64_t TimeUsec;
 
 /*
  ******************************************************************************
@@ -44,7 +43,7 @@ static WORKING_AREA(waImu, 256);
 static msg_t Imu(void *arg) {
   (void)arg;
   chRegSetThreadName("IMU");
-
+  mavlink_raw_imu_t mavlink_raw_imu_struct;
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
 
   while (TRUE) {
@@ -52,7 +51,7 @@ static msg_t Imu(void *arg) {
     if (tolink_mail.payload == NULL){
       clearGlobalFlag(POSTAGE_FAILED);
 
-      mavlink_raw_imu_struct.time_usec = 0;
+      mavlink_raw_imu_struct.time_usec = TimeUsec;
       mavlink_raw_imu_struct.xacc = raw_data.acceleration_x;
       mavlink_raw_imu_struct.yacc = raw_data.acceleration_y;
       mavlink_raw_imu_struct.zacc = raw_data.acceleration_z;

@@ -8,7 +8,7 @@
 #include "message.h"
 #include "cli.h"
 #include "storage.h"
-#include "rtc_pns.h"
+#include "timekeeping.h"
 #include "link.h"
 #include "main.h"
 

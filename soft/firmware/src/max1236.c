@@ -36,7 +36,7 @@
 extern RawData raw_data;
 extern LogItem log_item;
 extern Mailbox tolink_mb;
-extern mavlink_system_t mavlink_system;
+extern uint64_t TimeUsec;
 
 /*
  ******************************************************************************
@@ -142,11 +142,14 @@ static msg_t PollMax1236Thread(void *arg) {
       raw_data.altitude_sonar = sonar_raw;
       log_item.altitude_sonar = raw_data.altitude_sonar; // save to log
     }
+
+    pres_data.time_usec = TimeUsec;
     pres_data.press_diff1 = press_diff_raw;
     if (((n & 7) == 7) && (air_data_mail.payload == NULL)){
       air_data_mail.payload = &pres_data;
       chMBPost(&tolink_mb, (msg_t)&air_data_mail, TIME_IMMEDIATE);
     }
+
     n++;
   }
   return 0;
