@@ -40,18 +40,11 @@
 
 /* фукнции подачи/отдачи питания на GPS */
 #define gps_power_on()  {palClearPad(GPIOE, GPIOE_GPS_PWR_EN);}
-#define GPS_POWER_OFF() {palSetPad(GPIOE, GPIOE_GPS_PWR_EN);
+#define gps_power_off() {palSetPad(GPIOE, GPIOE_GPS_PWR_EN);
 
 
 void GPSInit(void);
-void parse_rmc(uint8_t *rmcbuf);
-void parse_gga(uint8_t *ggabuf);
-int32_t parse_decimal(uint8_t *p);
-int32_t parse_degrees(uint8_t *p);
-inline uint32_t gpsatol(const uint8_t *str);
-inline bool_t gpsisdigit(char c);
-inline uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum);
-inline uint8_t from_hex(uint8_t a);
+
 
 
 #endif /* GPS_H_ */

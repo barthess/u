@@ -66,6 +66,26 @@ extern LogItem log_item;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static SerialConfig gps_ser_cfg = {
+    GPS_DEFAULT_BAUDRATE,
+    0,
+    0,
+    0,
+};
+
+/*
+ ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+static void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct);
+static void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct);
+static int32_t parse_decimal(uint8_t *p);
+static int32_t parse_degrees(uint8_t *p);
+static uint32_t gpsatol(const uint8_t *str);
+static bool_t gpsisdigit(char c);
+static uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum);
+static uint8_t from_hex(uint8_t a);
 
 /*
  *******************************************************************************
@@ -132,40 +152,6 @@ EMPTY:
   }
   return 0;
 }
-
-
-uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
-	uint8_t byte = 0, i = 0;
-
-	while TRUE{
-		i++;
-		if (i >= GPS_MSG_LEN)   /* если данных больше, чем поместится в буфер длинной len */
-			return 1;
-		byte = sdGet(&GPSSD);
-		if (byte == '*')        /* как только натыкаемся на * - выходим из цикла */
-			break;
-		checksum ^= byte;
-		*buf++ = byte;
-	}
-	checksum ^= from_hex(sdGet(&GPSSD)) * 16; /* читаем 2 байта контрольной суммы */
-	checksum ^= from_hex(sdGet(&GPSSD));
-
-	if(checksum == 0)    /* сошлась */
-		return 0;
-	else
-		return 2;
-}
-
-
-uint8_t from_hex(uint8_t a){
-  if (a >= 'A' && a <= 'F')
-    return a - 'A' + 10;
-  else if (a >= 'a' && a <= 'f')
-    return a - 'a' + 10;
-  else
-    return a - '0';
-}
-
 
 /*
 $GPGGA,115436.000,5354.713670,N,02725.690517,E,1,5,2.01,266.711,M,26.294,M,,*5D
@@ -254,8 +240,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
 	}
 }
 
-
-
 void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
   int32_t  gps_speed_knots = 0;
   int32_t  gps_course = 0;
@@ -306,6 +290,36 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
   }
 }
 
+uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
+  uint8_t byte = 0, i = 0;
+
+  while TRUE{
+    i++;
+    if (i >= GPS_MSG_LEN)   /* если данных больше, чем поместится в буфер длинной len */
+      return 1;
+    byte = sdGet(&GPSSD);
+    if (byte == '*')        /* как только натыкаемся на * - выходим из цикла */
+      break;
+    checksum ^= byte;
+    *buf++ = byte;
+  }
+  checksum ^= from_hex(sdGet(&GPSSD)) * 16; /* читаем 2 байта контрольной суммы */
+  checksum ^= from_hex(sdGet(&GPSSD));
+
+  if(checksum == 0)    /* сошлась */
+    return 0;
+  else
+    return 2;
+}
+
+uint8_t from_hex(uint8_t a){
+  if (a >= 'A' && a <= 'F')
+    return a - 'A' + 10;
+  else if (a >= 'a' && a <= 'f')
+    return a - 'a' + 10;
+  else
+    return a - '0';
+}
 
 int32_t parse_decimal(uint8_t *p){
   bool_t isneg = (*p == '-'); /* обработаем наличие знака "-" */
@@ -324,8 +338,6 @@ int32_t parse_decimal(uint8_t *p){
   return isneg ? -ret : ret;
 }
 
-
-
 int32_t parse_degrees(uint8_t *p){
   uint32_t left = gpsatol(p);                       /* читаем первую часть (ddmm) */
   uint32_t tenk_minutes = (left % 100UL) * 10000UL; /* отделяем целые части минут */
@@ -341,10 +353,7 @@ int32_t parse_degrees(uint8_t *p){
   return (left / 100) * 100000 + tenk_minutes / 6;
 }
 
-
-
-uint32_t gpsatol(const uint8_t *str)
-{
+uint32_t gpsatol(const uint8_t *str){
   uint32_t ret = 0;
   while (gpsisdigit(*str))
     ret = 10 * ret + *str++ - '0';
@@ -354,16 +363,6 @@ uint32_t gpsatol(const uint8_t *str)
 bool_t gpsisdigit(char c){
   return c >= '0' && c <= '9';
 }
-
-
-
-static SerialConfig gps_ser_cfg = {
-    GPS_DEFAULT_BAUDRATE,
-    0,
-    0,
-    0,
-};
-
 
 /*
  *******************************************************************************
