@@ -59,7 +59,8 @@ including, the "$" and "*".
  */
 extern RawData raw_data;
 extern LogItem log_item;
-//extern Mailbox tolink_mb;
+extern uint64_t TimeUsec;
+extern Mailbox tolink_mb;
 
 /*
  ******************************************************************************
@@ -99,6 +100,7 @@ static msg_t gpsRxThread(void *arg){
   chRegSetThreadName("gpsRx");
   (void)arg;
   uint32_t tmp = 0;
+  uint32_t n = 0;
   // буфера под принятые сообщения
   static uint8_t ggabuf[GPS_MSG_LEN];
   static uint8_t rmcbuf[GPS_MSG_LEN];
@@ -113,6 +115,8 @@ static msg_t gpsRxThread(void *arg){
 
   mavlink_gps_raw_int_t gps_raw_struct;
   gps_raw_struct.time_usec = 0;
+  gps_raw_struct.lat = 0;
+  gps_raw_struct.lon = 0;
   gps_raw_struct.alt = 0;
   gps_raw_struct.cog = 65535;
   gps_raw_struct.eph = 65535;
@@ -124,6 +128,14 @@ static msg_t gpsRxThread(void *arg){
   while (TRUE) {
 
 EMPTY:
+
+    if ((n >= 2) && (gps_mail.payload == NULL)){
+      gps_raw_struct.time_usec = TimeUsec;
+      gps_mail.payload = &gps_raw_struct;
+      chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
+      n = 0;
+    }
+
 		tmp = 0;
 		while(sdGet(&GPSSD) != '$')
 			; // читаем из буфера до тех пор, пока не найдем знак бакса
@@ -138,13 +150,17 @@ EMPTY:
 		tmp = tmp + (sdGet(&GPSSD) << 8);
 		tmp = tmp + sdGet(&GPSSD);
 		if (tmp == GGA_SENTENCE){
-	    if (get_gps_sentence(ggabuf, ggachecksum) == 0)
+	    if (get_gps_sentence(ggabuf, ggachecksum) == 0){
 	      parse_gga(ggabuf, &gps_raw_struct);
+	      n++;
+	    }
 	    goto EMPTY;
 		}
 		if (tmp == RMC_SENTENCE){
-	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0)
+	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0){
 	      parse_rmc(rmcbuf, &gps_raw_struct);
+	      n++;
+	    }
 	    goto EMPTY;
 		}
 		else
@@ -169,7 +185,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
   uint32_t gps_time = 0;
 
   uint8_t i = 1; /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
-  uint8_t fix = 0, gps_satellites = 0;
+  uint8_t fix = 0, satellites_visible = 0;
 
   gps_time = parse_decimal(&ggabuf[i]);         /* time */
   while(ggabuf[i] != ','){i++;}
@@ -197,7 +213,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
   while(ggabuf[i] != ','){i++;}
     i++;
 
-  gps_satellites = parse_decimal(&ggabuf[i]);   /* number of satellites */
+  satellites_visible = parse_decimal(&ggabuf[i]);   /* number of satellites */
   while(ggabuf[i] != ','){i++;}
     i++;
 
@@ -219,12 +235,18 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
 		raw_data.gps_latitude  = gps_latitude;
 		raw_data.gps_longitude = gps_longitude;
 	  raw_data.gps_altitude  = gps_altitude;
-	  raw_data.gps_satellites = gps_satellites;
+	  raw_data.gps_satellites = satellites_visible;
 
 	  log_item.gps_time      = gps_time / 100; /* откинем доли секунды */
 	  log_item.gps_latitude  = gps_latitude;
 	  log_item.gps_longitude = gps_longitude;
 	  log_item.gps_altitude  = (int16_t)gps_altitude / 100; /* откинем доли метров */
+
+	  gps_raw_struct->lat = gps_latitude * 100;
+	  gps_raw_struct->lon = gps_longitude * 100;
+	  gps_raw_struct->alt = gps_altitude * 10;
+	  gps_raw_struct->fix_type = fix + 1;
+	  gps_raw_struct->satellites_visible = satellites_visible;
 	}
 	else{
 	  raw_data.gps_time = 0;
@@ -237,6 +259,13 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
     log_item.gps_latitude = 0;
     log_item.gps_longitude = 0;
     log_item.gps_altitude = 0;
+
+    gps_raw_struct->time_usec = TimeUsec;
+    gps_raw_struct->lat = 0;
+    gps_raw_struct->lon = 0;
+    gps_raw_struct->alt = 0;
+    gps_raw_struct->fix_type = 0;
+    gps_raw_struct->satellites_visible = 255;
 	}
 }
 
@@ -280,6 +309,9 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
 
   	log_item.gps_course = (uint8_t)((gps_course * 256) / 36000);
   	log_item.gps_speed  = (uint8_t)((gps_speed_knots * 514) / 100000);
+
+    gps_raw_struct->cog = gps_course;
+    gps_raw_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
   }
   else{
   	raw_data.gps_course = 0;
@@ -287,6 +319,9 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
 
     log_item.gps_course = 0;
     log_item.gps_speed = 0;
+
+    gps_raw_struct->cog = 65535;
+    gps_raw_struct->vel = 65535;
   }
 }
 
@@ -321,6 +356,9 @@ uint8_t from_hex(uint8_t a){
     return a - '0';
 }
 
+/**
+ * Возвращает значение с фиксированной точкой с точностью 2 знака после запятой
+ */
 int32_t parse_decimal(uint8_t *p){
   bool_t isneg = (*p == '-'); /* обработаем наличие знака "-" */
   if (isneg) ++p;
