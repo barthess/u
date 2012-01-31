@@ -90,6 +90,15 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     finalize_receive();
     break;
 
+  case MAVLINK_MSG_ID_SYS_STATUS:
+    len = mavlink_msg_sys_status_encode(
+        mavlink_system.sysid,
+        MAV_COMP_ID_ALL,
+        mavlink_msgbuf,
+        (const mavlink_sys_status_t*)(mailp->payload));
+    finalize_receive();
+    break;
+
   case MAVLINK_MSG_ID_PARAM_VALUE:
     len = mavlink_msg_param_value_encode(
         mavlink_system.sysid,

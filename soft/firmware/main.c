@@ -71,6 +71,7 @@ volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных едини
 /* переменные, касающиеся мавлинка */
 mavlink_system_t            mavlink_system;
 mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
+mavlink_sys_status_t        mavlink_sys_status_struct;
 
 /*
  ******************************************************************************

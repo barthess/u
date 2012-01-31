@@ -8,6 +8,11 @@
 #include "imu.h"
 #include "dsp.h"
 
+
+#include <mavlink.h>
+#include <common.h>
+#include <bart.h>
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -15,6 +20,7 @@
  */
 extern RawData raw_data;
 extern LogItem log_item;
+extern mavlink_sys_status_t mavlink_sys_status_struct;
 
 /*
  ******************************************************************************
@@ -118,6 +124,10 @@ static msg_t PollADCThread(void *arg){
     log_item.main_current = (uint16_t)((__USAT(raw_data.main_current - cal_CurrentOffset, 15) * 1000) / cal_CurrentCoeff);
     uint16_t voltage = (raw_data.main_voltage * 100) / cal_VoltageCoeff;
     log_item.main_voltage = (uint8_t)__USAT(voltage, 8);
+
+    mavlink_sys_status_struct.battery_remaining = 3;
+    mavlink_sys_status_struct.current_battery = 1000;
+    mavlink_sys_status_struct.voltage_battery = 24000;
   }
   return 0;
 }
