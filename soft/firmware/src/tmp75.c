@@ -8,6 +8,10 @@
 #include "i2c_pns.h"
 #include "tmp75.h"
 
+#include <mavlink.h>
+#include <bart.h>
+#include <common.h>
+
 /*
  ******************************************************************************
  * DEFINES
@@ -22,6 +26,7 @@
  */
 extern RawData raw_data;
 extern LogItem log_item;
+extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 
 /*
  ******************************************************************************
@@ -58,6 +63,7 @@ static msg_t PollTmp75Thread(void *arg){
       t_int = rxbuf[0] * 100;
       t_frac = (rxbuf[1] * 100) >> 8;
       raw_data.temp_tmp75 = t_int + t_frac;
+      mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
     }
     chThdSleepMilliseconds(250);
   }

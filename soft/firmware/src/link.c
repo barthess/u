@@ -100,10 +100,20 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     break;
 
   case MAVLINK_MSG_ID_RAW_IMU:
-    len = mavlink_msg_raw_imu_encode (mavlink_system.sysid,
+    len = mavlink_msg_raw_imu_encode (
+        mavlink_system.sysid,
         MAV_COMP_ID_IMU,
         mavlink_msgbuf,
         (const mavlink_raw_imu_t*)(mailp->payload));
+    finalize_receive();
+    break;
+
+  case MAVLINK_MSG_ID_GPS_RAW_INT:
+    len = mavlink_msg_gps_raw_int_encode (
+        mavlink_system.sysid,
+        MAV_COMP_ID_GPS,
+        mavlink_msgbuf,
+        (const mavlink_gps_raw_int_t*)(mailp->payload));
     finalize_receive();
     break;
 

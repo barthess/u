@@ -18,7 +18,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint64_t TimeUsec; /* Timestamp (microseconds since UNIX epoch) */
+extern uint64_t TimeUsec;
 
 /*
  ******************************************************************************
@@ -92,12 +92,10 @@ void tm2bcd(struct tm *timp, RTCTime *timespec){
  */
 static void vtcb(void *arg) {
   (void)arg;
-  chSysLockFromIsr();
   if (!chVTIsArmedI(&timekeeping_vt)){
     chVTSetI(&timekeeping_vt, MS2ST(SOFT_RTC_PERIOD), vtcb, NULL);
     TimeUsec += 1000 * SOFT_RTC_PERIOD;
   }
-  chSysUnlockFromIsr();
 }
 
 /**
@@ -107,14 +105,16 @@ static void vtcb(void *arg) {
 void TimekeepingInit(void){
   RTCTime  timespec;
   struct tm timp;
-  time_t t = 0;
+  uint64_t t = 0;
 
   rtc_lld_get_time(&RTCD1, &timespec);
   bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
   t = mktime(&timp);
   if (t != -1){
     TimeUsec = t * 1000000;
+    chSysLock();
     chVTSetI(&timekeeping_vt, S2ST(SOFT_RTC_PERIOD), vtcb, NULL);
+    chSysUnlock();
   }
   else
     chDbgPanic("time collapsed");
