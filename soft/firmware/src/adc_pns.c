@@ -76,7 +76,6 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
 static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
   (void)adcp;
   (void)err;
-  chSysHalt();
 }
 
 /*
