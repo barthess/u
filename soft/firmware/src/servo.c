@@ -11,9 +11,9 @@
 #include "main.h"
 #include "eeprom.h"
 
-#include <mavlink.h>
-#include <bart.h>
-#include <common.h>
+#include "mavlink.h"
+#include "bart.h"
+#include "common.h"
 
 /*
  ******************************************************************************

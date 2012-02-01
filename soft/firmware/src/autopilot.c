@@ -1,7 +1,6 @@
 #include "autopilot.h"
 #include "servo.h"
 #include "message.h"
-#include "proto_pns.h"
 #include "eeprom.h"
 
 /*

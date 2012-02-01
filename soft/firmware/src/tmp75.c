@@ -8,9 +8,9 @@
 #include "i2c_pns.h"
 #include "tmp75.h"
 
-#include <mavlink.h>
-#include <bart.h>
-#include <common.h>
+#include "mavlink.h"
+#include "bart.h"
+#include "common.h"
 
 /*
  ******************************************************************************

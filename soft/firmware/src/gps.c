@@ -8,9 +8,9 @@
 #include "gps.h"
 #include "main.h"
 
-#include <mavlink.h>
-#include <bart.h>
-#include <common.h>
+#include "mavlink.h"
+#include "bart.h"
+#include "common.h"
 
 /**
  * Ўирота  Ч это угол между отвесной линией в данной точке и плоскостью экватора,

@@ -9,12 +9,11 @@
 #include "dsp.h"
 #include "main.h"
 #include "i2c_pns.h"
-
 #include "max1236.h"
 
-#include <mavlink.h>
-#include <bart.h>
-#include <common.h>
+#include "mavlink.h"
+#include "bart.h"
+#include "common.h"
 
 /*
  ******************************************************************************
