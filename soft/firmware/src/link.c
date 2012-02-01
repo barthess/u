@@ -199,6 +199,19 @@ static bool_t handle_message(mavlink_message_t *msg){
       return FAILED;
     break;
 
+  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+    mavlink_msg_param_request_read_decode(msg, &param_request_read);
+    if (param_mail.payload == NULL){
+      param_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_READ;
+      param_mail.payload = &param_request_read;
+      status = chMBPost(&param_mb, (msg_t)&param_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
+    else
+      return FAILED;
+    break;
+
   case MAVLINK_MSG_ID_BART_MANUAL_CONTROL:
     mavlink_msg_bart_manual_control_decode(msg, &mavlink_bart_manual_control_struct);
     /* if this message not for us than just silently ignore it */
