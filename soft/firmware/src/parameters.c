@@ -21,7 +21,6 @@
 #define PARAM_SYSTEM_ID           0
 #define PARAM_COMPONENT_ID        1
 #define ONBOARD_PARAM_NAME_LENGTH 14
-#define ONBOARD_PARAM_COUNT       (sizeof(*global_data) / sizeof(GlobalParam_t))
 
 /*
  ******************************************************************************
@@ -33,6 +32,8 @@ extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
 
 GlobalParam_t global_data[] = {
+    /*  key             val    min    max         type                       */
+    /*-----------------------------------------------------------------------*/
     {"SYS_ID",          20,    1,     255,    MAVLINK_TYPE_UINT32_T},
     /* IMU - inertial measurement unit */
     {"IMU_g1",          0.1,   -1,    1,      MAVLINK_TYPE_FLOAT},
@@ -65,6 +66,7 @@ GlobalParam_t global_data[] = {
  */
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
+static const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
 
 /*
  *******************************************************************************
