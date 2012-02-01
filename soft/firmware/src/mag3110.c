@@ -7,7 +7,12 @@
 #include "dsp.h"
 #include "mag3110.h"
 #include "message.h"
+#include "parameters.h"
 #include "main.h"
+
+#include <mavlink.h>
+#include <common.h>
+#include <bart.h>
 
 /*
  ******************************************************************************
@@ -22,8 +27,9 @@
  * EXTERNS
  ******************************************************************************
  */
-extern RawData raw_data;
 extern BinarySemaphore mag3110_sem;
+extern GlobalParam_t global_data[];
+extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 
 /*
  ******************************************************************************
@@ -33,6 +39,9 @@ extern BinarySemaphore mag3110_sem;
 // буфера под данные магнитометра
 static uint8_t rxbuf[MAG_RX_DEPTH];
 static uint8_t txbuf[MAG_TX_DEPTH];
+
+/* индексы в структуре с параметрами */
+static uint32_t xoffset_index, yoffset_index, zoffset_index;
 
 /*
  *******************************************************************************
@@ -44,7 +53,6 @@ static uint8_t txbuf[MAG_TX_DEPTH];
 /* ѕоток дл€ запроса акселерометра */
 static WORKING_AREA(PollMagThreadWA, 256);
 static msg_t PollMagThread(void *arg){
-
   chRegSetThreadName("PollMag");
   (void)arg;
   msg_t sem_status = RDY_OK;
@@ -60,23 +68,23 @@ static msg_t PollMagThread(void *arg){
     txbuf[0] = MAG_OUT_DATA;
     if (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
                                            sem_status == RDY_OK){
-      raw_data.magnetic_x = complement2signed(rxbuf[0], rxbuf[1]);
-      raw_data.magnetic_y = complement2signed(rxbuf[2], rxbuf[3]);
-      raw_data.magnetic_z = complement2signed(rxbuf[4], rxbuf[5]);
+      mavlink_raw_imu_struct.xmag = complement2signed(rxbuf[0], rxbuf[1]);
+      mavlink_raw_imu_struct.ymag = complement2signed(rxbuf[2], rxbuf[3]);
+      mavlink_raw_imu_struct.zmag = complement2signed(rxbuf[4], rxbuf[5]);
     }
     else{
       /* выставл€ем знамение ошибки */
-      raw_data.magnetic_x = -32768;
-      raw_data.magnetic_y = -32768;
-      raw_data.magnetic_z = -32768;
+      mavlink_raw_imu_struct.xmag = -32768;
+      mavlink_raw_imu_struct.ymag = -32768;
+      mavlink_raw_imu_struct.zmag = -32768;
     }
 
     /* если датчик передознулс€ - надо произвести сброс. ¬ принципе,
     можно в датчике настроить авторесет на каждое измерение, но это
     как-то не элегантно. */
-    if (abs(raw_data.magnetic_x) > OVERDOSE ||
-        abs(raw_data.magnetic_y) > OVERDOSE ||
-        abs(raw_data.magnetic_z) > OVERDOSE){
+    if (abs(mavlink_raw_imu_struct.xmag) > OVERDOSE ||
+        abs(mavlink_raw_imu_struct.ymag) > OVERDOSE ||
+        abs(mavlink_raw_imu_struct.zmag) > OVERDOSE){
       txbuf[0] = MAG_CTRL_REG2;
       txbuf[1] = MAG_RST;
       i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
@@ -92,12 +100,32 @@ static msg_t PollMagThread(void *arg){
  *******************************************************************************
  */
 void init_mag3110(void){
+  int32_t i = -1;
+
+  i = key_value_search("MAG_xoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    xoffset_index = i;
+
+  i = key_value_search("MAG_yoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    yoffset_index = i;
+
+  i = key_value_search("MAG_zoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    zoffset_index = i;
+
   // TODO: сначала вообще убедитьс€, что девайс отвечает путем запроса его WHOAMI
   // TODO: запустить в нем самодиагностику
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
-    uint8_t i = 0;
+    i = 0;
     for (i = 0; i < MAG_TX_DEPTH; i++){txbuf[i] = 0x55;}
     for (i = 0; i < MAG_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif

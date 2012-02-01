@@ -22,21 +22,21 @@ struct RawData{
   int32_t gyro_yAvg;
   int32_t gyro_zAvg;
   // данные с гироскопа
-  int16_t gyro_x;
-  int16_t gyro_y;
-  int16_t gyro_z;
+  //  int16_t gyro_x;
+  //  int16_t gyro_y;
+  //  int16_t gyro_z;
   int16_t gyro_temp;
   // значения с внешнего АЦП
   uint16_t pressure_dynamic;
   uint16_t altitude_sonar;
   //магнитометр
-  int16_t magnetic_x;
-  int16_t magnetic_y;
-  int16_t magnetic_z;
+  //  int16_t magnetic_x;
+  //  int16_t magnetic_y;
+  //  int16_t magnetic_z;
   // акселерометр
-  int16_t acceleration_x;
-  int16_t acceleration_y;
-  int16_t acceleration_z;
+  //  int16_t acceleration_x;
+  //  int16_t acceleration_y;
+  //  int16_t acceleration_z;
   // положения сервоприводов (данные из регистров счетчика)
   uint16_t servo1;
   uint16_t servo2;

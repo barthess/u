@@ -13,8 +13,6 @@
 #include <common.h>
 #include <bart.h>
 
-
-
 /*
  ******************************************************************************
  * DEFINES
@@ -23,7 +21,7 @@
 #define PARAM_SYSTEM_ID           0
 #define PARAM_COMPONENT_ID        1
 #define ONBOARD_PARAM_NAME_LENGTH 14
-#define ONBOARD_PARAM_COUNT       (sizeof(global_data) / sizeof(GlobalParam_t))
+#define ONBOARD_PARAM_COUNT       (sizeof(*global_data) / sizeof(GlobalParam_t))
 
 /*
  ******************************************************************************
@@ -33,6 +31,32 @@
 extern Mailbox param_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
+
+GlobalParam_t global_data[] = {
+    {"SYS_ID",          20,    1,     255,    MAVLINK_TYPE_UINT32_T},
+    /* IMU - inertial measurement unit */
+    {"IMU_g1",          0.1,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    {"IMU_g2",          0.2,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    {"IMU_g3",          0.3,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    /* смещения осей магнитометра */
+    {"MAG_xoffset",     110,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
+    {"MAG_yoffset",     -90,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
+    {"MAG_zoffset",     351,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
+    /* смещения осей магнитометра */
+    {"ACC_xoffset",     2,     -100,  100,    MAVLINK_TYPE_INT32_T},
+    {"ACC_yoffset",     0,     -100,  100,    MAVLINK_TYPE_INT32_T},
+    {"ACC_zoffset",     -3,    -100,  100,    MAVLINK_TYPE_INT32_T},
+    /* PMU - pressure measurement unit */
+    {"PMU_D_offset",    3,     -1100, 1024,   MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
+    {"PMU_D_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
+    {"PMU_A_offset",    3,     -1000, 1224,   MAVLINK_TYPE_INT32_T},   /* absolute pressure */
+    {"PMU_A_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
+    /* ADC coefficients */
+    {"ADC_I_offset",    1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
+    {"ADC_I_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
+    /* fake field with 14 symbols name */
+    {"fake_14_bytes_",  1048,  0,     1224,   MAVLINK_TYPE_FLOAT},
+};
 
 /*
  ******************************************************************************
@@ -50,37 +74,13 @@ static msg_t param_confirm_mb_buf[1];
  *******************************************************************************
  */
 
-
-GlobalParam_t global_data[] = {
-    {"SYS_ID",          20,    1,     255,    MAVLINK_TYPE_UINT32_T},
-    /* IMU - inertial measurement unit */
-    {"IMU_g1",          0.1,   -1,    1,      MAVLINK_TYPE_FLOAT},
-    {"IMU_g2",          0.2,   -1,    1,      MAVLINK_TYPE_FLOAT},
-    {"IMU_g3",          0.3,   -1,    1,      MAVLINK_TYPE_FLOAT},
-    /* смещения осей магнитометра */
-    {"MAG_xoffset",     110,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
-    {"MAG_yoffset",     -90,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
-    {"MAG_zoffset",     351,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
-    /* PMU - pressure measurement unit */
-    {"PMU_D_offset",    3,     -1100, 1024,   MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
-    {"PMU_D_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
-    {"PMU_A_offset",    3,     -1000, 1224,   MAVLINK_TYPE_INT32_T},   /* absolute pressure */
-    {"PMU_A_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
-    /* ADC coefficients */
-    {"ADC_I_offset",    1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
-    {"ADC_I_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
-    /* fake field with 14 symbols name */
-    {"fake_14_bytes_",  1048,  0,     1224,   MAVLINK_TYPE_FLOAT},
-};
-
-
 /**
  * @brief   Performs key-value search.
  *
  * @return      Index in dictionary.
  * @retval -1   key not found.
  */
-static int32_t key_value_search(char* key){
+int32_t key_value_search(char* key, GlobalParam_t *global_data){
   uint32_t i = 0;
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
@@ -96,7 +96,7 @@ static int32_t key_value_search(char* key){
 static bool_t set_parameter(mavlink_param_set_t *set){
   int32_t index = -1;
 
-  index = key_value_search(set->param_id);
+  index = key_value_search(set->param_id, global_data);
 
   if (index >= 0){
     // Only write and emit changes if there is actually a difference
@@ -143,7 +143,7 @@ static bool_t send_value(Mail *param_value_mail,
   uint32_t j = 0;
 
   if (key != NULL)
-    index = key_value_search(key);
+    index = key_value_search(key, global_data);
   else
     index = n;
 

@@ -8,7 +8,12 @@
 #include "imu.h"
 #include "itg3200.h"
 #include "message.h"
+#include "parameters.h"
 #include "main.h"
+
+#include <mavlink.h>
+#include <common.h>
+#include <bart.h>
 
 /*
  ******************************************************************************
@@ -26,6 +31,8 @@ extern uint32_t GlobalFlags;
 extern RawData raw_data;
 extern BinarySemaphore itg3200_sem;
 extern BinarySemaphore imu_sem;
+extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
@@ -39,6 +46,9 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
 static uint32_t zero_cnt = 0;
 // счетчик для интегрирования
 static uint32_t gyrosamplecnt = 0;
+
+/* индексы в структуре с параметрами */
+static uint32_t xoffset_index, yoffset_index, zoffset_index;
 
 // массив собранных значений для рассчета интеграла
 static int32_t gxv[4] = {0,0,0,0};
@@ -58,9 +68,9 @@ static int32_t gzv[4] = {0,0,0,0};
  */
 void gyrozeroing(void){
   if (zero_cnt > 0){
-    raw_data.gyro_xAvg += raw_data.gyro_x;
-    raw_data.gyro_yAvg += raw_data.gyro_y;
-    raw_data.gyro_zAvg += raw_data.gyro_z;
+    raw_data.gyro_xAvg += mavlink_raw_imu_struct.xgyro;
+    raw_data.gyro_yAvg += mavlink_raw_imu_struct.ygyro;
+    raw_data.gyro_zAvg += mavlink_raw_imu_struct.zgyro;
     zero_cnt--;
     return;
   }
@@ -87,9 +97,9 @@ void gyro_get_angle(void){
   gyrosamplecnt++;
 
   i = gyrosamplecnt & 3;
-  gxv[i] = raw_data.gyro_x * (GYRO_AVG_SAMPLES_CNT / 8);
-  gyv[i] = raw_data.gyro_y * (GYRO_AVG_SAMPLES_CNT / 8);
-  gzv[i] = raw_data.gyro_z * (GYRO_AVG_SAMPLES_CNT / 8);
+  gxv[i] = mavlink_raw_imu_struct.xgyro * (GYRO_AVG_SAMPLES_CNT / 8);
+  gyv[i] = mavlink_raw_imu_struct.ygyro * (GYRO_AVG_SAMPLES_CNT / 8);
+  gzv[i] = mavlink_raw_imu_struct.zgyro * (GYRO_AVG_SAMPLES_CNT / 8);
   if (i == 3){
     raw_data.gyro_x_delta = 3 * (s38(gxv[0],gxv[1],gxv[2],gxv[3]) - raw_data.gyro_xAvg);
     raw_data.gyro_y_delta = 3 * (s38(gyv[0],gyv[1],gyv[2],gyv[3]) - raw_data.gyro_yAvg);
@@ -121,9 +131,9 @@ static msg_t PollGyroThread(void *arg){
     if (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK &&
                                             sem_status == RDY_OK){
       raw_data.gyro_temp = complement2signed(rxbuf[0], rxbuf[1]);
-      raw_data.gyro_x    = complement2signed(rxbuf[2], rxbuf[3]);
-      raw_data.gyro_y    = complement2signed(rxbuf[4], rxbuf[5]);
-      raw_data.gyro_z    = complement2signed(rxbuf[6], rxbuf[7]);
+      mavlink_raw_imu_struct.xgyro = complement2signed(rxbuf[2], rxbuf[3]);
+      mavlink_raw_imu_struct.ygyro = complement2signed(rxbuf[4], rxbuf[5]);
+      mavlink_raw_imu_struct.zgyro = complement2signed(rxbuf[6], rxbuf[7]);
 
       if (GlobalFlags & GYRO_CAL)
         gyrozeroing();
@@ -133,9 +143,9 @@ static msg_t PollGyroThread(void *arg){
     else{
       /* значения, сигнализирующие о сбое */
       raw_data.gyro_temp = -32768;
-      raw_data.gyro_x    = -32768;
-      raw_data.gyro_y    = -32768;
-      raw_data.gyro_z    = -32768;
+      mavlink_raw_imu_struct.xgyro = -32768;
+      mavlink_raw_imu_struct.ygyro = -32768;
+      mavlink_raw_imu_struct.zgyro = -32768;
     }
   }
   return 0;
@@ -151,10 +161,29 @@ static msg_t PollGyroThread(void *arg){
  *
  */
 void init_itg3200(void){
+  int32_t i = -1;
+
+  i = key_value_search("MAG_xoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    xoffset_index = i;
+
+  i = key_value_search("MAG_yoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    yoffset_index = i;
+
+  i = key_value_search("MAG_zoffset", global_data);
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    zoffset_index = i;
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
-    uint8_t i = 0;
+    i = 0;
     for (i = 0; i < GYRO_TX_DEPTH; i++){txbuf[i] = 0x55;}
     for (i = 0; i < GYRO_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif

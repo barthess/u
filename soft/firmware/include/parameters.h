@@ -18,5 +18,6 @@ struct GlobalParam_t
 
 
 void ParametersInit(void);
+int32_t key_value_search(char* key, GlobalParam_t *global_data);
 
 #endif /* PARAMETERS_H_ */
