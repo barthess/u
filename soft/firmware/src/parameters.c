@@ -18,8 +18,6 @@
  * DEFINES
  ******************************************************************************
  */
-#define PARAM_SYSTEM_ID           0
-#define PARAM_COMPONENT_ID        1
 #define ONBOARD_PARAM_NAME_LENGTH 14
 
 /*
