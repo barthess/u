@@ -16,9 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
 extern Mailbox tolink_mb;
-extern RawData raw_data;
 extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 
