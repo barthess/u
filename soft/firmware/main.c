@@ -62,6 +62,8 @@ Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
 static msg_t param_mb_buf[2];
+Mailbox manual_control_mb;
+static msg_t manual_control_mb_buf[1];
 
 /** Переменные для хранения калибровочных данных */
 volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
@@ -74,6 +76,8 @@ mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
 mavlink_raw_imu_t           mavlink_raw_imu_struct;
 mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
 mavlink_sys_status_t        mavlink_sys_status_struct;
+
+mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
 /*
  ******************************************************************************
@@ -106,10 +110,11 @@ int main(void) {
   chBSemInit(&itg3200_sem,  TRUE);
 
   /* почтовые ящики */
-  chMBInit(&autopilot_mb,   autopilot_mb_buf,   (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
-  chMBInit(&tolink_mb,      tolink_mb_buf,      (sizeof(tolink_mb_buf)/sizeof(msg_t)));
-  chMBInit(&toservo_mb,     toservo_mb_buf,     (sizeof(toservo_mb_buf)/sizeof(msg_t)));
-  chMBInit(&param_mb,       param_mb_buf,       (sizeof(param_mb_buf)/sizeof(msg_t)));
+  chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
+  chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
+  chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
+  chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
+  chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane

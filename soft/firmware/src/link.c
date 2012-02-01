@@ -25,7 +25,9 @@
  */
 extern Mailbox tolink_mb;
 extern Mailbox param_mb;
+extern Mailbox manual_control_mb;
 extern mavlink_system_t mavlink_system;
+extern mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
 /*
  ******************************************************************************
@@ -35,7 +37,9 @@ extern mavlink_system_t mavlink_system;
 /* переменные для установки параметров присланных с земли */
 static mavlink_param_set_t param_set;
 static mavlink_param_request_list_t param_request_list;
+static mavlink_param_request_read_t param_request_read;
 static Mail param_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
+static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_BART_MANUAL_CONTROL, NULL};
 
 static SerialConfig xbee_ser_cfg = {
     BAUDRATE_XBEE,
@@ -191,9 +195,24 @@ static bool_t handle_message(mavlink_message_t *msg){
       if (status != RDY_OK)
         return FAILED;
     }
+    else
+      return FAILED;
     break;
 
-  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+  case MAVLINK_MSG_ID_BART_MANUAL_CONTROL:
+    mavlink_msg_bart_manual_control_decode(msg, &mavlink_bart_manual_control_struct);
+    /* if this message not for us than just silently ignore it */
+    if (mavlink_bart_manual_control_struct.target_id != mavlink_system.sysid)
+      return SUCCESS;
+    if (manual_control_mail.payload == NULL){
+      manual_control_mail.invoice = MAVLINK_MSG_ID_BART_MANUAL_CONTROL;
+      manual_control_mail.payload = &param_set;
+      status = chMBPost(&manual_control_mb, (msg_t)&manual_control_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
+    else
+      return FAILED;
     break;
 
   case MAVLINK_MSG_ID_PARAM_SET:

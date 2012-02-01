@@ -12,17 +12,29 @@
      <messages>
           <message id="150" name="BART_RAW_PRESSURE">
                <description>Uncompensated values of pressure and sensors' temperature</description>
-               <field type="uint64_t" name="time_usec">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
-               <field type="uint32_t" name="press_abs">Raw absolute pressure in Pa (BMP085)</field>
-               <field type="int16_t" name="temp_abs">Raw temperature of absolute pressure sensor in 0.1 celsius</field>
-               <field type="uint16_t" name="press_diff">Raw differential pressure</field>
-               <field type="int16_t" name="temp_diff">Raw temperature of differental pressure sensor in 0.01 celsius (from TMP75)</field>
+               <field type="uint64_t"	name="time_usec">Timestamp (microseconds since UNIX epoch or microseconds since system boot)</field>
+               <field type="uint32_t"	name="press_abs">Raw absolute pressure in Pa (BMP085)</field>
+               <field type="int16_t"	name="temp_abs">Raw temperature of absolute pressure sensor in 0.1 celsius</field>
+               <field type="uint16_t"	name="press_diff">Raw differential pressure</field>
+               <field type="int16_t"	name="temp_diff">Raw temperature of differental pressure sensor in 0.01 celsius (from TMP75)</field>
           </message>
           <message id="151" name="BART_SCALED_PRESSURE">
                <description/>
-               <field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
-               <field type="uint32_t" name="press_abs">Scaled absolute pressure in Pa (like in weather forecast)</field>
-               <field type="uint16_t" name="press_diff">Scaled differential pressure in Pa</field>
+               <field type="uint32_t"	name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+               <field type="uint32_t"	name="press_abs">Scaled absolute pressure in Pa (like in weather forecast)</field>
+               <field type="uint16_t"	name="press_diff">Scaled differential pressure in Pa</field>
+          </message>
+		  <message id="152" name="BART_MANUAL_CONTROL">
+               <description>Manual servo controlling. 0 -- minimum, 255 -- maximum.</description>
+               <field type="uint8_t"	name="target_id">System to be controlled</field>
+			   <field type="uint8_t"	name="servo1">System to be controlled</field>
+			   <field type="uint8_t"	name="servo2">System to be controlled</field>
+			   <field type="uint8_t"	name="servo3">System to be controlled</field>
+			   <field type="uint8_t"	name="servo4">System to be controlled</field>
+			   <field type="uint8_t"	name="servo5">System to be controlled</field>
+			   <field type="uint8_t"	name="servo6">System to be controlled</field>
+			   <field type="uint8_t"	name="servo7">System to be controlled</field>
+			   <field type="uint8_t"	name="servo8">System to be controlled</field>
           </message>
      </messages>
 </mavlink>
