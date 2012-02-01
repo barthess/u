@@ -57,6 +57,10 @@ GlobalParam_t global_data[] = {
     {"IMU_g1",          0.1,   -1,    1,      MAVLINK_TYPE_FLOAT},
     {"IMU_g2",          0.2,   -1,    1,      MAVLINK_TYPE_FLOAT},
     {"IMU_g3",          0.3,   -1,    1,      MAVLINK_TYPE_FLOAT},
+    /* смещения осей магнитометра */
+    {"MAG_xoffset",     110,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
+    {"MAG_yoffset",     -90,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
+    {"MAG_zoffset",     351,   -5000, 5000,   MAVLINK_TYPE_INT32_T},
     /* PMU - pressure measurement unit */
     {"PMU_D_offset",    3,     -1100, 1024,   MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
     {"PMU_D_gain",      1048,  0,     1224,   MAVLINK_TYPE_UINT32_T},
