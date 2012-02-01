@@ -19,12 +19,9 @@
  * EXTERNS
  ******************************************************************************
  */
-//extern uint32_t GlobalFlags;
-extern RawData raw_data;
 extern GlobalParam_t global_data[];
 //extern Mailbox tolink_mb;
 extern Mailbox manual_control_mb;
-extern mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
 /*
  ******************************************************************************
@@ -145,13 +142,28 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
 /**
  * ѕоток дл€ обслуживани€ серв
  */
-static WORKING_AREA(ServoThreadWA, 256);
+static WORKING_AREA(ServoThreadWA, 512);
 static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
+  msg_t tmp;
+  mavlink_bart_manual_control_t *control = NULL;
 
   while (TRUE) {
-    chThdSleepMilliseconds(1000);
+    chMBFetch(&manual_control_mb, &tmp, TIME_INFINITE);
+    control = (((Mail*)tmp)->payload);
+
+    ServoSetAngle(1, control->servo1);
+    ServoSetAngle(2, control->servo2);
+    ServoSetAngle(3, control->servo3);
+    ServoSetAngle(4, control->servo4);
+    ServoSetAngle(5, control->servo5);
+    ServoSetAngle(6, control->servo6);
+    ServoSetAngle(7, control->servo7);
+    ServoSetAngle(8, control->servo8);
+
+    /* данные обработаны */
+    ((Mail*)tmp)->payload = NULL;
   }
   return 0;
 }
