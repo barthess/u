@@ -9,10 +9,7 @@
 #include "main.h"
 #include "eeprom.h"
 #include "parameters.h"
-
-#include "mavlink.h"
-#include "bart.h"
-#include "common.h"
+#include "link.h"
 
 /*
  ******************************************************************************

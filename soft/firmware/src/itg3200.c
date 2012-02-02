@@ -10,10 +10,7 @@
 #include "message.h"
 #include "parameters.h"
 #include "main.h"
-
-#include "mavlink.h"
-#include "common.h"
-#include "bart.h"
+#include "link.h"
 
 /*
  ******************************************************************************

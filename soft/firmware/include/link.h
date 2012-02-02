@@ -1,6 +1,7 @@
-#include "ch.h"
-#include "main.h"
-#include "message.h"
+#include "mavlink.h"
+#include "bart.h"
+#include "common.h"
+
 
 #ifndef LINK_H_
 #define LINK_H_

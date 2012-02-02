@@ -5,7 +5,6 @@
 #include "hal.h"
 #include "shell.h"
 #include "chprintf.h"
-
 #include "ff.h"
 
 #include "storage.h"

@@ -10,10 +10,7 @@
 #include "imu.h"
 #include "servo.h"
 #include "eeprom_file.h"
-
-#include "mavlink.h"
-#include "common.h"
-#include "bart.h"
+#include "link.h"
 
 /*
  ******************************************************************************

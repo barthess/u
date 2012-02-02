@@ -31,10 +31,6 @@
 #include "cli.h"
 #include "imu.h"
 
-#include "mavlink.h"
-#include "common.h"
-#include "bart.h"
-
 /*
  ******************************************************************************
  * EXTERNS

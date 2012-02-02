@@ -6,10 +6,7 @@
 #include "bmp085_table.h"
 #include "message.h"
 #include "main.h"
-
-#include "mavlink.h"
-#include "common.h"
-#include "bart.h"
+#include "link.h"
 
 /*
  ******************************************************************************
