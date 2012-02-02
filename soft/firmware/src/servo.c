@@ -70,18 +70,18 @@ static const PWMConfig pwm4cfg = {
     0,
 };
 
-static const PWMConfig pwm1carcfg = {
-    PWM_FREQ,
-    RELOAD_CAR,
-    NULL, //pwm1cb,
-    {
-      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-      {PWM_OUTPUT_ACTIVE_HIGH, NULL}
-    },
-    0,
-};
+//static const PWMConfig pwm1carcfg = {
+//    PWM_FREQ,
+//    RELOAD_CAR,
+//    NULL, //pwm1cb,
+//    {
+//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+//      {PWM_OUTPUT_ACTIVE_HIGH, NULL}
+//    },
+//    0,
+//};
 
 /**
  * массив конфигов серв
@@ -121,7 +121,7 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
   uint16_t max = 0;
   uint16_t neutral = 0;
   uint16_t val = 0;
-  uint16_t i = servoblock_offset - 1 + n;
+  uint16_t i = servoblock_offset + (n-1) * 3;
 
   min = global_data[i].value;
   max = global_data[i+1].value;
@@ -135,8 +135,7 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
     len = neutral - min;
     val = neutral - (len - ((len * angle) >> 7));
   }
-  i = n - 1;
-  pwmEnableChannel(servocfg_array[i].pwmp, servocfg_array[i].pwmchannel, val);
+  pwmEnableChannel(servocfg_array[n-1].pwmp, servocfg_array[n-1].pwmchannel, val);
 }
 
 /**
@@ -197,7 +196,7 @@ static msg_t ServoThread(void *arg){
  */
 void ServoNeutral(void){
   uint32_t i = 0;
-  for (i = 0; i < SERVO_COUNT; i++)
+  for (i = 1; i < SERVO_COUNT+1; i++)
     ServoSetAngle(i, 128);
 }
 
@@ -210,8 +209,8 @@ void ServoInit(void){
     chDbgPanic("key not found");
 
   /* эти 2 строки нужны только чтобы избавиться от варнинга */
-  pwmStart(&PWMD1, &pwm1carcfg);
-  pwmStop(&PWMD1);
+//  pwmStart(&PWMD1, &pwm1carcfg);
+//  pwmStop(&PWMD1);
 
   /* по умолчанию ШИМы запускаются с самолетными конфигами */
 	pwmStart(&PWMD1, &pwm1cfg);

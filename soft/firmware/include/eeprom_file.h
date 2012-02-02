@@ -32,8 +32,10 @@ struct EepromFileStream {
   _eeprom_file_stream_data
 };
 
+#define chFileStreamRead(ip, bp, n)  (chSequentialStreamRead(ip, bp, n))
+#define chFileStreamWrite(ip, bp, n) (chSequentialStreamWrite(ip, bp, n))
 
-const EepromFileStream* EepromOpen(void);
+EepromFileStream* EepromOpen(void);
 
 
 #endif /* EEPROM_FILE_H_ */

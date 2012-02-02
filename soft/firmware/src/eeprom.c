@@ -132,7 +132,8 @@ msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len){
   msg_t status = RDY_OK;
 
   eeprom_split_addr(txbuf, addr);
-  memcpy(txbuf+2, buf, len);
+
+  memcpy(&(txbuf[2]), buf, len);
 //  uint8_t i = 0;
 //  while (i < len){
 //    txbuf[i+2] = buf[i];

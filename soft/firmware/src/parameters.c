@@ -20,7 +20,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define ONBOARD_PARAM_NAME_LENGTH 14
+#define ONBOARD_PARAM_NAME_LENGTH 15
 
 /*
  ******************************************************************************
@@ -30,7 +30,7 @@
 extern Mailbox param_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
-extern const EepromFileStream* EepromFile_p;
+extern EepromFileStream* EepromFile_p;
 
 GlobalParam_t global_data[] = {
     /*  key             val    min        max         type                       */
@@ -57,36 +57,36 @@ GlobalParam_t global_data[] = {
     {"ADC_I_offset",    1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
     {"ADC_I_gain",      1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
     /* Servos coefficients */
-    {"SERVO_1_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_1_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_1_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_min",     1000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_max",     2000,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_neutra",  1500,  SERVO_MIN, SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     /* машинко-специфичные настройки */
-    {"SERVO_car_max",   2000,  0,         SERVO_MAX,   MAVLINK_TYPE_UINT32_T},
-    {"SERVO_car_dz",    32,    0,         64,          MAVLINK_TYPE_UINT32_T},
+    {"SERVO_car_max",   2000,  0,         SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_car_dz",    32,    0,         64,         MAVLINK_TYPE_UINT32_T},
 
     /* fake field with 14 symbols name */
-    {"fake_14_bytes_",  1048,  0,         1224,   MAVLINK_TYPE_FLOAT},
+    {"fake_14_bytes_",  1048,  0,         1224,       MAVLINK_TYPE_FLOAT},
 };
 
 /*
@@ -97,6 +97,7 @@ GlobalParam_t global_data[] = {
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
 static const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
+static uint8_t eeprombuf[(sizeof(global_data) / sizeof(GlobalParam_t)) * sizeof(global_data[0].value)];
 
 /*
  *******************************************************************************
@@ -274,14 +275,48 @@ static msg_t ParametersThread(void *arg){
   return 0;
 }
 
-/**
- *
+static msg_t load_from_eeprom(void){
+  uint32_t i = 0;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+    chFileStreamRead(EepromFile_p, eeprombuf, 4);
+    global_data[i].value = eeprombuf[0] << 24 | eeprombuf[1] << 16 | eeprombuf[2] << 8 | eeprombuf[3];;
+    if (global_data[i].value < global_data[i].min)
+      global_data[i].value = global_data[i].min;
+    else if (global_data[i].value > global_data[i].max)
+      (global_data[i].value = global_data[i].max);
+  }
+  return 0;
+}
+
+static uint32_t save_to_eeprom(void){
+  uint32_t i = 0;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+    eeprombuf[i+0] = (((uint32_t)(global_data[i].value)) >> 24) & 0xFF;
+    eeprombuf[i+1] = (((uint32_t)(global_data[i].value)) >> 16) & 0xFF;
+    eeprombuf[i+2] = (((uint32_t)(global_data[i].value)) >> 8)  & 0xFF;
+    eeprombuf[i+3] = (((uint32_t)(global_data[i].value)) >> 0)  & 0xFF;
+  }
+  i = ONBOARD_PARAM_COUNT * sizeof(global_data[0].value);
+  chFileStreamWrite(EepromFile_p, eeprombuf, i);
+  return 0;
+}
+
+
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
  */
 void ParametersInit(void){
 
   chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
 
-  /* check names lengths */
+  /* check hardcoded values */
   uint32_t i = 0;
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
     if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
@@ -290,6 +325,9 @@ void ParametersInit(void){
         (global_data[i].value > global_data[i].max))
       chDbgPanic("value out of bounds");
   }
+
+  /* read data from eeprom to memory mapped structure */
+  load_from_eeprom();
 
   chThdCreateStatic(ParametersThreadWA,
           sizeof(ParametersThreadWA),

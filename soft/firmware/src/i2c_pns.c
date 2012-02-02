@@ -24,7 +24,7 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-extern const EepromFileStream* EepromFile_p;
+extern EepromFileStream* EepromFile_p;
 
 /*
  ******************************************************************************
@@ -50,6 +50,7 @@ void I2CInit_pns(void){
   chThdSleepMilliseconds(25); /* wait untill all devices ready */
 
   /* startups */
+  init_eeprom();
   EepromFile_p = EepromOpen();
   init_tmp75();
   init_max1236();

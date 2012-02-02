@@ -112,8 +112,10 @@ static EepromFileStream efs;
 
 /**
  * Open EEPROM IC as file and return pointer to the file object
+ * @note      Fucntion allways successfully open file. All checking makes
+ *            in read/write functions.
  */
-const EepromFileStream* EepromOpen(void){
+EepromFileStream* EepromOpen(void){
   efs.errors = FILE_OK;
   efs.position = 0;
   efs.vmt = &vmt;

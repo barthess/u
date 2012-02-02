@@ -54,7 +54,7 @@ BinarySemaphore bmp085_sem;
 BinarySemaphore itg3200_sem;
 
 /* указатель на примонтированный файл EEPROM */
-const EepromFileStream* EepromFile_p = NULL;
+EepromFileStream* EepromFile_p = NULL;
 
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];
@@ -132,7 +132,7 @@ int main(void) {
   ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
   I2CInit_pns();
-  ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти перед I2C*/
+  ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти после I2C*/
   ServoInit();
 //  CliInit();
   ADCInit_pns();
