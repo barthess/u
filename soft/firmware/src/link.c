@@ -75,7 +75,7 @@ static SerialConfig xbee_ser_cfg = {
  * «аNULL€ет указатель на содержимое, как знак того, что данные обработаны.
  * ¬озвращает длинну сообщени€ получившегос€ сообщени€.
  */
-#define finalize_receive() {                                                  \
+#define finalize_receive_mail() {                                                  \
   mailp->payload = NULL;                                                      \
   if (mailp->confirmbox != NULL){                                             \
     chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);                         \
@@ -94,7 +94,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_ALL,
         mavlink_msgbuf,
         (const mavlink_heartbeat_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   case MAVLINK_MSG_ID_SYS_STATUS:
@@ -103,7 +103,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_ALL,
         mavlink_msgbuf,
         (const mavlink_sys_status_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   case MAVLINK_MSG_ID_PARAM_VALUE:
@@ -112,7 +112,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_ALL,
         mavlink_msgbuf,
         (const mavlink_param_value_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   case MAVLINK_MSG_ID_RAW_IMU:
@@ -121,7 +121,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_IMU,
         mavlink_msgbuf,
         (const mavlink_raw_imu_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   case MAVLINK_MSG_ID_GPS_RAW_INT:
@@ -130,7 +130,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_GPS,
         mavlink_msgbuf,
         (const mavlink_gps_raw_int_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   case MAVLINK_MSG_ID_RAW_PRESSURE:
@@ -139,7 +139,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
         MAV_COMP_ID_IMU,
         mavlink_msgbuf,
         (const mavlink_raw_pressure_t*)(mailp->payload));
-    finalize_receive();
+    finalize_receive_mail();
     break;
 
   default:
@@ -147,7 +147,7 @@ static uint16_t receive_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   }
   return 0;
 }
-#undef finalize_receive
+#undef finalize_receive_mail
 
 /**
  * ѕоток отправки сообещиний через канал св€зи на землю.
@@ -181,8 +181,15 @@ static msg_t LinkOutThread(void *arg){
 
 
 
+//#define finalize_sort_message()      if (status != RDY_OK)
+//return FAILED;
+//}
+//else
+//return FAILED;
+//break;
+
 /* определ€ет, кому пришло это сообщение и кидает в соотверствующий почтовый €щик */
-static bool_t handle_message(mavlink_message_t *msg){
+static bool_t sort_message(mavlink_message_t *msg){
   msg_t status = RDY_OK;
 
   switch(msg->msgid){
@@ -315,7 +322,7 @@ static msg_t LinkInThread(void *arg){
     c = sdGet(&LINKSD);
     if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
       if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземна€ станци€ */
-        handle_message(&msg);
+        sort_message(&msg);
       }
     }
   }
