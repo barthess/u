@@ -25,8 +25,7 @@
 #include "servo.h"
 #include "message.h"
 #include "autopilot.h"
-#include "bkp.h"
-#include "eeprom.h"
+#include "eeprom_file.h"
 #include "exti_pns.h"
 #include "storage.h"
 #include "cli.h"
@@ -49,11 +48,13 @@ RawData raw_data;                     /* структура с сырыми данными с датчиков *
 LogItem log_item;                     /* структура, содержащая запись для лога */
 
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
-
 BinarySemaphore mag3110_sem;
 BinarySemaphore mma8451_sem;
 BinarySemaphore bmp085_sem;
 BinarySemaphore itg3200_sem;
+
+/* указатель на примонтированный файл EEPROM */
+const EepromFileStream* EepromFile_p;
 
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];

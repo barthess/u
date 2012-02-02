@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <string.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -31,7 +31,6 @@ extern uint32_t GlobalFlags;
 static BinarySemaphore eeprom_sem;
 
 // буфера под данные
-static uint8_t rxbuf[EEPROM_RX_DEPTH];
 static uint8_t txbuf[EEPROM_TX_DEPTH];
 
 /**********************************************************************
@@ -84,9 +83,9 @@ proceed with the next Read or Write command.
  * @param[in] txbuf pointer to driver transmit buffer
  * @param[in] addr  uint16_t address
  */
-#define eeprom_split_addr(txbuf, addr){                       \
-  (txbuf)[0] = ((uint8_t)((addr >> 8) & 0xFF));               \
-  (txbuf)[1] = ((uint8_t)(addr & 0xFF));                      \
+#define eeprom_split_addr(txbuf, addr){                                       \
+  (txbuf)[0] = ((uint8_t)((addr >> 8) & 0xFF));                               \
+  (txbuf)[1] = ((uint8_t)(addr & 0xFF));                                      \
 }
 
 /*
@@ -102,16 +101,14 @@ proceed with the next Read or Write command.
  * @param[in] len       number of bytes to be write
  * @param[in] ext_rxbuf pointer to data buffer
  */
-void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf){
+msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
   msg_t status = RDY_OK;
-
-  chDbgCheck(((len + addr) < EEPROM_SIZE), "Addres is out of bounds");
 
   eeprom_split_addr(txbuf, addr);
 
   chBSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
 
-  status = i2c_transmit(eepromaddr, txbuf, 2, ext_rxbuf, len);
+  status = i2c_transmit(eepromaddr, txbuf, 2, rxbuf, len);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;
@@ -119,30 +116,7 @@ void eeprom_read(uint16_t addr, uint16_t len, uint8_t *ext_rxbuf){
   }
 
   chBSemSignal(&eeprom_sem);
-}
-
-/**
- * Читает байт по указанному адресу. Возвращает байт
- */
-uint8_t eeprom_read_byte(uint16_t addr){
-  eeprom_read(addr, 1, rxbuf);
-  return rxbuf[0];
-}
-
-/**
- * читает 2 байта по указанному адресу. Возвращает полуслово
- */
-uint16_t eeprom_read_halfword(uint16_t addr){
-  eeprom_read(addr, 2, rxbuf);
-  return (rxbuf[0] << 8) + rxbuf[1];
-}
-
-/**
- * читает 4 байта по указанному адресу. Возвращает слово
- */
-uint32_t eeprom_read_word(uint16_t addr){
-  eeprom_read(addr, 4, rxbuf);
-  return (rxbuf[0] << 24) + (rxbuf[1] << 16) + (rxbuf[2] << 8) + rxbuf[3];
+  return status;
 }
 
 /**
@@ -151,51 +125,72 @@ uint32_t eeprom_read_word(uint16_t addr){
  * @pre     Data must be aligned to EEPROM pages.
  *
  * @param[in] addr  addres of 1-st byte to be write
- * @param[in] len   number of bytes to be write
  * @param[in] buf   pointer to data
+ * @param[in] len   number of bytes to be written
  */
-void eeprom_write(uint16_t addr, uint8_t len, uint8_t *buf){
+msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len){
   msg_t status = RDY_OK;
-  uint8_t i = 0;
-
-  chDbgCheck((len <= (128 - addr % 128)), "Data buffer is not alligned to one eeprom page");
-  chDbgCheck(((len + addr) <= EEPROM_SIZE), "Addres is out of bounds");
 
   eeprom_split_addr(txbuf, addr);
-
-  while (i < len){
-    txbuf[i+2] = buf[i];
-    i++;
-  }
+  memcpy(txbuf+2, buf, len);
+//  uint8_t i = 0;
+//  while (i < len){
+//    txbuf[i+2] = buf[i];
+//    i++;
+//  }
 
   chBSemWait(&eeprom_sem);
 
-  status = i2c_transmit(eepromaddr, txbuf, (len + 2), rxbuf, 0);
+  status = i2c_transmit(eepromaddr, txbuf, (len + 2), NULL, 0);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;
     chSysUnlock();
   }
 
-  chThdSleepMilliseconds(5); // задержка, необходимая для записи данных
+  /* wait until EEPROM process data */
+  chThdSleepMilliseconds(EEPROM_WRITE_TIME);
   chBSemSignal(&eeprom_sem);
+  return status;
 }
 
 /**
- * Запускатор
+ * Starter
  */
 void init_eeprom(void){
 
-#if CH_DBG_ENABLE_ASSERTS
-  // clear bufers. Just to be safe.
-  uint8_t i = 0;
+  /* clear bufers. Just to be safe. */
+  uint32_t i = 0;
   for (i = 0; i < EEPROM_TX_DEPTH; i++){txbuf[i] = 0x55;}
-  for (i = 0; i < EEPROM_RX_DEPTH; i++){rxbuf[i] = 0x55;}
-#endif
 
   chBSemInit(&eeprom_sem, FALSE);
 }
 
 
 
+
+
+///**
+// * Читает байт по указанному адресу. Возвращает байт
+// */
+//uint8_t eeprom_read_byte(uint16_t addr){
+//  eeprom_read(addr, 1, rxbuf);
+//  return rxbuf[0];
+//}
+//
+///**
+// * читает 2 байта по указанному адресу. Возвращает полуслово
+// */
+//uint16_t eeprom_read_halfword(uint16_t addr){
+//  eeprom_read(addr, 2, rxbuf);
+//  return (rxbuf[0] << 8) + rxbuf[1];
+//}
+//
+///**
+// * читает 4 байта по указанному адресу. Возвращает слово
+// */
+//uint32_t eeprom_read_word(uint16_t addr){
+//  eeprom_read(addr, 4, rxbuf);
+//  return (rxbuf[0] << 24) + (rxbuf[1] << 16) + (rxbuf[2] << 8) + rxbuf[3];
+//}
 

@@ -4,7 +4,7 @@
 #include "i2c_pns.h"
 #include "main.h"
 
-#include "eeprom.h"
+#include "eeprom_file.h"
 #include "itg3200.h"
 #include "mma8451.h"
 #include "tmp75.h"
@@ -24,6 +24,7 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
+extern const EepromFileStream* EepromFile_p;
 
 /*
  ******************************************************************************
@@ -49,7 +50,7 @@ void I2CInit_pns(void){
   chThdSleepMilliseconds(25); /* wait untill all devices ready */
 
   /* startups */
-  init_eeprom();
+  EepromFile_p = EepromOpen();
   init_tmp75();
   init_max1236();
   init_mag3110();
