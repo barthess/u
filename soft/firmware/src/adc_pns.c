@@ -4,7 +4,6 @@
 #include "adc_pns.h"
 #include "message.h"
 #include "main.h"
-#include "i2c.h"
 #include "imu.h"
 #include "dsp.h"
 
@@ -18,7 +17,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
 
 /*
@@ -26,38 +24,34 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
  * DEFINES
  ******************************************************************************
  */
-#define DEFAULT_CURRENT_COEFF  1912   // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-#define DEFAULT_CURRENT_OFFSET 16   // смещение нуля датчика тока в единицах АЦП
-#define DEFAULT_VOLTAGE_COEFF  1022 // коэффициент пересчета из условных единиц в децывольты
+#define DEFAULT_CURRENT_COEFF     1912   // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
+#define DEFAULT_CURRENT_OFFSET    16   // смещение нуля датчика тока в единицах АЦП
+#define DEFAULT_VOLTAGE_COEFF     1022 // коэффициент пересчета из условных единиц в децывольты
 
-#define ADC_NUM_CHANNELS      6
-#define ADC_BUF_DEPTH         1
+#define ADC_NUM_CHANNELS          6
+#define ADC_BUF_DEPTH             1
 
 /* человекочитабельные названия каналов */
-#define ADC_CURRENT_SENS  ADC_CHANNEL_IN10
-#define ADC_MAIN_SUPPLY   ADC_CHANNEL_IN11
-#define ADC_6V_SUPPLY     ADC_CHANNEL_IN12
-#define ADC_AN33_0        ADC_CHANNEL_IN13
-#define ADC_AN33_1        ADC_CHANNEL_IN14
-#define ADC_AN33_2        ADC_CHANNEL_IN15
+#define ADC_CURRENT_SENS          ADC_CHANNEL_IN10
+#define ADC_MAIN_SUPPLY           ADC_CHANNEL_IN11
+#define ADC_6V_SUPPLY             ADC_CHANNEL_IN12
+#define ADC_AN33_0                ADC_CHANNEL_IN13
+#define ADC_AN33_1                ADC_CHANNEL_IN14
+#define ADC_AN33_2                ADC_CHANNEL_IN15
 
 // где лежат текущие значения АЦП
-#define ADC_CURRENT_SENS_OFFSET  (ADC_CHANNEL_IN10 - 10)
-#define ADC_MAIN_SUPPLY_OFFSET   (ADC_CHANNEL_IN11 - 10)
-#define ADC_6V_SUPPLY_OFFSET     (ADC_CHANNEL_IN12 - 10)
-#define ADC_AN33_0_OFFSET        (ADC_CHANNEL_IN13 - 10)
-#define ADC_AN33_1_OFFSET        (ADC_CHANNEL_IN14 - 10)
-#define ADC_AN33_2_OFFSET        (ADC_CHANNEL_IN15 - 10)
+#define ADC_CURRENT_SENS_OFFSET   (ADC_CHANNEL_IN10 - 10)
+#define ADC_MAIN_SUPPLY_OFFSET    (ADC_CHANNEL_IN11 - 10)
+#define ADC_6V_SUPPLY_OFFSET      (ADC_CHANNEL_IN12 - 10)
+#define ADC_AN33_0_OFFSET         (ADC_CHANNEL_IN13 - 10)
+#define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
+#define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
-static uint16_t cal_CurrentCoeff  = DEFAULT_CURRENT_COEFF;
-static uint16_t cal_CurrentOffset = DEFAULT_CURRENT_OFFSET;
-static uint16_t cal_VoltageCoeff  = DEFAULT_VOLTAGE_COEFF;
 
 static ADCConfig adccfg; // для STM32 -- должна быть пустышка
 
@@ -119,9 +113,6 @@ static msg_t PollADCThread(void *arg){
     chThdSleepMilliseconds(20);
     raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
     raw_data.main_voltage = samples[ADC_MAIN_SUPPLY_OFFSET];
-    log_item.main_current = (uint16_t)((__USAT(raw_data.main_current - cal_CurrentOffset, 15) * 1000) / cal_CurrentCoeff);
-    uint16_t voltage = (raw_data.main_voltage * 100) / cal_VoltageCoeff;
-    log_item.main_voltage = (uint8_t)__USAT(voltage, 8);
 
     mavlink_sys_status_struct.battery_remaining = 3;
     mavlink_sys_status_struct.current_battery = 1000;
@@ -139,11 +130,6 @@ void ADCInit_pns(void){
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);
-
-  //"TODO: Read settings from EEPROM here"
-  cal_CurrentCoeff  = DEFAULT_CURRENT_COEFF;
-  cal_CurrentOffset = DEFAULT_CURRENT_OFFSET;
-  cal_VoltageCoeff  = DEFAULT_VOLTAGE_COEFF;
 
   chThdCreateStatic(PollADCThreadWA,
           sizeof(PollADCThreadWA),

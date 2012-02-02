@@ -67,11 +67,6 @@ static msg_t param_mb_buf[2];
 Mailbox manual_control_mb;
 static msg_t manual_control_mb_buf[1];
 
-/** Переменные для хранения калибровочных данных */
-volatile uint16_t cal_CurrentCoeff;   /* коэффициент пересчета из условных единиц в амперы. Для саломёта -- 37, для машинки  -- 1912 */
-volatile uint8_t  cal_CurrentOffset;  /* смещение нуля датчика тока в единицах АЦП */
-volatile uint16_t cal_VoltageCoeff;   /* коэффициент пересчета из условных единиц в децывольты */
-
 /* переменные, касающиеся мавлинка */
 mavlink_system_t            mavlink_system;
 mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
