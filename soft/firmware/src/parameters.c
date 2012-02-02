@@ -158,6 +158,59 @@ static bool_t set_parameter(mavlink_param_set_t *set){
 }
 
 /**
+ * Загрузка значений параметров из EEPROM
+ */
+static bool_t load_params_from_eeprom(void){
+  uint32_t i = 0;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+    if (chFileStreamRead(EepromFile_p, eeprombuf, 4) != 4)
+      return FAILED;
+
+    global_data[i].value = eeprombuf[0] << 24 | eeprombuf[1] << 16 | eeprombuf[2] << 8 | eeprombuf[3];;
+    if (global_data[i].value < global_data[i].min)
+      global_data[i].value = global_data[i].min;
+    else if (global_data[i].value > global_data[i].max)
+      (global_data[i].value = global_data[i].max);
+  }
+  return 0;
+}
+
+/**
+ * Сохранение значений параметров в EEPROM
+ */
+static bool_t save_params_to_eeprom(void){
+  uint32_t i = 0;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+    eeprombuf[i+0] = (((uint32_t)(global_data[i].value)) >> 24) & 0xFF;
+    eeprombuf[i+1] = (((uint32_t)(global_data[i].value)) >> 16) & 0xFF;
+    eeprombuf[i+2] = (((uint32_t)(global_data[i].value)) >> 8)  & 0xFF;
+    eeprombuf[i+3] = (((uint32_t)(global_data[i].value)) >> 0)  & 0xFF;
+  }
+  i = ONBOARD_PARAM_COUNT * sizeof(global_data[0].value);
+  chFileStreamWrite(EepromFile_p, eeprombuf, i);
+  return 0;
+}
+
+/**
+ * Загрузка миссии из EEPROM
+ */
+static bool_t load_mission_from_eeprom(void){
+  return 0;
+}
+
+/**
+ * Сохранение миссии в EEPROM
+ */
+static bool_t save_mission_to_eeprom(void){
+  return 0;
+}
+
+/**
  * @brief   Sends mails to communication thread
  *
  * @param[in] key   if NULL than perform search by index
@@ -232,6 +285,7 @@ static msg_t ParametersThread(void *arg){
   mavlink_param_set_t *set = NULL;
   mavlink_param_request_list_t *list = NULL;
   mavlink_param_request_read_t *read = NULL;
+  mavlink_command_long_t *command = NULL;
   bool_t status = FAILED;
 
   while (TRUE) {
@@ -239,9 +293,11 @@ static msg_t ParametersThread(void *arg){
     input_mail = (Mail*)tmp;
 
     switch (input_mail->invoice){
+    /*
+     * согласно протоколу, при успешной установке параметра, мы должны
+     * вычитать и выслать в ответ этот параметр в качестве подтверждения
+     */
     case MAVLINK_MSG_ID_PARAM_SET:
-      /* согласно протоколу, при успешной установке параметра, мы должны
-         вычитать и выслать в ответ этот параметр в качестве подтверждения */
       set = (mavlink_param_set_t *)(input_mail->payload);
       input_mail->payload = NULL;
       status = set_parameter(set);
@@ -250,16 +306,20 @@ static msg_t ParametersThread(void *arg){
       }
       break;
 
+    /*
+     * запрос всех параметров
+     */
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-      /* запрос всех параметров */
       list = (mavlink_param_request_list_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (list->target_system == mavlink_system.sysid)
         send_all_values(&param_value_mail, &param_value_struct);
       break;
 
+    /*
+     * запрос одного параметра
+     */
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-      /* запрос одного параметра */
       read = (mavlink_param_request_read_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (read->param_index >= 0)
@@ -267,42 +327,30 @@ static msg_t ParametersThread(void *arg){
       else
         send_value(&param_value_mail, &param_value_struct, read->param_id, 0);
       break;
+
+    /*
+     * команды загрузки/чтения EEPROM
+     */
+    case MAV_CMD_PREFLIGHT_STORAGE:
+      command = (mavlink_command_long_t *)(input_mail->payload);
+      input_mail->payload = NULL;
+
+      if (command->param1 == 0)
+        load_params_from_eeprom();
+      else if (command->param1 == 1)
+        save_params_to_eeprom();
+
+      if (command->param2 == 0)
+        load_mission_from_eeprom();
+      else if (command->param2 == 1)
+        save_mission_to_eeprom();
+      break;
+
     }
+
   }
   return 0;
 }
-
-static msg_t load_from_eeprom(void){
-  uint32_t i = 0;
-
-  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    chFileStreamRead(EepromFile_p, eeprombuf, 4);
-    global_data[i].value = eeprombuf[0] << 24 | eeprombuf[1] << 16 | eeprombuf[2] << 8 | eeprombuf[3];;
-    if (global_data[i].value < global_data[i].min)
-      global_data[i].value = global_data[i].min;
-    else if (global_data[i].value > global_data[i].max)
-      (global_data[i].value = global_data[i].max);
-  }
-  return 0;
-}
-
-static uint32_t save_to_eeprom(void){
-  uint32_t i = 0;
-
-  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    eeprombuf[i+0] = (((uint32_t)(global_data[i].value)) >> 24) & 0xFF;
-    eeprombuf[i+1] = (((uint32_t)(global_data[i].value)) >> 16) & 0xFF;
-    eeprombuf[i+2] = (((uint32_t)(global_data[i].value)) >> 8)  & 0xFF;
-    eeprombuf[i+3] = (((uint32_t)(global_data[i].value)) >> 0)  & 0xFF;
-  }
-  i = ONBOARD_PARAM_COUNT * sizeof(global_data[0].value);
-  chFileStreamWrite(EepromFile_p, eeprombuf, i);
-  return 0;
-}
-
-
 
 /*
  *******************************************************************************
@@ -324,7 +372,7 @@ void ParametersInit(void){
   }
 
   /* read data from eeprom to memory mapped structure */
-  load_from_eeprom();
+  load_params_from_eeprom();
 
   chThdCreateStatic(ParametersThreadWA,
           sizeof(ParametersThreadWA),

@@ -1,8 +1,9 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "link_sortin.h"
 #include "link.h"
+#include "link_cmd.h"
+#include "link_sortin.h"
 #include "message.h"
 #include "main.h"
 
@@ -34,7 +35,6 @@ static mavlink_param_set_t param_set;
 static mavlink_param_request_list_t param_request_list;
 static mavlink_param_request_read_t param_request_read;
 static Mail param_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
-static Mail command_long_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
 static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_BART_MANUAL_CONTROL, NULL};
 
 /*
@@ -62,7 +62,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
         return FAILED;
     }
     else
-      return FAILED;
+      return SUCCESS;
     break;
 
   case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
@@ -75,7 +75,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
         return FAILED;
     }
     else
-      return FAILED;
+      return SUCCESS;
     break;
 
   case MAVLINK_MSG_ID_PARAM_SET:
@@ -88,7 +88,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
         return FAILED;
     }
     else
-      return FAILED;
+      return SUCCESS;
     break;
 
 
@@ -102,16 +102,14 @@ bool_t sort_input_messages(mavlink_message_t *msg){
 
   case MAVLINK_MSG_ID_COMMAND_LONG:
     mavlink_msg_command_long_decode(msg, &mavlink_command_long_struct);
-    //MAV_CMD_PREFLIGHT_STORAGE /* load from eeprom to RAM */
-    if (command_long_mail.payload == NULL){
-      command_long_mail.invoice = MAVLINK_MSG_ID_COMMAND_LONG;
-      command_long_mail.payload = &mavlink_command_long_struct;
-      status = chMBPost(&param_mb, (msg_t)&command_long_mail, TIME_IMMEDIATE);
-      if (status != RDY_OK)
-        return FAILED;
-    }
-    else
+    /* silently ignore messages not for this system */
+    if (mavlink_command_long_struct.target_system != mavlink_system.sysid)
+      return SUCCESS;
+    status = analize_cmd(&mavlink_command_long_struct);
+    if (status != RDY_OK)
       return FAILED;
+    else
+      return SUCCESS;
     break;
 
 
@@ -144,7 +142,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
         return FAILED;
     }
     else
-      return FAILED;
+      return SUCCESS;
     break;
 
   default:
