@@ -115,8 +115,8 @@ static msg_t PollADCThread(void *arg){
     raw_data.main_voltage = samples[ADC_MAIN_SUPPLY_OFFSET];
 
     mavlink_sys_status_struct.battery_remaining = 3;
-    mavlink_sys_status_struct.current_battery = 1000;
-    mavlink_sys_status_struct.voltage_battery = 24000;
+    mavlink_sys_status_struct.current_battery   = 1000;
+    mavlink_sys_status_struct.voltage_battery   = 24000;
   }
   return 0;
 }

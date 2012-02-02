@@ -9,6 +9,7 @@
 #include "main.h"
 #include "imu.h"
 #include "servo.h"
+#include "eeprom_file.h"
 
 #include "mavlink.h"
 #include "common.h"
@@ -29,6 +30,7 @@
 extern Mailbox param_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
+extern const EepromFileStream* EepromFile_p;
 
 GlobalParam_t global_data[] = {
     /*  key             val    min        max         type                       */
@@ -272,8 +274,6 @@ static msg_t ParametersThread(void *arg){
   return 0;
 }
 
-
-
 /**
  *
  */
@@ -304,7 +304,7 @@ void ParametersInit(void){
 
 
 /*****************************************************************************/
-// Old junc
+// Old stuff
 
 
 //typedef struct GlobalStruct_t GlobalStruct_t;

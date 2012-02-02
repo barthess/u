@@ -54,7 +54,7 @@ BinarySemaphore bmp085_sem;
 BinarySemaphore itg3200_sem;
 
 /* указатель на примонтированный файл EEPROM */
-const EepromFileStream* EepromFile_p;
+const EepromFileStream* EepromFile_p = NULL;
 
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];
@@ -127,12 +127,12 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
-  ParametersInit();
   LinkInit();
   SanityControlInit();
   ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
-  I2CInit_pns();    /* Должно идти пораньше, т.к. через него читаются настройки из EEPROM */
+  I2CInit_pns();
+  ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти перед I2C*/
   ServoInit();
 //  CliInit();
   ADCInit_pns();
