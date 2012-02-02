@@ -27,6 +27,8 @@ extern Mailbox tolink_mb;
 extern Mailbox param_mb;
 extern Mailbox manual_control_mb;
 extern mavlink_system_t mavlink_system;
+extern mavlink_command_long_t mavlink_command_long_struct;
+
 extern mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
 /*
@@ -39,6 +41,7 @@ static mavlink_param_set_t param_set;
 static mavlink_param_request_list_t param_request_list;
 static mavlink_param_request_read_t param_request_read;
 static Mail param_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
+static Mail command_long_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
 static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_BART_MANUAL_CONTROL, NULL};
 
 static SerialConfig xbee_ser_cfg = {
@@ -211,6 +214,48 @@ static bool_t handle_message(mavlink_message_t *msg){
     else
       return FAILED;
     break;
+
+
+
+
+
+
+
+
+
+
+
+
+  case MAVLINK_MSG_ID_COMMAND_LONG:
+    mavlink_msg_command_long_decode(msg, &mavlink_command_long_struct);
+    //MAV_CMD_PREFLIGHT_STORAGE /* load from eeprom to RAM */
+    if (command_long_mail.payload == NULL){
+      command_long_mail.invoice = MAVLINK_MSG_ID_COMMAND_LONG;
+      command_long_mail.payload = &mavlink_command_long_struct;
+      status = chMBPost(&param_mb, (msg_t)&command_long_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
+    else
+      return FAILED;
+    break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   case MAVLINK_MSG_ID_BART_MANUAL_CONTROL:
     mavlink_msg_bart_manual_control_decode(msg, &mavlink_bart_manual_control_struct);

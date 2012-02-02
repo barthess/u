@@ -63,7 +63,7 @@ static msg_t tolink_mb_buf[8];
 Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
-static msg_t param_mb_buf[2];
+static msg_t param_mb_buf[3];
 Mailbox manual_control_mb;
 static msg_t manual_control_mb_buf[1];
 
@@ -73,6 +73,7 @@ mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
 mavlink_raw_imu_t           mavlink_raw_imu_struct;
 mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
 mavlink_sys_status_t        mavlink_sys_status_struct;
+mavlink_command_long_t      mavlink_command_long_struct;
 
 mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
