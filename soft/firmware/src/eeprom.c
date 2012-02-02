@@ -122,7 +122,7 @@ msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
 /**
  * @brief   EEPROM write routine.
  * @details Function writes data to EEPROM.
- * @pre     Data must be aligned to EEPROM pages.
+ * @pre     Data must be fit to EEPROM single pages.
  *
  * @param[in] addr  addres of 1-st byte to be write
  * @param[in] buf   pointer to data
