@@ -18,6 +18,11 @@
  ******************************************************************************
  */
 #define ONBOARD_PARAM_NAME_LENGTH 15
+#define PARAM_ID_SIZE             16
+
+/* периодичность посылки данных в милисекундах */
+#define SEND_MIN                  25
+#define SEND_MAX                  10000
 
 /*
  ******************************************************************************
@@ -32,27 +37,30 @@ extern EepromFileStream* EepromFile_p;
 GlobalParam_t global_data[] = {
     /*  key             val    min        max         type                       */
     /*-----------------------------------------------------------------------*/
-    {"SYS_ID",          20,    1,         255,    MAVLINK_TYPE_UINT32_T},
+    {"SYS_ID",          20,    1,         255,        MAVLINK_TYPE_UINT32_T},
+    {"SYS_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* IMU - inertial measurement unit */
-    {"IMU_g1",          0.1,   -1,        1,      MAVLINK_TYPE_FLOAT},
-    {"IMU_g2",          0.2,   -1,        1,      MAVLINK_TYPE_FLOAT},
-    {"IMU_g3",          0.3,   -1,        1,      MAVLINK_TYPE_FLOAT},
+    {"IMU_g1",          0.1,   -1,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_g2",          0.2,   -1,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_g3",          0.3,   -1,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* смещения осей магнитометра */
-    {"MAG_xoffset",     110,   -5000,     5000,   MAVLINK_TYPE_INT32_T},
-    {"MAG_yoffset",     -90,   -5000,     5000,   MAVLINK_TYPE_INT32_T},
-    {"MAG_zoffset",     351,   -5000,     5000,   MAVLINK_TYPE_INT32_T},
+    {"MAG_xoffset",     110,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
+    {"MAG_yoffset",     -90,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
+    {"MAG_zoffset",     351,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
     /* смещения осей магнитометра */
-    {"ACC_xoffset",     2,     -100,      100,    MAVLINK_TYPE_INT32_T},
-    {"ACC_yoffset",     0,     -100,      100,    MAVLINK_TYPE_INT32_T},
-    {"ACC_zoffset",     -3,    -100,      100,    MAVLINK_TYPE_INT32_T},
+    {"ACC_xoffset",     2,     -100,      100,        MAVLINK_TYPE_INT32_T},
+    {"ACC_yoffset",     0,     -100,      100,        MAVLINK_TYPE_INT32_T},
+    {"ACC_zoffset",     -3,    -100,      100,        MAVLINK_TYPE_INT32_T},
     /* PMU - pressure measurement unit */
-    {"PMU_D_offset",    3,     -1100,     1024,   MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
-    {"PMU_D_gain",      1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},
-    {"PMU_A_offset",    3,     -1000,     1224,   MAVLINK_TYPE_INT32_T},   /* absolute pressure */
-    {"PMU_A_gain",      1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},
+    {"PMU_D_offset",    3,     -1100,     1024,       MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
+    {"PMU_D_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
+    {"PMU_A_offset",    3,     -1000,     1224,       MAVLINK_TYPE_INT32_T},   /* absolute pressure */
+    {"PMU_A_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
+    {"PMU_send_ms",     100,   10,        10000,      MAVLINK_TYPE_UINT32_T},
     /* ADC coefficients */
-    {"ADC_I_offset",    1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
-    {"ADC_I_gain",      1048,  0,         1224,   MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
+    {"ADC_I_offset",    1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
+    {"ADC_I_gain",      1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
     /* Servos coefficients */
     {"SERVO_1_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
@@ -94,7 +102,7 @@ GlobalParam_t global_data[] = {
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
 static const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
-static uint8_t eeprombuf[(sizeof(global_data) / sizeof(GlobalParam_t)) * sizeof(global_data[0].value)];
+static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
 
 /*
  *******************************************************************************
@@ -139,7 +147,7 @@ static bool_t set_parameter(mavlink_param_set_t *set){
     if (global_data[index].value == set->param_value){
       return FAILED;
     }
-    /* If value fall out of min..max bound than just silently nearest allowable value */
+    /* If value fall out of min..max bound than just silently set nearest allowable value */
     if (set->param_value > global_data[index].max){
       global_data[index].value = global_data[index].max;
       return SUCCESS;
@@ -162,20 +170,40 @@ static bool_t set_parameter(mavlink_param_set_t *set){
  */
 static bool_t load_params_from_eeprom(void){
   uint32_t i = 0;
+  uint32_t index = -1;
+  uint32_t status = 0;
+
+  union{
+    float f32;
+    uint32_t u32;
+  }u;
 
   chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    if (chFileStreamRead(EepromFile_p, eeprombuf, 4) != 4)
+
+    /* reade field from EEPROM and check number of read bytes */
+    status = chFileStreamRead(EepromFile_p, eeprombuf, sizeof(eeprombuf));
+    if (status < sizeof(eeprombuf))
       return FAILED;
 
-    global_data[i].value = eeprombuf[0] << 24 | eeprombuf[1] << 16 | eeprombuf[2] << 8 | eeprombuf[3];;
+    /* search value by key and set it if found */
+    index = key_value_search((char *)eeprombuf, global_data);
+      if (index != -1){
+        u.u32 = eeprombuf[PARAM_ID_SIZE + 1] << 24 |
+                eeprombuf[PARAM_ID_SIZE + 2] << 16 |
+                eeprombuf[PARAM_ID_SIZE + 3] << 8 |
+                eeprombuf[PARAM_ID_SIZE + 4];
+        global_data[i].value = u.f32;
+      }
+
+    /* check value acceptability */
     if (global_data[i].value < global_data[i].min)
       global_data[i].value = global_data[i].min;
     else if (global_data[i].value > global_data[i].max)
       (global_data[i].value = global_data[i].max);
   }
-  return 0;
+  return SUCCESS;
 }
 
 /**
@@ -184,15 +212,26 @@ static bool_t load_params_from_eeprom(void){
 static bool_t save_params_to_eeprom(void){
   uint32_t i = 0;
 
+  union{
+    float f32;
+    uint32_t u32;
+  }u;
+
   chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    eeprombuf[i+0] = (((uint32_t)(global_data[i].value)) >> 24) & 0xFF;
-    eeprombuf[i+1] = (((uint32_t)(global_data[i].value)) >> 16) & 0xFF;
-    eeprombuf[i+2] = (((uint32_t)(global_data[i].value)) >> 8)  & 0xFF;
-    eeprombuf[i+3] = (((uint32_t)(global_data[i].value)) >> 0)  & 0xFF;
+
+    /* first copy parameter name in buffer */
+    memset(eeprombuf, 0, PARAM_ID_SIZE);
+    memcpy(eeprombuf, global_data[i].name, PARAM_ID_SIZE);
+
+    u.f32 = global_data[i].value;
+    eeprombuf[PARAM_ID_SIZE + 1] = (u.u32 >> 24) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 2] = (u.u32 >> 16) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 3] = (u.u32 >> 8)  & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 4] = (u.u32 >> 0)  & 0xFF;
+
+    chFileStreamWrite(EepromFile_p, eeprombuf, sizeof(eeprombuf));
   }
-  i = ONBOARD_PARAM_COUNT * sizeof(global_data[0].value);
-  chFileStreamWrite(EepromFile_p, eeprombuf, i);
   return 0;
 }
 
@@ -257,12 +296,11 @@ static bool_t send_value(Mail *param_value_mail,
 /**
  * Send all values one by one.
  */
-static void send_all_values(Mail *param_value_mail,
-           mavlink_param_value_t *param_value_struct){
+static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
   uint32_t i = 0;
   uint32_t n = ONBOARD_PARAM_COUNT;
   for (i = 0; i < n; i++){
-    send_value(param_value_mail, param_value_struct, NULL, i);
+    send_value(mail, param_struct, NULL, i);
   }
 }
 
@@ -352,6 +390,7 @@ static msg_t ParametersThread(void *arg){
   return 0;
 }
 
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -370,6 +409,12 @@ void ParametersInit(void){
         (global_data[i].value > global_data[i].max))
       chDbgPanic("value out of bounds");
   }
+
+  /* check allowed size in EEPROM */
+  uint32_t len = PARAM_ID_SIZE;
+  len += sizeof(global_data[0].value);
+  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
+    chDbgPanic("not enough space in EEPROM settings slice");
 
   /* read data from eeprom to memory mapped structure */
   load_params_from_eeprom();

@@ -10,18 +10,12 @@
 /* time to write one page in mS. Consult datasheet! */
 #define EEPROM_WRITE_TIME 5
 
-/* temporal transmit buffer depth */
+/* temporal transmit buffer depth for eeprom driver */
 #define EEPROM_TX_DEPTH (EEPROM_PAGE_SIZE + 2)
-
-/* data offsets in "file" */
-#define EEPROM_SETTINGS_START    1024
-#define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + (EEPROM_PAGE_SIZE * 8))
-
 
 void init_eeprom(void);
 msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len);
 msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len);
-
 
 #endif /* EEPROM_H_ */
 

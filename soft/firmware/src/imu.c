@@ -7,6 +7,7 @@
 #include "main.h"
 #include "imu.h"
 #include "link.h"
+#include "parameters.h"
 
 /*
  ******************************************************************************
@@ -16,6 +17,7 @@
 extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
@@ -41,8 +43,10 @@ static msg_t Imu(void *arg) {
   chRegSetThreadName("IMU");
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
 
+  uint32_t index = key_value_search("IMU_send_ms", global_data);
+
   while (TRUE) {
-    chThdSleepMilliseconds(100);
+    chThdSleepMilliseconds(global_data[index].value);
     if (tolink_mail.payload == NULL){
       mavlink_raw_imu_struct.time_usec = TimeUsec;
       tolink_mail.payload = &mavlink_raw_imu_struct;

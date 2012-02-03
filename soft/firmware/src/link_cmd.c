@@ -48,14 +48,14 @@ msg_t analize_cmd(mavlink_command_long_t *cmd){
 
   switch(cmd->command){
   /**
-   *  оманды дл€ загрузки/вычитки параметров EEPROM
+   *  оманды дл€ загрузки/вычитки параметров из EEPROM
    */
   case MAV_CMD_PREFLIGHT_STORAGE:
     if (mavlink_system.mode != MAV_MODE_PREFLIGHT)
       return RDY_RESET;
     if (command_mail.payload == NULL){
       command_mail.invoice = MAV_CMD_PREFLIGHT_STORAGE;
-      command_mail.payload = &cmd;
+      command_mail.payload = cmd;
       status = chMBPost(&param_mb, (msg_t)&command_mail, TIME_IMMEDIATE);
     }
     break;
