@@ -201,7 +201,7 @@ void ServoNeutral(void){
 void ServoInit(void){
 
   /* determine offset */
-  servoblock_offset = key_value_search("SERVO_1_min", global_data);
+  servoblock_offset = key_value_search("SERVO_1_min");
   if (servoblock_offset == -1)
     chDbgPanic("key not found");
 

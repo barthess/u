@@ -3,8 +3,8 @@
 
 
 
-bool_t load_params_from_eeprom(uint32_t n);
-bool_t save_params_to_eeprom(uint32_t n);
+bool_t load_params_from_eeprom(void);
+bool_t save_params_to_eeprom(void);
 
 
 bool_t load_mission_from_eeprom(void);

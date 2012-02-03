@@ -24,7 +24,7 @@
 #include "servo.h"
 #include "message.h"
 #include "autopilot.h"
-#include "eeprom_file.h"
+#include "eeprom.h"
 #include "exti_pns.h"
 #include "storage.h"
 #include "cli.h"

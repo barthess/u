@@ -99,19 +99,19 @@ static msg_t PollMagThread(void *arg){
 void init_mag3110(void){
   int32_t i = -1;
 
-  i = key_value_search("MAG_xoffset", global_data);
+  i = key_value_search("MAG_xoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xoffset_index = i;
 
-  i = key_value_search("MAG_yoffset", global_data);
+  i = key_value_search("MAG_yoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     yoffset_index = i;
 
-  i = key_value_search("MAG_zoffset", global_data);
+  i = key_value_search("MAG_zoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else

@@ -11,7 +11,7 @@
 #include "param.h"
 #include "main.h"
 #include "param_persistant.h"
-#include "eeprom_file.h"
+#include "eeprom.h"
 
 
 /*
@@ -27,6 +27,7 @@
  */
 extern EepromFileStream* EepromFile_p;
 extern GlobalParam_t global_data[];
+extern const uint32_t ONBOARD_PARAM_COUNT;
 
 /*
  ******************************************************************************
@@ -48,7 +49,7 @@ static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
 /**
  * Загрузка значений параметров из EEPROM
  */
-bool_t load_params_from_eeprom(uint32_t n){
+bool_t load_params_from_eeprom(void){
   uint32_t i = 0;
   uint32_t index = -1;
   uint32_t status = 0;
@@ -60,7 +61,7 @@ bool_t load_params_from_eeprom(uint32_t n){
 
   chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
 
-  for (i = 0; i < n; i++){
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
 
     /* reade field from EEPROM and check number of read bytes */
     status = chFileStreamRead(EepromFile_p, eeprombuf, sizeof(eeprombuf));
@@ -68,7 +69,7 @@ bool_t load_params_from_eeprom(uint32_t n){
       return FAILED;
 
     /* search value by key and set it if found */
-    index = key_value_search((char *)eeprombuf, global_data);
+    index = key_value_search((char *)eeprombuf);
       if (index != -1){
         u.u32 = eeprombuf[PARAM_ID_SIZE + 1] << 24 |
                 eeprombuf[PARAM_ID_SIZE + 2] << 16 |
@@ -89,7 +90,7 @@ bool_t load_params_from_eeprom(uint32_t n){
 /**
  * Сохранение значений параметров в EEPROM
  */
-bool_t save_params_to_eeprom(uint32_t n){
+bool_t save_params_to_eeprom(void){
   uint32_t i = 0;
 
   union{
@@ -98,7 +99,7 @@ bool_t save_params_to_eeprom(uint32_t n){
   }u;
 
   chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
-  for (i = 0; i < n; i++){
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
 
     /* first copy parameter name in buffer */
     memset(eeprombuf, 0, PARAM_ID_SIZE);

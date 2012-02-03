@@ -1,38 +1,3 @@
-#include <string.h>
-
-#include "ch.h"
-#include "hal.h"
-
-#include "eeprom.h"
-#include "message.h"
-#include "i2c_pns.h"
-#include "main.h"
-
-/*
- ******************************************************************************
- * DEFINES
- ******************************************************************************
- */
-#define eepromaddr 0b1010000
-
-/*
- ******************************************************************************
- * EXTERNS
- ******************************************************************************
- */
-extern uint32_t GlobalFlags;
-
-/*
- ******************************************************************************
- * GLOBAL VARIABLES
- ******************************************************************************
- */
-// семафор для реализации задержек при записи в eeprom
-static BinarySemaphore eeprom_sem;
-
-// буфера под данные
-static uint8_t txbuf[EEPROM_TX_DEPTH];
-
 /**********************************************************************
 Write cycle time (byte or page) — 5 ms
 
@@ -70,6 +35,41 @@ device will return the ACK and the master can then
 proceed with the next Read or Write command.
 *********************************************************************/
 
+#include <string.h>
+
+#include "ch.h"
+#include "hal.h"
+
+#include "eeprom.h"
+
+
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+#define eepromaddr 0b1010000
+
+/*
+ ******************************************************************************
+ * EXTERNS
+ ******************************************************************************
+ */
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
+/* semaphore for mutual access to EEPROM */
+static BinarySemaphore eeprom_sem;
+
+/* temporal transmit buffer. One page + 2 address bytes */
+static uint8_t txbuf[EEPROM_PAGE_SIZE + 2];
+
+/* object representing eeprom file stream */
+static EepromFileStream efs;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -88,12 +88,6 @@ proceed with the next Read or Write command.
   (txbuf)[1] = ((uint8_t)(addr & 0xFF));                                      \
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-
 /**
  * @brief   EEPROM read routine.
  *
@@ -101,22 +95,23 @@ proceed with the next Read or Write command.
  * @param[in] len       number of bytes to be write
  * @param[in] ext_rxbuf pointer to data buffer
  */
-msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
+static bool_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
   msg_t status = RDY_OK;
 
   eeprom_split_addr(txbuf, addr);
 
-  chBSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
+  chBSemWait(&eeprom_sem);
 
-  status = i2c_transmit(eepromaddr, txbuf, 2, rxbuf, len);
-  if (status  != RDY_OK){
-    chSysLock();
-    GlobalFlags |= EEPROM_FAILED;
-    chSysUnlock();
-  }
+  i2cAcquireBus(&I2CD2);
+  status = i2cMasterTransmitTimeout(&I2CD2, eepromaddr, txbuf, 2, rxbuf,
+                                    len, MS2ST(6));
+  i2cReleaseBus(&I2CD2);
 
   chBSemSignal(&eeprom_sem);
-  return status;
+  if (status != RDY_OK)
+    return EEPROM_FAILED;
+  else
+    return EEPROM_SUCCESS;
 }
 
 /**
@@ -128,70 +123,173 @@ msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
  * @param[in] buf   pointer to data
  * @param[in] len   number of bytes to be written
  */
-msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len){
+static bool_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len){
   msg_t status = RDY_OK;
 
   eeprom_split_addr(txbuf, addr);
-
   memcpy(&(txbuf[2]), buf, len);
-//  uint8_t i = 0;
-//  while (i < len){
-//    txbuf[i+2] = buf[i];
-//    i++;
-//  }
 
   chBSemWait(&eeprom_sem);
 
-  status = i2c_transmit(eepromaddr, txbuf, (len + 2), NULL, 0);
-  if (status  != RDY_OK){
-    chSysLock();
-    GlobalFlags |= EEPROM_FAILED;
-    chSysUnlock();
-  }
+  i2cAcquireBus(&I2CD2);
+  status = i2cMasterTransmitTimeout(&I2CD2, eepromaddr, txbuf, (len + 2),
+                                    NULL, 0, MS2ST(6));
+  i2cReleaseBus(&I2CD2);
 
   /* wait until EEPROM process data */
   chThdSleepMilliseconds(EEPROM_WRITE_TIME);
   chBSemSignal(&eeprom_sem);
-  return status;
+  if (status != RDY_OK)
+    return EEPROM_FAILED;
+  else
+    return EEPROM_SUCCESS;
 }
 
 /**
- * Starter
+ * @brief   Returns total size of EEPROM
  */
-void init_eeprom(void){
-
-  /* clear bufers. Just to be safe. */
-  uint32_t i = 0;
-  for (i = 0; i < EEPROM_TX_DEPTH; i++){txbuf[i] = 0x55;}
-
-  chBSemInit(&eeprom_sem, FALSE);
+static fileoffset_t getsize(void *ip){
+  (void)ip;
+  return EEPROM_SIZE;
 }
 
+/**
+ * @brief   Returns current position in file
+ */
+static fileoffset_t getposition(void *ip){
+  return ((EepromFileStream*)ip)->position;
+}
 
+/**
+ * @brief   Determines how much data can be processed
+ * @note    Helper function
+ */
+static size_t _check_size(void *ip, size_t n){
+  if (getposition(ip) > getsize(ip))
+    return 0;
+  else if ((getposition(ip) + n) > getsize(ip))
+    return getsize(ip) - getposition(ip);
+  else
+    return n;
+}
 
+/**
+ * @brief   Go to specified position in file
+ */
+static fileoffset_t lseek(void *ip, fileoffset_t offset){
+  if (offset > (EEPROM_SIZE - 1))
+    offset = EEPROM_SIZE - 1;
+  ((EepromFileStream*)ip)->position = offset;
+  return offset;
+}
 
+/**
+ * @brief     Write data to EEPROM.
+ * @details   Only one EEPROM page can be written at once. So fucntion
+ *            splits large data chunks in small EEPROM transactions if needed.
+ * @note      To achieve the maximum effectivity use write operations
+ *            aligned to EEPROM page boundaries.
+ */
+static size_t write(void *ip, const uint8_t *bp, size_t n){
+  bool_t status;
 
-///**
-// * Читает байт по указанному адресу. Возвращает байт
-// */
-//uint8_t eeprom_read_byte(uint16_t addr){
-//  eeprom_read(addr, 1, rxbuf);
-//  return rxbuf[0];
-//}
-//
-///**
-// * читает 2 байта по указанному адресу. Возвращает полуслово
-// */
-//uint16_t eeprom_read_halfword(uint16_t addr){
-//  eeprom_read(addr, 2, rxbuf);
-//  return (rxbuf[0] << 8) + rxbuf[1];
-//}
-//
-///**
-// * читает 4 байта по указанному адресу. Возвращает слово
-// */
-//uint32_t eeprom_read_word(uint16_t addr){
-//  eeprom_read(addr, 4, rxbuf);
-//  return (rxbuf[0] << 24) + (rxbuf[1] << 16) + (rxbuf[2] << 8) + rxbuf[3];
-//}
+  uint32_t len = 0;     /* bytes to be written at one trasaction */
+  uint32_t written = 0; /* total bytes written */
+  uint32_t page = getposition(ip) / EEPROM_PAGE_SIZE; /* first page to be written */
 
+  n = _check_size(ip, n);
+  if (n == 0)
+    return 0;
+
+  do{
+    len = ((page + 1) * EEPROM_PAGE_SIZE) - getposition(ip);
+    status  = eeprom_write((uint16_t)(getposition(ip) & 0xFFFF),
+                           bp,
+                           (uint16_t)(len & 0xFFFF));
+    if (status != EEPROM_SUCCESS)
+      return written;
+    page++;
+    written += len;
+    bp += len;
+    lseek(ip, (getposition(ip) + len));
+  }
+  while (written < n);
+
+  return written;
+}
+
+/**
+ * @brief     Read some bytes from current position in file.
+ * @detatils  After successful read operation the position pointer
+ *            will be increased by the number of read bytes.
+ */
+static size_t read(void *ip, uint8_t *bp, size_t n){
+  msg_t status = RDY_OK;
+
+  n = _check_size(ip, n);
+  if (n == 0)
+    return 0;
+
+  /* call low level function */
+  uint32_t pos = ((EepromFileStream*)ip)->position;
+  status  = eeprom_read((uint16_t)(pos & 0xFFFF), bp, (uint16_t)(n & 0xFFFF));
+  if (status != EEPROM_SUCCESS)
+    return 0;
+  else{
+    lseek(ip, (getposition(ip) + n));
+    return n;
+  }
+}
+
+/**
+ * @brief     Close file.
+ */
+static uint32_t close(void *ip) {
+  ((EepromFileStream*)ip)->errors = FILE_OK;
+  ((EepromFileStream*)ip)->position = 0;
+  ((EepromFileStream*)ip)->vmt = NULL;
+  return FILE_OK;
+}
+
+/**
+ * @brief     Returns error code.
+ */
+static int geterror(void *ip){
+  return ((EepromFileStream*)ip)->errors;
+}
+
+/* Init virtual metod table */
+static const struct EepromFilelStreamVMT vmt = {
+    write,
+    read,
+    close,
+    geterror,
+    getsize,
+    getposition,
+    lseek,
+};
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
+/**
+ * @brief     Opens EEPROM IC as file and return pointer to the file object.
+ * @note      Fucntion allways successfully open file. All checking makes
+ *            in read/write functions.
+ */
+EepromFileStream* EepromOpen(){
+
+  /* clear bufer just to be safe */
+  uint32_t i = 0;
+  for (i = 0; i < sizeof(txbuf); i++){txbuf[i] = 0x5A;}
+
+  chBSemInit(&eeprom_sem, FALSE);
+
+  efs.errors = FILE_OK;
+  efs.position = 0;
+  efs.vmt = &vmt;
+  return &efs;
+}

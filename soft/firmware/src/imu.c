@@ -43,7 +43,7 @@ static msg_t Imu(void *arg) {
   chRegSetThreadName("IMU");
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
 
-  uint32_t index = key_value_search("IMU_send_ms", global_data);
+  uint32_t index = key_value_search("IMU_send_ms");
 
   while (TRUE) {
     chThdSleepMilliseconds(global_data[index].value);
