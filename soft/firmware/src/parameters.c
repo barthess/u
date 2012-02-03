@@ -304,7 +304,6 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
   }
 }
 
-
 /**
  * Поток принимающий сообщения с параметрами и отправляющий параметры по запросу.
  */
