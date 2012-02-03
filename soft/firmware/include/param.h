@@ -1,5 +1,5 @@
-#ifndef PARAMETERS_H_
-#define PARAMETERS_H_
+#ifndef PARAM_H_
+#define PARAM_H_
 
 #include <mavlink.h>
 #include <common.h>
@@ -40,4 +40,4 @@ struct GlobalParam_t
 void ParametersInit(void);
 int32_t key_value_search(char* key, GlobalParam_t *global_data);
 
-#endif /* PARAMETERS_H_ */
+#endif /* PARAM_H_ */

@@ -13,7 +13,7 @@
 #include "hal.h"
 
 #include "main.h"
-#include "parameters.h"
+#include "param.h"
 #include "sanity.h"
 #include "irq_storm.h"
 #include "i2c_pns.h"

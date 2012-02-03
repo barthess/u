@@ -8,7 +8,7 @@
 #include "message.h"
 #include "main.h"
 #include "eeprom.h"
-#include "parameters.h"
+#include "param.h"
 #include "link.h"
 
 /*

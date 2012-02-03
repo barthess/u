@@ -8,7 +8,7 @@
 #include "imu.h"
 #include "itg3200.h"
 #include "message.h"
-#include "parameters.h"
+#include "param.h"
 #include "main.h"
 #include "link.h"
 

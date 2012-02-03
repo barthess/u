@@ -7,7 +7,7 @@
 #include "dsp.h"
 #include "mag3110.h"
 #include "message.h"
-#include "parameters.h"
+#include "param.h"
 #include "main.h"
 #include "link.h"
 

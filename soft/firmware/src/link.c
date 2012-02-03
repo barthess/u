@@ -5,7 +5,7 @@
 #include "rtc.h"
 #include "message.h"
 #include "main.h"
-#include "parameters.h"
+#include "param.h"
 
 #include "link_sortin.h"
 #include "link_sortout.h"

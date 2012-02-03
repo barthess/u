@@ -5,7 +5,7 @@
 #include "hal.h"
 
 #include "message.h"
-#include "parameters.h"
+#include "param.h"
 #include "main.h"
 #include "imu.h"
 #include "servo.h"

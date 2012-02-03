@@ -7,7 +7,7 @@
 #include "main.h"
 #include "imu.h"
 #include "link.h"
-#include "parameters.h"
+#include "param.h"
 
 /*
  ******************************************************************************
