@@ -58,8 +58,8 @@ static msg_t tolink_mb_buf[8];
 Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
-static msg_t param_mb_buf[3];
-Mailbox manual_control_mb;
+static msg_t param_mb_buf[1];
+Mailbox manual_control_mb;            /* ручное управление */
 static msg_t manual_control_mb_buf[1];
 
 /* переменные, касающиеся мавлинка */

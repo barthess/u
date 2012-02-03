@@ -44,5 +44,9 @@ struct GlobalParam_t
 
 void ParametersInit(void);
 int32_t key_value_search(char* key);
+bool_t load_params_from_eeprom(void);
+bool_t save_params_to_eeprom(void);
+bool_t load_mission_from_eeprom(void);
+bool_t save_mission_to_eeprom(void);
 
 #endif /* PARAM_H_ */

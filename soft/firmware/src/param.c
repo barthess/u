@@ -6,7 +6,6 @@
 
 #include "message.h"
 #include "param.h"
-#include "param_persistant.h"
 #include "main.h"
 #include "imu.h"
 #include "servo.h"
@@ -30,6 +29,7 @@
 extern Mailbox param_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
+extern EepromFileStream* EepromFile_p;
 
 GlobalParam_t global_data[] = {
     /*  key             val    min        max         type                       */
@@ -95,8 +95,6 @@ GlobalParam_t global_data[] = {
     {"fake_14_bytes_",  1048,  0,         1224,       MAVLINK_TYPE_FLOAT},
 };
 
-const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -104,6 +102,7 @@ const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t
  */
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
+static const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
 
 /*
  *******************************************************************************
@@ -197,7 +196,7 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
+    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(200));
     if (status != RDY_OK)
       return FAILED;
 
@@ -218,6 +217,105 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
     send_value(mail, param_struct, NULL, i);
   }
+}
+
+/**
+ * Записывает полученное значение в глобальные параметры. Если надо - ограничивает
+ */
+int clamp_and_write(uint32_t index, float val){
+  if (val < global_data[index].min){
+    global_data[index].value = global_data[index].min;
+    return -1;
+  }
+  else if (val > global_data[index].max){
+    (global_data[index].value = global_data[index].max);
+    return 1;
+  }
+  else{
+    (global_data[index].value = val);
+    return 0;
+  }
+}
+
+/**
+ * Загрузка значений параметров из EEPROM
+ */
+bool_t load_params_from_eeprom(void){
+  uint32_t i = 0;
+  int32_t index = -1;
+  uint32_t status = 0;
+  uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
+
+  union{
+    float f32;
+    uint32_t u32;
+  }u;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+
+    /* reade field from EEPROM and check number of read bytes */
+    status = chFileStreamRead(EepromFile_p, eeprombuf, sizeof(eeprombuf));
+    if (status < sizeof(eeprombuf))
+      return FAILED;
+
+    /* determine index of value in global_data which correspond to value in eeprombuf */
+    index = key_value_search((char *)eeprombuf);
+    if (index != -1){
+      u.u32 = eeprombuf[PARAM_ID_SIZE + 1] << 24 |
+              eeprombuf[PARAM_ID_SIZE + 2] << 16 |
+              eeprombuf[PARAM_ID_SIZE + 3] << 8 |
+              eeprombuf[PARAM_ID_SIZE + 4];
+      clamp_and_write(index, u.f32);
+    }
+  }
+  return SUCCESS;
+}
+
+/**
+ * Сохранение значений параметров в EEPROM
+ */
+bool_t save_params_to_eeprom(void){
+  uint32_t i = 0;
+  uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
+
+  union{
+    float f32;
+    uint32_t u32;
+  }u;
+
+  chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+
+    /* first copy parameter name in buffer */
+    memset(eeprombuf, 0, PARAM_ID_SIZE);
+    memcpy(eeprombuf, global_data[i].name, PARAM_ID_SIZE);
+
+    u.f32 = global_data[i].value;
+    eeprombuf[PARAM_ID_SIZE + 1] = (u.u32 >> 24) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 2] = (u.u32 >> 16) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 3] = (u.u32 >> 8)  & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 4] = (u.u32 >> 0)  & 0xFF;
+
+    if (chFileStreamWrite(EepromFile_p, eeprombuf, sizeof(eeprombuf)) < sizeof(eeprombuf))
+      return EEPROM_FAILED;
+  }
+  return EEPROM_SUCCESS;
+}
+
+/**
+ * Загрузка миссии из EEPROM
+ */
+bool_t load_mission_from_eeprom(void){
+  return 0;
+}
+
+/**
+ * Сохранение миссии в EEPROM
+ */
+bool_t save_mission_to_eeprom(void){
+  return 0;
 }
 
 /**

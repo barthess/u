@@ -115,7 +115,6 @@ CSRC = $(PORTSRC) \
        src/imu.c \
        src/sanity.c \
        src/param.c \
-       src/param_persistant.c \
        src/timekeeping.c \
        #src/autopilot.c \
        src/bkp.c \
