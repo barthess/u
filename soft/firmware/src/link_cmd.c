@@ -45,6 +45,7 @@ static Mail command_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
  */
 msg_t analize_cmd(mavlink_command_long_t *cmd){
   msg_t status = RDY_OK;
+  mavlink_command_long_t *command = NULL;
 
   switch(cmd->command){
   /**
@@ -53,11 +54,23 @@ msg_t analize_cmd(mavlink_command_long_t *cmd){
   case MAV_CMD_PREFLIGHT_STORAGE:
     if (mavlink_system.mode != MAV_MODE_PREFLIGHT)
       return RDY_RESET;
-    if (command_mail.payload == NULL){
-      command_mail.invoice = MAV_CMD_PREFLIGHT_STORAGE;
-      command_mail.payload = cmd;
-      status = chMBPost(&param_mb, (msg_t)&command_mail, TIME_IMMEDIATE);
-    }
+    /*
+     * команды загрузки/чтения EEPROM
+     */
+//    case MAV_CMD_PREFLIGHT_STORAGE:
+//      command = (mavlink_command_long_t *)(input_mail->payload);
+//      input_mail->payload = NULL;
+//
+//      if (command->param1 == 0)
+//        load_params_from_eeprom();
+//      else if (command->param1 == 1)
+//        save_params_to_eeprom();
+//
+//      if (command->param2 == 0)
+//        load_mission_from_eeprom();
+//      else if (command->param2 == 1)
+//        save_mission_to_eeprom();
+//      break;
     break;
 
   /*
