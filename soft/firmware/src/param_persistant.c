@@ -35,7 +35,6 @@ extern const uint32_t ONBOARD_PARAM_COUNT;
  ******************************************************************************
  */
 static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
-static uint32_t dbgi = 0;
 
 /*
  *******************************************************************************

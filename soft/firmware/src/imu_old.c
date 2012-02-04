@@ -32,8 +32,6 @@ extern BinarySemaphore imu_sem;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static EventListener el_adc;
-
 /* "опорный" весовой коэффициент для гироскопов. */
 static float wGyroRef = 200;
 
