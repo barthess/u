@@ -11,7 +11,7 @@
 #include "param.h"
 #include "main.h"
 #include "param_persistant.h"
-#include "eeprom_file.h"
+#include "eeprom.h"
 
 
 /*
@@ -59,6 +59,8 @@ bool_t load_params_from_eeprom(void){
     float f32;
     uint32_t u32;
   }u;
+  u.f32 = 0;
+  u.u32 = 0;
 
   chFileStreamSeek(EepromFile_p, EEPROM_SETTINGS_START);
 
@@ -72,10 +74,10 @@ bool_t load_params_from_eeprom(void){
     /* search value by key and set it if found */
     index = key_value_search((char *)eeprombuf);
       if (index != -1){
-        u.u32 = eeprombuf[PARAM_ID_SIZE + 1] << 24 |
-                eeprombuf[PARAM_ID_SIZE + 2] << 16 |
-                eeprombuf[PARAM_ID_SIZE + 3] << 8 |
-                eeprombuf[PARAM_ID_SIZE + 4];
+        u.u32 = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
+                eeprombuf[PARAM_ID_SIZE + 1] << 16 |
+                eeprombuf[PARAM_ID_SIZE + 2] << 8 |
+                eeprombuf[PARAM_ID_SIZE + 3];
       }
 
     /* check value acceptability */
@@ -129,10 +131,10 @@ bool_t save_params_to_eeprom(void){
 
     /* now write data */
     u.f32 = global_data[i].value;
-    eeprombuf[PARAM_ID_SIZE + 1] = (u.u32 >> 24) & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 2] = (u.u32 >> 16) & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 3] = (u.u32 >> 8)  & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 4] = (u.u32 >> 0)  & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 0] = (u.u32 >> 24) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 1] = (u.u32 >> 16) & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 2] = (u.u32 >> 8)  & 0xFF;
+    eeprombuf[PARAM_ID_SIZE + 3] = (u.u32 >> 0)  & 0xFF;
 
     status = chFileStreamWrite(EepromFile_p, eeprombuf, sizeof(eeprombuf));
     if (status < sizeof(eeprombuf))

@@ -1,8 +1,20 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "eepromio.h"
 #include "eeprom.h"
-#include "eeprom_file.h"
+
+/*
+ ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 
 
 static fileoffset_t getsize(void *ip){
@@ -18,10 +30,10 @@ static fileoffset_t lseek(void *ip, fileoffset_t offset){
   if (offset > (EEPROM_SIZE - 1))
     offset = EEPROM_SIZE - 1;
   ((EepromFileStream*)ip)->position = offset;
-  return offset;
+  return FILE_OK;
 }
 
-/* determines how much data can be processed */
+/* determines and returns size of data that can be processed based on file size */
 static size_t _check_size(void *ip, size_t n){
   if (n > getsize(ip))
     return 0;
@@ -43,6 +55,7 @@ static size_t write(void *ip, const uint8_t *bp, size_t n){
 
   size_t   len = 0;     /* bytes to be written at one trasaction */
   uint32_t written = 0; /* total bytes successfully written */
+  uint32_t pos = 0;     /* temporal variable for position */
   uint32_t firstpage = getposition(ip) / EEPROM_PAGE_SIZE;
   uint32_t lastpage  = (getposition(ip) + n - 1) / EEPROM_PAGE_SIZE;
 
@@ -57,7 +70,8 @@ static size_t write(void *ip, const uint8_t *bp, size_t n){
     if (status != RDY_OK)
       return 0;
     else{
-      lseek(ip, (getposition(ip) + len));
+      pos = getposition(ip);
+      lseek(ip, pos + len);
       return len;
     }
   }
@@ -70,19 +84,22 @@ static size_t write(void *ip, const uint8_t *bp, size_t n){
       return 0;
     else{
       written += len;
-      bp += written;
-      lseek(ip, (getposition(ip) + written));
+      bp += len;
+      pos = getposition(ip);
+      lseek(ip, pos + len);
     }
 
     /* теперь пишем куски, занимающие целую странцу (их может вообще не быть)*/
     while ((n - written) > EEPROM_PAGE_SIZE){
-      status  = eeprom_write(getposition(ip), bp, EEPROM_PAGE_SIZE);
+      len = EEPROM_PAGE_SIZE;
+      status  = eeprom_write(getposition(ip), bp, len);
       if (status != RDY_OK)
         return written;
       else{
-        written += EEPROM_PAGE_SIZE;
-        bp += written;
-        lseek(ip, (getposition(ip) + written));
+        written += len;
+        bp += len;
+        pos = getposition(ip);
+        lseek(ip, pos + len);
       }
     }
 
@@ -96,7 +113,9 @@ static size_t write(void *ip, const uint8_t *bp, size_t n){
         return written;
       else{
         written += len;
-        lseek(ip, (getposition(ip) + written));
+        bp += len;
+        pos = getposition(ip);
+        lseek(ip, pos + len);
       }
     }
   }
@@ -116,8 +135,7 @@ static size_t read(void *ip, uint8_t *bp, size_t n){
     return 0;
 
   /* call low level function */
-  uint32_t pos = ((EepromFileStream*)ip)->position;
-  status  = eeprom_read(pos, bp, n);
+  status  = eeprom_read(getposition(ip), bp, n);
   if (status != RDY_OK)
     return 0;
   else{

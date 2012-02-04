@@ -10,7 +10,7 @@
 #include "main.h"
 #include "imu.h"
 #include "servo.h"
-#include "eeprom_file.h"
+#include "eeprom.h"
 #include "link.h"
 
 /*

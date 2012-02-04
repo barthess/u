@@ -1,38 +1,3 @@
-#include <string.h>
-
-#include "ch.h"
-#include "hal.h"
-
-#include "eeprom.h"
-#include "message.h"
-#include "i2c_pns.h"
-#include "main.h"
-
-/*
- ******************************************************************************
- * DEFINES
- ******************************************************************************
- */
-#define eepromaddr 0b1010000
-
-/*
- ******************************************************************************
- * EXTERNS
- ******************************************************************************
- */
-extern uint32_t GlobalFlags;
-
-/*
- ******************************************************************************
- * GLOBAL VARIABLES
- ******************************************************************************
- */
-// семафор дл€ реализации задержек при записи в eeprom
-static BinarySemaphore eeprom_sem;
-
-// буфера под данные
-static uint8_t localtxbuf[EEPROM_TX_DEPTH];
-
 /**********************************************************************
 Write cycle time (byte or page) Ч 5 ms
 
@@ -70,11 +35,43 @@ device will return the ACK and the master can then
 proceed with the next Read or Write command.
 *********************************************************************/
 
+#include <string.h>
+
+#include "ch.h"
+#include "hal.h"
+
+#include "eepromio.h"
+#include "message.h"
+#include "i2c_pns.h"
+#include "main.h"
+
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+#define i2caddr 0b1010000
+
+/*
+ ******************************************************************************
+ * EXTERNS
+ ******************************************************************************
+ */
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
+// семафор дл€ реализации задержек при записи в eeprom
+static BinarySemaphore eeprom_sem;
+
+// буфера под данные
+static uint8_t localtxbuf[EEPROM_TX_DEPTH];
+
 /*
  *******************************************************************************
- *******************************************************************************
  * LOCAL FUNCTIONS
- *******************************************************************************
  *******************************************************************************
  */
 /**
@@ -106,17 +103,12 @@ msg_t eeprom_read(uint32_t addr, uint8_t *buf, size_t len){
 
   chBSemWait(&eeprom_sem);
 
-  if ((len > EEPROM_SIZE) || ((addr+len) > EEPROM_SIZE))
-    chDbgPanic("data can not be fitted in device");
+  chDbgCheck(((len < EEPROM_SIZE) && ((addr+len) < EEPROM_SIZE)),
+             "data can not be fitted in device");
 
   eeprom_split_addr(localtxbuf, addr);
 
-  status = i2c_transmit(eepromaddr, localtxbuf, 2, buf, len);
-  if (status  != RDY_OK){
-    chSysLock();
-    GlobalFlags |= EEPROM_FAILED;
-    chSysUnlock();
-  }
+  status = i2c_transmit(i2caddr, localtxbuf, 2, buf, len);
 
   chBSemSignal(&eeprom_sem);
   return status;
@@ -136,10 +128,11 @@ msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
 
   chBSemWait(&eeprom_sem);
 
-  if ((len > EEPROM_SIZE) || ((addr+len) > EEPROM_SIZE))
-    chDbgPanic("data can not be fitted in device");
-  if (((addr / EEPROM_PAGE_SIZE) < ((addr + len - 1) / EEPROM_PAGE_SIZE)))
-    chDbgPanic("data can not be fitted in single page");
+  chDbgCheck(((len < EEPROM_SIZE) && ((addr+len) < EEPROM_SIZE)),
+             "data can not be fitted in device");
+
+  chDbgCheck(((addr / EEPROM_PAGE_SIZE) == ((addr + len - 1) / EEPROM_PAGE_SIZE)),
+             "data can not be fitted in single page");
 
   /* write address bytes */
   eeprom_split_addr(localtxbuf, addr);
@@ -152,12 +145,7 @@ msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
 //    i++;
 //  }
 
-  status = i2c_transmit(eepromaddr, localtxbuf, (len + 2), NULL, 0);
-  if (status  != RDY_OK){
-    chSysLock();
-    GlobalFlags |= EEPROM_FAILED;
-    chSysUnlock();
-  }
+  status = i2c_transmit(i2caddr, localtxbuf, (len + 2), NULL, 0);
 
   /* wait until EEPROM process data */
   chThdSleepMilliseconds(EEPROM_WRITE_TIME);
@@ -170,9 +158,8 @@ msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
  */
 void init_eeprom(void){
 
-  /* clear bufers. Just to be safe. */
-  uint32_t i = 0;
-  for (i = 0; i < sizeof(localtxbuf); i++){localtxbuf[i] = 0x55;}
+  /* clear bufer just to be safe. */
+  memset(localtxbuf, 0x55, EEPROM_TX_DEPTH);
 
   chBSemInit(&eeprom_sem, FALSE);
 }

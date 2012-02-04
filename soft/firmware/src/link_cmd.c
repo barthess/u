@@ -74,7 +74,7 @@ msg_t _analize_cmd(mavlink_command_long_t *cmd){
 /**
  * Поток приема команд.
  */
-static WORKING_AREA(LinkCmdParserThreadWA, 4096);
+static WORKING_AREA(LinkCmdParserThreadWA, 1024);
 static msg_t LinkCmdParserThread(void *arg){
   chRegSetThreadName("MAVCmdParser");
   (void)arg;

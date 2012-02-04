@@ -7,7 +7,6 @@
 #include "servo.h"
 #include "message.h"
 #include "main.h"
-#include "eeprom.h"
 #include "param.h"
 #include "link.h"
 
