@@ -7,6 +7,7 @@
 #include "main.h"
 #include "param.h"
 
+#include "link_cmd.h"
 #include "link_sortin.h"
 #include "link_sortout.h"
 
@@ -139,6 +140,8 @@ void LinkInit(void){
           LINK_THREADS_PRIO,
           LinkInThread,
           NULL);
+
+  LinkCmdParserInit();
 }
 
 

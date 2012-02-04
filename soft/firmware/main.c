@@ -3,6 +3,9 @@
  * при компил€ции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: в реализации дл€ STM32 невозможно прочитать 1 байт из EEPROM -- сделать заглушку
+// TODO: вместо общего FAILED & SUCCESS наделать персональных
+// TODO: все приоритеты потоков задавать в main.h
 // TODO: синхронизаци€ программных часов с аппаратными, аппаратных с GPS.
 // TODO: сторожевой таймер с использованием пам€ти с батарейным питанием дл€ расследовани€ пиздецов
 
@@ -58,9 +61,11 @@ static msg_t tolink_mb_buf[8];
 Mailbox toservo_mb;                   /* сообщени€ дл€ обслуживател€ серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщени€ с параметрами */
-static msg_t param_mb_buf[3];
-Mailbox manual_control_mb;
+static msg_t param_mb_buf[2];
+Mailbox manual_control_mb;            /* сообщени€ ручного управлеи€ */
 static msg_t manual_control_mb_buf[1];
+Mailbox mavlinkcmd_mb;                /* сообщени€ с командами */
+static msg_t mavlinkcmd_mb_buf[1];
 
 /* переменные, касающиес€ мавлинка */
 mavlink_system_t            mavlink_system;
@@ -108,6 +113,7 @@ int main(void) {
   chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
   chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
 
   /* первоначальна€ настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane

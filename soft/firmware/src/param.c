@@ -91,6 +91,8 @@ GlobalParam_t global_data[] = {
     {"fake_14_bytes_",  1048,  0,         1224,       MAVLINK_TYPE_FLOAT},
 };
 
+const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -98,7 +100,6 @@ GlobalParam_t global_data[] = {
  */
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
-static const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
 
 
 /*
@@ -131,7 +132,7 @@ int32_t key_value_search(char* key){
 static bool_t set_parameter(mavlink_param_set_t *set){
   int32_t index = -1;
 
-  index = key_value_search(set->param_id, global_data);
+  index = key_value_search(set->param_id);
 
   if (index >= 0){
     // Only write and emit changes if there is actually a difference
@@ -178,7 +179,7 @@ static bool_t send_value(Mail *param_value_mail,
   uint32_t j = 0;
 
   if (key != NULL)
-    index = key_value_search(key, global_data);
+    index = key_value_search(key);
   else
     index = n;
 
@@ -307,7 +308,7 @@ void ParametersInit(void){
     chDbgPanic("not enough space in EEPROM settings slice");
 
   /* read data from eeprom to memory mapped structure */
-  load_params_from_eeprom(ONBOARD_PARAM_COUNT);
+  load_params_from_eeprom();
 
   chThdCreateStatic(ParametersThreadWA,
           sizeof(ParametersThreadWA),

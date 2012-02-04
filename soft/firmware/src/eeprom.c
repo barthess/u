@@ -31,7 +31,7 @@ extern uint32_t GlobalFlags;
 static BinarySemaphore eeprom_sem;
 
 // буфера под данные
-static uint8_t txbuf[EEPROM_TX_DEPTH];
+static uint8_t localtxbuf[EEPROM_TX_DEPTH];
 
 /**********************************************************************
 Write cycle time (byte or page) — 5 ms
@@ -101,14 +101,17 @@ proceed with the next Read or Write command.
  * @param[in] len       number of bytes to be write
  * @param[in] ext_rxbuf pointer to data buffer
  */
-msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
+msg_t eeprom_read(uint32_t addr, uint8_t *buf, size_t len){
   msg_t status = RDY_OK;
 
-  eeprom_split_addr(txbuf, addr);
+  chBSemWait(&eeprom_sem);
 
-  chBSemWait(&eeprom_sem); // если запись еще не закончилась -- микросхема не ответит. Будем ждать
+  if ((len > EEPROM_SIZE) || ((addr+len) > EEPROM_SIZE))
+    chDbgPanic("data can not be fitted in device");
 
-  status = i2c_transmit(eepromaddr, txbuf, 2, rxbuf, len);
+  eeprom_split_addr(localtxbuf, addr);
+
+  status = i2c_transmit(eepromaddr, localtxbuf, 2, buf, len);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;
@@ -122,27 +125,34 @@ msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len){
 /**
  * @brief   EEPROM write routine.
  * @details Function writes data to EEPROM.
- * @pre     Data must be fit to EEPROM single pages.
+ * @pre     Data must be fit to single EEPROM page.
  *
  * @param[in] addr  addres of 1-st byte to be write
  * @param[in] buf   pointer to data
  * @param[in] len   number of bytes to be written
  */
-msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len){
+msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
   msg_t status = RDY_OK;
-
-  eeprom_split_addr(txbuf, addr);
-
-  memcpy(&(txbuf[2]), buf, len);
-//  uint8_t i = 0;
-//  while (i < len){
-//    txbuf[i+2] = buf[i];
-//    i++;
-//  }
 
   chBSemWait(&eeprom_sem);
 
-  status = i2c_transmit(eepromaddr, txbuf, (len + 2), NULL, 0);
+  if ((len > EEPROM_SIZE) || ((addr+len) > EEPROM_SIZE))
+    chDbgPanic("data can not be fitted in device");
+  if (((addr / EEPROM_PAGE_SIZE) < ((addr + len - 1) / EEPROM_PAGE_SIZE)))
+    chDbgPanic("data can not be fitted in single page");
+
+  /* write address bytes */
+  eeprom_split_addr(localtxbuf, addr);
+
+  /* write data bytes */
+  memcpy(&(localtxbuf[2]), buf, len);
+//  uint32_t i = 0;
+//  while (i < len){
+//    localtxbuf[i+2] = buf[i];
+//    i++;
+//  }
+
+  status = i2c_transmit(eepromaddr, localtxbuf, (len + 2), NULL, 0);
   if (status  != RDY_OK){
     chSysLock();
     GlobalFlags |= EEPROM_FAILED;
@@ -162,36 +172,10 @@ void init_eeprom(void){
 
   /* clear bufers. Just to be safe. */
   uint32_t i = 0;
-  for (i = 0; i < EEPROM_TX_DEPTH; i++){txbuf[i] = 0x55;}
+  for (i = 0; i < sizeof(localtxbuf); i++){localtxbuf[i] = 0x55;}
 
   chBSemInit(&eeprom_sem, FALSE);
 }
 
 
-
-
-
-///**
-// * Читает байт по указанному адресу. Возвращает байт
-// */
-//uint8_t eeprom_read_byte(uint16_t addr){
-//  eeprom_read(addr, 1, rxbuf);
-//  return rxbuf[0];
-//}
-//
-///**
-// * читает 2 байта по указанному адресу. Возвращает полуслово
-// */
-//uint16_t eeprom_read_halfword(uint16_t addr){
-//  eeprom_read(addr, 2, rxbuf);
-//  return (rxbuf[0] << 8) + rxbuf[1];
-//}
-//
-///**
-// * читает 4 байта по указанному адресу. Возвращает слово
-// */
-//uint32_t eeprom_read_word(uint16_t addr){
-//  eeprom_read(addr, 4, rxbuf);
-//  return (rxbuf[0] << 24) + (rxbuf[1] << 16) + (rxbuf[2] << 8) + rxbuf[3];
-//}
 

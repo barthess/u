@@ -20,6 +20,7 @@
  */
 extern Mailbox param_mb;
 extern Mailbox manual_control_mb;
+extern Mailbox mavlinkcmd_mb;
 
 extern mavlink_system_t mavlink_system;
 extern mavlink_command_long_t mavlink_command_long_struct;
@@ -36,6 +37,7 @@ static mavlink_param_request_list_t param_request_list;
 static mavlink_param_request_read_t param_request_read;
 static Mail param_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
 static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_BART_MANUAL_CONTROL, NULL};
+static Mail command_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
 
 /*
  *******************************************************************************
@@ -91,43 +93,22 @@ bool_t sort_input_messages(mavlink_message_t *msg){
       return SUCCESS;
     break;
 
-
-
-
-
-
-
-
-
-
   case MAVLINK_MSG_ID_COMMAND_LONG:
     mavlink_msg_command_long_decode(msg, &mavlink_command_long_struct);
-    /* silently ignore messages not for this system */
+
     if (mavlink_command_long_struct.target_system != mavlink_system.sysid)
-      return SUCCESS;
-    status = analize_cmd(&mavlink_command_long_struct);
-    if (status != RDY_OK)
-      return FAILED;
+      return SUCCESS; /* silently ignore messages not for this system */
+
+    if (command_mail.payload == NULL){
+      command_mail.invoice = MAVLINK_MSG_ID_COMMAND_LONG;
+      command_mail.payload = &mavlink_command_long_struct;
+      status = chMBPost(&mavlinkcmd_mb, (msg_t)&command_mail, TIME_IMMEDIATE);
+      if (status != RDY_OK)
+        return FAILED;
+    }
     else
       return SUCCESS;
     break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   case MAVLINK_MSG_ID_BART_MANUAL_CONTROL:
     mavlink_msg_bart_manual_control_decode(msg, &mavlink_bart_manual_control_struct);

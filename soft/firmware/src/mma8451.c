@@ -79,19 +79,19 @@ static msg_t PollAccelThread(void *arg){
 void init_mma8451(void){
   int32_t i = -1;
 
-  i = key_value_search("ACC_xoffset", global_data);
+  i = key_value_search("ACC_xoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xoffset_index = i;
 
-  i = key_value_search("ACC_yoffset", global_data);
+  i = key_value_search("ACC_yoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     yoffset_index = i;
 
-  i = key_value_search("ACC_zoffset", global_data);
+  i = key_value_search("ACC_zoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else

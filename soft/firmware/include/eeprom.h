@@ -14,8 +14,8 @@
 #define EEPROM_TX_DEPTH (EEPROM_PAGE_SIZE + 2)
 
 void init_eeprom(void);
-msg_t eeprom_read(uint16_t addr, uint8_t *rxbuf, uint16_t len);
-msg_t eeprom_write(uint16_t addr, const uint8_t *buf, uint8_t len);
+msg_t eeprom_read(uint32_t addr, uint8_t *rxbuf, size_t len);
+msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len);
 
 #endif /* EEPROM_H_ */
 

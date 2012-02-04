@@ -23,7 +23,7 @@ static fileoffset_t lseek(void *ip, fileoffset_t offset){
 
 /* determines how much data can be processed */
 static size_t _check_size(void *ip, size_t n){
-  if (getposition(ip) > getsize(ip))
+  if (n > getsize(ip))
     return 0;
   else if ((getposition(ip) + n) > getsize(ip))
     return getsize(ip) - getposition(ip);
@@ -41,26 +41,65 @@ static size_t _check_size(void *ip, size_t n){
 static size_t write(void *ip, const uint8_t *bp, size_t n){
   msg_t status = RDY_OK;
 
-  uint32_t len = 0;     /* bytes to be write at one trasaction */
-  uint32_t written = 0; /* total bytes written */
-  uint32_t page = getposition(ip) / EEPROM_PAGE_SIZE; /* first page to be write */
+  size_t   len = 0;     /* bytes to be written at one trasaction */
+  uint32_t written = 0; /* total bytes successfully written */
+  uint32_t firstpage = getposition(ip) / EEPROM_PAGE_SIZE;
+  uint32_t lastpage  = (getposition(ip) + n - 1) / EEPROM_PAGE_SIZE;
 
   n = _check_size(ip, n);
   if (n == 0)
     return 0;
 
-  do{
-    len = ((page + 1) * EEPROM_PAGE_SIZE) - getposition(ip);
-    status  = eeprom_write((uint16_t)(getposition(ip) & 0xFFFF), bp, (uint16_t)(len & 0xFFFF));
+  /* data fitted in single page */
+  if (firstpage == lastpage){
+    len = n;
+    status  = eeprom_write(getposition(ip), bp, len);
     if (status != RDY_OK)
-      return written;
-    page++;
-    written += len;
-    bp += len;
-    lseek(ip, (getposition(ip) + len));
+      return 0;
+    else{
+      lseek(ip, (getposition(ip) + len));
+      return len;
+    }
   }
-  while (written < n);
 
+  else{
+    /* запишем кусок данных до ближайшей границы страницы */
+    len = ((firstpage + 1) * EEPROM_PAGE_SIZE) - getposition(ip);
+    status  = eeprom_write(getposition(ip), bp, len);
+    if (status != RDY_OK)
+      return 0;
+    else{
+      written += len;
+      bp += written;
+      lseek(ip, (getposition(ip) + written));
+    }
+
+    /* теперь пишем куски, занимающие целую странцу (их может вообще не быть)*/
+    while ((n - written) > EEPROM_PAGE_SIZE){
+      status  = eeprom_write(getposition(ip), bp, EEPROM_PAGE_SIZE);
+      if (status != RDY_OK)
+        return written;
+      else{
+        written += EEPROM_PAGE_SIZE;
+        bp += written;
+        lseek(ip, (getposition(ip) + written));
+      }
+    }
+
+    /* а теперь оставшийся хвостик, если есть */
+    len = n - written;
+    if (len == 0)
+      return written;
+    else{
+      status  = eeprom_write(getposition(ip), bp, len);
+      if (status != RDY_OK)
+        return written;
+      else{
+        written += len;
+        lseek(ip, (getposition(ip) + written));
+      }
+    }
+  }
   return written;
 }
 
@@ -78,7 +117,7 @@ static size_t read(void *ip, uint8_t *bp, size_t n){
 
   /* call low level function */
   uint32_t pos = ((EepromFileStream*)ip)->position;
-  status  = eeprom_read((uint16_t)(pos & 0xFFFF), bp, (uint16_t)(n & 0xFFFF));
+  status  = eeprom_read(pos, bp, n);
   if (status != RDY_OK)
     return 0;
   else{

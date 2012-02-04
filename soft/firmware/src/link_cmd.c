@@ -4,7 +4,7 @@
 #include "link.h"
 #include "message.h"
 #include "main.h"
-
+#include "param_persistant.h"
 
 /*
  ******************************************************************************
@@ -17,35 +17,24 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox param_mb;
+extern Mailbox mavlinkcmd_mb;
 extern mavlink_system_t mavlink_system;
-extern mavlink_command_long_t mavlink_command_long_struct;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Mail command_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
-
 /*
  *******************************************************************************
  * LOCAL FUNCTIONS
  *******************************************************************************
  */
-
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-
 /**
  * @note    MAV_CMD_PREFLIGHT_xxxx commands only accepted in preflight mode
  */
-msg_t analize_cmd(mavlink_command_long_t *cmd){
+msg_t _analize_cmd(mavlink_command_long_t *cmd){
   msg_t status = RDY_OK;
-  mavlink_command_long_t *command = NULL;
 
   switch(cmd->command){
   /**
@@ -54,23 +43,17 @@ msg_t analize_cmd(mavlink_command_long_t *cmd){
   case MAV_CMD_PREFLIGHT_STORAGE:
     if (mavlink_system.mode != MAV_MODE_PREFLIGHT)
       return RDY_RESET;
-    /*
-     * команды загрузки/чтени€ EEPROM
-     */
-//    case MAV_CMD_PREFLIGHT_STORAGE:
-//      command = (mavlink_command_long_t *)(input_mail->payload);
-//      input_mail->payload = NULL;
-//
-//      if (command->param1 == 0)
-//        load_params_from_eeprom();
-//      else if (command->param1 == 1)
-//        save_params_to_eeprom();
-//
-//      if (command->param2 == 0)
-//        load_mission_from_eeprom();
-//      else if (command->param2 == 1)
-//        save_mission_to_eeprom();
-//      break;
+
+    if (cmd->param1 == 0)
+      load_params_from_eeprom();
+    else if (cmd->param1 == 1)
+      save_params_to_eeprom();
+
+    if (cmd->param2 == 0)
+      load_mission_from_eeprom();
+    else if (cmd->param2 == 1)
+      save_mission_to_eeprom();
+
     break;
 
   /*
@@ -88,17 +71,44 @@ msg_t analize_cmd(mavlink_command_long_t *cmd){
   return status;
 }
 
+/**
+ * ѕоток приема команд.
+ */
+static WORKING_AREA(LinkCmdParserThreadWA, 4096);
+static msg_t LinkCmdParserThread(void *arg){
+  chRegSetThreadName("MAVCmdParser");
+  (void)arg;
+  msg_t tmp;
+  Mail *mailp = NULL;
+  mavlink_command_long_t *cmdp;
+
+  while (TRUE) {
+    chMBFetch(&mavlinkcmd_mb, &tmp, TIME_INFINITE);
+    mailp = (Mail *)tmp;
+    cmdp = (mavlink_command_long_t *)(mailp->payload);
+    _analize_cmd(cmdp);
 
 
+    //TODO: анализ вЄрнутого значени€ и генераци€ ответа в tolink_mb
 
 
+    mailp->payload = NULL;
+  }
+  return 0;
+}
 
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+void LinkCmdParserInit(void){
 
-
-
-
-
-
-
+  chThdCreateStatic(LinkCmdParserThreadWA,
+          sizeof(LinkCmdParserThreadWA),
+          LINK_THREADS_PRIO - 1,
+          LinkCmdParserThread,
+          NULL);
+}
 

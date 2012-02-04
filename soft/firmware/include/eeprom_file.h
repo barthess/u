@@ -7,7 +7,7 @@
 #include "eeprom.h"
 
 /* data offsets in "file" */
-#define EEPROM_SETTINGS_START    0
+#define EEPROM_SETTINGS_START    8192
 #define EEPROM_SETTINGS_SIZE     (EEPROM_PAGE_SIZE * 32)
 #define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
 
