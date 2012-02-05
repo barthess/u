@@ -3,6 +3,8 @@
  * при компил€ции без -fomit-frame-pointer срывает стэк .
  */
 
+
+// TODO: функции дл€ чтени€/записи из EEPROM байта, слова, полуслова
 // TODO: в реализации дл€ STM32 невозможно прочитать 1 байт из EEPROM -- сделать заглушку
 // TODO: вместо общего FAILED & SUCCESS наделать персональных
 // TODO: все приоритеты потоков задавать в main.h
@@ -28,6 +30,7 @@
 #include "message.h"
 #include "autopilot.h"
 #include "eeprom.h"
+#include "eeprom_testsuit.h"
 #include "exti_pns.h"
 #include "storage.h"
 #include "cli.h"
@@ -51,8 +54,8 @@ BinarySemaphore mma8451_sem;
 BinarySemaphore bmp085_sem;
 BinarySemaphore itg3200_sem;
 
-/* указатель на примонтированный файл EEPROM */
-EepromFileStream* EepromFile_p = NULL;
+/* примонтированный файл EEPROM */
+EepromFileStream EepromFile;
 
 Mailbox autopilot_mb;                 /* сообщени€ дл€ автопилота */
 static msg_t autopilot_mb_buf[4];
@@ -134,6 +137,10 @@ int main(void) {
   ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
   I2CInit_pns();
+
+//  eeprom_testsuit_run();
+  EepromOpen(&EepromFile);
+
   ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти после I2C*/
   ServoInit();
 //  CliInit();

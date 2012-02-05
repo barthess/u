@@ -31,6 +31,11 @@
 
 #define GROUND_STATION_ID   255
 
+/* data offsets in "file" */
+#define EEPROM_SETTINGS_START    8192
+#define EEPROM_SETTINGS_SIZE     4096
+#define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
+
 /* максимальная скорость модема даже слегка недостаточна - пакеты все равно не
  * все приходят из-за внутренних задержек */
 #define BAUDRATE_XBEE 115200

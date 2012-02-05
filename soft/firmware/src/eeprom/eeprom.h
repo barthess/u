@@ -4,13 +4,6 @@
 #include "ch.h"
 #include "hal.h"
 
-/* data offsets in "file" */
-#define EEPROM_SETTINGS_START    8192
-#define EEPROM_SETTINGS_SIZE     4096
-#define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
-
-
-
 #include "eepromio.h"
 
 /**
@@ -71,7 +64,13 @@ struct EepromFileStream {
 #define chFileStreamWrite(ip, bp, n) (chSequentialStreamWrite(ip, bp, n))
 
 
-EepromFileStream* EepromOpen(void);
+EepromFileStream* EepromOpen(EepromFileStream* efs);
 
+uint8_t  EepromReadByte(EepromFileStream *EepromFile_p);
+uint16_t EepromReadHalfword(EepromFileStream *EepromFile_p);
+uint32_t EepromReadWord(EepromFileStream *EepromFile_p);
+size_t EepromWriteByte(EepromFileStream *EepromFile_p, uint8_t data);
+size_t EepromWriteHalfword(EepromFileStream *EepromFile_p, uint16_t data);
+size_t EepromWriteWord(EepromFileStream *EepromFile_p, uint32_t data);
 
 #endif /* EEPROM_FILE_H_ */

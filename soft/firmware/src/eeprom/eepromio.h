@@ -13,7 +13,7 @@
 /* temporal transmit buffer depth for eeprom driver */
 #define EEPROM_TX_DEPTH (EEPROM_PAGE_SIZE + 2)
 
-void init_eeprom(void);
+void init_eepromio(void);
 msg_t eeprom_read(uint32_t addr, uint8_t *rxbuf, size_t len);
 msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len);
 

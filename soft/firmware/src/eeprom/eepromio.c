@@ -50,7 +50,8 @@ proceed with the next Read or Write command.
  * DEFINES
  ******************************************************************************
  */
-#define i2caddr 0b1010000
+#define EEPOM_I2CD        I2CD2
+#define eeprom_i2caddr    0b1010000
 
 /*
  ******************************************************************************
@@ -63,10 +64,10 @@ proceed with the next Read or Write command.
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-// семафор для реализации задержек при записи в eeprom
+/* semaphore for mutual access to EEPROM IC */
 static BinarySemaphore eeprom_sem;
 
-// буфера под данные
+/* temporal local buffer */
 static uint8_t localtxbuf[EEPROM_TX_DEPTH];
 
 /*
@@ -92,6 +93,18 @@ static uint8_t localtxbuf[EEPROM_TX_DEPTH];
  */
 
 /**
+ * @brief     Calculates requred timeout.
+ */
+static systime_t calc_timeout(I2CDriver *i2cp, size_t txbytes, size_t rxbytes){
+  const uint32_t bitsinbyte = 10;
+  uint32_t tmo;
+  tmo = ((txbytes + rxbytes + 1) * bitsinbyte * 1000);
+  tmo /= i2cp->config->clock_speed;
+  tmo += 5; /* some additional time to be safer */
+  return MS2ST(tmo);
+}
+
+/**
  * @brief   EEPROM read routine.
  *
  * @param[in] addr      addres of 1-st byte to be read
@@ -100,15 +113,18 @@ static uint8_t localtxbuf[EEPROM_TX_DEPTH];
  */
 msg_t eeprom_read(uint32_t addr, uint8_t *buf, size_t len){
   msg_t status = RDY_OK;
+  systime_t tmo = calc_timeout(&EEPOM_I2CD, 2, len);
 
   chBSemWait(&eeprom_sem);
 
-  chDbgCheck(((len < EEPROM_SIZE) && ((addr+len) < EEPROM_SIZE)),
-             "data can not be fitted in device");
+  chDbgCheck(((len <= EEPROM_SIZE) && ((addr+len) <= EEPROM_SIZE)),
+             "requested data out of device bounds");
 
-  eeprom_split_addr(localtxbuf, addr);
-
-  status = i2c_transmit(i2caddr, localtxbuf, 2, buf, len);
+  eeprom_split_addr(localtxbuf, addr);                /* write address bytes */
+  i2cAcquireBus(&EEPOM_I2CD);
+  status = i2cMasterTransmitTimeout(&EEPOM_I2CD, eeprom_i2caddr,
+                                    localtxbuf, 2, buf, len, tmo);
+  i2cReleaseBus(&EEPOM_I2CD);
 
   chBSemSignal(&eeprom_sem);
   return status;
@@ -125,27 +141,23 @@ msg_t eeprom_read(uint32_t addr, uint8_t *buf, size_t len){
  */
 msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
   msg_t status = RDY_OK;
+  systime_t tmo = calc_timeout(&EEPOM_I2CD, (len + 2), 0);
 
   chBSemWait(&eeprom_sem);
 
-  chDbgCheck(((len < EEPROM_SIZE) && ((addr+len) < EEPROM_SIZE)),
+  chDbgCheck(((len <= EEPROM_SIZE) && ((addr+len) <= EEPROM_SIZE)),
              "data can not be fitted in device");
 
   chDbgCheck(((addr / EEPROM_PAGE_SIZE) == ((addr + len - 1) / EEPROM_PAGE_SIZE)),
              "data can not be fitted in single page");
 
-  /* write address bytes */
-  eeprom_split_addr(localtxbuf, addr);
+  eeprom_split_addr(localtxbuf, addr);              /* write address bytes */
+  memcpy(&(localtxbuf[2]), buf, len);               /* write data bytes */
 
-  /* write data bytes */
-  memcpy(&(localtxbuf[2]), buf, len);
-//  uint32_t i = 0;
-//  while (i < len){
-//    localtxbuf[i+2] = buf[i];
-//    i++;
-//  }
-
-  status = i2c_transmit(i2caddr, localtxbuf, (len + 2), NULL, 0);
+  i2cAcquireBus(&EEPOM_I2CD);
+  status = i2cMasterTransmitTimeout(&EEPOM_I2CD, eeprom_i2caddr,
+                                    localtxbuf, (len + 2), NULL, 0, tmo);
+  i2cReleaseBus(&EEPOM_I2CD);
 
   /* wait until EEPROM process data */
   chThdSleepMilliseconds(EEPROM_WRITE_TIME);
@@ -156,7 +168,7 @@ msg_t eeprom_write(uint32_t addr, const uint8_t *buf, size_t len){
 /**
  * Starter
  */
-void init_eeprom(void){
+void init_eepromio(void){
 
   /* clear bufer just to be safe. */
   memset(localtxbuf, 0x55, EEPROM_TX_DEPTH);

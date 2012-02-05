@@ -5,7 +5,6 @@
 #include "main.h"
 
 #include "eeprom.h"
-#include "eeprom_testsuit.h"
 #include "itg3200.h"
 #include "mma8451.h"
 #include "tmp75.h"
@@ -25,7 +24,6 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-extern EepromFileStream* EepromFile_p;
 
 /*
  ******************************************************************************
@@ -51,35 +49,22 @@ void I2CInit_pns(void){
   chThdSleepMilliseconds(25); /* wait untill all devices ready */
 
   /* startups */
-  init_eeprom();
-  EepromFile_p = EepromOpen();
-//  eeprom_testsuit_run();
-
-  init_tmp75();
-  init_max1236();
-  init_mag3110();
-  init_itg3200();
-  init_mma8451();
-  init_bmp085();
+//  init_tmp75();
+//  init_max1236();
+//  init_mag3110();
+//  init_itg3200();
+//  init_mma8451();
+//  init_bmp085();
 }
 
-systime_t calc_timeout(I2CDriver *i2cp, size_t txbytes, size_t rxbytes){
-  const uint32_t bitperbytes = 9;
-  uint32_t tmo;
-  tmo = ((txbytes + rxbytes) * (bitperbytes + 2) * 1000);
-  tmo /= i2cp->config->clock_speed;
-  tmo += 5; /* запас на всякий случай */
-  return MS2ST(tmo);
-}
 
 /* обертка запускатор транзакции */
 msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
                    uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
-  systime_t tmo = calc_timeout(&I2CD2, txbytes, rxbytes);
 
   i2cAcquireBus(&I2CD2);
-  status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, tmo);
+  status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
@@ -93,10 +78,9 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
 /* обертка запускатор транзакции */
 msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
-  systime_t tmo = calc_timeout(&I2CD2, 0, rxbytes);
 
   i2cAcquireBus(&I2CD2);
-  status = i2cMasterReceiveTimeout(&I2CD2, addr, rxbuf, rxbytes, tmo);
+  status = i2cMasterReceiveTimeout(&I2CD2, addr, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
   if (status == RDY_TIMEOUT){
