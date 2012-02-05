@@ -93,12 +93,12 @@ CSRC = $(PORTSRC) \
        main.c \
        src/dsp.c \
        src/i2c_pns.c \
-       src/max1236.c \
-       src/tmp75.c \
-       src/bmp085.c \
-       src/mma8451.c \
-       src/mag3110.c \
-       src/itg3200.c \
+       src/sensors/max1236.c \
+       src/sensors/tmp75.c \
+       src/sensors/bmp085.c \
+       src/sensors/mma8451.c \
+       src/sensors/mag3110.c \
+       src/sensors/itg3200.c \
        src/cli.c \
        src/exti_pns.c \
        src/eeprom/eepromio.c \
@@ -108,20 +108,19 @@ CSRC = $(PORTSRC) \
        src/checksum.c \
        src/irq_storm.c \
        src/storage.c \
-       src/adc_pns.c \
+       src/sensors/adc_pns.c \
        src/servo.c \
-       src/link.c \
-       src/link_sortout.c \
-       src/link_sortin.c \
-       src/link_cmd.c \
+       src/link/link.c \
+       src/link/link_sortout.c \
+       src/link/link_sortin.c \
+       src/link/link_cmd.c \
        src/imu.c \
        src/sanity.c \
        src/param.c \
        src/param_persistant.c \
        src/timekeeping.c \
        #src/autopilot.c \
-       src/bkp.c \
-       src/link_sortout.c 
+       src/bkp.c
        
        
 
@@ -167,6 +166,8 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
          include \
          src/eeprom \
+         src/link \
+         src/sensors \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart
