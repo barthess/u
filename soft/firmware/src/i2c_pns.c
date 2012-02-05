@@ -46,15 +46,13 @@ void I2CInit_pns(void){
 
   i2cStart(&I2CD2, &i2cfg2);
 
-  chThdSleepMilliseconds(25); /* wait untill all devices ready */
-
   /* startups */
-//  init_tmp75();
-//  init_max1236();
-//  init_mag3110();
-//  init_itg3200();
-//  init_mma8451();
-//  init_bmp085();
+  init_tmp75();
+  init_max1236();
+  init_mag3110();
+  init_mma8451();
+  init_bmp085();
+  init_itg3200();
 }
 
 

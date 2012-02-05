@@ -4,8 +4,6 @@
  */
 
 
-// TODO: функции для чтения/записи из EEPROM байта, слова, полуслова
-// TODO: в реализации для STM32 невозможно прочитать 1 байт из EEPROM -- сделать заглушку
 // TODO: вместо общего FAILED & SUCCESS наделать персональных
 // TODO: все приоритеты потоков задавать в main.h
 // TODO: синхронизация программных часов с аппаратными, аппаратных с GPS.
@@ -132,15 +130,14 @@ int main(void) {
   xbee_sleep_clear();
   chThdSleepMilliseconds(50);
 
+  EepromOpen(&EepromFile);
+
   LinkInit();
   SanityControlInit();
   ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
   I2CInit_pns();
-
 //  eeprom_testsuit_run();
-  EepromOpen(&EepromFile);
-
   ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти после I2C*/
   ServoInit();
 //  CliInit();
