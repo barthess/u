@@ -1,3 +1,6 @@
 [submodule "soft/firmware/src/microrl"]
 	path = soft/firmware/src/microrl
 	url = git://github.com/Helius/microrl.git
+[submodule "soft/firmware/src/eeprom"]
+	path = soft/firmware/src/eeprom
+	url = git@github.com:barthess/24aa.git
