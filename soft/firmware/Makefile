@@ -6,7 +6,7 @@
 # Compiler options here.
 ifeq ($(USE_OPT),)
   #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
   #USE_OPT = -O1 -ggdb -fomit-frame-pointer -falign-functions=16
   #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
   #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
@@ -104,6 +104,7 @@ CSRC = $(PORTSRC) \
        src/eeprom/24aa.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
+       src/microrl/src/microrl.c \
        src/gps.c \
        src/checksum.c \
        src/irq_storm.c \
