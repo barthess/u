@@ -93,33 +93,34 @@ CSRC = $(PORTSRC) \
        main.c \
        src/dsp.c \
        src/i2c_pns.c \
+       src/cli.c \
+       src/exti_pns.c \
+       src/microrl/src/microrl.c \
+       src/gps.c \
+       src/checksum.c \
+       src/irq_storm.c \
+       src/storage.c \
+       src/servo.c \
+       src/imu.c \
+       src/sanity.c \
+       src/param.c \
+       src/param_persistant.c \
+       src/timekeeping.c \
+       src/sensors/adc_pns.c \
        src/sensors/max1236.c \
        src/sensors/tmp75.c \
        src/sensors/bmp085.c \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
-       src/cli.c \
-       src/exti_pns.c \
-       src/eeprom/24aa.c \
-       src/eeprom/eeprom.c \
-       src/eeprom/eeprom_testsuit.c \
-       src/microrl/src/microrl.c \
-       src/gps.c \
-       src/checksum.c \
-       src/irq_storm.c \
-       src/storage.c \
-       src/sensors/adc_pns.c \
-       src/servo.c \
+       src/link/manager.c \
        src/link/link.c \
        src/link/link_sortout.c \
        src/link/link_sortin.c \
        src/link/link_cmd.c \
-       src/imu.c \
-       src/sanity.c \
-       src/param.c \
-       src/param_persistant.c \
-       src/timekeeping.c \
+       src/eeprom/24aa.c \
+       src/eeprom/eeprom.c \
+       src/eeprom/eeprom_testsuit.c \
        #src/autopilot.c \
        src/bkp.c
        
