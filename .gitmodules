@@ -1,3 +1,0 @@
-[submodule "t1"]
-	path = t1
-	url = git@github.com:barthess/test_submodule.git
