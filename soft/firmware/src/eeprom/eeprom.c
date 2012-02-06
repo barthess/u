@@ -7,7 +7,7 @@ The work is provided "as is" without warranty of any kind, neither express nor i
 #include "ch.h"
 #include "hal.h"
 
-#include "eepromio.h"
+#include "24aa.h"
 #include "eeprom.h"
 
 /*

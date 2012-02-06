@@ -13,8 +13,7 @@ EEPROM like a regular file.
 All limits can be easily expanded. 
 
 For a moment it supports only I2C interfaced chips and tested with my 24LC512.
-Support of SPI chips (25AA/25LC) can be easily added by replacing eepromio.c
-file.
+Support of SPI chips (25AA/25LC) can be easily added too.
 
 3. USAGE
 
