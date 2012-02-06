@@ -32,8 +32,10 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
-#define CORTEX_VTOR_INIT      0xE0000
-#define CORTEX_USE_FPU        FALSE
+#define PORT_IDLE_THREAD_STACK_SIZE     32
+//#define PORT_INT_REQUIRED_STACK         16 //default 16
+#define CORTEX_VTOR_INIT                0xE0000
+#define CORTEX_USE_FPU                  FALSE
 
 /*===========================================================================*/
 /* Kernel parameters.                                                        */
@@ -293,7 +295,7 @@
  * @note    Mutexes are recommended.
  */
 #if !defined(CH_USE_HEAP) || defined(__DOXYGEN__)
-#define CH_USE_HEAP                     FALSE
+#define CH_USE_HEAP                     TRUE
 #endif
 
 /**
@@ -331,7 +333,7 @@
  * @note    Requires @p CH_USE_HEAP and/or @p CH_USE_MEMPOOLS.
  */
 #if !defined(CH_USE_DYNAMIC) || defined(__DOXYGEN__)
-#define CH_USE_DYNAMIC                  FALSE
+#define CH_USE_DYNAMIC                  TRUE
 #endif
 
 /*===========================================================================*/
@@ -379,7 +381,7 @@
  * @note    The default is @p FALSE.
  */
 #if !defined(CH_DBG_ENABLE_TRACE) || defined(__DOXYGEN__)
-#define CH_DBG_ENABLE_TRACE             FALSE
+#define CH_DBG_ENABLE_TRACE             TRUE
 #endif
 
 /**

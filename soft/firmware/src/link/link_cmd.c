@@ -17,7 +17,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox mavlinkcmd_mb;
+
 extern mavlink_system_t mavlink_system;
 
 /*
@@ -25,15 +25,23 @@ extern mavlink_system_t mavlink_system;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+
 /*
  *******************************************************************************
  * LOCAL FUNCTIONS
  *******************************************************************************
  */
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
 /**
  * @note    MAV_CMD_PREFLIGHT_xxxx commands only accepted in preflight mode
  */
-msg_t _analize_cmd(mavlink_command_long_t *cmd){
+msg_t analize_mavlink_cmd(mavlink_command_long_t *cmd){
   msg_t status = RDY_OK;
 
   switch(cmd->command){
@@ -70,45 +78,3 @@ msg_t _analize_cmd(mavlink_command_long_t *cmd){
   }
   return status;
 }
-
-/**
- * Поток приема команд.
- */
-static WORKING_AREA(LinkCmdParserThreadWA, 1024);
-static msg_t LinkCmdParserThread(void *arg){
-  chRegSetThreadName("MAVCmdParser");
-  (void)arg;
-  msg_t tmp;
-  Mail *mailp = NULL;
-  mavlink_command_long_t *cmdp;
-
-  while (TRUE) {
-    chMBFetch(&mavlinkcmd_mb, &tmp, TIME_INFINITE);
-    mailp = (Mail *)tmp;
-    cmdp = (mavlink_command_long_t *)(mailp->payload);
-    _analize_cmd(cmdp);
-
-
-    //TODO: анализ вёрнутого значения и генерация ответа в tolink_mb
-
-
-    mailp->payload = NULL;
-  }
-  return 0;
-}
-
-
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-void LinkCmdParserInit(void){
-
-  chThdCreateStatic(LinkCmdParserThreadWA,
-          sizeof(LinkCmdParserThreadWA),
-          LINK_THREADS_PRIO - 1,
-          LinkCmdParserThread,
-          NULL);
-}
-

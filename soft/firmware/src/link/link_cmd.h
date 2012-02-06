@@ -2,7 +2,7 @@
 #define LINK_CMD_H_
 
 
-void LinkCmdParserInit(void);
+msg_t analize_mavlink_cmd(mavlink_command_long_t *cmd);
 
 
 

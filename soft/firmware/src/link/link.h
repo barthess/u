@@ -7,7 +7,8 @@
 #define LINK_H_
 
 
-void LinkInit(void);
+void SpawnMavlinkThreads(MemoryHeap *LinkThdHeap);
+//void SpawnMavlinkThreads(void);
 
 
 #endif /* LINK_H_ */

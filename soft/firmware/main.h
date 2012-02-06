@@ -5,7 +5,7 @@
 /******************************************************************
  * групповые приоритеты для потоков
  ******************************************************************/
-#define I2C_THREADS_PRIO   (NORMALPRIO + 5)
+#define I2C_THREADS_PRIO   (NORMALPRIO - 1)//(NORMALPRIO + 5)
 #define LINK_THREADS_PRIO  (NORMALPRIO - 5)
 
 

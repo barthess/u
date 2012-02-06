@@ -31,18 +31,13 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox mavlinkcmd_mb;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static SerialConfig xbee_ser_cfg = {
-    BAUDRATE_XBEE,
-    0,
-    0,
-    USART_CR3_CTSE,
-};
 
 /*
  *******************************************************************************
@@ -51,14 +46,6 @@ static SerialConfig xbee_ser_cfg = {
  *******************************************************************************
  *******************************************************************************
  */
-
-// Define the system type, in this case an airplane
-//static uint8_t system_type     = MAV_TYPE_GROUND_ROVER;
-//static uint8_t autopilot_type  = MAV_AUTOPILOT_GENERIC;
-//static uint8_t system_mode     = MAV_MODE_PREFLIGHT; ///< Booting up
-//static uint32_t custom_mode    = 0;                 ///< Custom mode, can be defined by user/adopter
-//static uint8_t system_state    = MAV_STATE_STANDBY; ///< System ready for flight
-
 
 /**
  * Поток отправки сообещиний через канал связи на землю.
@@ -117,34 +104,63 @@ static msg_t LinkInThread(void *arg){
   return 0;
 }
 
+/**
+ * Поток приема команд.
+ */
+static WORKING_AREA(LinkCmdParserThreadWA, 1024);
+static msg_t LinkCmdParserThread(void *arg){
+  chRegSetThreadName("MAVCmdParser");
+  (void)arg;
+  msg_t tmp;
+  Mail *mailp = NULL;
+  mavlink_command_long_t *cmdp;
 
+  while (TRUE) {
+    chMBFetch(&mavlinkcmd_mb, &tmp, TIME_INFINITE);
+    mailp = (Mail *)tmp;
+    cmdp = (mavlink_command_long_t *)(mailp->payload);
+    analize_mavlink_cmd(cmdp);
+
+
+    //TODO: анализ вёрнутого значения и генерация ответа в tolink_mb
+
+
+    mailp->payload = NULL;
+  }
+  return 0;
+}
 
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void LinkInit(void){
+/**
+ * порождает потоки сортировки\парсинга сообщений
+ * принимает указатель на пул памяти, из которго надо порождать треды
+ */
+void SpawnMavlinkThreads(MemoryHeap *LinkThdHeap){
 
-  /* запуск на дефолтной частоте */
-  sdStart(&LINKSD, &xbee_ser_cfg);
-
-  chThdCreateStatic(LinkOutThreadWA,
+  chThdCreateFromHeap(LinkThdHeap,
           sizeof(LinkOutThreadWA),
           LINK_THREADS_PRIO,
           LinkOutThread,
           NULL);
 
-  chThdCreateStatic(LinkInThreadWA,
+  chThdCreateFromHeap(LinkThdHeap,
           sizeof(LinkInThreadWA),
           LINK_THREADS_PRIO,
           LinkInThread,
           NULL);
 
-  LinkCmdParserInit();
+  chThdCreateFromHeap(LinkThdHeap,
+          sizeof(LinkCmdParserThreadWA),
+          LINK_THREADS_PRIO - 1,
+          LinkCmdParserThread,
+          NULL);
 }
 
-
+//void SpawnMavlinkThreads(void){;}
 
 
 

@@ -48,7 +48,7 @@ static uint32_t xoffset_index, yoffset_index, zoffset_index;
  *******************************************************************************
  */
 /* Поток для запроса акселерометра */
-static WORKING_AREA(PollMagThreadWA, 256);
+static WORKING_AREA(PollMagThreadWA, 512);
 static msg_t PollMagThread(void *arg){
   chRegSetThreadName("PollMag");
   (void)arg;

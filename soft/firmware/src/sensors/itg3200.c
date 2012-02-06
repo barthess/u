@@ -114,7 +114,7 @@ void gyro_get_angle(void){
 /**
  * Поток для опроса хероскопа
  */
-static WORKING_AREA(PollGyroThreadWA, 256);
+static WORKING_AREA(PollGyroThreadWA, 512);
 static msg_t PollGyroThread(void *arg){
 
   chRegSetThreadName("PollGyro");

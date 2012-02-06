@@ -117,8 +117,8 @@ static WORKING_AREA(PollMax1236ThreadWA, 512);
 static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
-  int16_t press_diff_raw;
-  int16_t sonar_raw;
+  int16_t press_diff_raw = 0;
+  int16_t sonar_raw = 0;
 
   Mail air_data_mail;
   air_data_mail.payload = NULL;

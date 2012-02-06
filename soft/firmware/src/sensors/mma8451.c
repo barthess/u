@@ -46,7 +46,7 @@ static uint32_t xoffset_index, yoffset_index, zoffset_index;
  *******************************************************************************
  */
 /* Поток для запроса акселерометра */
-static WORKING_AREA(PollAccelThreadWA, 256);
+static WORKING_AREA(PollAccelThreadWA, 512);
 static msg_t PollAccelThread(void *arg){
   chRegSetThreadName("PollAccel");
   (void)arg;

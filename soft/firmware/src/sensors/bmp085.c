@@ -184,7 +184,7 @@ static uint32_t get_pressure(void){
 /**
  * Polling thread
  */
-static WORKING_AREA(PollBaroThreadWA, 256);
+static WORKING_AREA(PollBaroThreadWA, 512);
 static msg_t PollBaroThread(void *arg){
   chRegSetThreadName("PollBaro");
   (void)arg;

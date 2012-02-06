@@ -3,8 +3,9 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
-// TODO: * запись в лог делать ровно в 2 раза чаще, чем посылки телеметрии
-// TODO: вместо общего FAILED & SUCCESS наделать персональных
+// TODO: запись в лог делать ровно в 2 раза чаще, чем посылки телеметрии
+// TODO: вместо общего FAILED & SUCCESS наделать персональных в main.h
+// TODO: вынести в (#define LINKSD SD2) в main.h
 // TODO: переделать модемных поток на DMA
 // TODO: софтовыми часами тикать по секундному прерыванию от RTC
 // TODO: все приоритеты потоков задавать в main.h
@@ -24,7 +25,7 @@
 #include "i2c_pns.h"
 #include "adc_pns.h"
 #include "timekeeping.h"
-#include "link.h"
+#include "linkmgr.h"
 #include "gps.h"
 #include "servo.h"
 #include "message.h"
@@ -97,6 +98,13 @@ mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 int main(void) {
   halInit();
   chSysInit();
+  chThdSleepMilliseconds(1);
+
+  /* раздача питалова нуждающимся */
+  pwr5v_power_on();
+  gps_power_on();
+  xbee_reset_clear();
+  xbee_sleep_clear();
 
   // обнуление инкрементальных сумм
   raw_data.gyro_xI = 0;
@@ -125,16 +133,9 @@ int main(void) {
   mavlink_system.state  = MAV_STATE_UNINIT;
   mavlink_system.mode   = MAV_MODE_PREFLIGHT;
 
-  /* раздача питалова нуждающимся */
-  pwr5v_power_on();
-  gps_power_on();
-  xbee_reset_clear();
-  xbee_sleep_clear();
-  chThdSleepMilliseconds(50);
-
   EepromOpen(&EepromFile);
 
-  LinkInit();
+  LinkMgrInit();
   SanityControlInit();
   ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
