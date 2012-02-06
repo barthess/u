@@ -1,3 +1,9 @@
+/*
+Copyright 2012 Uladzimir Pylinski aka barthess.
+You may use this work without restrictions, as long as this notice is included.
+The work is provided "as is" without warranty of any kind, neither express nor implied.
+*/
+
 #include "ch.h"
 #include "hal.h"
 
@@ -143,12 +149,13 @@ static size_t read(void *ip, uint8_t *bp, size_t n){
   if (n == 0)
     return 0;
 
-  /* special clause for stupid STM32 I2C cell */
+  /* Stupid STM32 I2C cell does not allow to read less than 2 bytes.
+     So we must read 2 bytes and return needed one. */
 #if (defined(STM32F4XX) || defined(STM32F2XX) || defined(STM32F1XX) || \
                                                  defined(STM32L1XX))
   if (n == 1){
     uint8_t __buf[2];
-    /* if requested not last byte */
+    /* if NOT last byte of file requested */
     if ((getposition(ip) + 1) < getsize(ip)){
       if (read(ip, __buf, 2) == 2){
         lseek(ip, (getposition(ip) + 1));

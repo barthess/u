@@ -1,4 +1,12 @@
-/**********************************************************************
+/*
+Copyright 2012 Uladzimir Pylinski aka barthess.
+You may use this work without restrictions, as long as this notice is included.
+The work is provided "as is" without warranty of any kind, neither express nor implied.
+*/
+
+/*****************************************************************************
+ * DATASHEET NOTES
+ *****************************************************************************
 Write cycle time (byte or page) — 5 ms
 
 Note:
@@ -17,22 +25,6 @@ beginning of the current page (overwriting
 data previously stored there), instead of
 being written to the next page as might be
 expected.
-
-ACKNOWLEDGE POLLING
-Since the device will not acknowledge during a write
-cycle, this can be used to determine when the cycle is
-complete (this feature can be used to maximize bus
-throughput). Once the Stop condition for a Write
-command has been issued from the master, the device
-initiates the internally timed write cycle. ACK polling
-can be initiated immediately. This involves the master
-sending a Start condition, followed by the control byte
-for a Write command (R/W = 0). If the device is still
-busy with the write cycle, then no ACK will be returned.
-If no ACK is returned, then the Start bit and control byte
-must be re-sent. If the cycle is complete, then the
-device will return the ACK and the master can then
-proceed with the next Read or Write command.
 *********************************************************************/
 
 #include <string.h>
