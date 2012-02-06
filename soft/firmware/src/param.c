@@ -54,7 +54,7 @@ GlobalParam_t global_data[] = {
     {"PMU_D_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
     {"PMU_A_offset",    3,     -1000,     1224,       MAVLINK_TYPE_INT32_T},   /* absolute pressure */
     {"PMU_A_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
-    {"PMU_send_ms",     100,   SEND_MIN,  SEND_MIN,   MAVLINK_TYPE_UINT32_T},
+    {"PMU_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* ADC coefficients */
     {"ADC_I_offset",    1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
     {"ADC_I_gain",      1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
