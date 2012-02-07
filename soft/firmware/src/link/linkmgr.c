@@ -4,6 +4,7 @@
 #include "main.h"
 #include "link.h"
 #include "linkmgr.h"
+#include "param.h"
 
 
 /*
@@ -18,6 +19,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
@@ -34,6 +36,8 @@ static SerialConfig xbee_ser_cfg = {
 /* heap for (link threads) OR (shell thread)*/
 static MemoryHeap LinkThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE];
+
+static uint32_t sh_enable_index = -1;
 
 /*
  *******************************************************************************
@@ -52,7 +56,11 @@ static msg_t LinkMgrThread(void *arg){
   /* ждем, пока модемы встанут в ружьё */
   chThdSleepMilliseconds(3000);
 
-  /* по умолчанию запускаем мавлинковые потоки */
+  /* по значению флага определяем, что запускать */
+//  if (global_data[sh_enable_index].value == 0)
+//    SpawnMavlinkThreads((MemoryHeap *)arg);
+//  else
+//    SpawnShellThread((MemoryHeap *)arg);
   SpawnMavlinkThreads((MemoryHeap *)arg);
 
   while (TRUE) {
@@ -72,6 +80,10 @@ void LinkMgrInit(void){
   chHeapInit(&LinkThdHeap, link_thd_buf, LINK_THD_HEAP_SIZE);
 
   sdStart(&LINKSD, &xbee_ser_cfg);
+
+  sh_enable_index = key_value_search("SH_enable");
+  if (sh_enable_index == -1)
+    chDbgPanic("not found");
 
   chThdCreateStatic(LinkMgrThreadWA,
           sizeof(LinkMgrThreadWA),

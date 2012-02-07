@@ -17,7 +17,6 @@
  * DEFINES
  ******************************************************************************
  */
-#define SDCLI SD2
 
 /*
  ******************************************************************************
@@ -25,7 +24,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-//extern RTCTime timespec;
 
 /*
  ******************************************************************************
@@ -157,7 +155,7 @@ static const ShellCommand commands[] = {
 
 
 static const ShellConfig shell_cfg1 = {
-  (BaseChannel *)&SDCLI,
+  (BaseChannel *)&SHELLSD,
   commands
 };
 
@@ -168,7 +166,7 @@ static const ShellConfig shell_cfg1 = {
  */
 static WORKING_AREA(waShell, 2048);
 void CliInit(void){
-  sdStart(&SDCLI, &cli_ser_cfg);
+  sdStart(&SHELLSD, &cli_ser_cfg);
 
   shellInit();
   shellCreateStatic(&shell_cfg1, waShell, sizeof(waShell), NORMALPRIO);
