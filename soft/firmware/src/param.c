@@ -36,6 +36,8 @@ GlobalParam_t global_data[] = {
     /*-----------------------------------------------------------------------*/
     {"SYS_ID",          20,    1,         255,        MAVLINK_TYPE_UINT32_T},
     {"SYS_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
+    /* всякие флаги для коммандной оболочки */
+    {"SH_enable",       0,     0,         1,          MAVLINK_TYPE_UINT32_T},
     /* IMU - inertial measurement unit */
     {"IMU_g1",          0.1,   -1,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g2",          0.2,   -1,        1,          MAVLINK_TYPE_FLOAT},
