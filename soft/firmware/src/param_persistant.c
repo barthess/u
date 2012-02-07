@@ -69,7 +69,7 @@ bool_t load_params_from_eeprom(void){
     /* reade field from EEPROM and check number of read bytes */
     status = chFileStreamRead(&EepromFile, eeprombuf, sizeof(eeprombuf));
     if (status < sizeof(eeprombuf))
-      return FAILED;
+      return PARAMETERS_FAILED;
 
     /* search value by key and set it if found */
     index = key_value_search((char *)eeprombuf);
@@ -88,7 +88,7 @@ bool_t load_params_from_eeprom(void){
     else
       global_data[i].value = u.f32;
   }
-  return SUCCESS;
+  return PARAMETERS_SUCCESS;
 }
 
 

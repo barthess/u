@@ -1,17 +1,19 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+/******************************************************************
+ * humanreadable names of serial drivers */
+#define LINKSD  SD2
+#define GPSSD   SD1
+#define SHELLSD LINKSD
 
 /******************************************************************
- * групповые приоритеты для потоков
- ******************************************************************/
-#define I2C_THREADS_PRIO   (NORMALPRIO - 1)//(NORMALPRIO + 5)
+ * приоритеты для потоков */
+#define I2C_THREADS_PRIO   (NORMALPRIO + 5)
 #define LINK_THREADS_PRIO  (NORMALPRIO - 5)
 
-
 /******************************************************************
- * глобальные битовые флаги
- ******************************************************************/
+ * глобальные битовые флаги */
 #define GYRO_CAL        (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
 #define ACCEL_CAL       (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
 #define MAG_CAL         (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
@@ -23,33 +25,38 @@
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
 
 /******************************************************************
- * глобальные дефайны
- ******************************************************************/
+* статусы возвращаемые разными подсистемами */
+#define PARAMETERS_SUCCESS  FALSE
+#define PARAMETERS_FAILED   TRUE
+#define LINK_SUCCESS        FALSE
+#define LINK_FAILED         TRUE
 
-#define SUCCESS   FALSE
-#define FAILED    TRUE
-
+/******************************************************************
+* константы для мавлинка */
 #define GROUND_STATION_ID   255
 
-/* data offsets in "file" */
+/******************************************************************
+* data offsets in eeprom "file" */
 #define EEPROM_SETTINGS_START    8192
 #define EEPROM_SETTINGS_SIZE     4096
 #define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
 
-/* максимальная скорость модема даже слегка недостаточна - пакеты все равно не
- * все приходят из-за внутренних задержек */
+/******************************************************************
+* дефайны для модема */
 #define BAUDRATE_XBEE 115200
 #define xbee_reset_assert() {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
 #define xbee_reset_clear()  {palSetPad(GPIOE, GPIOE_XBEE_RESET);}
 #define xbee_sleep_assert() {palClearPad(GPIOE, GPIOE_XBEE_SLEEP);}
 #define xbee_sleep_clear()  {palSetPad(GPIOE, GPIOE_XBEE_RESET);}
 
-/* включить стрессовое тестирование */
-#define ENABLE_IRQ_STORM    FALSE
-
-/* функции включения питания в 5-вольтовом домене */
+/******************************************************************
+* функции включения питания в 5-вольтовом домене */
 #define pwr5v_power_on()  {palSetPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 #define pwr5v_power_off() {palClearPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
+
+
+/* включить стрессовое тестирование */
+#define ENABLE_IRQ_STORM    FALSE
 
 /* stop watchdog timer in debugging mode */
 /*unlock PR register*/

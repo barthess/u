@@ -140,27 +140,27 @@ static bool_t set_parameter(mavlink_param_set_t *set){
     // AND is NOT infinity
     if ((set->param_type == MAVLINK_TYPE_FLOAT) &&
         (isnan(set->param_value) || isinf(set->param_value))){
-      return FAILED;
+      return PARAMETERS_FAILED;
     }
     if (global_data[index].value == set->param_value){
-      return FAILED;
+      return PARAMETERS_FAILED;
     }
     /* If value fall out of min..max bound than just silently set nearest allowable value */
     if (set->param_value > global_data[index].max){
       global_data[index].value = global_data[index].max;
-      return SUCCESS;
+      return PARAMETERS_SUCCESS;
     }
     if (set->param_value < global_data[index].min){
       global_data[index].value = global_data[index].min;
-      return SUCCESS;
+      return PARAMETERS_SUCCESS;
     }
 
     global_data[index].value = set->param_value;
-    return SUCCESS;
+    return PARAMETERS_SUCCESS;
   }
 
   /*error trap*/
-  return FAILED;
+  return PARAMETERS_FAILED;
 }
 
 /**
@@ -196,13 +196,13 @@ static bool_t send_value(Mail *param_value_mail,
     param_value_mail->payload = param_value_struct;
     status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
     if (status != RDY_OK)
-      return FAILED;
+      return PARAMETERS_FAILED;
 
     /* wait until message processed */
     chMBFetch(&param_confirm_mb, &tmp, TIME_INFINITE);
   }
   else
-    return FAILED;
+    return PARAMETERS_FAILED;
 
   return SUCCESS;
 }
@@ -235,7 +235,7 @@ static msg_t ParametersThread(void *arg){
   mavlink_param_set_t *set = NULL;
   mavlink_param_request_list_t *list = NULL;
   mavlink_param_request_read_t *read = NULL;
-  bool_t status = FAILED;
+  bool_t status = PARAMETERS_FAILED;
 
   while (TRUE) {
     chMBFetch(&param_mb, &tmp, TIME_INFINITE);
