@@ -4,25 +4,46 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "../microrl/src/config.h"
 #include "../microrl/src/microrl.h"
 #include "chprintf.h"
 
 #include "main.h"
+#include "cli.h"
 
+
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+
+/*
+ ******************************************************************************
+ * EXTERNS
+ ******************************************************************************
+ */
 extern MemoryHeap LinkThdHeap;
 
-
-void microrl_set_sigint_callback (microrl_t * this, void (*sigintf)(void));
-
-
-
-
-//*****************************************************************************
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 static SerialDriver *shell_sdp;
 
-//*****************************************************************************
-void print (char *str){
+/*
+ *******************************************************************************
+ * PROTOTYPES
+ *******************************************************************************
+ */
+void microrl_set_sigint_callback (microrl_t * this, void (*sigintf)(void));
+
+/*
+ *******************************************************************************
+ * LOCAL FUNCTIONS
+ *******************************************************************************
+ */
+void print(char *str){
   int i = 0;
   while (str[i] != 0) {
     sdPut(shell_sdp, str[i]);
@@ -30,50 +51,10 @@ void print (char *str){
   }
 }
 
-//*****************************************************************************
 char get_char (void){
   return sdGet(shell_sdp);
 }
 
-
-
-
-
-
-
-
-
-
-
-// definition commands word
-#define _CMD_HELP  "help"
-#define _CMD_CLEAR "clear"
-#define _CMD_LIST  "list"
-#define _CMD_LISP  "lisp" // for demonstration completion on 'l + <TAB>'
-#define _CMD_NAME  "name"
-#define _CMD_VER   "version"
-// sub commands for version command
-  #define _SCMD_MRL  "microrl"
-  #define _SCMD_DEMO "demo"
-
-#define _NUM_OF_CMD 6
-#define _NUM_OF_VER_SCMD 2
-
-//available  commands
-char * keyworld [] = {_CMD_HELP, _CMD_CLEAR, _CMD_LIST, _CMD_NAME, _CMD_VER, _CMD_LISP};
-// version subcommands
-char * ver_keyworld [] = {_SCMD_MRL, _SCMD_DEMO};
-
-// array for comletion
-char * compl_world [_NUM_OF_CMD + 1];
-
-// 'name' var for store some string
-#define _NAME_LEN 8
-char name [_NAME_LEN];
-int val;
-
-
-//*****************************************************************************
 void print_help (void)
 {
   print ("Use TAB key for completion\n\rCommand:\n\r");
@@ -85,60 +66,133 @@ void print_help (void)
   print ("\tlisp - dummy command for demonstation auto-completion, while inputed 'l+<TAB>'\n\r");
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
+void ps_func(int argc, const char * const * argv);
+void uname_func(int argc, const char * const * argv);
+void man_func(int argc, const char * const * argv);
+void help_func(int argc, const char * const * argv);
+void clear_func(int argc, const char * const * argv);
+void list_func(int argc, const char * const * argv);
+void lisp_func(int argc, const char * const * argv);
+void echo_func(int argc, const char * const * argv);
+
+
+ShellCmd_t chibiutils[] = {
+    {"ps",      &ps_func,     NULL},
+    {"uname",   &uname_func,  NULL},
+    {"man",     &man_func,    NULL},
+    {"help",    &help_func,   NULL},
+    {"clear",   &clear_func,  NULL},
+    {"list",    &list_func,   NULL},
+    {"lisp",    &lisp_func,   NULL},
+    {"echo",    &echo_func,   NULL},
+    //{"kill",    &kill_func,   NULL},
+    //{"reboot",    &reboot_func,   NULL},
+    //{"poweroff",    &poweroff_func,   NULL},
+    //{"logout",    &logout_func,   NULL},
+    //{"test",    &test_func,   NULL},
+    {NULL,      NULL,         NULL}/* end marker */
+};
+
+#define _NUM_OF_CMD (sizeof(chibiutils)/sizeof(ShellCmd_t))
+
+
+
+
+void clear_func(int argc, const char * const * argv){
+  (void)argc;
+  (void)argv;
+  print ("\033[2J");    // ESC seq for clear entire screen
+  print ("\033[H");     // ESC seq for move cursor at left-top corner
+}
+
+void list_func(int argc, const char * const * argv){
+  (void)argc;
+  (void)argv;
+  int i = 0;
+
+  print("available commands:\n\r");
+  while(chibiutils[i].name != NULL){
+    print("\t");
+    print(chibiutils[i].name);
+    print("\n\r");
+    i++;
+  }
+}
+
+void echo_func(int argc, const char * const * argv){
+  int i = 0;
+
+  while (i < argc)
+    print(argv[i++]);
+
+  print("\n\r");
+}
+
+void help_func(int argc, const char * const * argv){
+  (void)argc;
+  (void)argv;
+  print_help();
+}
+
+void lisp_func(int argc, const char * const * argv){
+  (void)argc;
+  (void)argv;
+  print("this is test dummy\n\r");
+}
+
+void ps_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
+void uname_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
+void man_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
+
+
+int32_t cmd_search(const char* key, ShellCmd_t *cmdarray){
+  uint32_t i = 0;
+
+  while (cmdarray[i].name != NULL){
+    if (strcmp(key, cmdarray[i].name) == 0)
+      return i;
+    i++;
+  }
+  return -1;
+}
+
+
+
+
+
+
+// array for comletion
+char * compl_world [_NUM_OF_CMD + 1];
+
+
+
+
+
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
 int execute (int argc, const char * const * argv)
 {
+  /* search first token */
   int i = 0;
-  // just iterate through argv word and compare it with your commands
-  while (i < argc) {
-    if (strcmp (argv[i], _CMD_HELP) == 0) {
-      print ("microrl library based shell v 1.0\n\r");
-      print_help ();        // print help
-    } else if (strcmp (argv[i], _CMD_NAME) == 0) {
-      if ((++i) < argc) { // if value preset
-        if (strlen (argv[i]) < _NAME_LEN) {
-          strcpy (name, argv[i]);
-        } else {
-          print ("name value too long!\n\r");
-        }
-      } else {
-        print (name);
-        print ("\n\r");
-      }
-    } else if (strcmp (argv[i], _CMD_VER) == 0) {
-      if (++i < argc) {
-        if (strcmp (argv[i], _SCMD_DEMO) == 0) {
-          print ("demo v 1.0\n\r");
-        } else if (strcmp (argv[i], _SCMD_MRL) == 0) {
-          print ("microrl v 1.2\n\r");
-        } else {
-          print ((char*)argv[i]);
-          print (" wrong argument, see help\n\r");
-        }
-      } else {
-        print ("version needs 1 parametr, see help\n\r");
-      }
-    } else if (strcmp (argv[i], _CMD_CLEAR) == 0) {
-      print ("\033[2J");    // ESC seq for clear entire screen
-      print ("\033[H");     // ESC seq for move cursor at left-top corner
-    } else if (strcmp (argv[i], _CMD_LIST) == 0) {
-      print ("available command:\n");// print all command per line
-      for (int i = 0; i < _NUM_OF_CMD; i++) {
-        print ("\t");
-        print (keyworld[i]);
-        print ("\n\r");
-      }
-    } else {
-      print ("command: '");
-      print ((char*)argv[i]);
-      print ("' Not found.\n\r");
-    }
-    i++;
+  i = cmd_search(argv[0], chibiutils);
+  if (i != -1)
+    /* pass next arguments to worker function */
+    chibiutils[i].func(argc - 1, &argv[1]);
+  else{
+    print ("command: '");
+    print ((char*)argv[0]);
+    print ("' Not found.\n\r");
   }
   return 0;
 }
+
 
 #ifdef _USE_COMPLETE
 //*****************************************************************************
@@ -146,36 +200,30 @@ int execute (int argc, const char * const * argv)
 char ** complet (int argc, const char * const * argv)
 {
   int j = 0;
+  int i = 0;
 
-  compl_world [0] = NULL;
+  compl_world[0] = NULL;
 
   // if there is token in cmdline
   if (argc == 1) {
     // get last entered token
     char * bit = (char*)argv [argc-1];
     // iterate through our available token and match it
-    for (int i = 0; i < _NUM_OF_CMD; i++) {
-      // if token is matched (text is part of our token starting from 0 char)
-      if (strstr(keyworld [i], bit) == keyworld [i]) {
-        // add it to completion set
-        compl_world [j++] = keyworld [i];
-      }
+    while (chibiutils[i].name != NULL){
+      if (strstr(chibiutils[i].name, bit) == chibiutils[i].name)
+        compl_world[j++] = chibiutils[i].name;
+      i++;
     }
-  } else if ((argc > 1) && (strcmp (argv[0], _CMD_VER)==0)) { // if command needs subcommands
-    // iterate through subcommand for command _CMD_VER array
-    for (int i = 0; i < _NUM_OF_VER_SCMD; i++) {
-      if (strstr (ver_keyworld [i], argv [argc-1]) == ver_keyworld [i]) {
-        compl_world [j++] = ver_keyworld [i];
-      }
-    }
-  } else { // if there is no token in cmdline, just print all available token
-    for (; j < _NUM_OF_CMD; j++) {
-      compl_world[j] = keyworld [j];
+  }
+  else { // if there is no token in cmdline, just print all available token
+    while (chibiutils[j].name != NULL){
+      compl_world[j] = chibiutils[j].name;
+      j++;
     }
   }
 
   // note! last ptr in array always must be NULL!!!
-  compl_world [j] = NULL;
+  compl_world[j] = NULL;
   // return set of variants
   return compl_world;
 }
@@ -200,20 +248,21 @@ static msg_t ShellThread(void *arg){
 
   // create and init microrl object
   microrl_t microrl_shell;
-  microrl_init (&microrl_shell, print);
+  microrl_init(&microrl_shell, print);
 
   // set callback for execute
   microrl_set_execute_callback(&microrl_shell, execute);
+
   // set callback for completion (optionally)
   microrl_set_complite_callback(&microrl_shell, complet);
-  // set callback for ctrl+c handling (optionally)
 
+  // set callback for ctrl+c handling (optionally)
   microrl_set_sigint_callback(&microrl_shell, sigint);
 
-  while (TRUE) {
+  while (TRUE){
     // put received char from stdin to microrl lib
     char c = sdGet(shell_sdp);
-    microrl_insert_char (&microrl_shell, c);
+    microrl_insert_char(&microrl_shell, c);
   }
   return 0;
 }
