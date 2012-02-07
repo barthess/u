@@ -93,7 +93,6 @@ CSRC = $(PORTSRC) \
        main.c \
        src/dsp.c \
        src/i2c_pns.c \
-       src/cli.c \
        src/exti_pns.c \
        src/microrl/src/microrl.c \
        src/gps.c \
@@ -113,6 +112,7 @@ CSRC = $(PORTSRC) \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
+       src/link/cli.c \
        src/link/linkmgr.c \
        src/link/link.c \
        src/link/link_sortout.c \

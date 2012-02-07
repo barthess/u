@@ -7,7 +7,7 @@
 #define LINK_H_
 
 
-void SpawnMavlinkThreads(MemoryHeap *LinkThdHeap);
+void SpawnMavlinkThreads(SerialDriver *sdp);
 //void SpawnMavlinkThreads(void);
 
 

@@ -78,6 +78,10 @@ mavlink_command_long_t      mavlink_command_long_struct;
 
 mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
 
+/* heap for (link threads) OR (shell thread)*/
+MemoryHeap LinkThdHeap;
+static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE];
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -122,6 +126,9 @@ int main(void) {
   chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
+
+  /* инициализация кучи под потоки связи */
+  chHeapInit(&LinkThdHeap, link_thd_buf, LINK_THD_HEAP_SIZE);
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane

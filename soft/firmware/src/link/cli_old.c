@@ -173,4 +173,10 @@ void CliInit(void){
 }
 
 
+void SpawnShellThread(SerialDriver *sdp){
+  ;
+}
+
+
+
 

@@ -31,6 +31,7 @@
  */
 extern Mailbox tolink_mb;
 extern Mailbox mavlinkcmd_mb;
+extern MemoryHeap LinkThdHeap;
 
 /*
  ******************************************************************************
@@ -50,9 +51,8 @@ extern Mailbox mavlinkcmd_mb;
  * Поток отправки сообещиний через канал связи на землю.
  */
 static WORKING_AREA(LinkOutThreadWA, 1024);
-static msg_t LinkOutThread(void *arg){
+static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
-  (void)arg;
 
   /* Переменная для формирования сообщения. Используется всеми,
      поскольку сообещиня обрабатываются по одному. */
@@ -70,7 +70,7 @@ static msg_t LinkOutThread(void *arg){
     mailp = (Mail*)tmp;
     sort_output_mail(mailp, &mavlink_msgbuf);
     len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
-    sdWrite(&LINKSD, sendbuf, len);
+    sdWrite((SerialDriver *)sdp, sendbuf, len);
   }
 
   return 0;
@@ -81,9 +81,8 @@ static msg_t LinkOutThread(void *arg){
  * Поток разбора входящих данных.
  */
 static WORKING_AREA(LinkInThreadWA, 1024);
-static msg_t LinkInThread(void *arg){
+static msg_t LinkInThread(void *sdp){
   chRegSetThreadName("MAVLinkIn");
-  (void)arg;
 
   mavlink_message_t msg;
   mavlink_status_t status;
@@ -93,7 +92,7 @@ static msg_t LinkInThread(void *arg){
 
   while (TRUE) {
     // Try to get a new message
-    c = sdGet(&LINKSD);
+    c = sdGet((SerialDriver *)sdp);
     if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
       if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
         sort_input_messages(&msg);
@@ -138,28 +137,27 @@ static msg_t LinkCmdParserThread(void *arg){
  * порождает потоки сортировки\парсинга сообщений
  * принимает указатель на пул памяти, из которго надо порождать треды
  */
-void SpawnMavlinkThreads(MemoryHeap *LinkThdHeap){
+void SpawnMavlinkThreads(SerialDriver *sdp){
 
-  chThdCreateFromHeap(LinkThdHeap,
+  chThdCreateFromHeap(&LinkThdHeap,
           sizeof(LinkOutThreadWA),
           LINK_THREADS_PRIO,
           LinkOutThread,
-          NULL);
+          sdp);
 
-  chThdCreateFromHeap(LinkThdHeap,
+  chThdCreateFromHeap(&LinkThdHeap,
           sizeof(LinkInThreadWA),
           LINK_THREADS_PRIO,
           LinkInThread,
-          NULL);
+          sdp);
 
-  chThdCreateFromHeap(LinkThdHeap,
+  chThdCreateFromHeap(&LinkThdHeap,
           sizeof(LinkCmdParserThreadWA),
           LINK_THREADS_PRIO - 1,
           LinkCmdParserThread,
-          NULL);
+          sdp);
 }
 
-//void SpawnMavlinkThreads(void){;}
 
 
 
