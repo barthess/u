@@ -36,14 +36,13 @@ static SerialDriver *shell_sdp;
  * PROTOTYPES
  *******************************************************************************
  */
-void microrl_set_sigint_callback (microrl_t * this, void (*sigintf)(void));
 
 /*
  *******************************************************************************
  * LOCAL FUNCTIONS
  *******************************************************************************
  */
-void print(char *str){
+void print(const char *str){
   int i = 0;
   while (str[i] != 0) {
     sdPut(shell_sdp, str[i]);
@@ -168,7 +167,7 @@ int32_t cmd_search(const char* key, ShellCmd_t *cmdarray){
 
 
 // array for comletion
-char * compl_world [_NUM_OF_CMD + 1];
+char *compl_world[_NUM_OF_CMD + 1];
 
 
 
@@ -249,6 +248,7 @@ static msg_t ShellThread(void *arg){
   // create and init microrl object
   microrl_t microrl_shell;
   microrl_init(&microrl_shell, print);
+  print("@@*** Super cool device, version 1.2.3, for help type help... ***@@\r\n");
 
   // set callback for execute
   microrl_set_execute_callback(&microrl_shell, execute);
