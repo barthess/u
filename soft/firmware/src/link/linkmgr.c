@@ -50,7 +50,7 @@ static msg_t LinkMgrThread(void *arg){
   chRegSetThreadName("LinkManager");
 
   /* ждем, пока модемы встанут в ружьё */
-  chThdSleepMilliseconds(3000);
+  chThdSleepMilliseconds(4000);
 
   /* по значению флага определяем, что запускать */
 //  if (global_data[sh_enable_index].value == 0)

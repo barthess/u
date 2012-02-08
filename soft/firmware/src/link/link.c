@@ -88,8 +88,6 @@ static msg_t LinkInThread(void *sdp){
   mavlink_status_t status;
   uint8_t c = 0;
 
-  chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
-
   while (TRUE) {
     // Try to get a new message
     c = sdGet((SerialDriver *)sdp);
