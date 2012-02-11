@@ -119,3 +119,27 @@ void TimekeepingInit(void){
   else
     chDbgPanic("time collapsed");
 }
+
+/**
+ * Command to handle real time.
+ */
+Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)argv;
+  (void)argc;
+  (void)cmdarray;
+
+  cli_print("unimplemented yet\r\n");
+  return NULL;
+
+//  rtcGetTime(&RTCD1, &timespec);
+
+//  bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
+
+//  time = mktime(&timp);
+//  chprintf(chp, "date: %U%s%U%s%U%s%U%s%U%s%U", (timp.tm_year + 1900), "/",
+//      (timp.tm_mon + 1), "/", timp.tm_mday, " - ",
+//      timp.tm_hour, ":", timp.tm_min, ":", timp.tm_sec);
+//  chprintf(chp, "\r\n");
+//  chprintf(chp, "time_t: %U", time);
+//  chprintf(chp, "\r\n");
+}

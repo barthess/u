@@ -11,6 +11,7 @@
  * приоритеты для потоков */
 #define I2C_THREADS_PRIO   (NORMALPRIO + 5)
 #define LINK_THREADS_PRIO  (NORMALPRIO - 5)
+#define CMD_THREADS_PRIO   (LINK_THREADS_PRIO - 2)
 
 /******************************************************************
  * глобальные битовые флаги */

@@ -113,6 +113,7 @@ CSRC = $(PORTSRC) \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
        src/link/cli.c \
+       src/link/cli_cmd.c \
        src/link/linkmgr.c \
        src/link/link.c \
        src/link/link_sortout.c \

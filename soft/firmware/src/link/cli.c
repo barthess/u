@@ -9,7 +9,8 @@
 
 #include "main.h"
 #include "cli.h"
-
+#include "cli_cmd.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -25,6 +26,9 @@
  */
 extern MemoryHeap LinkThdHeap;
 
+/* variable to pass interrupt signal into command function */
+bool_t SIGINT = FALSE;
+
 /*
  *******************************************************************************
  * PROTOTYPES
@@ -32,55 +36,28 @@ extern MemoryHeap LinkThdHeap;
  */
 int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 
-void ps_func(int argc, const char * const * argv);
-void uname_func(int argc, const char * const * argv);
-void man_func(int argc, const char * const * argv);
-void help_func(int argc, const char * const * argv);
-void clear_func(int argc, const char * const * argv);
-void list_func(int argc, const char * const * argv);
-void lisp_func(int argc, const char * const * argv);
-void echo_func(int argc, const char * const * argv);
-
-void git_func(int argc, const char * const * argv);
-void git_stash_func(int argc, const char * const * argv);
-void git_help_func(int argc, const char * const * argv);
-void git_submodule_init_func(int argc, const char * const * argv);
-void git_submodule_add_func(int argc, const char * const * argv);
-void git_submodule_func(int argc, const char * const * argv);
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static ShellCmd_t git_submodule_commands[] = {
-    {"init",  &git_submodule_init_func, NULL},
-    {"add",   &git_submodule_add_func,  NULL},
-    {NULL,    NULL,                     NULL}/* end marker */
-};
-
-static ShellCmd_t git_commands[] = {
-    {"submodule", &git_submodule_func,  git_submodule_commands},
-    {"stash",     &git_stash_func,      NULL},
-    {"help",      &git_help_func,       NULL},
-    {NULL,        NULL,                 NULL}/* end marker */
-};
 
 static ShellCmd_t chibiutils[] = {
-    {"ps",      &ps_func,     NULL},
-    {"uname",   &uname_func,  NULL},
-    {"man",     &man_func,    NULL},
-    {"help",    &help_func,   NULL},
-    {"clear",   &clear_func,  NULL},
-    {"list",    &list_func,   NULL},
-    {"lisp",    &lisp_func,   NULL},
-    {"echo",    &echo_func,   NULL},
-    {"git",     &git_func,    git_commands}, /* for multiword command demonstration */
+    {"ps",        &ps_cmd,        NULL},
+    {"uname",     &uname_cmd,     NULL},
+    {"help",      &help_cmd,      NULL},
+    {"clear",     &clear_cmd,     NULL},
+    {"list",      &list_cmd,      NULL},
+    {"loop",      &loop_cmd,      NULL},
+    {"echo",      &echo_cmd,      NULL},
+    {"date",      &date_cmd,      NULL},
+    {"reboot",    &reboot_cmd,    NULL},
+    {"sleep",     &sleep_cmd,     NULL},
+    {"selftest",  &selftest_cmd,  NULL},
+    {"sensor",    &sensor_cmd,    NULL},
+    //{"man",       &man_cmd,       NULL},
     //{"kill",    &kill_func,   NULL},
-    //{"reboot",    &reboot_func,   NULL},
-    //{"poweroff",    &poweroff_func,   NULL},
     //{"logout",    &logout_func,   NULL},
-    //{"test",    &test_func,   NULL},
     {NULL,      NULL,         NULL}/* end marker */
 };
 
@@ -89,11 +66,15 @@ static SerialDriver *shell_sdp;
 // array for comletion
 static char *compl_world[_NUM_OF_CMD + 1];
 
+/* thread pointer to currently executing command */
+static Thread *current_cmd_tp = NULL;
+
 /*
  *******************************************************************************
  * LOCAL FUNCTIONS
  *******************************************************************************
  */
+
 /**
  * Search value (pointer to function) by key (name string)
  */
@@ -111,7 +92,7 @@ int32_t cmd_search(const char* key, const ShellCmd_t *cmdarray){
 /**
  * Print routine
  */
-void print(const char *str){
+void cli_print(const char *str){
   int i = 0;
   while (str[i] != 0) {
     sdPut(shell_sdp, str[i]);
@@ -126,103 +107,15 @@ char get_char (void){
   return sdGet(shell_sdp);
 }
 
-void clear_func(int argc, const char * const * argv){
-  (void)argc;
-  (void)argv;
-  print ("\033[2J");    // ESC seq for clear entire screen
-  print ("\033[H");     // ESC seq for move cursor at left-top corner
-}
-
-void list_func(int argc, const char * const * argv){
-  (void)argc;
-  (void)argv;
-  int i = 0;
-
-  print("available commands:\n\r");
-  while(chibiutils[i].name != NULL){
-    print("\t");
-    print(chibiutils[i].name);
-    print("\n\r");
-    i++;
-  }
-}
-
-void echo_func(int argc, const char * const * argv){
-  int i = 0;
-
-  while (i < argc)
-    print(argv[i++]);
-
-  print("\n\r");
-}
-
-void help_func(int argc, const char * const * argv){
-  (void)argc;
-  (void)argv;
-  print ("Use TAB key for completion\n\rCommand:\n\r");
-  print ("\tversion {microrl | demo} - print version of microrl lib or version of this demo src\n\r");
-  print ("\thelp  - this message\n\r");
-  print ("\tclear - clear screen\n\r");
-  print ("\tlist  - list all commands in tree\n\r");
-  print ("\tname [string] - print 'name' value if no 'string', set name value to 'string' if 'string' present\n\r");
-  print ("\tlisp - dummy command for demonstation auto-completion, while inputed 'l+<TAB>'\n\r");
-}
-
-void lisp_func(int argc, const char * const * argv){
-  (void)argc;
-  (void)argv;
-  print("this is test dummy\n\r");
-}
-
-void ps_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
-void uname_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
-void man_func(int argc, const char * const * argv){(void)argc; (void)argv; print("stub\n\r");}
-
-void git_func(int argc, const char * const * argv){
-  if(argc == 0){
-    print("git: you must specify option or subcommand\n\r");
-    return;
-  }
-  if (recursive_execute(argc, argv, git_commands) == -1){
-    print("git: this is not subcommand but parameter \n\r");
-  }
-}
-
-void git_submodule_func(int argc, const char * const * argv){
-  if(argc == 0){
-    print("git: you must specify option or subcommand\n\r");
-    return;
-  }
-  print("git submodule execute\n\r");
-  if (recursive_execute(argc, argv, git_submodule_commands) == -1){
-    print("git: this is not subcommand but parameter \n\r");
-  }
-}
-
-void git_submodule_init_func(int argc, const char * const * argv){
-  (void)argc; (void)argv;
-  print("git submodule init executin\n\r");
-}
-void git_submodule_add_func(int argc, const char * const * argv){
-  (void)argc; (void)argv; print("git submodule add executing\n\r");
-}
-
-void git_stash_func(int argc, const char * const * argv){
-  (void)argc; (void)argv; print("git stash\n\r");
-}
-
-void git_help_func(int argc, const char * const * argv){
-  (void)argc; (void)argv; print("git help \n\r");
-}
 
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
 int execute (int argc, const char * const * argv){
   if (recursive_execute(argc, argv, chibiutils) == -1){
-    print ("command: '");
-    print ((char*)argv[0]);
-    print ("' Not found.\n\r");
+    cli_print ("command: '");
+    cli_print ((char*)argv[0]);
+    cli_print ("' Not found.\n\r");
   }
   return 0;
 }
@@ -235,13 +128,10 @@ int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmd
 
   /* search token in cmd array */
   if (i != -1){
-    if (argc > 1){
-      cmdarray[i].func(argc - 1, &argv[1]);
-    }
-    else{
-      /* if there is no arguments for subcommand */
-      cmdarray[i].func(argc - 1, NULL);
-    }
+    if (argc > 1)
+      current_cmd_tp = cmdarray[i].func(argc - 1, &argv[1], cmdarray);
+    else
+      current_cmd_tp = cmdarray[i].func(argc - 1, NULL, cmdarray);
   }
   return i;
 }
@@ -251,7 +141,7 @@ int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmd
 #ifdef _USE_COMPLETE
 //*****************************************************************************
 // completion callback for microrl library
-char ** complet (int argc, const char * const * argv)
+char ** complete(int argc, const char * const * argv)
 {
   int j = 0;
   int i = 0;
@@ -287,9 +177,12 @@ char ** complet (int argc, const char * const * argv)
 /**
  *
  */
-void sigint (void)
-{
-  print ("^C catched!\n\r");
+void sigint (void){
+  if (current_cmd_tp != NULL){
+    chThdTerminate(current_cmd_tp);
+    chThdWait(current_cmd_tp);
+  }
+  cli_print("^C pressed\n\r");
 }
 
 /**
@@ -304,25 +197,25 @@ static msg_t ShellThread(void *arg){
 
   // create and init microrl object
   microrl_t microrl_shell;
-  print("@@*** Super cool device, version 1.2.3, for help type help... ***@@\r\n");
-  chThdSleepMilliseconds(100);
-
-  microrl_init(&microrl_shell, print);
-  chThdSleepMilliseconds(100);
+  cli_print("@@*** Super cool device, version 1.2.3, for help type help... ***@@\r\n");
+  microrl_init(&microrl_shell, cli_print);
 
   // set callback for execute
   microrl_set_execute_callback(&microrl_shell, execute);
 
   // set callback for completion (optionally)
-  microrl_set_complite_callback(&microrl_shell, complet);
+  microrl_set_complite_callback(&microrl_shell, complete);
 
   // set callback for ctrl+c handling (optionally)
   microrl_set_sigint_callback(&microrl_shell, sigint);
 
   while (TRUE){
     // put received char from stdin to microrl lib
-    char c = sdGet(shell_sdp);
-    microrl_insert_char(&microrl_shell, c);
+    char c = sdGetTimeout(shell_sdp, MS2ST(50));
+    if (c != Q_TIMEOUT)
+      microrl_insert_char(&microrl_shell, c);
+    if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state == THD_STATE_FINAL))
+      chThdRelease(current_cmd_tp);
   }
   return 0;
 }
