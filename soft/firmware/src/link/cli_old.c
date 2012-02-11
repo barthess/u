@@ -164,18 +164,6 @@ static const ShellConfig shell_cfg1 = {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-static WORKING_AREA(waShell, 2048);
-void CliInit(void){
-  sdStart(&SHELLSD, &cli_ser_cfg);
-
-  shellInit();
-  shellCreateStatic(&shell_cfg1, waShell, sizeof(waShell), NORMALPRIO);
-}
-
-
-void SpawnShellThread(SerialDriver *sdp){
-  ;
-}
 
 
 

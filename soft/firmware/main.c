@@ -147,7 +147,6 @@ int main(void) {
 //  eeprom_testsuit_run();
   ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти после I2C*/
   ServoInit();
-//  CliInit();
   ADCInit_pns();
   ImuInit();
   GPSInit();
