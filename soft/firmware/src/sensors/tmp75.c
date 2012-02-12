@@ -8,6 +8,7 @@
 #include "i2c_pns.h"
 #include "tmp75.h"
 #include "link.h"
+#include "dsp.h"
 
 /*
  ******************************************************************************
@@ -22,7 +23,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 
 /*
@@ -45,24 +45,20 @@ static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
 
-  int16_t t_int = 0;
-  int16_t t_frac = 0;
-
   while (TRUE) {
-    /* скорость опроса термодатчика надо подбирать в зависимости от разрешения
-     * при 12 Bits (0.0625°C) данные обновляются каждые 220 мс*/
+    txbuf[0] = 0b00000001; // point to Configuration Register
+    /* запуск одиночного измерения */
+    txbuf[1] = 0b10000001; // OS R1 R0 F1 F0 POL TM SD
+    i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+    chThdSleepMilliseconds(40); /* ждем пока померяется (под даташиту 37.5)*/
 
-    if (i2c_receive(tmp75addr, rxbuf, 2) == RDY_OK){
-      /* Целая часть будет записана в лог и отправлена телеметрией */
-      log_item.temp_onboard = rxbuf[0];
+    txbuf[0] = 0; // point to temperature register
 
-      /* Более точное значение (сотые доли градуса) */
-      t_int = rxbuf[0] * 100;
-      t_frac = (rxbuf[1] * 100) >> 8;
-      raw_data.temp_tmp75 = t_int + t_frac;
+    if (i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2) == RDY_OK){
+      raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
       mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
     }
-    chThdSleepMilliseconds(250);
+    chThdSleepMilliseconds(1000);
   }
   return 0;
 }
@@ -97,12 +93,9 @@ additional data is required.*/
  * */
 void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
-  txbuf[1] = 0b01100000; // OS R1 R0 F1 F0 POL TM SD
+  /* настроим autoshutdown, чтобы датчик токами потребления не разогревал себя*/
+  txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
   while(i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
-
-  txbuf[0] = 0; // point to temperature register
-  while(i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 0) != RDY_OK)
     ;
 
   chThdCreateStatic(PollTmp75ThreadWA,
