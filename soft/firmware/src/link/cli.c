@@ -26,9 +26,6 @@
  */
 extern MemoryHeap LinkThdHeap;
 
-/* variable to pass interrupt signal into command function */
-bool_t SIGINT = FALSE;
-
 /*
  *******************************************************************************
  * PROTOTYPES
@@ -211,9 +208,9 @@ static msg_t ShellThread(void *arg){
 
   while (TRUE){
     // put received char from stdin to microrl lib
-    char c = sdGetTimeout(shell_sdp, MS2ST(50));
+    msg_t c = sdGetTimeout(shell_sdp, MS2ST(50));
     if (c != Q_TIMEOUT)
-      microrl_insert_char(&microrl_shell, c);
+      microrl_insert_char(&microrl_shell, (char)c);
     if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state == THD_STATE_FINAL))
       chThdRelease(current_cmd_tp);
   }

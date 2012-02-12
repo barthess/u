@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -158,10 +159,96 @@ Thread* sensor_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
   return NULL;
 }
 
-Thread* ps_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){(void)cmdarray; (void)argc; (void)argv; cli_print("stub\n\r");return NULL;}
-Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){(void)cmdarray; (void)argc; (void)argv; cli_print("stub\n\r");return NULL;}
 
 
+/**
+ * helper function
+ */
+void long_cli_print(const char * str, int n, int nres){
+  cli_print(str);
+  if (nres > n)
+    cli_print("\n\r");
+}
+
+Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)cmdarray;
+  (void)argc;
+  (void)argv;
+
+  int n = 64;
+  int nres = 0;
+  char str[n];
+
+  nres = snprintf(str, n, "Kernel:       %s\r\n", CH_KERNEL_VERSION);
+  long_cli_print(str, n, nres);
+
+#ifdef CH_COMPILER_NAME
+  nres = snprintf(str, n, "Compiler:     %s\r\n", CH_COMPILER_NAME);
+  long_cli_print(str, n, nres);
+#endif
+
+  nres = snprintf(str, n, "Architecture: %s\r\n", CH_ARCHITECTURE_NAME);
+  long_cli_print(str, n, nres);
+
+#ifdef CH_CORE_VARIANT_NAME
+  nres = snprintf(str, n, "Core Variant: %s\r\n", CH_CORE_VARIANT_NAME);
+  long_cli_print(str, n, nres);
+#endif
+
+#ifdef CH_PORT_INFO
+  nres = snprintf(str, n, "Port Info:    %s\r\n", CH_PORT_INFO);
+  long_cli_print(str, n, nres);
+#endif
+
+#ifdef PLATFORM_NAME
+  nres = snprintf(str, n, "Platform:     %s\r\n", PLATFORM_NAME);
+  long_cli_print(str, n, nres);
+#endif
+
+#ifdef BOARD_NAME
+  nres = snprintf(str, n, "Board:        %s\r\n", BOARD_NAME);
+  long_cli_print(str, n, nres);
+#endif
+
+#ifdef __DATE__
+#ifdef __TIME__
+  nres = snprintf(str, n, "Build time:   %s%s%s\r\n", __DATE__, " - ", __TIME__);
+  long_cli_print(str, n, nres);
+#endif
+#endif
+
+  return NULL;
+}
+
+
+
+
+
+Thread* ps_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)cmdarray;
+  (void)argc;
+  (void)argv;
+  Thread *curr = NULL;
+
+#if !CH_USE_REGISTRY
+  cli_print("In order to use this function you must set CH_USE_REGISTRY to TRUE\n\r");
+  return NULL;
+
+#else
+  curr = chRegFirstThread();
+
+  cli_print("name\t\tstate\tprio\ttime\n\r");
+  cli_print("------------------------------------------\n\r");
+  while (curr->p_refs > 0){
+    cli_print(curr->p_name);
+    cli_print("\t");
+    //cli_print(curr->p_state);
+    cli_print("\n\r");
+    curr = chRegNextThread(curr);
+  }
+  return NULL;
+#endif
+}
 
 
 

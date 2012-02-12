@@ -56,8 +56,8 @@ static msg_t LinkMgrThread(void *arg){
 //  if (global_data[sh_enable_index].value == 0)
 //    SpawnMavlinkThreads((SerialDriver *)arg);
 //  else
-    SpawnShellThread((SerialDriver *)arg);
-
+//    SpawnShellThread((SerialDriver *)arg);
+  SpawnMavlinkThreads((SerialDriver *)arg);
   while (TRUE) {
     chThdSleepMilliseconds(3000);
   }
