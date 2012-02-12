@@ -31,7 +31,7 @@ void cli_print(const char *str);
 char get_char (void);
 
 void CliInit(void);
-void SpawnShellThread(SerialDriver *sdp);
-
+void SpawnShellThreads(SerialDriver *sdp);
+void KillShellThreads(void);
 
 #endif /* CLI_H_ */

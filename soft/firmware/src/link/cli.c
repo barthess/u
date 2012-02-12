@@ -8,6 +8,7 @@
 #include "chprintf.h"
 
 #include "main.h"
+#include "param.h"
 #include "cli.h"
 #include "cli_cmd.h"
 #include "timekeeping.h"
@@ -25,6 +26,7 @@
  ******************************************************************************
  */
 extern MemoryHeap LinkThdHeap;
+extern GlobalParam_t global_data[];
 
 /*
  *******************************************************************************
@@ -32,6 +34,7 @@ extern MemoryHeap LinkThdHeap;
  *******************************************************************************
  */
 int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
+Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 
 /*
  ******************************************************************************
@@ -52,9 +55,9 @@ static ShellCmd_t chibiutils[] = {
     {"sleep",     &sleep_cmd,     NULL},
     {"selftest",  &selftest_cmd,  NULL},
     {"sensor",    &sensor_cmd,    NULL},
+    {"logout",    &logout_cmd,    NULL},
     //{"man",       &man_cmd,       NULL},
     //{"kill",    &kill_func,   NULL},
-    //{"logout",    &logout_func,   NULL},
     {NULL,      NULL,         NULL}/* end marker */
 };
 
@@ -65,6 +68,9 @@ static char *compl_world[_NUM_OF_CMD + 1];
 
 /* thread pointer to currently executing command */
 static Thread *current_cmd_tp = NULL;
+
+/* pointer to shell thread */
+static Thread *shell_tp = NULL;
 
 /*
  *******************************************************************************
@@ -178,6 +184,7 @@ void sigint (void){
   if (current_cmd_tp != NULL){
     chThdTerminate(current_cmd_tp);
     chThdWait(current_cmd_tp);
+    current_cmd_tp = NULL;
   }
   cli_print("^C pressed\n\r");
 }
@@ -211,12 +218,34 @@ static msg_t ShellThread(void *arg){
     msg_t c = sdGetTimeout(shell_sdp, MS2ST(50));
     if (c != Q_TIMEOUT)
       microrl_insert_char(&microrl_shell, (char)c);
-    if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state == THD_STATE_FINAL))
-      chThdRelease(current_cmd_tp);
+
+    /* умираем по всем правилам, не забываем убить потомков */
+    if (chThdShouldTerminate()){
+      if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state != THD_STATE_FINAL)){
+        chThdTerminate(current_cmd_tp);
+        chThdWait(current_cmd_tp);
+      }
+      chThdExit(0);
+    }
   }
   return 0;
 }
 
+Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)argc;
+  (void)argv;
+  (void)cmdarray;
+
+  int sh_enable_index = -1;
+
+  sh_enable_index = key_value_search("SH_enable");
+  if (sh_enable_index == -1)
+    chDbgPanic("not found");
+  else
+    global_data[sh_enable_index].value = 0;
+
+  return NULL;
+}
 
 /*
  *******************************************************************************
@@ -224,13 +253,18 @@ static msg_t ShellThread(void *arg){
  *******************************************************************************
  */
 
-void SpawnShellThread(SerialDriver *arg){
+void KillShellThreads(void){
+  chThdTerminate(shell_tp);
+  chThdWait(shell_tp);
+}
 
-  chThdCreateFromHeap(&LinkThdHeap,
-          sizeof(ShellThreadWA),
-          LINK_THREADS_PRIO,
-          ShellThread,
-          arg);
+void SpawnShellThreads(SerialDriver *arg){
+
+  shell_tp = chThdCreateFromHeap(&LinkThdHeap,
+                            sizeof(ShellThreadWA),
+                            LINK_THREADS_PRIO,
+                            ShellThread,
+                            arg);
 }
 
 

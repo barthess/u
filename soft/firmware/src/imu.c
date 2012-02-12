@@ -41,6 +41,7 @@ static WORKING_AREA(waImu, 256);
 static msg_t Imu(void *arg) {
   (void)arg;
   chRegSetThreadName("IMU");
+
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
 
   uint32_t index = key_value_search("IMU_send_ms");

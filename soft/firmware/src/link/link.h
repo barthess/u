@@ -8,7 +8,7 @@
 
 
 void SpawnMavlinkThreads(SerialDriver *sdp);
-//void SpawnMavlinkThreads(void);
+void KillMavlinkThreads(void);
 
 
 #endif /* LINK_H_ */

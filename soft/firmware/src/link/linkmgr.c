@@ -49,17 +49,38 @@ static WORKING_AREA(LinkMgrThreadWA, 256);
 static msg_t LinkMgrThread(void *arg){
   chRegSetThreadName("LinkManager");
 
+  bool_t shell_active = FALSE;
+
   /* ждем, пока модемы встанут в ружьё */
   chThdSleepMilliseconds(4000);
 
-  /* по значению флага определяем, что запускать */
-//  if (global_data[sh_enable_index].value == 0)
-//    SpawnMavlinkThreads((SerialDriver *)arg);
-//  else
-//    SpawnShellThread((SerialDriver *)arg);
-  SpawnMavlinkThreads((SerialDriver *)arg);
+  /* по значению флага определяем, что надо изначально запустить */
+  if (global_data[sh_enable_index].value == 0){
+    SpawnMavlinkThreads((SerialDriver *)arg);
+    shell_active = FALSE;
+  }
+  else{
+    SpawnShellThreads((SerialDriver *)arg);
+    shell_active = TRUE;
+  }
+
+  /* а теперь в цикле следим за изменения и запускаем нужные потоки */
   while (TRUE) {
-    chThdSleepMilliseconds(3000);
+    chThdSleepMilliseconds(100);
+    if(shell_active == TRUE){
+      if(global_data[sh_enable_index].value == 0){
+        KillShellThreads();
+        SpawnMavlinkThreads((SerialDriver *)arg);
+        shell_active = FALSE;
+      }
+    }
+    else{
+      if(global_data[sh_enable_index].value == 1){
+        KillMavlinkThreads();
+        SpawnShellThreads((SerialDriver *)arg);
+        shell_active = TRUE;
+      }
+    }
   }
 
   return 0;

@@ -90,7 +90,7 @@ static WORKING_AREA(LoopCmdThreadWA, 128);
 static msg_t LoopCmdThread(void *arg){
   chRegSetThreadName("LoopCmd");
   (void)arg;
-  int i = 10;
+  int i = 20;
 
   while (i > 0){
     cli_print("This is loop function test. Press ^C to stop it.\n\r");

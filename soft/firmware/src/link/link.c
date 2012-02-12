@@ -31,6 +31,11 @@
  */
 extern Mailbox tolink_mb;
 extern Mailbox mavlinkcmd_mb;
+//extern Mailbox autopilot_mb;
+//extern Mailbox toservo_mb;
+//extern Mailbox param_mb;
+//extern Mailbox manual_control_mb;
+
 extern MemoryHeap LinkThdHeap;
 
 /*
@@ -38,6 +43,10 @@ extern MemoryHeap LinkThdHeap;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+/* pointers to spawned threads */
+static Thread *linkout_tp = NULL;
+static Thread *linkin_tp = NULL;
+static Thread *linkcmdparser_tp = NULL;
 
 /*
  *******************************************************************************
@@ -63,14 +72,16 @@ static msg_t LinkOutThread(void *sdp){
   Mail *mailp;
   msg_t tmp = 0;
 
-  chThdSleepMilliseconds(3000);   /* ждем, пока модемы встанут в ружьё */
-
   while (TRUE) {
-    chMBFetch(&tolink_mb, &tmp, TIME_INFINITE);
-    mailp = (Mail*)tmp;
-    sort_output_mail(mailp, &mavlink_msgbuf);
-    len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
-    sdWrite((SerialDriver *)sdp, sendbuf, len);
+    if (chThdShouldTerminate())
+      chThdExit(0);
+
+    if (chMBFetch(&tolink_mb, &tmp, MS2ST(200)) == RDY_OK){
+      mailp = (Mail*)tmp;
+      sort_output_mail(mailp, &mavlink_msgbuf);
+      len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
+      sdWrite((SerialDriver *)sdp, sendbuf, len);
+    }
   }
 
   return 0;
@@ -86,14 +97,19 @@ static msg_t LinkInThread(void *sdp){
 
   mavlink_message_t msg;
   mavlink_status_t status;
-  uint8_t c = 0;
+  msg_t c = 0;
 
   while (TRUE) {
+    if (chThdShouldTerminate())
+      chThdExit(0);
+
     // Try to get a new message
-    c = sdGet((SerialDriver *)sdp);
-    if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
-      if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
-        sort_input_messages(&msg);
+    c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
+    if (c != Q_TIMEOUT){
+      if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &status)) {
+        if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
+          sort_input_messages(&msg);
+        }
       }
     }
   }
@@ -112,16 +128,16 @@ static msg_t LinkCmdParserThread(void *arg){
   mavlink_command_long_t *cmdp;
 
   while (TRUE) {
-    chMBFetch(&mavlinkcmd_mb, &tmp, TIME_INFINITE);
-    mailp = (Mail *)tmp;
-    cmdp = (mavlink_command_long_t *)(mailp->payload);
-    analize_mavlink_cmd(cmdp);
+    if (chThdShouldTerminate())
+      chThdExit(0);
 
-
-    //TODO: анализ вёрнутого значения и генерация ответа в tolink_mb
-
-
-    mailp->payload = NULL;
+    if (chMBFetch(&mavlinkcmd_mb, &tmp, MS2ST(200)) == RDY_OK){
+      mailp = (Mail *)tmp;
+      cmdp = (mavlink_command_long_t *)(mailp->payload);
+      analize_mavlink_cmd(cmdp);
+      //TODO: анализ вёрнутого значения и генерация ответа в tolink_mb
+      mailp->payload = NULL;
+    }
   }
   return 0;
 }
@@ -131,29 +147,50 @@ static msg_t LinkCmdParserThread(void *arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+
+/**
+ * Kills previously spawned threads
+ */
+void KillMavlinkThreads(void){
+  chThdTerminate(linkout_tp);
+  chThdTerminate(linkin_tp);
+  chThdTerminate(linkcmdparser_tp);
+
+  chThdWait(linkout_tp);
+  chThdWait(linkin_tp);
+  chThdWait(linkcmdparser_tp);
+}
+
 /**
  * порождает потоки сортировки\парсинга сообщений
  * принимает указатель на пул памяти, из которго надо порождать треды
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
 
-  chThdCreateFromHeap(&LinkThdHeap,
-          sizeof(LinkOutThreadWA),
-          LINK_THREADS_PRIO,
-          LinkOutThread,
-          sdp);
+//  chMBReset(&manual_control_mb);
+//  chMBReset(&autopilot_mb);
+//  chMBReset(&tolink_mb);
+//  chMBReset(&toservo_mb);
+//  chMBReset(&param_mb);
+//  chMBReset(&mavlinkcmd_mb);
 
-  chThdCreateFromHeap(&LinkThdHeap,
-          sizeof(LinkInThreadWA),
-          LINK_THREADS_PRIO,
-          LinkInThread,
-          sdp);
+  linkout_tp = chThdCreateFromHeap(&LinkThdHeap,
+                            sizeof(LinkOutThreadWA),
+                            LINK_THREADS_PRIO,
+                            LinkOutThread,
+                            sdp);
 
-  chThdCreateFromHeap(&LinkThdHeap,
-          sizeof(LinkCmdParserThreadWA),
-          LINK_THREADS_PRIO - 1,
-          LinkCmdParserThread,
-          sdp);
+  linkin_tp = chThdCreateFromHeap(&LinkThdHeap,
+                            sizeof(LinkInThreadWA),
+                            LINK_THREADS_PRIO,
+                            LinkInThread,
+                            sdp);
+
+  linkcmdparser_tp = chThdCreateFromHeap(&LinkThdHeap,
+                            sizeof(LinkCmdParserThreadWA),
+                            LINK_THREADS_PRIO - 1,
+                            LinkCmdParserThread,
+                            sdp);
 }
 
 

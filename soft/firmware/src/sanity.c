@@ -45,6 +45,7 @@ static WORKING_AREA(SanityControlThreadWA, 256);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
+
   mavlink_heartbeat_t mavlink_heartbeat_struct;
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
   Mail sys_status_mail = {NULL, MAVLINK_MSG_ID_SYS_STATUS, NULL};
