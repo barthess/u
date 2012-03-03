@@ -91,6 +91,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \
+       src/stubs.c \
        src/dsp.c \
        src/i2c_pns.c \
        src/exti_pns.c \
@@ -185,8 +186,8 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 
 # -lm - это указание линкеру для подключения математической либы.
 # добавлено именно здесь, потому что больше некуда
-MCU  = cortex-m4 -lm
-#MCU  = cortex-m3
+#MCU  = cortex-m4 -lm
+MCU  = cortex-m3
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-
