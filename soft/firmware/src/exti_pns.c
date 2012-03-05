@@ -61,11 +61,13 @@ static VirtualTimer tachocheck_vt;
 
 void vt_tachocheck_cb(void *par){
   (void)par;
+  chSysLockFromIsr();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   /* если данные брать каждый 0.5 секунд с 2-лопастного винта, то получаются как раз герцы */
   //log_item.engine_rpm = (rpmcnt * 1000) / (TACHO_CHECK_T * TACHO_BLADES);
   log_item.engine_rpm = rpmcnt;
   rpmcnt = 0;
+  chSysUnlockFromIsr();
 
   raw_data.engine_rpm = log_item.engine_rpm;
 }

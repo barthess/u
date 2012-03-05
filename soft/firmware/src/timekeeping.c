@@ -93,8 +93,10 @@ void tm2bcd(struct tm *timp, RTCTime *timespec){
 static void vtcb(void *arg) {
   (void)arg;
   if (!chVTIsArmedI(&timekeeping_vt)){
+    chSysLockFromIsr();
     chVTSetI(&timekeeping_vt, MS2ST(SOFT_RTC_PERIOD), vtcb, NULL);
     TimeUsec += 1000 * SOFT_RTC_PERIOD;
+    chSysUnlockFromIsr();
   }
 }
 
