@@ -32,65 +32,67 @@ extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system;
 
 GlobalParam_t global_data[] = {
-    /*  key             val    min        max         type                       */
+    /*  key             min         val         max         type                       */
     /*-----------------------------------------------------------------------*/
-    {"SYS_ID",          20,    1,         255,        MAVLINK_TYPE_UINT32_T},
-    {"SYS_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
+    {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T},
+    {"SYS_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* всякие флаги для коммандной оболочки */
-    {"SH_enable",       0,     0,         1,          MAVLINK_TYPE_UINT32_T},
+    {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T},
     /* IMU - inertial measurement unit */
-    {"IMU_g1",          0.1,   -1,        1,          MAVLINK_TYPE_FLOAT},
-    {"IMU_g2",          0.2,   -1,        1,          MAVLINK_TYPE_FLOAT},
-    {"IMU_g3",          0.3,   -1,        1,          MAVLINK_TYPE_FLOAT},
-    {"IMU_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
+    {"IMU_g1",          -1,         0.1,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT},
+    {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* смещения осей магнитометра */
-    {"MAG_xoffset",     110,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
-    {"MAG_yoffset",     -90,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
-    {"MAG_zoffset",     351,   -5000,     5000,       MAVLINK_TYPE_INT32_T},
+    {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T},
+    {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T},
+    {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T},
     /* смещения осей магнитометра */
-    {"ACC_xoffset",     2,     -100,      100,        MAVLINK_TYPE_INT32_T},
-    {"ACC_yoffset",     0,     -100,      100,        MAVLINK_TYPE_INT32_T},
-    {"ACC_zoffset",     -3,    -100,      100,        MAVLINK_TYPE_INT32_T},
-    /* PMU - pressure measurement unit */
-    {"PMU_D_offset",    3,     -1100,     1024,       MAVLINK_TYPE_INT32_T},   /* dinamic pressure*/
-    {"PMU_D_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
-    {"PMU_A_offset",    3,     -1000,     1224,       MAVLINK_TYPE_INT32_T},   /* absolute pressure */
-    {"PMU_A_gain",      1048,  0,         2000,       MAVLINK_TYPE_UINT32_T},
-    {"PMU_send_ms",     100,   SEND_MIN,  SEND_MAX,   MAVLINK_TYPE_UINT32_T},
+    {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
+    {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
+    {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
+    /* PMU - pressure measurement unit
+     * Коэффициенты полинома для термокомпенсации нуля
+     * с1*t^3 + c2*t^2 + c3*t +c4 */
+    {"PMU_c1",          -2000000,   15,         2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c2",          -2000000,   -472,       2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c3",          -2000000,   3068,       2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c4",          -2000000,   126609,     2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* ADC coefficients */
-    {"ADC_I_offset",    1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
-    {"ADC_I_gain",      1048,  0,         1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
+    {"ADC_I_offset",    0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
+    {"ADC_I_gain",      0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
     /* Servos coefficients */
-    {"SERVO_1_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_1_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_1_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_2_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_3_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_4_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_5_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_6_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_7_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_min",     1000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_max",     2000,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_8_neutra",  1500,  SERVO_MIN, SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_1_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_2_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_3_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_4_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_5_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_6_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_7_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_8_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     /* машинко-специфичные настройки */
-    {"SERVO_car_max",   2000,  0,         SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
-    {"SERVO_car_dz",    32,    0,         64,         MAVLINK_TYPE_UINT32_T},
+    {"SERVO_car_max",   0,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
+    {"SERVO_car_dz",    0,          32,         64,         MAVLINK_TYPE_UINT32_T},
 
     /* fake field with 14 symbols name */
-    {"fake_14_bytes_",  1048,  0,         1224,       MAVLINK_TYPE_FLOAT},
+    {"fake_14_bytes_",  0,          1048,       1224,       MAVLINK_TYPE_FLOAT},
 };
 
 const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));

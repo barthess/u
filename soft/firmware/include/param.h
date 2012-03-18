@@ -15,8 +15,8 @@ typedef struct GlobalParam_t GlobalParam_t;
 struct GlobalParam_t
 {
   const char *name;
-  float value;
   const float min;
+  float value;
   const float max;
   const uint8_t param_type;
 };
