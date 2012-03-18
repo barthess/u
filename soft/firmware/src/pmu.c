@@ -39,13 +39,17 @@ extern CompensatedData compensated_data;
 /** термокомпенсация нуля
  * Принимает сырое значение с датчика и температуру в градусах цельсия*/
 static uint16_t zerocomp(uint16_t raw, int32_t t){
-  int32_t c1 = 15;
-  int32_t c2 = -472;
-  int32_t c3 = 3068;
-  int32_t c4 = 126609;
+
+  if (t > 40)
+    t = 40;
+  else if (t < -10)
+    t = -10;
+
+  int32_t c1 = -9;
+  int32_t c2 = 408;
+  int32_t c3 = 7587;
+  int32_t c4 = 60011;
   int32_t zero = (c1*t*t*t + c2*t*t + c3*t + c4) / 1000;
-  if (zero > 500)
-    zero = 500;
 
   if (zero >= raw)
     return 0;
@@ -62,7 +66,7 @@ static uint16_t zerocomp(uint16_t raw, int32_t t){
  */
 #define KU    928     //КУ*100
 #define Radc  122070  //uV*100 (чувствительность АЦП 5.0/4096 вольт на деление)
-#define Smpx  450     // (Чувствительность датчика 450uV/Pa)
+#define Smpx  450     //(Чувствительность датчика 450uV/Pa)
 
 float calc_air_speed(uint16_t press_diff_raw){
   uint16_t p;

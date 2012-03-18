@@ -85,6 +85,7 @@ static msg_t PollMax1236Thread(void *arg) {
 
     mavlink_raw_pressure_struct.time_usec = TimeUsec;
     mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
+    mavlink_raw_pressure_struct.press_diff2 = compensated_data.air_speed;
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
 
     if (((n & 7) == 7) && (air_data_mail.payload == NULL)){

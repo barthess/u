@@ -52,12 +52,11 @@ GlobalParam_t global_data[] = {
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
     /* PMU - pressure measurement unit
-     * Коэффициенты полинома для термокомпенсации нуля
-     * с1*t^3 + c2*t^2 + c3*t +c4 */
-    {"PMU_c1",          -2000000,   15,         2000000,    MAVLINK_TYPE_INT32_T},
-    {"PMU_c2",          -2000000,   -472,       2000000,    MAVLINK_TYPE_INT32_T},
-    {"PMU_c3",          -2000000,   3068,       2000000,    MAVLINK_TYPE_INT32_T},
-    {"PMU_c4",          -2000000,   126609,     2000000,    MAVLINK_TYPE_INT32_T},
+     * Коэффициенты полинома для термокомпенсации нуля ((c1*t) + c2) */
+    {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T},
+    {"PMU_c4",          -2000000,   60011,      2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
     /* ADC coefficients */
     {"ADC_I_offset",    0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
