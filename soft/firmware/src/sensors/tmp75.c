@@ -23,7 +23,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
+extern CompensatedData compensated_data;
 
 /*
  ******************************************************************************
@@ -56,7 +56,7 @@ static msg_t PollTmp75Thread(void *arg){
 
     if (i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2) == RDY_OK){
       raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
-      mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
+      compensated_data.temp_onboard = raw_data.temp_tmp75 / 256;
     }
     chThdSleepMilliseconds(1000);
   }
@@ -85,12 +85,6 @@ accomplished by issuing a slave address byte with the
 R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.*/
 
-/**
- * настроить разрешение на 12 бит
- * - записать в указательный регистр адрес конфигурационного регистра,
- * в этой же последовательности отправить байт настроек
- * - записать в указательный регистр адрес температурного регистра
- * */
 void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
   /* настроим autoshutdown, чтобы датчик токами потребления не разогревал себя*/

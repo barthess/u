@@ -35,7 +35,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = yes
+  USE_VERBOSE_COMPILE = no
 endif
 
 #
@@ -102,6 +102,7 @@ CSRC = $(PORTSRC) \
        src/storage.c \
        src/servo.c \
        src/imu.c \
+       src/pmu.c \
        src/sanity.c \
        src/param.c \
        src/param_persistant.c \
@@ -186,8 +187,8 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 
 # -lm - это указание линкеру для подключения математической либы.
 # добавлено именно здесь, потому что больше некуда
-#MCU  = cortex-m4 -lm
-MCU  = cortex-m3
+MCU  = cortex-m4 -lm
+#MCU  = cortex-m3
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-

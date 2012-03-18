@@ -2,10 +2,18 @@
 #define MESSAGE_H_
 
 
+/*
+ * Сырые данные прямо с сенсоров.
+ */
+typedef struct CompensatedData CompensatedData;
+struct CompensatedData{
+  uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
+  int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
+};
+
 
 /*
- * Вниз. 
- * Сырые данные прямо с сенсоров (для дебага).
+ * Сырые данные прямо с сенсоров.
  */
 typedef struct RawData RawData;
 struct RawData{

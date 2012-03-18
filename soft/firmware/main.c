@@ -44,6 +44,7 @@ uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoc
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
+CompensatedData compensated_data;     /* обработанные данные */
 LogItem log_item;                     /* структура, содержащая запись для лога */
 
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */

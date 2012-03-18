@@ -63,7 +63,7 @@ static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
 
-  /* Переменная для формирования сообщения. Используется всеми,
+  /* Переменная для формирования сообщения. Одна на всех,
      поскольку сообещиня обрабатываются по одному. */
   mavlink_message_t mavlink_msgbuf;
   /* выходной буфер для отправки данных */
