@@ -88,6 +88,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/syscalls.c \
        $(FATFSSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
+       $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \

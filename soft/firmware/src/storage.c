@@ -15,7 +15,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define SDC_POLLING_INTERVAL            20
+#define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
 
 /*
@@ -41,9 +41,6 @@ static FATFS SDC_FS;
 /* FS mounted and ready.*/
 static bool_t fs_ready = FALSE;
 
-/* Generic large buffer.*/
-static uint8_t fbuff[2048];
-
 /*
  *******************************************************************************
  *******************************************************************************
@@ -67,7 +64,7 @@ bool_t sdc_lld_is_card_inserted(SDCDriver *sdcp) {
 
 /**
  * @brief   Protection detection.
- * @note    Not supported.
+ * @note    Not supported, allways not protected.
  *
  * @param[in] sdcp      pointer to the @p SDCDriver object
  *
@@ -149,92 +146,82 @@ static msg_t CardMonitorThread(void *arg){
   return 0;
 }
 
+
+/**
+ * Monitors presence of SD card in slot.
+ */
+static WORKING_AREA(LogWriterThreadWA, 2048);
+static msg_t LogWriterThread(void *arg){
+  chRegSetThreadName("LogWriter");
+  (void)arg;
+
+  FRESULT err;
+  uint32_t clusters;
+  FATFS *fsp;
+  FIL Log;
+  uint32_t bytes_written;
+
+  /* wait until card not ready */
+NOT_READY:
+  while (!sdcIsCardInserted(&SDCD1))
+    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
+  chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
+  if (!sdcIsCardInserted(&SDCD1))
+    goto NOT_READY;
+  else
+    insert_handler();
+
+  /* fs mounted? */
+  if (!fs_ready)
+    return RDY_RESET;
+
+  /* are we have at least 16MB of free space? */
+  err = f_getfree("/", &clusters, &fsp);
+  if (err != FR_OK)
+    return RDY_RESET;
+  if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)SDC_BLOCK_SIZE) < (16*1024*1024))
+    return RDY_RESET;
+
+  //TODO: open file named YYYY-MM-DD_hh.mm.ss
+  err = f_open(&Log, "0:test.txt", FA_WRITE | FA_OPEN_ALWAYS);
+  if (err != FR_OK)
+    return RDY_RESET;
+
+  /* main write cycle */
+  while TRUE{
+    //TODO: wait pointer to buffer
+    if (!sdcIsCardInserted(&SDCD1)){
+      remove_handler();
+      goto NOT_READY;
+    }
+    else
+      err = f_write(&Log, "This is test file", 17, (void *)&bytes_written);
+      if (err != FR_OK)
+        return RDY_RESET;
+  }
+  return 0;
+}
+
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
 
-static FRESULT scan_files(BaseChannel *chp, char *path) {
-  FRESULT res;
-  FILINFO fno;
-  DIR dir;
-  int i;
-  char *fn;
 
-  res = f_opendir(&dir, path);
-  if (res == FR_OK) {
-    i = strlen(path);
-    for (;;) {
-      res = f_readdir(&dir, &fno);
-      if (res != FR_OK || fno.fname[0] == 0)
-        break;
-      if (fno.fname[0] == '.')
-        continue;
-      fn = fno.fname;
-      if (fno.fattrib & AM_DIR) {
-        path[i++] = '/';
-        strcpy(&path[i], fn);
-        res = scan_files(chp, path);
-        if (res != FR_OK)
-          break;
-        path[i] = 0;
-      }
-      else {
-        chprintf(chp, "%s/%s\r\n", path, fn);
-      }
-    }
-  }
-  return res;
-}
-
-/**
- * Get file tree.
- */
-void cmd_tree(BaseChannel *chp, int argc, char *argv[]) {
-  FRESULT err;
-  uint32_t clusters;
-  FATFS *fsp;
-
-  (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: tree\r\n");
-    return;
-  }
-  if (!fs_ready) {
-    chprintf(chp, "File System not mounted\r\n");
-    return;
-  }
-  err = f_getfree("/", &clusters, &fsp);
-  if (err != FR_OK) {
-    chprintf(chp, "FS: f_getfree() failed\r\n");
-    return;
-  }
-  chprintf(chp,
-           "FS: %lu free clusters, %lu sectors per cluster, %lu bytes free\r\n",
-           clusters, (uint32_t)SDC_FS.csize,
-           clusters * (uint32_t)SDC_FS.csize * (uint32_t)SDC_BLOCK_SIZE);
-  fbuff[0] = 0;
-  scan_files(chp, (char *)fbuff);
-}
 
 /**
  * Create file.
  */
 void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
+  (void)argc;
   FRESULT err;
   FIL FileObject;
   uint32_t bytes_written;
 
   (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: touch\r\n");
-    return;
-  }
-  if (!fs_ready) {
-    chprintf(chp, "File System not mounted\r\n");
-    return;
-  }
+
   err = f_open(&FileObject, "0:test.txt", FA_WRITE | FA_OPEN_ALWAYS);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_open() failed\r\n");
@@ -266,55 +253,6 @@ void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
 }
 
 /**
- * Copy file.
- */
-void cmd_cp(BaseChannel *chp, int argc, char *argv[]) {
-  FRESULT err;
-  FIL fsrc, fdst;
-  UINT br, bw;         /* File read/write count */
-
-  (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: cp\r\n");
-    return;
-  }
-  if (!fs_ready) {
-    chprintf(chp, "File System not mounted\r\n");
-    return;
-  }
-
-  /* Open source file on the drive 1 */
-  err = f_open(&fsrc, "0:ink.7z", FA_OPEN_EXISTING | FA_READ);
-  if (err != FR_OK) {
-    chprintf(chp, "FS: f_open() of ink.7z failed\r\n");
-    chThdSleepMilliseconds(50);
-    return;
-  }
-
-  /* Create destination file on the drive 0 */
-  err = f_open(&fdst, "0:dstfile.dat", FA_CREATE_ALWAYS | FA_WRITE);
-  if (err != FR_OK) {
-    chprintf(chp, "FS: f_open() of dstfile.dat failed\r\n");
-    chThdSleepMilliseconds(50);
-    return;
-  }
-
-  /* Copy source to destination */
-  for (;;) {
-    err = f_read(&fsrc, fbuff, sizeof(fbuff), &br);    /* Read a chunk of src file */
-    if (err || br == 0) break; /* error or eof */
-    err = f_write(&fdst, fbuff, br, &bw);               /* Write it to the dst file */
-    if (err || bw < br) break; /* error or disk full */
-  }
-
-  /* Close open files */
-  f_close(&fsrc);
-  f_close(&fdst);
-
-  chprintf(chp, "Done.\r\n");
-}
-
-/**
  * Init.
  */
 void StorageInit(void){
@@ -323,6 +261,10 @@ void StorageInit(void){
           NORMALPRIO - 5,
           CardMonitorThread,
           NULL);
+
+  chThdCreateStatic(LogWriterThreadWA,
+          sizeof(LogWriterThreadWA),
+          NORMALPRIO - 5,
+          LogWriterThread,
+          NULL);
 }
-
-
