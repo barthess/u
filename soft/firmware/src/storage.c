@@ -183,7 +183,7 @@ NOT_READY:
     return RDY_RESET;
 
   //TODO: open file named YYYY-MM-DD_hh.mm.ss
-  err = f_open(&Log, "0:test.txt", FA_WRITE | FA_OPEN_ALWAYS);
+  err = f_open(&Log, "0:test.log", FA_WRITE | FA_OPEN_ALWAYS);
   if (err != FR_OK)
     return RDY_RESET;
 

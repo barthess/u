@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#define APPLICATION_OFFSET 0xE0000
+#define APPLICATION_OFFSET 0xC0000
 typedef  void (*pFunction)(void);
 
 int main(void) {
