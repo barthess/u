@@ -3,6 +3,7 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: обработчик прерывания по просадке питания (рассылка сообщения)
 // TODO: запись в лог делать из LinkOutThread ровно в 2 раза чаще, чем посылать телеметрию
 // TODO: переделать модемных поток на DMA
 // TODO: софтовыми часами тикать по секундному прерыванию от RTC
@@ -68,6 +69,8 @@ Mailbox manual_control_mb;            /* сообщения ручного управлеия */
 static msg_t manual_control_mb_buf[1];
 Mailbox mavlinkcmd_mb;                /* сообщения с командами */
 static msg_t mavlinkcmd_mb_buf[1];
+Mailbox logwriter_mb;                 /* сообщения для писалки логов */
+static msg_t logwriter_mb_buf[4];
 
 /* переменные, касающиеся мавлинка */
 mavlink_system_t            mavlink_system;
@@ -120,13 +123,14 @@ int main(void) {
   chBSemInit(&bmp085_sem,   TRUE);
   chBSemInit(&itg3200_sem,  TRUE);
 
-  /* почтовые ящики */
+  /* инициализация почтовых ящиков */
   chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
   chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
+  chMBInit(&logwriter_mb,     logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 
   /* инициализация кучи под потоки связи */
   chHeapInit(&LinkThdHeap, link_thd_buf, LINK_THD_HEAP_SIZE);
