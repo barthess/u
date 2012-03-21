@@ -51,6 +51,10 @@ GlobalParam_t global_data[] = {
     {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
+    /* смещения нулей гироскопа */
+    {"GYRO_xoffset",    -200,       2,          200,        MAVLINK_TYPE_INT32_T},
+    {"GYRO_yoffset",    -200,       0,          200,        MAVLINK_TYPE_INT32_T},
+    {"GYRO_zoffset",    -200,       -3,         200,        MAVLINK_TYPE_INT32_T},
     /* PMU - pressure measurement unit
      * Коэффициенты полинома для термокомпенсации нуля ((c1*t) + c2) */
     {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T},
