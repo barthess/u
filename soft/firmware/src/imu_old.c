@@ -116,9 +116,9 @@ void imu_update(int16_t ax, int16_t ay, int16_t az){
   /************************ обработка гироскопов*******************************/
 
   /* получим из условных единиц АЦП угол поворота в радианах */
-  float fi_gyro_x_delta = (float)(raw_data.gyro_x_delta * g_placematrix[0]) * gk_x;
-  float fi_gyro_y_delta = (float)(raw_data.gyro_y_delta * g_placematrix[1]) * gk_y;
-  float fi_gyro_z_delta = (float)(raw_data.gyro_z_delta * g_placematrix[2]) * gk_z;
+  float fi_gyro_x_delta = (float)(raw_data.xgyro_delta * g_placematrix[0]) * gk_x;
+  float fi_gyro_y_delta = (float)(raw_data.ygyro_delta * g_placematrix[1]) * gk_y;
+  float fi_gyro_z_delta = (float)(raw_data.zgyro_delta * g_placematrix[2]) * gk_z;
 
   /* прибавим к оценочной матрице углы поворота с гироскопов */
   Ayz = atan2f(Rest[1], Rest[2]) + fi_gyro_x_delta;
@@ -151,17 +151,17 @@ void imu_update(int16_t ax, int16_t ay, int16_t az){
 
   float k = 0x100000000 / (2.0 * PI);
 
-  raw_data.gyro_xI += (int32_t)(fi_gyro_x_delta * k);
-  raw_data.gyro_yI += (int32_t)(fi_gyro_y_delta * k);
-  raw_data.gyro_zI += (int32_t)(fi_gyro_z_delta * k);
+  raw_data.xgyro_I += (int32_t)(fi_gyro_x_delta * k);
+  raw_data.ygyro_I += (int32_t)(fi_gyro_y_delta * k);
+  raw_data.zgyro_I += (int32_t)(fi_gyro_z_delta * k);
 
   log_item.imu_x = (int16_t)(Rest[0] * 10000);
   log_item.imu_y = (int16_t)(Rest[1] * 10000);
   log_item.imu_z = (int16_t)(Rest[2] * 10000);
 
-  log_item.gyro_xI = (uint16_t)(raw_data.gyro_xI >> 16);
-  log_item.gyro_yI = (uint16_t)(raw_data.gyro_yI >> 16);
-  log_item.gyro_zI = (uint16_t)(raw_data.gyro_zI >> 16);
+  log_item.gyro_xI = (uint16_t)(raw_data.xgyro_I >> 16);
+  log_item.gyro_yI = (uint16_t)(raw_data.ygyro_I >> 16);
+  log_item.gyro_zI = (uint16_t)(raw_data.zgyro_I >> 16);
 }
 
 

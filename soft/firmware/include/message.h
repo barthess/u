@@ -7,6 +7,15 @@
  */
 typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
+  /* Углы поворота с момента включения устройства. Фиксированная точка -- полный поворот == 2^32 */
+  int32_t xgyro_I;
+  int32_t ygyro_I;
+  int32_t zgyro_I;
+  /* Углы поворота с момента включения устройства. Градусы */
+  float xgyro_f;
+  float ygyro_f;
+  float zgyro_f;
+  /**/
   uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
 };
@@ -17,22 +26,18 @@ struct CompensatedData{
  */
 typedef struct RawData RawData;
 struct RawData{
-  /* Углы поворота с момента включения устройства. Фиксированная точка -- полный поворот == 2^32 */
-  int32_t gyro_xI;
-  int32_t gyro_yI;
-  int32_t gyro_zI;
   // шаги поворота, посчитанные через интеграл
-  int32_t gyro_x_delta;
-  int32_t gyro_y_delta;
-  int32_t gyro_z_delta;
+  int32_t xgyro_delta;
+  int32_t ygyro_delta;
+  int32_t zgyro_delta;
   /* смещения нулей, посчитанные во время выставки.*/
-  int32_t gyro_xAvg;
-  int32_t gyro_yAvg;
-  int32_t gyro_zAvg;
+  int32_t xgyro_zero;
+  int32_t ygyro_zero;
+  int32_t zgyro_zero;
   // данные с гироскопа
-  //  int16_t gyro_x;
-  //  int16_t gyro_y;
-  //  int16_t gyro_z;
+  int16_t xgyro;
+  int16_t ygyro;
+  int16_t zgyro;
   int16_t gyro_temp;
   // значения с внешнего АЦП
   uint16_t pressure_dynamic;

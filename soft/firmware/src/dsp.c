@@ -16,8 +16,8 @@ uint16_t pack8to16(uint8_t *buf){
  * Значения должны быть отнормированы до вызова функции
  * http://en.wikipedia.org/wiki/Simpson%27s_rule
  */
-uint32_t Simpson(uint32_t a, uint32_t b, uint32_t c){
-  return ((a + 4*b + c) / 3);
+int32_t Simpson(int32_t a, int32_t b, int32_t c, int32_t t){
+  return (t * (a + 4*b + c)) / 3;
 }
 
 /* Интеграл методом симпсона 3/8.
@@ -28,12 +28,12 @@ uint32_t Simpson(uint32_t a, uint32_t b, uint32_t c){
  * От деления на 8 можно избавится, если в вызывающей функции производится
  * умножение на степень двойки, но сильно пострадает инкапсуляция и очевидность.
  */
-uint32_t Simpson38(uint32_t a, uint32_t b, uint32_t c, uint32_t d){
-  return ((3 * (a + 3*b + 3*c + d)) / 8);
+int32_t Simpson38(int32_t a, int32_t b, int32_t c, int32_t d, int32_t t){
+  return (t * 3 * (a + 3*b + 3*c + d)) / 8;
 }
 
 
-/* Перевод из дополнительного кода */
+/* Перевод из дополнительного кода в знаковый целый тип */
 int16_t complement2signed(uint8_t msb, uint8_t lsb){
   uint16_t word = 0;
   word = (msb << 8) + lsb;

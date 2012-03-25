@@ -4,12 +4,17 @@
  */
 
 // TODO: обработчик прерывания по просадке питания (рассылка сообщения, возможно поток PwrHypervisor)
+// TODO: добвить событий на сбои разных подсистем (gyro_failed, gps_failed, etc.)
+
+// TODO: снять еще одну точку для датчика давления на 60 градусах цельсия и сделать табличную функцию термокомпенсации
 // TODO: запись в лог делать из LinkOutThread ровно в 2 раза чаще, чем посылать телеметрию
 // TODO: переделать модемных поток на DMA
 // TODO: софтовыми часами тикать по секундному прерыванию от RTC
 // TODO: синхронизация программных часов с аппаратными, аппаратных с GPS.
 // TODO: сторожевой таймер с использованием памяти с батарейным питанием для расследования пиздецов
 
+// TODO: один из таймеров использовать для тактирования гироскопа
+// TODO: выход тахометра завести на один из таймеров
 
 #include <stdlib.h>
 
@@ -47,6 +52,8 @@ uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
 CompensatedData compensated_data;     /* обработанные данные */
 LogItem log_item;                     /* структура, содержащая запись для лога */
+
+uint32_t itg3200_period = 0;          /* время получения сэмплов с гироскопа (uS)*/
 
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
 BinarySemaphore mag3110_sem;
@@ -112,9 +119,12 @@ int main(void) {
   xbee_sleep_clear();
 
   // обнуление инкрементальных сумм
-  raw_data.gyro_xI = 0;
-  raw_data.gyro_yI = 0;
-  raw_data.gyro_zI = 0;
+  compensated_data.xgyro_I = 0;
+  compensated_data.ygyro_I = 0;
+  compensated_data.zgyro_I = 0;
+  compensated_data.xgyro_f = 0;
+  compensated_data.ygyro_f = 0;
+  compensated_data.zgyro_f = 0;
 
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);
