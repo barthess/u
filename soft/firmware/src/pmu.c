@@ -72,7 +72,7 @@ float calc_air_speed(uint16_t press_diff_raw){
   uint16_t p;
   p = zerocomp(press_diff_raw, (int32_t)compensated_data.temp_onboard);
   p = ((p * Radc) / Smpx) / KU; /* давление в паскалях */
-  return sqrt(2*p / 1.2);
+  return sqrtf(2*p / 1.2);
 }
 
 
