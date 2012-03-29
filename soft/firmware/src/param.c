@@ -43,11 +43,11 @@ GlobalParam_t global_data[] = {
     {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* смещения осей магнитометра */
+    /* смещения нулей магнитометра */
     {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T},
-    /* смещения осей магнитометра */
+    /* смещения нулей акселерометра */
     {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},

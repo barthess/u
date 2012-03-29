@@ -8,13 +8,13 @@
 typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
   /* Углы поворота с момента включения устройства. Фиксированная точка -- полный поворот == 2^32 */
-  int32_t xgyro_I;
-  int32_t ygyro_I;
-  int32_t zgyro_I;
+  int32_t   xgyro_I;
+  int32_t   ygyro_I;
+  int32_t   zgyro_I;
   /* Углы поворота с момента включения устройства. Градусы */
-  float xgyro_f;
-  float ygyro_f;
-  float zgyro_f;
+  float     xgyro_f;
+  float     ygyro_f;
+  float     zgyro_f;
   /**/
   uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
