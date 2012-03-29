@@ -4,10 +4,18 @@
 
 /** упаковка байт в многобайтную переменную */
 uint32_t pack8to32(uint8_t *buf){
-  return (buf[0]<<24) + (buf[1]<<16) + (buf[2]<<8) + (buf[3]);
+  uint32_t result = 0;
+  result |= buf[0]<<24;
+  result |= buf[1]<<16;
+  result |= buf[2]<<8;
+  result |= buf[3];
+  return result;
 }
 uint16_t pack8to16(uint8_t *buf){
-  return (buf[0]<<8) + buf[1];
+  uint16_t result = 0;
+  result |= buf[0]<<8;
+  result |= buf[1];
+  return result;
 }
 
 
