@@ -18,7 +18,7 @@
  */
 #define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
-#define SYNC_PERIOD                     5000
+#define SYNC_PERIOD                     5000 /* mS */
 
 /*
  ******************************************************************************
@@ -122,37 +122,6 @@ static void remove_handler(void) {
     sdcStop(&SDCD1);
   }
   fs_ready = FALSE;
-}
-
-/**
- * Monitors presence of SD card in slot.
- */
-static WORKING_AREA(CardMonitorThreadWA, 256);
-static msg_t CardMonitorThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("CardMonitor");
-  unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
-
-  while TRUE{
-    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
-
-    if (cnt > 0) {
-      if (sdcIsCardInserted(&SDCD1)) {
-        if (--cnt == 0) {
-          insert_handler();
-        }
-      }
-      else
-        cnt = SDC_POLLING_INTERVAL;
-    }
-    else {
-      if (!sdcIsCardInserted(&SDCD1)) {
-        cnt = SDC_POLLING_INTERVAL;
-        remove_handler();
-      }
-    }
-  }
-  return 0;
 }
 
 /**
@@ -335,12 +304,6 @@ void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
  * Init.
  */
 void StorageInit(void){
-  chThdCreateStatic(CardMonitorThreadWA,
-          sizeof(CardMonitorThreadWA),
-          NORMALPRIO - 5,
-          CardMonitorThread,
-          NULL);
-
   chThdCreateStatic(LogWriterThreadWA,
           sizeof(LogWriterThreadWA),
           NORMALPRIO - 5,
