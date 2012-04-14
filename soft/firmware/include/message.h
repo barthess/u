@@ -18,10 +18,9 @@ struct CompensatedData{
   /**/
   uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
-
   // напряжение и ток бортовой сети
   uint16_t main_voltage;      // mV
-  uint16_t main_current;      // sA (10*mA)
+  uint32_t main_current;      // mA
   uint16_t secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
 };
 

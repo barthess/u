@@ -114,10 +114,9 @@ uint16_t get_comp_secondary_voltage(uint16_t raw){
   return (uint16_t)(((uint32_t)raw * v) / adc);
 }
 
-/* пересчет из условных единиц в сантиамперы */
-uint16_t get_comp_main_current(uint16_t raw){
-  uint16_t A = (raw - DEFAULT_CURRENT_OFFSET) * DEFAULT_CURRENT_COEFF;
-  return A * 100;
+/* пересчет из условных единиц в mA */
+uint32_t get_comp_main_current(uint16_t raw){
+  return ((raw - DEFAULT_CURRENT_OFFSET) * 1000) / DEFAULT_CURRENT_COEFF;
 }
 
 /* Поток для запроса данных АЦП по таймеру */
@@ -156,10 +155,10 @@ static msg_t PowerKeeperThread(void *arg){
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
     comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
 
-    batfill -= comp_data.main_current * 10 * PWR_CHECK_PERIOD;
+    batfill -= comp_data.main_current * PWR_CHECK_PERIOD;
 
     mavlink_sys_status_struct.battery_remaining = (batfill * 100) / batcap;
-    mavlink_sys_status_struct.current_battery   = comp_data.main_current;
+    mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
 
     chThdSleepUntil(time);
