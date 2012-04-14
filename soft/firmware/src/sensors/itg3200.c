@@ -31,8 +31,6 @@ extern BinarySemaphore imu_sem;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
 
-extern uint32_t itg3200_period;
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
