@@ -14,6 +14,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
+extern CompensatedData comp_data;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
 
 /*
@@ -100,6 +101,19 @@ static const ADCConversionGroup adccg = {
  *******************************************************************************
  */
 
+/* пересчет из условных единиц АЦП в mV */
+uint16_t get_comp_secondary_voltage(uint16_t raw){
+  uint32_t v = 6200; // такое количество милливольт
+  uint32_t adc = 770;// приходится на такое количество условных единиц
+  return (uint16_t)(((uint32_t)raw * v) / adc);
+}
+
+/* пересчет из условных единиц в сантиамперы */
+uint16_t get_comp_main_current(uint16_t raw){
+  uint16_t A = (raw - DEFAULT_CURRENT_OFFSET) * DEFAULT_CURRENT_COEFF;
+  return A * 100;
+}
+
 /* Поток для запроса данных АЦП по таймеру */
 static WORKING_AREA(PollADCThreadWA, 256);
 static msg_t PollADCThread(void *arg){
@@ -110,10 +124,14 @@ static msg_t PollADCThread(void *arg){
     chThdSleepMilliseconds(20);
     raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
     raw_data.main_voltage = samples[ADC_MAIN_SUPPLY_OFFSET];
+    raw_data.secondary_voltage = samples[ADC_6V_SUPPLY_OFFSET];
 
-    mavlink_sys_status_struct.battery_remaining = 3;
-    mavlink_sys_status_struct.current_battery   = 1000;
-    mavlink_sys_status_struct.voltage_battery   = 24000;
+    comp_data.main_current = get_comp_main_current(raw_data.main_current);
+    comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
+
+    mavlink_sys_status_struct.battery_remaining = 86;
+    mavlink_sys_status_struct.current_battery   = comp_data.main_current;
+    mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
   }
   return 0;
 }

@@ -51,7 +51,7 @@ uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoc
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
-CompensatedData compensated_data;     /* обработанные данные */
+CompensatedData comp_data;            /* обработанные данные */
 LogItem log_item;                     /* структура, содержащая запись для лога */
 
 uint32_t itg3200_period = 0;          /* время получения сэмплов с гироскопа (uS)*/
@@ -120,12 +120,12 @@ int main(void) {
   xbee_sleep_clear();
 
   // обнуление инкрементальных сумм
-  compensated_data.xgyro_I = 0;
-  compensated_data.ygyro_I = 0;
-  compensated_data.zgyro_I = 0;
-  compensated_data.xgyro_f = 0;
-  compensated_data.ygyro_f = 0;
-  compensated_data.zgyro_f = 0;
+  comp_data.xgyro_I = 0;
+  comp_data.ygyro_I = 0;
+  comp_data.zgyro_I = 0;
+  comp_data.xgyro_f = 0;
+  comp_data.ygyro_f = 0;
+  comp_data.zgyro_f = 0;
 
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);

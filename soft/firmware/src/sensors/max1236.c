@@ -27,7 +27,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern CompensatedData compensated_data;
+extern CompensatedData comp_data;
 extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
@@ -78,14 +78,14 @@ static msg_t PollMax1236Thread(void *arg) {
       sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
       /* рассчет воздушной скорости и сохранение для нужд автопилота */
-      compensated_data.air_speed = (uint16_t)(1000 * calc_air_speed(press_diff_raw));
+      comp_data.air_speed = (uint16_t)(1000 * calc_air_speed(press_diff_raw));
 
       raw_data.altitude_sonar = sonar_raw;
     }
 
     mavlink_raw_pressure_struct.time_usec = TimeUsec;
     mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
-    mavlink_raw_pressure_struct.press_diff2 = compensated_data.air_speed;
+    mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
 
     if (((n & 7) == 7) && (air_data_mail.payload == NULL)){

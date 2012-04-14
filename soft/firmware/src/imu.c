@@ -27,7 +27,7 @@ extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
 extern RawData raw_data;
-extern CompensatedData compensated_data;
+extern CompensatedData comp_data;
 extern BinarySemaphore imu_sem;
 
 extern uint32_t itg3200_period;
@@ -66,9 +66,9 @@ static msg_t Imu(void *arg) {
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&imu_sem, MS2ST(100));
     if (sem_status == RDY_OK){
-      compensated_data.xgyro_f += get_degrees(raw_data.xgyro_delta);
-      compensated_data.ygyro_f += get_degrees(raw_data.ygyro_delta);
-      compensated_data.zgyro_f += get_degrees(raw_data.zgyro_delta);
+      comp_data.xgyro_f += get_degrees(raw_data.xgyro_delta);
+      comp_data.ygyro_f += get_degrees(raw_data.ygyro_delta);
+      comp_data.zgyro_f += get_degrees(raw_data.zgyro_delta);
     }
   }
   return 0;
@@ -89,9 +89,9 @@ static msg_t ImuSender(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail.payload == NULL){
-      mavlink_raw_imu_struct.xgyro      = floorf(compensated_data.xgyro_f);
-      mavlink_raw_imu_struct.ygyro      = floorf(compensated_data.ygyro_f);
-      mavlink_raw_imu_struct.zgyro      = floorf(compensated_data.zgyro_f);
+      mavlink_raw_imu_struct.xgyro      = floorf(comp_data.xgyro_f);
+      mavlink_raw_imu_struct.ygyro      = floorf(comp_data.ygyro_f);
+      mavlink_raw_imu_struct.zgyro      = floorf(comp_data.zgyro_f);
       mavlink_raw_imu_struct.time_usec  = TimeUsec;
 
       tolink_mail.payload = &mavlink_raw_imu_struct;

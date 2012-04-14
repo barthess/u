@@ -431,7 +431,7 @@ void GPSInit(void){
 
   chThdCreateStatic(gpsRxThreadWA,
           sizeof(gpsRxThreadWA),
-          NORMALPRIO - 2,
+          GPS_THREAD_PRIO,
           gpsRxThread,
           NULL);
 }
