@@ -65,6 +65,9 @@ GlobalParam_t global_data[] = {
     /* ADC coefficients */
     {"ADC_I_offset",    0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
     {"ADC_I_gain",      0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
+    /* Bttery parameters */
+    {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T},  /* емкость батареи в mAh */
+    {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T},  /* на столько процентов заряжена перед установкой в самолет */
     /* Servos coefficients */
     {"SERVO_1_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
