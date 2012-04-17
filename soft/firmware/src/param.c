@@ -51,24 +51,37 @@ GlobalParam_t global_data[] = {
     {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
-    /* смещения нулей гироскопа */
+
+    /**** смещения нулей гироскопа ****/
     {"GYRO_xoffset",    -200,       2,          200,        MAVLINK_TYPE_INT32_T},
     {"GYRO_yoffset",    -200,       0,          200,        MAVLINK_TYPE_INT32_T},
     {"GYRO_zoffset",    -200,       -3,         200,        MAVLINK_TYPE_INT32_T},
-    /* PMU - pressure measurement unit
-     * Коэффициенты полинома для термокомпенсации нуля ((c1*t) + c2) */
+
+    /**** PMU - pressure measurement unit ****/
+    //Коэффициенты полинома для термокомпенсации нуля
     {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c4",          -2000000,   60011,      2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* ADC coefficients */
-    {"ADC_I_offset",    0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
-    {"ADC_I_gain",      0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
-    /* Bttery parameters */
-    {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T},  /* емкость батареи в mAh */
-    {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T},  /* на столько процентов заряжена перед установкой в самолет */
-    /* Servos coefficients */
+
+    /**** ADC coefficients ****/
+    // смещение нуля датчика тока
+    {"ADC_I_offset",    0,          16,         4096,       MAVLINK_TYPE_UINT32_T},
+    // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
+    {"ADC_I_gain",      0,          1912,       12240,      MAVLINK_TYPE_UINT32_T},
+    // secondary voltage. на столько надо умножить, чтобы получить nV
+    {"ADC_SV_gain",     0,          8052,       12240,      MAVLINK_TYPE_UINT32_T},
+    // main voltage. на столько надо умножить, чтобы получить nV
+    {"ADC_MV_gain",     0,          8050,       12240,      MAVLINK_TYPE_UINT32_T},
+
+    /**** Bttery parameters ****/
+    // емкость батареи в mAh
+    {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T},
+    // на столько процентов заряжена перед установкой в самолет
+    {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T},
+
+    /**** Servos coefficients ****/
     {"SERVO_1_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},

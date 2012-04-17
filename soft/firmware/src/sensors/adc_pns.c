@@ -122,7 +122,7 @@ uint32_t get_comp_main_current(uint16_t raw){
 /* Поток для запроса данных АЦП по таймеру */
 static WORKING_AREA(PowerKeeperThreadWA, 256);
 static msg_t PowerKeeperThread(void *arg){
-  chRegSetThreadName("PollADC");
+  chRegSetThreadName("PowerKeeper");
   (void)arg;
 
   uint32_t batcap = 0;  /* battery capacitance in A*mS*/
@@ -141,7 +141,7 @@ static msg_t PowerKeeperThread(void *arg){
   if (i == -1)
     chDbgPanic("key not found");
   else
-    batfill = (100 * batcap) / (uint32_t)floorf(global_data[i].value);
+    batfill = (batcap * (uint32_t)floorf(global_data[i].value)) / 100;
 
 
   systime_t time = chTimeNow();     // T0
@@ -155,7 +155,7 @@ static msg_t PowerKeeperThread(void *arg){
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
     comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
 
-    batfill -= comp_data.main_current * PWR_CHECK_PERIOD;
+    batfill -= (comp_data.main_current * PWR_CHECK_PERIOD) / 1000;
 
     mavlink_sys_status_struct.battery_remaining = (batfill * 100) / batcap;
     mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);

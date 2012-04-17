@@ -18,7 +18,7 @@
  */
 #define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
-#define SYNC_PERIOD                     5000 /* mS */
+#define SYNC_PERIOD                     5000
 
 /*
  ******************************************************************************
@@ -245,6 +245,7 @@ NOT_READY:
       if (write_log(&Log) != FR_OK)
         return RDY_RESET;
     }
+    chThdSleepMilliseconds(10);
   }
 
   return 0;
@@ -256,8 +257,6 @@ NOT_READY:
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-
-
 
 /**
  * Create file.
