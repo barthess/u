@@ -114,7 +114,7 @@
 #define STM32_GPT_USE_TIM2                  TRUE /* irq storm */
 #define STM32_GPT_USE_TIM3                  TRUE /* irq storm */
 #define STM32_GPT_USE_TIM4                  FALSE
-#define STM32_GPT_USE_TIM5                  TRUE /* ITG3200 time measurement */
+#define STM32_GPT_USE_TIM5                  FALSE
 #define STM32_GPT_USE_TIM6                  FALSE
 #define STM32_GPT_USE_TIM7                  FALSE
 #define STM32_GPT_USE_TIM8                  FALSE

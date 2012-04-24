@@ -109,6 +109,8 @@ GlobalParam_t global_data[] = {
     /* машинко-специфичные настройки */
     {"SERVO_car_max",   0,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_car_dz",    0,          32,         64,         MAVLINK_TYPE_UINT32_T},
+    /**/
+    {"MAG_inclinate",   -90,        7,          90,         MAVLINK_TYPE_INT32_T},
 
     /* fake field with 14 symbols name */
     {"fake_14_bytes_",  0,          1048,       1224,       MAVLINK_TYPE_FLOAT},

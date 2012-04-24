@@ -53,14 +53,6 @@ static uint32_t rpmcnt = 0;
  */
 static VirtualTimer tachocheck_vt;
 
-/*
- * GPT2 configuration.
- */
-static const GPTConfig gpt5cfg = {
-  1000000,    /* 1MHz timer clock.*/
-  NULL    /* Timer callback.*/
-};
-
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100;
 
@@ -150,6 +142,8 @@ static void mma8451_int1_cb(EXTDriver *extp, expchannel_t channel){
 //  chSysUnlockFromIsr();
 }
 
+static TimeMeasurement itg3200_tmup;
+
 static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
@@ -157,11 +151,11 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
 
   if (itg3200_period_measured < 2){
     if (itg3200_period_measured == 0){
-      gptStartOneShotI(&GPTD5, 65535);
+      tmStartMeasurement(&itg3200_tmup);
     }
     else if(itg3200_period_measured == 1){
-      itg3200_period = GPTD5.tim->CNT;
-      gptStopTimerI(&GPTD5);
+      tmStopMeasurement(&itg3200_tmup);
+      itg3200_period = RTT2US(itg3200_tmup.last);
     }
     itg3200_period_measured++;
   }
@@ -238,8 +232,7 @@ void ExtiInit(void){
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   chSysUnlock();
 
-  /* start timer for precise measurement time interval between ITG3200 samples */
-  gptStart(&GPTD5, &gpt5cfg);
+  tmObjectInit(&itg3200_tmup);
 
   extStart(&EXTD1, &extcfg);
 }
