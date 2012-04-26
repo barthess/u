@@ -4,7 +4,7 @@
 #include "hal.h"
 
 #include "i2c_pns.h"
-#include "dsp.h"
+#include "utils.h"
 #include "mma8451.h"
 #include "message.h"
 #include "param.h"
@@ -25,7 +25,7 @@
  */
 extern BinarySemaphore mma8451_sem;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
-extern GlobalParam_t global_data[];
+//extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************

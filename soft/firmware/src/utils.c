@@ -1,5 +1,5 @@
 #include "ch.h"
-#include "dsp.h"
+#include "utils.h"
 
 
 /** упаковка байт в многобайтную переменную */
@@ -40,7 +40,6 @@ int32_t Simpson38(int32_t a, int32_t b, int32_t c, int32_t d, int32_t t){
   return (t * 3 * (a + 3*b + 3*c + d)) / 8;
 }
 
-
 /* Перевод из дополнительного кода в знаковый целый тип */
 int16_t complement2signed(uint8_t msb, uint8_t lsb){
   uint16_t word = 0;
@@ -50,3 +49,4 @@ int16_t complement2signed(uint8_t msb, uint8_t lsb){
   }
   return (int16_t)word;
 }
+

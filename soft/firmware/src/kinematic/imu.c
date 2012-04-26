@@ -9,13 +9,14 @@
 #include "link.h"
 #include "param.h"
 #include "itg3200.h"
+#include "dcm.h"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define GYRO_SENS 14.375f
+#define PI          3.141592653589793238462643383279502884197f
 
 /*
  ******************************************************************************
@@ -47,11 +48,11 @@ extern uint32_t itg3200_period;
  */
 
 /**
- * Перевод условных единиц в градусы
+ * Получение приращения угла исходя из угловой скорости и временем между выборками
  */
-static float get_degrees(int32_t raw){
-  float s = 1000000.0; /* угол поворота интегрируется по микросекундам */
-  return ((float)raw * itg3200_period) / (GYRO_AVG_SAMPLES_CNT * GYRO_SENS * s);
+static float get_degrees(float raw){
+  float t = (float)itg3200_period / 1000000.0;
+  return raw * ((t * 180) / PI);
 }
 
 /**
@@ -66,9 +67,9 @@ static msg_t Imu(void *arg) {
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&imu_sem, MS2ST(100));
     if (sem_status == RDY_OK){
-      comp_data.xgyro_f += get_degrees(raw_data.xgyro_delta);
-      comp_data.ygyro_f += get_degrees(raw_data.ygyro_delta);
-      comp_data.zgyro_f += get_degrees(raw_data.zgyro_delta);
+      comp_data.xgyro_angle += get_degrees(comp_data.xgyrorate);
+      comp_data.ygyro_angle += get_degrees(comp_data.ygyrorate);
+      comp_data.zgyro_angle += get_degrees(comp_data.zgyrorate);
     }
   }
   return 0;
@@ -89,9 +90,13 @@ static msg_t ImuSender(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail.payload == NULL){
-      mavlink_raw_imu_struct.xgyro      = floorf(comp_data.xgyro_f * 100);
-      mavlink_raw_imu_struct.ygyro      = floorf(comp_data.ygyro_f * 100);
-      mavlink_raw_imu_struct.zgyro      = floorf(comp_data.zgyro_f * 100);
+      mavlink_raw_imu_struct.xgyro      = floorf(comp_data.xgyro_angle);
+      mavlink_raw_imu_struct.ygyro      = floorf(comp_data.ygyro_angle);
+      mavlink_raw_imu_struct.zgyro      = floorf(comp_data.zgyro_angle);
+//      mavlink_raw_imu_struct.xgyro      = raw_data.xgyro;
+//      mavlink_raw_imu_struct.ygyro      = raw_data.ygyro;
+//      mavlink_raw_imu_struct.zgyro      = raw_data.zgyro;
+
       mavlink_raw_imu_struct.time_usec  = TimeUsec;
 
       tolink_mail.payload = &mavlink_raw_imu_struct;
@@ -107,6 +112,7 @@ static msg_t ImuSender(void *arg) {
  *******************************************************************************
  */
 void ImuInit(void){
+  //dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
   chThdCreateStatic(waImuSender, sizeof(waImuSender), NORMALPRIO, ImuSender, NULL);
 }

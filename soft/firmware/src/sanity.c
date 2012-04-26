@@ -15,6 +15,7 @@
  */
 extern Mailbox tolink_mb;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
+extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -75,6 +76,10 @@ static msg_t SanityControlThread(void *arg) {
       chThdSleepMilliseconds(50);
     }
 
+    if (GlobalFlags & GYRO_CAL)
+      palClearPad(GPIOB, GPIOB_LED_B);
+    else
+      palSetPad(GPIOB, GPIOB_LED_B);
   }
   return 0;
 }

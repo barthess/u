@@ -9,6 +9,8 @@
 #include "arm_math.h"
 
 #include "message.h"
+#include "utils.h"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -40,10 +42,7 @@ extern CompensatedData comp_data;
  * Принимает сырое значение с датчика и температуру в градусах цельсия*/
 static uint16_t zerocomp(uint16_t raw, int32_t t){
 
-  if (t > 40)
-    t = 40;
-  else if (t < -10)
-    t = -10;
+  putinrange(t, -10, 40);
 
   int32_t c1 = -9;
   int32_t c2 = 408;

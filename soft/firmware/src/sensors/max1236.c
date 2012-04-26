@@ -2,8 +2,8 @@
 #include "hal.h"
 
 #include "message.h"
-#include "dsp.h"
-#include "pmu.h"
+#include "utils.h"
+#include "airspeed.h"
 #include "main.h"
 #include "i2c_pns.h"
 #include "max1236.h"
@@ -111,7 +111,7 @@ void init_max1236(void){
 
 #if CH_DBG_ENABLE_ASSERTS
   // clear bufers. Just to be safe.
-  uint8_t i = 0;
+  uint32_t i = 0;
   for (i = 0; i < MAX1236_TX_DEPTH; i++){txbuf[i] = 0x55;}
   for (i = 0; i < MAX1236_RX_DEPTH; i++){rxbuf[i] = 0x55;}
 #endif

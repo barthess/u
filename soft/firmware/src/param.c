@@ -36,26 +36,50 @@ GlobalParam_t global_data[] = {
     /*-----------------------------------------------------------------------*/
     {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T},
     {"SYS_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* вс€кие флаги дл€ коммандной оболочки */
+
+    /**** вс€кие флаги дл€ коммандной оболочки ****/
     {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T},
+
     /* IMU - inertial measurement unit */
     {"IMU_g1",          -1,         0.1,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* смещени€ нулей магнитометра */
+
+    /**** смещени€ нулей магнитометра ****/
     {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T},
-    /* смещени€ нулей акселерометра */
+    /**** чувствительность акселерометра ****/
+    {"MAG_xsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"MAG_ysens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"MAG_zsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** пол€рности осей. Ќаправление осей приведено к ос€м автопилота ****/
+    {"MAG_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"MAG_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"MAG_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+
+    /**** смещени€ нулей акселерометра ****/
     {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
+    /**** чувствительность акселерометра ****/
+    {"ACC_xsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"ACC_ysens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"ACC_zsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** пол€рности осей. Ќаправление осей приведено к ос€м автопилота ****/
+    {"ACC_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"ACC_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"ACC_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
 
-    /**** смещени€ нулей гироскопа ****/
-    {"GYRO_xoffset",    -200,       2,          200,        MAVLINK_TYPE_INT32_T},
-    {"GYRO_yoffset",    -200,       0,          200,        MAVLINK_TYPE_INT32_T},
-    {"GYRO_zoffset",    -200,       -3,         200,        MAVLINK_TYPE_INT32_T},
+    /**** чувствительности осей гироскопа (LSB/(deg/s)). Ќаправление осей приведено к ос€м автопилота ****/
+    {"GYRO_xsens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"GYRO_ysens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"GYRO_zsens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** пол€рности вращени€ осей. Ќаправление осей приведено к ос€м автопилота ****/
+    {"GYRO_xpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"GYRO_ypol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"GYRO_zpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
 
     /**** PMU - pressure measurement unit ****/
     // оэффициенты полинома дл€ термокомпенсации нул€

@@ -4,7 +4,7 @@
 #include "hal.h"
 
 #include "i2c_pns.h"
-#include "dsp.h"
+#include "utils.h"
 #include "mag3110.h"
 #include "message.h"
 #include "param.h"
@@ -25,7 +25,7 @@
  ******************************************************************************
  */
 extern BinarySemaphore mag3110_sem;
-extern GlobalParam_t global_data[];
+//extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 
 /*

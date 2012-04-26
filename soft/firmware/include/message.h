@@ -7,14 +7,14 @@
  */
 typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
-  /* ”глы поворота с момента включени€ устройства. ‘иксированна€ точка -- полный поворот == 2^32 */
-  int32_t   xgyro_I;
-  int32_t   ygyro_I;
-  int32_t   zgyro_I;
-  /* ”глы поворота с момента включени€ устройства. √радусы */
-  float     xgyro_f;
-  float     ygyro_f;
-  float     zgyro_f;
+  /* Ќакопленные углы поворота с момента включени€ устройства (дл€ отладки). √радусы */
+  float     xgyro_angle;
+  float     ygyro_angle;
+  float     zgyro_angle;
+  /* моментальные угловые скорости в рад/с */
+  float     xgyrorate;
+  float     ygyrorate;
+  float     zgyrorate;
   /**/
   uint16_t  air_speed;      /* воздушна€ скорость. ‘иксированна€ точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. ÷елые градусы. */
@@ -30,15 +30,13 @@ struct CompensatedData{
  */
 typedef struct RawData RawData;
 struct RawData{
-  // шаги поворота, посчитанные через интеграл
-  int32_t xgyro_delta;
-  int32_t ygyro_delta;
-  int32_t zgyro_delta;
   /* смещени€ нулей, посчитанные во врем€ выставки.*/
   int32_t xgyro_zero;
   int32_t ygyro_zero;
   int32_t zgyro_zero;
-  // данные с гироскопа
+  /* данные с гироскопа. Ёти оси не об€заны совпадать с ос€ми платы автопилота,
+   * они содержат показани€ из регистров датчика в том пор€дке, в котором
+   * вычитываютс€ */
   int16_t xgyro;
   int16_t ygyro;
   int16_t zgyro;

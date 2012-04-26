@@ -93,7 +93,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \
        src/stubs.c \
-       src/dsp.c \
+       src/utils.c \
        src/i2c_pns.c \
        src/exti_pns.c \
        src/microrl/src/microrl.c \
@@ -102,8 +102,8 @@ CSRC = $(PORTSRC) \
        src/irq_storm.c \
        src/storage.c \
        src/servo.c \
-       src/imu.c \
-       src/pmu.c \
+       src/kinematic/imu.c \
+       src/kinematic/airspeed.c \
        src/sanity.c \
        src/param.c \
        src/param_persistant.c \
@@ -174,6 +174,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/eeprom \
          src/link \
          src/sensors \
+         src/kinematic \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart

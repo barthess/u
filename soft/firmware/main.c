@@ -3,6 +3,7 @@
  * при компил€ции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: приводить оси датчиков к системе координат пр€мо в коде, который их опрашивает
 // TODO: последние удачные координаты в BKP
 // TODO: обработчик прерывани€ по просадке питани€ (рассылка сообщени€, возможно поток PwrHypervisor)
 // TODO: добвить событий на сбои разных подсистем (gyro_failed, gps_failed, etc.)
@@ -58,10 +59,10 @@ LogItem log_item;                     /* структура, содержаща€ запись дл€ лога *
 uint32_t itg3200_period = 0;          /* врем€ получени€ сэмплов с гироскопа (uS)*/
 
 BinarySemaphore imu_sem;              /* семафор дл€ синхронизации инерциалки и датчиков */
-BinarySemaphore mag3110_sem;
-BinarySemaphore mma8451_sem;
-BinarySemaphore bmp085_sem;
-BinarySemaphore itg3200_sem;
+BinarySemaphore mag3110_sem;          /* синхронизаци€ потока с прерыванием от датчика */
+BinarySemaphore mma8451_sem;          /* синхронизаци€ потока с прерыванием от датчика */
+BinarySemaphore bmp085_sem;           /* синхронизаци€ потока с прерыванием от датчика */
+BinarySemaphore itg3200_sem;          /* синхронизаци€ потока с прерыванием от датчика */
 
 /* примонтированный файл EEPROM */
 EepromFileStream EepromFile;
@@ -121,12 +122,9 @@ int main(void) {
   xbee_sleep_clear();
 
   // обнуление инкрементальных сумм
-  comp_data.xgyro_I = 0;
-  comp_data.ygyro_I = 0;
-  comp_data.zgyro_I = 0;
-  comp_data.xgyro_f = 0;
-  comp_data.ygyro_f = 0;
-  comp_data.zgyro_f = 0;
+  comp_data.xgyro_angle = 0;
+  comp_data.ygyro_angle = 0;
+  comp_data.zgyro_angle = 0;
 
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);
