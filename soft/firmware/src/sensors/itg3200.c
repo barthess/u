@@ -19,7 +19,15 @@
  ******************************************************************************
  */
 #define itg3200addr   0b1101000
-#define PI            3.141592653589793238462643383279502884197f
+#define PI            3.14159265f
+
+#define XPOL          (global_data[xpol_index].value)
+#define YPOL          (global_data[ypol_index].value)
+#define ZPOL          (global_data[zpol_index].value)
+
+#define XSENS         (global_data[xsens_index].value)
+#define YSENS         (global_data[ysens_index].value)
+#define ZSENS         (global_data[zsens_index].value)
 
 /*
  ******************************************************************************
@@ -34,6 +42,7 @@ extern BinarySemaphore itg3200_sem;
 extern BinarySemaphore imu_sem;
 //extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
+extern uint32_t itg3200_period;
 
 /*
  ******************************************************************************
@@ -86,6 +95,14 @@ static float calc_gyro_rate(int32_t raw, float sens){
 }
 
 /**
+ * Получение приращения угла исходя из угловой скорости и временем между выборками
+ */
+static float get_degrees(float raw){
+  float t = (float)itg3200_period / 1000000.0;
+  return raw * ((t * 180) / PI);
+}
+
+/**
  * Поток для опроса хероскопа
  */
 static WORKING_AREA(PollGyroThreadWA, 512);
@@ -115,13 +132,17 @@ static msg_t PollGyroThread(void *arg){
         gyroY = ((int32_t)raw_data.xgyro) * GYRO_AVG_SAMPLES_CNT - raw_data.xgyro_zero;
         gyroZ = ((int32_t)raw_data.zgyro) * GYRO_AVG_SAMPLES_CNT - raw_data.zgyro_zero;
         /* adjust rotation direction */
-        gyroX *= global_data[xpol_index].value;
-        gyroY *= global_data[ypol_index].value;
-        gyroZ *= global_data[zpol_index].value;
+        gyroX *= XPOL;
+        gyroY *= YPOL;
+        gyroZ *= ZPOL;
         /* now get angular velocity in rad/sec */
-        comp_data.xgyrorate = calc_gyro_rate(gyroX, global_data[xsens_index].value);
-        comp_data.ygyrorate = calc_gyro_rate(gyroY, global_data[ysens_index].value);
-        comp_data.zgyrorate = calc_gyro_rate(gyroZ, global_data[zsens_index].value);
+        comp_data.xgyrorate = calc_gyro_rate(gyroX, XSENS);
+        comp_data.ygyrorate = calc_gyro_rate(gyroY, YSENS);
+        comp_data.zgyrorate = calc_gyro_rate(gyroZ, ZSENS);
+        /* calc summary angle for debug purpose */
+        comp_data.xgyro_angle += get_degrees(comp_data.xgyrorate);
+        comp_data.ygyro_angle += get_degrees(comp_data.ygyrorate);
+        comp_data.zgyro_angle += get_degrees(comp_data.zgyrorate);
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(&imu_sem);

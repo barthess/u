@@ -16,7 +16,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define PI          3.141592653589793238462643383279502884197f
+#define PI          3.14159265f
 
 /*
  ******************************************************************************
@@ -27,10 +27,9 @@ extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
-extern RawData raw_data;
+//extern RawData raw_data;
 extern CompensatedData comp_data;
 extern BinarySemaphore imu_sem;
-
 extern uint32_t itg3200_period;
 
 /*
@@ -48,14 +47,6 @@ extern uint32_t itg3200_period;
  */
 
 /**
- * Получение приращения угла исходя из угловой скорости и временем между выборками
- */
-static float get_degrees(float raw){
-  float t = (float)itg3200_period / 1000000.0;
-  return raw * ((t * 180) / PI);
-}
-
-/**
  * Поток обработки инерациальных данных
  */
 static WORKING_AREA(waImu, 256);
@@ -67,9 +58,7 @@ static msg_t Imu(void *arg) {
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&imu_sem, MS2ST(100));
     if (sem_status == RDY_OK){
-      comp_data.xgyro_angle += get_degrees(comp_data.xgyrorate);
-      comp_data.ygyro_angle += get_degrees(comp_data.ygyrorate);
-      comp_data.zgyro_angle += get_degrees(comp_data.zgyrorate);
+      (void)itg3200_period;
     }
   }
   return 0;
@@ -90,9 +79,9 @@ static msg_t ImuSender(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail.payload == NULL){
-      mavlink_raw_imu_struct.xgyro      = floorf(comp_data.xgyro_angle);
-      mavlink_raw_imu_struct.ygyro      = floorf(comp_data.ygyro_angle);
-      mavlink_raw_imu_struct.zgyro      = floorf(comp_data.zgyro_angle);
+      mavlink_raw_imu_struct.xgyro = floorf(comp_data.xgyro_angle);
+      mavlink_raw_imu_struct.ygyro = floorf(comp_data.ygyro_angle);
+      mavlink_raw_imu_struct.zgyro = floorf(comp_data.zgyro_angle);
 //      mavlink_raw_imu_struct.xgyro      = raw_data.xgyro;
 //      mavlink_raw_imu_struct.ygyro      = raw_data.ygyro;
 //      mavlink_raw_imu_struct.zgyro      = raw_data.zgyro;

@@ -15,6 +15,11 @@ struct CompensatedData{
   float     xgyrorate;
   float     ygyrorate;
   float     zgyrorate;
+  /* ускорения по осям в mG */
+  int16_t   xacc;
+  int16_t   yacc;
+  int16_t   zacc;
+
   /**/
   uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
@@ -48,10 +53,12 @@ struct RawData{
   //  int16_t magnetic_x;
   //  int16_t magnetic_y;
   //  int16_t magnetic_z;
-  // акселерометр
-  //  int16_t acceleration_x;
-  //  int16_t acceleration_y;
-  //  int16_t acceleration_z;
+  /* данные с акселерометра. Эти оси не обязаны совпадать с осями платы автопилота,
+   * они содержат показания из регистров датчика в том порядке, в котором
+   * вычитываются */
+  int16_t xacc;
+  int16_t yacc;
+  int16_t zacc;
   // положения сервоприводов (данные из регистров счетчика)
   uint16_t servo1;
   uint16_t servo2;
