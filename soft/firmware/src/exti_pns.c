@@ -27,7 +27,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
 
 extern BinarySemaphore mag3110_sem;
 extern BinarySemaphore mma8451_sem;
@@ -54,7 +53,7 @@ static uint32_t rpmcnt = 0;
 static VirtualTimer tachocheck_vt;
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
-static int32_t itg3200_period_measured = -100;
+static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
 
 /*
  *******************************************************************************
@@ -70,11 +69,9 @@ void vt_tachocheck_cb(void *par){
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   /* если данные брать каждый 0.5 секунд с 2-лопастного винта, то получаются как раз герцы */
   //log_item.engine_rpm = (rpmcnt * 1000) / (TACHO_CHECK_T * TACHO_BLADES);
-  log_item.engine_rpm = rpmcnt;
+  raw_data.engine_rpm = rpmcnt;
   rpmcnt = 0;
   chSysUnlockFromIsr();
-
-  raw_data.engine_rpm = log_item.engine_rpm;
 }
 
 /**

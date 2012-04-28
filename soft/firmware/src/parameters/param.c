@@ -136,6 +136,15 @@ GlobalParam_t global_data[] = {
     {"SERVO_car_max",   0,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_car_dz",    0,          32,         64,         MAVLINK_TYPE_UINT32_T},
     /**/
+    {"IMU_accweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_magweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_gpsweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved1",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved2",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved3",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved4",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved5",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
+    {"IMU_reserved6",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT},
 
     /* fake field with 14 symbols name */
     {"fake_14_bytes_",  0,          1048,       1224,       MAVLINK_TYPE_FLOAT},

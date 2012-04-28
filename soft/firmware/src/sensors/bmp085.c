@@ -30,7 +30,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
+extern CompensatedData comp_data;
 extern BinarySemaphore bmp085_sem;
 
 /*
@@ -129,12 +129,12 @@ static void bmp085_calc(void){
   // refresh aweraged pressure value
   pres_awg = pres_awg - (pres_awg >> FIX_FORMAT) + pval;
   // calculate height
-  log_item.baro_altitude = pres_to_height(pres_awg >> FIX_FORMAT);
+  comp_data.baro_altitude = pres_to_height(pres_awg >> FIX_FORMAT);
   return;
 
 ERROR:
   raw_data.pressure_static = 0;
-  log_item.baro_altitude = -32768;
+  comp_data.baro_altitude = -32768;
   return;
 }
 

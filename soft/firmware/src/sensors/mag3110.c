@@ -27,6 +27,7 @@
 extern BinarySemaphore mag3110_sem;
 //extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern RawData raw_data;
 
 /*
  ******************************************************************************
@@ -65,23 +66,30 @@ static msg_t PollMagThread(void *arg){
     txbuf[0] = MAG_OUT_DATA;
     if (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
                                            sem_status == RDY_OK){
-      mavlink_raw_imu_struct.xmag = complement2signed(rxbuf[0], rxbuf[1]);
-      mavlink_raw_imu_struct.ymag = complement2signed(rxbuf[2], rxbuf[3]);
-      mavlink_raw_imu_struct.zmag = complement2signed(rxbuf[4], rxbuf[5]);
+      raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
+      raw_data.ymag = complement2signed(rxbuf[2], rxbuf[3]);
+      raw_data.zmag = complement2signed(rxbuf[4], rxbuf[5]);
+
+      mavlink_raw_imu_struct.xmag = raw_data.xmag;
+      mavlink_raw_imu_struct.ymag = raw_data.xmag;
+      mavlink_raw_imu_struct.zmag = raw_data.xmag;
     }
     else{
       /* выставляем знамение ошибки */
-      mavlink_raw_imu_struct.xmag = -32768;
-      mavlink_raw_imu_struct.ymag = -32768;
-      mavlink_raw_imu_struct.zmag = -32768;
+      raw_data.xmag = -32768;
+      raw_data.ymag = -32768;
+      raw_data.zmag = -32768;
+      mavlink_raw_imu_struct.xmag = raw_data.xmag;
+      mavlink_raw_imu_struct.ymag = raw_data.xmag;
+      mavlink_raw_imu_struct.zmag = raw_data.xmag;
     }
 
     /* если датчик передознулся - надо произвести сброс. В принципе,
-    можно в датчике настроить авторесет на каждое измерение, но это
-    как-то не элегантно. */
-    if (abs(mavlink_raw_imu_struct.xmag) > OVERDOSE ||
-        abs(mavlink_raw_imu_struct.ymag) > OVERDOSE ||
-        abs(mavlink_raw_imu_struct.zmag) > OVERDOSE){
+          можно в датчике настроить авторесет на каждое измерение, но это
+          как-то не элегантно. */
+    if (abs(raw_data.xmag) > OVERDOSE ||
+        abs(raw_data.ymag) > OVERDOSE ||
+        abs(raw_data.zmag) > OVERDOSE){
       txbuf[0] = MAG_CTRL_REG2;
       txbuf[1] = MAG_RST;
       i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);

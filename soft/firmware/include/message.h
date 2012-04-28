@@ -12,15 +12,20 @@ struct CompensatedData{
   float     ygyro_angle;
   float     zgyro_angle;
   /* моментальные угловые скорости в рад/с */
-  float     xgyrorate;
-  float     ygyrorate;
-  float     zgyrorate;
+  float     xgyro;
+  float     ygyro;
+  float     zgyro;
+  /* моментальные угловые скорости в uRad/s */
+  int32_t   xgyroi;
+  int32_t   ygyroi;
+  int32_t   zgyroi;
   /* ускорени€ по ос€м в mG */
   int16_t   xacc;
   int16_t   yacc;
   int16_t   zacc;
 
   /**/
+  int16_t   baro_altitude;  /* высота по барометру bmp085. ÷елое (dm)*/
   uint16_t  air_speed;      /* воздушна€ скорость. ‘иксированна€ точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. ÷елые градусы. */
   // напр€жение и ток бортовой сети
@@ -35,7 +40,7 @@ struct CompensatedData{
  */
 typedef struct RawData RawData;
 struct RawData{
-  /* смещени€ нулей, посчитанные во врем€ выставки.*/
+  /* смещени€ нулей гироскопа, посчитанные во врем€ выставки.*/
   int32_t xgyro_zero;
   int32_t ygyro_zero;
   int32_t zgyro_zero;
@@ -49,10 +54,12 @@ struct RawData{
   // значени€ с внешнего ј÷ѕ
   uint16_t pressure_dynamic;
   uint16_t altitude_sonar;
-  //магнитометр
-  //  int16_t magnetic_x;
-  //  int16_t magnetic_y;
-  //  int16_t magnetic_z;
+  /* данные с магнитометра. Ёти оси не об€заны совпадать с ос€ми платы автопилота,
+   * они содержат показани€ из регистров датчика в том пор€дке, в котором
+   * вычитываютс€ */
+  int16_t xmag;
+  int16_t ymag;
+  int16_t zmag;
   /* данные с акселерометра. Ёти оси не об€заны совпадать с ос€ми платы автопилота,
    * они содержат показани€ из регистров датчика в том пор€дке, в котором
    * вычитываютс€ */
@@ -91,55 +98,6 @@ struct RawData{
   uint16_t rtc_msec;          /* дробна€ часть */
 
   uint16_t engine_rpm;        /* “ахометр (rpm)*/
-};
-
-
-/**
- * —труктура дл€ записи в бортовой самописец. ƒолжна быть такого размера, чтобы
- * удобно влезала в сектор размером 128 байт.
- */
-typedef struct LogItem LogItem;
-struct LogItem{
-  int32_t  gps_latitude;      /* широта, долгота */
-  int32_t  gps_longitude;
-
-  uint32_t gps_time;          /* врем€ по GPS. ¬ формате 115436 -- 11 часов, 54 минуты, 36 секунд */
-
-  uint32_t rtc_sec;           /* врем€ по внутренним часам. —екунды с начала эпохи */
-  uint16_t rtc_msec;          /* дробна€ часть */
-
-  uint16_t aileron;           /* положени€ сервоприводов и дроссел€ (данные из регистров счетчика) */
-  uint16_t elevator;
-  uint16_t throttle;
-  uint16_t rudder;
-
-  uint16_t altitude_sonar;    /* высота по сонару. ÷елое (cm)*/
-  uint16_t main_current;      /* ток. милиамперы */
-
-  uint16_t gyro_xI;           /* ”глы поворота. ‘иксированна€ точка -- полный поворот == 2^16*/
-  uint16_t gyro_yI;
-  uint16_t gyro_zI;
-
-  int16_t acceleration_x;     /* ”скорени€ (mg)*/
-  int16_t acceleration_y;
-  int16_t acceleration_z;
-
-  int16_t imu_x;              /* –ассчитанные проекции единичного вектора на оси * 10000 */
-  int16_t imu_y;
-  int16_t imu_z;
-
-  int16_t baro_altitude;      /* высота по барометру bmp085. ÷елое (dm)*/
-  int16_t gps_altitude;       /* высота по GPS. ÷елое (m)*/
-
-  uint8_t main_voltage;       /* напр€жение бортовой сети -- дес€тые доли вольта */
-  uint8_t air_speed;          /* воздушна€ скорость. ‘иксированна€ точка 5:3. (m/s)*/
-  uint8_t engine_rpm;         /* частота вращени€ коленвала двигател€ (Hz) */
-
-  uint8_t gps_speed;          /* скорость по GPS. ÷елое (m/s)*/
-  uint8_t gps_course;         /* ѕолный оборот -- 256 условных единиц. */
-  uint8_t cpu_load;           /* загрузка CPU (%) */
-
-  int8_t  temp_onboard;       /* температура c tmp75. ÷елые градусы. */
 };
 
 

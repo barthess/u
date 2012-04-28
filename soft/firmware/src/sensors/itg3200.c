@@ -136,13 +136,13 @@ static msg_t PollGyroThread(void *arg){
         gyroY *= YPOL;
         gyroZ *= ZPOL;
         /* now get angular velocity in rad/sec */
-        comp_data.xgyrorate = calc_gyro_rate(gyroX, XSENS);
-        comp_data.ygyrorate = calc_gyro_rate(gyroY, YSENS);
-        comp_data.zgyrorate = calc_gyro_rate(gyroZ, ZSENS);
+        comp_data.xgyro = calc_gyro_rate(gyroX, XSENS);
+        comp_data.ygyro = calc_gyro_rate(gyroY, YSENS);
+        comp_data.zgyro = calc_gyro_rate(gyroZ, ZSENS);
         /* calc summary angle for debug purpose */
-        comp_data.xgyro_angle += get_degrees(comp_data.xgyrorate);
-        comp_data.ygyro_angle += get_degrees(comp_data.ygyrorate);
-        comp_data.zgyro_angle += get_degrees(comp_data.zgyrorate);
+        comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
+        comp_data.ygyro_angle += get_degrees(comp_data.ygyro);
+        comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(&imu_sem);

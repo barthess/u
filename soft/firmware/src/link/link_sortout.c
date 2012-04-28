@@ -110,6 +110,15 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     finalize_receive_mail();
     break;
 
+  case MAVLINK_MSG_ID_ATTITUDE:
+    len = mavlink_msg_attitude_encode (
+        mavlink_system.sysid,
+        MAV_COMP_ID_IMU,
+        mavlink_msgbuf,
+        (const mavlink_attitude_t*)(mailp->payload));
+    finalize_receive_mail();
+    break;
+
   case MAVLINK_MSG_ID_RAW_PRESSURE:
     len = mavlink_msg_raw_pressure_encode (
         mavlink_system.sysid,

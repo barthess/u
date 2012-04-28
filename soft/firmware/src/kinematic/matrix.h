@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdio.h>
+
 #ifndef MATRIX_H
 #define MATRIX_H
 
@@ -12,7 +15,7 @@ void matrix_transpose(int m , int n, float* A,  float* B){
 //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
 void matrix_multiply( int m, int p, int n , float *A, float *B,  float *C){
 	int i,j,k;
-	for(i=0;i<m;i++)		//each row in A
+	for(i=0;i<m;i++){		//each row in A
 		for(j=0;j<n;j++){	//each column in B
 			C[i*n+j] = 0;
 			for(k=0;k<p;k++){//each element in row A & column B
@@ -21,6 +24,7 @@ void matrix_multiply( int m, int p, int n , float *A, float *B,  float *C){
 			}
 			//printf("\n");
 		}
+	}
 };
 
 

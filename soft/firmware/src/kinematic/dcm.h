@@ -1,6 +1,9 @@
-#ifndef IMU_H_
-#define IMU_H_
+#ifndef DCM_H_
+#define DCM_H_
 
-void dcmInit();
+void dcmInit(void);
+void dcmUpdate(float xacc,  float yacc,  float zacc,
+               float ygyro, float xgyro, float zgyro,
+               float imu_interval);
 
-#endif /* IMU_H_ */
+#endif /* DCM_H_ */

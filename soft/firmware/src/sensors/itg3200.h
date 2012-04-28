@@ -21,7 +21,7 @@
 
 
 /* сколько взять сэмплов для определения нуля гироскопов */
-#define GYRO_AVG_SAMPLES_CNT 4096
+#define GYRO_AVG_SAMPLES_CNT 1024
 
 
 void init_itg3200(void);

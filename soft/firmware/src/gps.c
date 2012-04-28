@@ -53,7 +53,6 @@ including, the "$" and "*".
  ******************************************************************************
  */
 extern RawData raw_data;
-extern LogItem log_item;
 extern uint64_t TimeUsec;
 extern Mailbox tolink_mb;
 
@@ -125,7 +124,7 @@ static msg_t gpsRxThread(void *arg){
 EMPTY:
 
     if ((n >= 2) && (gps_mail.payload == NULL)){
-      global_pos_struct.time_boot_ms = chTimeNow();
+      global_pos_struct.time_boot_ms = TIME_BOOT_MS;
       gps_mail.payload = &global_pos_struct;
       chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
       n = 0;
@@ -232,11 +231,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 	  raw_data.gps_altitude  = gps_altitude;
 	  raw_data.gps_satellites = satellites_visible;
 
-	  log_item.gps_time      = gps_time / 100; /* откинем доли секунды */
-	  log_item.gps_latitude  = gps_latitude;
-	  log_item.gps_longitude = gps_longitude;
-	  log_item.gps_altitude  = (int16_t)gps_altitude / 100; /* откинем доли метров */
-
 	  global_pos_struct->lat = gps_latitude * 100;
 	  global_pos_struct->lon = gps_longitude * 100;
 	  global_pos_struct->alt = gps_altitude * 10;
@@ -247,11 +241,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 		raw_data.gps_longitude = 0;
 		raw_data.gps_altitude = 0;
 		raw_data.gps_satellites = 0;
-
-    log_item.gps_time = 0;
-    log_item.gps_latitude = 0;
-    log_item.gps_longitude = 0;
-    log_item.gps_altitude = 0;
 
     global_pos_struct->lat = 0;
     global_pos_struct->lon = 0;
@@ -297,18 +286,12 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
 
-  	log_item.gps_course = (uint8_t)((gps_course * 256) / 36000);
-  	log_item.gps_speed  = (uint8_t)((gps_speed_knots * 514) / 100000);
-
     global_pos_struct->hdg = 65535;
     //global_pos_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
   }
   else{
   	raw_data.gps_course = 0;
   	raw_data.gps_speed_knots = 0;
-
-    log_item.gps_course = 0;
-    log_item.gps_speed = 0;
 
     global_pos_struct->hdg = 65535;
   }
