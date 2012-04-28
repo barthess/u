@@ -3,12 +3,25 @@
 
 
 /*
- * —ырые данные пр€мо с сенсоров.
+ * ќбработанные данные.
  */
 typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
+  /* Ќакопленные углы поворота с момента включени€ устройства (дл€ отладки). √радусы */
+  float     xgyro_angle;
+  float     ygyro_angle;
+  float     zgyro_angle;
+  /* моментальные угловые скорости в рад/с */
+  float     xgyrorate;
+  float     ygyrorate;
+  float     zgyrorate;
+  /**/
   uint16_t  air_speed;      /* воздушна€ скорость. ‘иксированна€ точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. ÷елые градусы. */
+  // напр€жение и ток бортовой сети
+  uint16_t main_voltage;      // mV
+  uint32_t main_current;      // mA
+  uint16_t secondary_voltage; // mV напр€га с вторичного источника питани€ дл€ серв и приемника
 };
 
 
@@ -17,22 +30,16 @@ struct CompensatedData{
  */
 typedef struct RawData RawData;
 struct RawData{
-  /* ”глы поворота с момента включени€ устройства. ‘иксированна€ точка -- полный поворот == 2^32 */
-  int32_t gyro_xI;
-  int32_t gyro_yI;
-  int32_t gyro_zI;
-  // шаги поворота, посчитанные через интеграл
-  int32_t gyro_x_delta;
-  int32_t gyro_y_delta;
-  int32_t gyro_z_delta;
   /* смещени€ нулей, посчитанные во врем€ выставки.*/
-  int32_t gyro_xAvg;
-  int32_t gyro_yAvg;
-  int32_t gyro_zAvg;
-  // данные с гироскопа
-  //  int16_t gyro_x;
-  //  int16_t gyro_y;
-  //  int16_t gyro_z;
+  int32_t xgyro_zero;
+  int32_t ygyro_zero;
+  int32_t zgyro_zero;
+  /* данные с гироскопа. Ёти оси не об€заны совпадать с ос€ми платы автопилота,
+   * они содержат показани€ из регистров датчика в том пор€дке, в котором
+   * вычитываютс€ */
+  int16_t xgyro;
+  int16_t ygyro;
+  int16_t zgyro;
   int16_t gyro_temp;
   // значени€ с внешнего ј÷ѕ
   uint16_t pressure_dynamic;
@@ -57,6 +64,7 @@ struct RawData{
   // напр€жение и ток бортовой сети
   uint16_t main_voltage;
   uint16_t main_current;
+  uint16_t secondary_voltage; // напр€га с вторичного источника питани€ дл€ серв и приемника
   // температура c tmp75 (сотые доли градуса)
   int16_t temp_tmp75;
   // температура с барометра bmp085 (дес€тые доли градуса)
@@ -152,42 +160,6 @@ struct Mail{
    */
   Mailbox *confirmbox;
 };
-
-
-/**
- * структура определ€ет формат сообщений дл€ менеджера еепром.
- * ћожет быть как запросом записи, так и чтени€
- */
-typedef struct EepromReq EepromReq;
-struct EepromReq{
-  /**
-   * @brief указатель на внешний буфер.
-   * @details ѕосле того, как данные забраны берущей
-   * стороной, указатель устанавливаетс€ в NULL. Ёто будет сигналом дл€
-   * дающей стороны.
-   */
-  uint8_t *payload;
-  /**
-   * сколько байт транзакци€
-   * @details старший байт €вл€етс€ признаком R/W
-   *          0 - write
-   *          1 - read
-   *          точно так же, как и дл€ I2C
-   */
-  uint16_t len;
-  /**
-   * јдрес в еепром. ѕо нему будет произведена запись
-   */
-  uint16_t addr;
-  /**
-   * ”казатель на почтовый €щик, в который надо прислать подтверждение
-   * успешного выполнени€. јналоги€ обратного адреса на конверте письма.
-   * ћожет быть NULL
-   */
-  Mailbox *confirmbox;
-};
-
-
 
 #endif /* MESSAGE_H_ */
 

@@ -36,32 +36,76 @@ GlobalParam_t global_data[] = {
     /*-----------------------------------------------------------------------*/
     {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T},
     {"SYS_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* всякие флаги для коммандной оболочки */
+
+    /**** всякие флаги для коммандной оболочки ****/
     {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T},
+
     /* IMU - inertial measurement unit */
     {"IMU_g1",          -1,         0.1,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT},
     {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* смещения осей магнитометра */
+
+    /**** смещения нулей магнитометра ****/
     {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T},
     {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T},
-    /* смещения осей магнитометра */
+    /**** чувствительность акселерометра ****/
+    {"MAG_xsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"MAG_ysens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"MAG_zsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** полярности осей. Направление осей приведено к осям автопилота ****/
+    {"MAG_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"MAG_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"MAG_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+
+    /**** смещения нулей акселерометра ****/
     {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T},
     {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T},
-    /* PMU - pressure measurement unit
-     * Коэффициенты полинома для термокомпенсации нуля ((c1*t) + c2) */
+    /**** чувствительность акселерометра ****/
+    {"ACC_xsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"ACC_ysens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"ACC_zsens",       10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** полярности осей. Направление осей приведено к осям автопилота ****/
+    {"ACC_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"ACC_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"ACC_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+
+    /**** чувствительности осей гироскопа (LSB/(deg/s)). Направление осей приведено к осям автопилота ****/
+    {"GYRO_xsens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"GYRO_ysens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    {"GYRO_zsens",      10.0,       14.375,     20.0,       MAVLINK_TYPE_FLOAT},
+    /**** полярности вращения осей. Направление осей приведено к осям автопилота ****/
+    {"GYRO_xpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"GYRO_ypol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+    {"GYRO_zpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T},
+
+    /**** PMU - pressure measurement unit ****/
+    //Коэффициенты полинома для термокомпенсации нуля
     {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_c4",          -2000000,   60011,      2000000,    MAVLINK_TYPE_INT32_T},
     {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T},
-    /* ADC coefficients */
-    {"ADC_I_offset",    0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* смещение нуля датчика тока */
-    {"ADC_I_gain",      0,          1048,       1224,       MAVLINK_TYPE_UINT32_T},  /* на столько надо умножить, чтобы получить милливольты */
-    /* Servos coefficients */
+
+    /**** ADC coefficients ****/
+    // смещение нуля датчика тока
+    {"ADC_I_offset",    0,          16,         4096,       MAVLINK_TYPE_UINT32_T},
+    // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
+    {"ADC_I_gain",      0,          1912,       12240,      MAVLINK_TYPE_UINT32_T},
+    // secondary voltage. на столько надо умножить, чтобы получить nV
+    {"ADC_SV_gain",     0,          8052,       12240,      MAVLINK_TYPE_UINT32_T},
+    // main voltage. на столько надо умножить, чтобы получить nV
+    {"ADC_MV_gain",     0,          8050,       12240,      MAVLINK_TYPE_UINT32_T},
+
+    /**** Bttery parameters ****/
+    // емкость батареи в mAh
+    {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T},
+    // на столько процентов заряжена перед установкой в самолет
+    {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T},
+
+    /**** Servos coefficients ****/
     {"SERVO_1_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_1_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
@@ -89,6 +133,8 @@ GlobalParam_t global_data[] = {
     /* машинко-специфичные настройки */
     {"SERVO_car_max",   0,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T},
     {"SERVO_car_dz",    0,          32,         64,         MAVLINK_TYPE_UINT32_T},
+    /**/
+    {"MAG_inclinate",   -90,        7,          90,         MAVLINK_TYPE_INT32_T},
 
     /* fake field with 14 symbols name */
     {"fake_14_bytes_",  0,          1048,       1224,       MAVLINK_TYPE_FLOAT},

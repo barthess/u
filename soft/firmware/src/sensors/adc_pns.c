@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "ch.h"
 #include "hal.h"
 
@@ -5,8 +7,9 @@
 #include "message.h"
 #include "main.h"
 #include "imu.h"
-#include "dsp.h"
+#include "utils.h"
 #include "link.h"
+#include "param.h"
 
 /*
  ******************************************************************************
@@ -14,7 +17,9 @@
  ******************************************************************************
  */
 extern RawData raw_data;
+extern CompensatedData comp_data;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
+extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
@@ -43,6 +48,8 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
 #define ADC_AN33_0_OFFSET         (ADC_CHANNEL_IN13 - 10)
 #define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
 #define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
+
+#define PWR_CHECK_PERIOD          10 /* mS */
 
 /*
  ******************************************************************************
@@ -100,20 +107,61 @@ static const ADCConversionGroup adccg = {
  *******************************************************************************
  */
 
+/* пересчет из условных единиц АЦП в mV */
+uint16_t get_comp_secondary_voltage(uint16_t raw){
+  uint32_t v = 6200; // такое количество милливольт
+  uint32_t adc = 770;// приходится на такое количество условных единиц
+  return (uint16_t)(((uint32_t)raw * v) / adc);
+}
+
+/* пересчет из условных единиц в mA */
+uint32_t get_comp_main_current(uint16_t raw){
+  return ((raw - DEFAULT_CURRENT_OFFSET) * 1000) / DEFAULT_CURRENT_COEFF;
+}
+
 /* Поток для запроса данных АЦП по таймеру */
-static WORKING_AREA(PollADCThreadWA, 256);
-static msg_t PollADCThread(void *arg){
-  chRegSetThreadName("PollADC");
+static WORKING_AREA(PowerKeeperThreadWA, 256);
+static msg_t PowerKeeperThread(void *arg){
+  chRegSetThreadName("PowerKeeper");
   (void)arg;
 
-  while(TRUE){
-    chThdSleepMilliseconds(20);
+  uint32_t batcap = 0;  /* battery capacitance in A*mS*/
+  uint32_t batfill = 0; /* battery filling in A*mS*/
+  int32_t i = -1;
+
+  /* get current battery capacitance from parameter structure */
+  i = key_value_search("BAT_cap");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    batcap = 3600 * ((uint32_t)floorf(global_data[i].value));
+
+  /* get battery fill in percents and calculate fill in A*mS*/
+  i = key_value_search("BAT_fill");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    batfill = (batcap * (uint32_t)floorf(global_data[i].value)) / 100;
+
+
+  systime_t time = chTimeNow();     // T0
+  while (TRUE) {
+    time += MS2ST(PWR_CHECK_PERIOD);              // Next deadline
+
     raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
     raw_data.main_voltage = samples[ADC_MAIN_SUPPLY_OFFSET];
+    raw_data.secondary_voltage = samples[ADC_6V_SUPPLY_OFFSET];
 
-    mavlink_sys_status_struct.battery_remaining = 3;
-    mavlink_sys_status_struct.current_battery   = 1000;
-    mavlink_sys_status_struct.voltage_battery   = 24000;
+    comp_data.main_current = get_comp_main_current(raw_data.main_current);
+    comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
+
+    batfill -= (comp_data.main_current * PWR_CHECK_PERIOD) / 1000;
+
+    mavlink_sys_status_struct.battery_remaining = (batfill * 100) / batcap;
+    mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
+    mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
+
+    chThdSleepUntil(time);
   }
   return 0;
 }
@@ -128,10 +176,10 @@ void ADCInit_pns(void){
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);
 
-  chThdCreateStatic(PollADCThreadWA,
-          sizeof(PollADCThreadWA),
+  chThdCreateStatic(PowerKeeperThreadWA,
+          sizeof(PowerKeeperThreadWA),
           NORMALPRIO,
-          PollADCThread,
+          PowerKeeperThread,
           NULL);
 }
 

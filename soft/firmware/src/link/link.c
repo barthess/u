@@ -163,7 +163,6 @@ void KillMavlinkThreads(void){
 
 /**
  * порождает потоки сортировки\парсинга сообщений
- * принимает указатель на пул памяти, из которго надо порождать треды
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
 

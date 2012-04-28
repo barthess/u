@@ -6,11 +6,10 @@
 
 #include "stubs.h"
 
-// FIXME: Stubs - HATE THEM
+// FIXME: Glibc stubs - HATE THEM
 void _exit(int status){
    (void) status;
    chSysHalt();
-
    while(TRUE){}
 }
 

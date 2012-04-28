@@ -4,7 +4,7 @@
 #include "hal.h"
 
 #include "i2c_pns.h"
-#include "dsp.h"
+#include "utils.h"
 #include "mma8451.h"
 #include "message.h"
 #include "param.h"
@@ -25,7 +25,7 @@
  */
 extern BinarySemaphore mma8451_sem;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
-extern GlobalParam_t global_data[];
+//extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
@@ -56,7 +56,7 @@ static msg_t PollAccelThread(void *arg){
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&mma8451_sem, MS2ST(20));
     txbuf[0] = ACCEL_STATUS;
-    if (i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
+    if (i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK &&
                                            sem_status == RDY_OK){
       mavlink_raw_imu_struct.xacc = complement2signed(rxbuf[1], rxbuf[2]);
       mavlink_raw_imu_struct.yacc = complement2signed(rxbuf[3], rxbuf[4]);
@@ -123,7 +123,7 @@ void init_mma8451(void){
 
   chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_XYZ_DATA_CFG;
-  txbuf[1] = 0b1;// 4g mode
+  txbuf[1] = (uint8_t)(ACCEL_SENS >> 2);
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
@@ -147,7 +147,9 @@ void init_mma8451(void){
 
   chThdSleepMilliseconds(2);
   txbuf[0] = ACCEL_CTRL_REG1;
-  txbuf[1] = 0b11101; //100Hz, low noice, active
+  //txbuf[1] = 0b11101; //100Hz, low noice, active
+  //txbuf[1] = 0b11001; //100Hz, normal noice, active
+  txbuf[1] = 0b100101; //50Hz, low noice, active
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 

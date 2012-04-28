@@ -8,7 +8,7 @@
 #include "i2c_pns.h"
 #include "tmp75.h"
 #include "link.h"
-#include "dsp.h"
+#include "utils.h"
 
 /*
  ******************************************************************************
@@ -23,7 +23,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern CompensatedData compensated_data;
+extern CompensatedData comp_data;
 
 /*
  ******************************************************************************
@@ -56,7 +56,7 @@ static msg_t PollTmp75Thread(void *arg){
 
     if (i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2) == RDY_OK){
       raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
-      compensated_data.temp_onboard = raw_data.temp_tmp75 / 256;
+      comp_data.temp_onboard = raw_data.temp_tmp75 / 256;
     }
     chThdSleepMilliseconds(1000);
   }

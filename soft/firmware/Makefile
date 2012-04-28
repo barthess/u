@@ -69,7 +69,7 @@ include $(CHIBIOS)/os/hal/platforms/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F4xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
-include $(CHIBIOS)/ext/fatfs/fatfs.mk
+include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
@@ -93,7 +93,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \
        src/stubs.c \
-       src/dsp.c \
+       src/utils.c \
        src/i2c_pns.c \
        src/exti_pns.c \
        src/microrl/src/microrl.c \
@@ -102,8 +102,8 @@ CSRC = $(PORTSRC) \
        src/irq_storm.c \
        src/storage.c \
        src/servo.c \
-       src/imu.c \
-       src/pmu.c \
+       src/kinematic/imu.c \
+       src/kinematic/airspeed.c \
        src/sanity.c \
        src/param.c \
        src/param_persistant.c \
@@ -174,6 +174,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/eeprom \
          src/link \
          src/sensors \
+         src/kinematic \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart

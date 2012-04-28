@@ -66,6 +66,8 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
   i2cReleaseBus(&I2CD2);
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
+    i2cStop(&I2CD2);
+    chThdSleepMilliseconds(1);
     i2cStart(&I2CD2, &i2cfg2);
     setGlobalFlag(I2C_RESTARTED);
     return status;
@@ -83,6 +85,8 @@ msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
   if (status == RDY_TIMEOUT){
     /* в случае таймаута необходимо перезапустить драйвер */
+    i2cStop(&I2CD2);
+    chThdSleepMilliseconds(1);
     i2cStart(&I2CD2, &i2cfg2);
     setGlobalFlag(I2C_RESTARTED);
     return status;

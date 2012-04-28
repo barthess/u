@@ -74,8 +74,8 @@ static SerialConfig gps_ser_cfg = {
  * PROTOTYPES
  ******************************************************************************
  */
-static void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct);
-static void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct);
+static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct);
+static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct);
 static int32_t parse_decimal(uint8_t *p);
 static int32_t parse_degrees(uint8_t *p);
 static uint32_t gpsatol(const uint8_t *str);
@@ -105,28 +105,28 @@ static msg_t gpsRxThread(void *arg){
   /* сообщение для менеджера связи */
   Mail gps_mail;
   gps_mail.payload = NULL;
-  gps_mail.invoice = MAVLINK_MSG_ID_GPS_RAW_INT;
+  gps_mail.invoice = MAVLINK_MSG_ID_GLOBAL_POSITION_INT;
   gps_mail.confirmbox = NULL;
 
-  mavlink_gps_raw_int_t gps_raw_struct;
-  gps_raw_struct.time_usec = 0;
-  gps_raw_struct.lat = 0;
-  gps_raw_struct.lon = 0;
-  gps_raw_struct.alt = 0;
-  gps_raw_struct.cog = 65535;
-  gps_raw_struct.eph = 65535;
-  gps_raw_struct.epv = 65535;
-  gps_raw_struct.vel = 65535;
-  gps_raw_struct.fix_type = 0;
-  gps_raw_struct.satellites_visible = 255;
+  mavlink_global_position_int_t global_pos_struct;
+
+  global_pos_struct.time_boot_ms = 0;
+  global_pos_struct.lat = 0;
+  global_pos_struct.lon = 0;
+  global_pos_struct.alt = 0;
+  global_pos_struct.relative_alt = 0;
+  global_pos_struct.vx = 0;
+  global_pos_struct.vy = 0;
+  global_pos_struct.vz = 0;
+  global_pos_struct.hdg = 65535;
 
   while (TRUE) {
 
 EMPTY:
 
     if ((n >= 2) && (gps_mail.payload == NULL)){
-      gps_raw_struct.time_usec = TimeUsec;
-      gps_mail.payload = &gps_raw_struct;
+      global_pos_struct.time_boot_ms = chTimeNow();
+      gps_mail.payload = &global_pos_struct;
       chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
       n = 0;
     }
@@ -146,14 +146,14 @@ EMPTY:
 		tmp = tmp + sdGet(&GPSSD);
 		if (tmp == GGA_SENTENCE){
 	    if (get_gps_sentence(ggabuf, ggachecksum) == 0){
-	      parse_gga(ggabuf, &gps_raw_struct);
+	      parse_gga(ggabuf, &global_pos_struct);
 	      n++;
 	    }
 	    goto EMPTY;
 		}
 		if (tmp == RMC_SENTENCE){
 	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0){
-	      parse_rmc(rmcbuf, &gps_raw_struct);
+	      parse_rmc(rmcbuf, &global_pos_struct);
 	      n++;
 	    }
 	    goto EMPTY;
@@ -172,7 +172,7 @@ $GPRMC,115436.000,A,5354.713670,N,02725.690517,E,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,,,,,,A*66
 */
-void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
+void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct){
   // для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
   int32_t  gps_latitude = 0;
   int32_t  gps_longitude = 0;
@@ -208,7 +208,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
   while(ggabuf[i] != ','){i++;}
     i++;
 
-  satellites_visible = parse_decimal(&ggabuf[i]);   /* number of satellites */
+  satellites_visible = gpsatol(&ggabuf[i]);     /* number of satellites */
   while(ggabuf[i] != ','){i++;}
     i++;
 
@@ -237,11 +237,9 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
 	  log_item.gps_longitude = gps_longitude;
 	  log_item.gps_altitude  = (int16_t)gps_altitude / 100; /* откинем доли метров */
 
-	  gps_raw_struct->lat = gps_latitude * 100;
-	  gps_raw_struct->lon = gps_longitude * 100;
-	  gps_raw_struct->alt = gps_altitude * 10;
-	  gps_raw_struct->fix_type = fix + 1;
-	  gps_raw_struct->satellites_visible = satellites_visible;
+	  global_pos_struct->lat = gps_latitude * 100;
+	  global_pos_struct->lon = gps_longitude * 100;
+	  global_pos_struct->alt = gps_altitude * 10;
 	}
 	else{
 	  raw_data.gps_time = 0;
@@ -255,16 +253,13 @@ void parse_gga(uint8_t *ggabuf, mavlink_gps_raw_int_t *gps_raw_struct){
     log_item.gps_longitude = 0;
     log_item.gps_altitude = 0;
 
-    gps_raw_struct->time_usec = TimeUsec;
-    gps_raw_struct->lat = 0;
-    gps_raw_struct->lon = 0;
-    gps_raw_struct->alt = 0;
-    gps_raw_struct->fix_type = 0;
-    gps_raw_struct->satellites_visible = 255;
+    global_pos_struct->lat = 0;
+    global_pos_struct->lon = 0;
+    global_pos_struct->alt = 0;
 	}
 }
 
-void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
+void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){
   int32_t  gps_speed_knots = 0;
   int32_t  gps_course = 0;
 
@@ -305,8 +300,8 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
   	log_item.gps_course = (uint8_t)((gps_course * 256) / 36000);
   	log_item.gps_speed  = (uint8_t)((gps_speed_knots * 514) / 100000);
 
-    gps_raw_struct->cog = gps_course;
-    gps_raw_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
+    global_pos_struct->hdg = 65535;
+    //global_pos_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
   }
   else{
   	raw_data.gps_course = 0;
@@ -315,8 +310,7 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_gps_raw_int_t *gps_raw_struct){
     log_item.gps_course = 0;
     log_item.gps_speed = 0;
 
-    gps_raw_struct->cog = 65535;
-    gps_raw_struct->vel = 65535;
+    global_pos_struct->hdg = 65535;
   }
 }
 
@@ -431,7 +425,7 @@ void GPSInit(void){
 
   chThdCreateStatic(gpsRxThreadWA,
           sizeof(gpsRxThreadWA),
-          NORMALPRIO - 2,
+          GPS_THREAD_PRIO,
           gpsRxThread,
           NULL);
 }

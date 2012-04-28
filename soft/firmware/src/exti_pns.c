@@ -34,6 +34,8 @@ extern BinarySemaphore mma8451_sem;
 extern BinarySemaphore bmp085_sem;
 extern BinarySemaphore itg3200_sem;
 
+extern uint32_t itg3200_period;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -50,6 +52,9 @@ static uint32_t rpmcnt = 0;
  * таймер для обновления значения RPM
  */
 static VirtualTimer tachocheck_vt;
+
+/* флаг, означающий надо ли измерять частоту получения сэмплов */
+static int32_t itg3200_period_measured = -100;
 
 /*
  *******************************************************************************
@@ -137,10 +142,24 @@ static void mma8451_int1_cb(EXTDriver *extp, expchannel_t channel){
 //  chSysUnlockFromIsr();
 }
 
+static TimeMeasurement itg3200_tmup;
+
 static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
+
+  if (itg3200_period_measured < 2){
+    if (itg3200_period_measured == 0){
+      tmStartMeasurement(&itg3200_tmup);
+    }
+    else if(itg3200_period_measured == 1){
+      tmStopMeasurement(&itg3200_tmup);
+      itg3200_period = RTT2US(itg3200_tmup.last);
+    }
+    itg3200_period_measured++;
+  }
+
   chBSemSignalI(&itg3200_sem);
   chSysUnlockFromIsr();
 }
@@ -212,6 +231,8 @@ void ExtiInit(void){
   chSysLock();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   chSysUnlock();
+
+  tmObjectInit(&itg3200_tmup);
 
   extStart(&EXTD1, &extcfg);
 }

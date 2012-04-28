@@ -3,12 +3,21 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: приводить оси датчиков к системе координат прямо в коде, который их опрашивает
+// TODO: последние удачные координаты в BKP
+// TODO: обработчик прерывания по просадке питания (рассылка сообщения, возможно поток PwrHypervisor)
+// TODO: добвить событий на сбои разных подсистем (gyro_failed, gps_failed, etc.)
+
+// TODO: снять еще одну точку для датчика давления на 60 градусах цельсия и сделать табличную функцию термокомпенсации
 // TODO: запись в лог делать из LinkOutThread ровно в 2 раза чаще, чем посылать телеметрию
-// TODO: переделать модемных поток на DMA
+// TODO: переделать модемный поток на DMA
 // TODO: софтовыми часами тикать по секундному прерыванию от RTC
 // TODO: синхронизация программных часов с аппаратными, аппаратных с GPS.
 // TODO: сторожевой таймер с использованием памяти с батарейным питанием для расследования пиздецов
 
+// Hardware
+// TODO: один из таймеров использовать для тактирования гироскопа
+// TODO: выход тахометра завести на один из таймеров
 
 #include <stdlib.h>
 
@@ -44,14 +53,16 @@ uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoc
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
 RawData raw_data;                     /* структура с сырыми данными с датчиков */
-CompensatedData compensated_data;     /* обработанные данные */
+CompensatedData comp_data;            /* обработанные данные */
 LogItem log_item;                     /* структура, содержащая запись для лога */
 
-BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и АЦП */
-BinarySemaphore mag3110_sem;
-BinarySemaphore mma8451_sem;
-BinarySemaphore bmp085_sem;
-BinarySemaphore itg3200_sem;
+uint32_t itg3200_period = 0;          /* время получения сэмплов с гироскопа (uS)*/
+
+BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и датчиков */
+BinarySemaphore mag3110_sem;          /* синхронизация потока с прерыванием от датчика */
+BinarySemaphore mma8451_sem;          /* синхронизация потока с прерыванием от датчика */
+BinarySemaphore bmp085_sem;           /* синхронизация потока с прерыванием от датчика */
+BinarySemaphore itg3200_sem;          /* синхронизация потока с прерыванием от датчика */
 
 /* примонтированный файл EEPROM */
 EepromFileStream EepromFile;
@@ -68,6 +79,8 @@ Mailbox manual_control_mb;            /* сообщения ручного управлеия */
 static msg_t manual_control_mb_buf[1];
 Mailbox mavlinkcmd_mb;                /* сообщения с командами */
 static msg_t mavlinkcmd_mb_buf[1];
+Mailbox logwriter_mb;                 /* сообщения для писалки логов */
+static msg_t logwriter_mb_buf[4];
 
 /* переменные, касающиеся мавлинка */
 mavlink_system_t            mavlink_system;
@@ -109,9 +122,9 @@ int main(void) {
   xbee_sleep_clear();
 
   // обнуление инкрементальных сумм
-  raw_data.gyro_xI = 0;
-  raw_data.gyro_yI = 0;
-  raw_data.gyro_zI = 0;
+  comp_data.xgyro_angle = 0;
+  comp_data.ygyro_angle = 0;
+  comp_data.zgyro_angle = 0;
 
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);
@@ -120,13 +133,14 @@ int main(void) {
   chBSemInit(&bmp085_sem,   TRUE);
   chBSemInit(&itg3200_sem,  TRUE);
 
-  /* почтовые ящики */
+  /* инициализация почтовых ящиков */
   chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
   chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
+  chMBInit(&logwriter_mb,     logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 
   /* инициализация кучи под потоки связи */
   chHeapInit(&LinkThdHeap, link_thd_buf, LINK_THD_HEAP_SIZE);

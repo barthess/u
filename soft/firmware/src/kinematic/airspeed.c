@@ -9,6 +9,8 @@
 #include "arm_math.h"
 
 #include "message.h"
+#include "utils.h"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -20,7 +22,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern CompensatedData compensated_data;
+extern CompensatedData comp_data;
 
 /*
  ******************************************************************************
@@ -40,10 +42,7 @@ extern CompensatedData compensated_data;
  * Принимает сырое значение с датчика и температуру в градусах цельсия*/
 static uint16_t zerocomp(uint16_t raw, int32_t t){
 
-  if (t > 40)
-    t = 40;
-  else if (t < -10)
-    t = -10;
+  putinrange(t, -10, 40);
 
   int32_t c1 = -9;
   int32_t c2 = 408;
@@ -70,9 +69,9 @@ static uint16_t zerocomp(uint16_t raw, int32_t t){
 
 float calc_air_speed(uint16_t press_diff_raw){
   uint16_t p;
-  p = zerocomp(press_diff_raw, (int32_t)compensated_data.temp_onboard);
+  p = zerocomp(press_diff_raw, (int32_t)comp_data.temp_onboard);
   p = ((p * Radc) / Smpx) / KU; /* давление в паскалях */
-  return sqrt(2*p / 1.2);
+  return sqrtf(2*p / 1.2);
 }
 
 

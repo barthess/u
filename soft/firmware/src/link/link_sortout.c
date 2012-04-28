@@ -101,6 +101,15 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     finalize_receive_mail();
     break;
 
+  case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+    len = mavlink_msg_global_position_int_encode (
+        mavlink_system.sysid,
+        MAV_COMP_ID_GPS,
+        mavlink_msgbuf,
+        (const mavlink_global_position_int_t*)(mailp->payload));
+    finalize_receive_mail();
+    break;
+
   case MAVLINK_MSG_ID_RAW_PRESSURE:
     len = mavlink_msg_raw_pressure_encode (
         mavlink_system.sysid,
@@ -115,4 +124,5 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   }
   return 0;
 }
+
 #undef finalize_receive_mail

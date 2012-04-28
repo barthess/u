@@ -5,6 +5,7 @@
 #include "hal.h"
 #include "shell.h"
 #include "chprintf.h"
+#include "chrtclib.h"
 #include "ff.h"
 
 #include "storage.h"
@@ -17,12 +18,14 @@
  */
 #define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
+#define SYNC_PERIOD                     5000
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
+extern Mailbox logwriter_mb;
 
 /*
  ******************************************************************************
@@ -40,6 +43,12 @@ static FATFS SDC_FS;
 
 /* FS mounted and ready.*/
 static bool_t fs_ready = FALSE;
+
+/* по этому таймеру будет синхронизироваться файл лога */
+static VirtualTimer sync_vt;
+
+/* флаг необходимости синхронизации */
+static bool_t need_sync = FALSE;
 
 /*
  *******************************************************************************
@@ -116,36 +125,73 @@ static void remove_handler(void) {
 }
 
 /**
- * Monitors presence of SD card in slot.
+ *
  */
-static WORKING_AREA(CardMonitorThreadWA, 256);
-static msg_t CardMonitorThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("CardMonitor");
-  unsigned cnt = SDC_POLLING_DELAY;/* Debounce counter. */
+static void name_from_time(uint8_t *buf){
+  //TODO: file named like YYYY.MM.DD_hh.mm.ss
+  time_t t = 0;
 
-  while TRUE{
-    chThdSleepMilliseconds(SDC_POLLING_INTERVAL);
-
-    if (cnt > 0) {
-      if (sdcIsCardInserted(&SDCD1)) {
-        if (--cnt == 0) {
-          insert_handler();
-        }
-      }
-      else
-        cnt = SDC_POLLING_INTERVAL;
-    }
-    else {
-      if (!sdcIsCardInserted(&SDCD1)) {
-        cnt = SDC_POLLING_INTERVAL;
-        remove_handler();
-      }
-    }
+  t = rtcGetTimeUnixSec(&RTCD1);
+  *buf++ = *"0";
+  *buf++ = *":";
+  while (t > 0) {
+    *buf++ = (t % 10) + 48;
+    t /= 10;
   }
-  return 0;
+  *buf++ = *".";
+  *buf++ = *"l";
+  *buf++ = *"o";
+  *buf++ = *"g";
+  *buf++ = 0;
 }
 
+/**
+ *
+ */
+void sync_cb(void *par){
+  (void)par;
+  chSysLockFromIsr();
+  chVTSetI(&sync_vt, MS2ST(SYNC_PERIOD), &sync_cb, NULL);
+  need_sync = TRUE;
+  chSysUnlockFromIsr();
+}
+
+/**
+ *
+ */
+FRESULT write_log(FIL *Log){
+  uint32_t bytes_written;
+  FRESULT err;
+  msg_t tmp;
+
+  /* Field 'invoice' contains number of bytes to written.
+   * Zero value denotes that we must perform emergency close of log file. */
+  Mail *mailp = NULL;
+
+  chThdSleepSeconds(1);
+
+  if (chMBFetch(&logwriter_mb, &tmp, TIME_INFINITE) == RDY_OK){
+    mailp = (Mail*)tmp;
+    if (mailp->invoice == 0){
+      f_close(Log);
+      remove_handler();
+      return !FR_OK;
+    }
+  }
+
+  err = f_write(Log, mailp->payload, mailp->invoice, (void *)&bytes_written);
+  if (err != FR_OK)
+    return err;
+
+  if (need_sync){
+    err = f_sync(Log);
+    if (err != FR_OK)
+      return err;
+    need_sync = FALSE;
+  }
+
+  return err;
+}
 
 /**
  * Monitors presence of SD card in slot.
@@ -159,7 +205,6 @@ static msg_t LogWriterThread(void *arg){
   uint32_t clusters;
   FATFS *fsp;
   FIL Log;
-  uint32_t bytes_written;
 
   /* wait until card not ready */
 NOT_READY:
@@ -182,8 +227,10 @@ NOT_READY:
   if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)SDC_BLOCK_SIZE) < (16*1024*1024))
     return RDY_RESET;
 
-  //TODO: open file named YYYY-MM-DD_hh.mm.ss
-  err = f_open(&Log, "0:test.log", FA_WRITE | FA_OPEN_ALWAYS);
+  /* open file for writing log */
+  uint8_t namebuf[32];
+  name_from_time(namebuf);
+  err = f_open(&Log, (char *)namebuf, FA_WRITE | FA_OPEN_ALWAYS);
   if (err != FR_OK)
     return RDY_RESET;
 
@@ -194,11 +241,13 @@ NOT_READY:
       remove_handler();
       goto NOT_READY;
     }
-    else
-      err = f_write(&Log, "This is test file", 17, (void *)&bytes_written);
-      if (err != FR_OK)
+    else{
+      if (write_log(&Log) != FR_OK)
         return RDY_RESET;
+    }
+    chThdSleepMilliseconds(10);
   }
+
   return 0;
 }
 
@@ -208,8 +257,6 @@ NOT_READY:
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-
-
 
 /**
  * Create file.
@@ -256,15 +303,13 @@ void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
  * Init.
  */
 void StorageInit(void){
-  chThdCreateStatic(CardMonitorThreadWA,
-          sizeof(CardMonitorThreadWA),
-          NORMALPRIO - 5,
-          CardMonitorThread,
-          NULL);
-
   chThdCreateStatic(LogWriterThreadWA,
           sizeof(LogWriterThreadWA),
           NORMALPRIO - 5,
           LogWriterThread,
           NULL);
+
+  chSysLock();
+  chVTSetI(&sync_vt, MS2ST(SYNC_PERIOD), &sync_cb, NULL);
+  chSysUnlock();
 }

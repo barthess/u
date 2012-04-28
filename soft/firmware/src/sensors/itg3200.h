@@ -20,6 +20,9 @@
 #define GYRO_PWR_MGMT   0x3E
 
 
+/* сколько взять сэмплов для определения нуля гироскопов */
+#define GYRO_AVG_SAMPLES_CNT 4096
+
 
 void init_itg3200(void);
 void gyro_refresh_zeros(void);

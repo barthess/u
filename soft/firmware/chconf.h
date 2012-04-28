@@ -32,8 +32,6 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
-#define PORT_IDLE_THREAD_STACK_SIZE     32
-//#define PORT_INT_REQUIRED_STACK         16 //default 16
 #define CORTEX_VTOR_INIT                0xC0000
 #define CORTEX_USE_FPU                  FALSE
 

@@ -8,6 +8,15 @@
 #include "imu.h"
 #include "link.h"
 #include "param.h"
+#include "itg3200.h"
+#include "dcm.h"
+
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+#define PI          3.141592653589793238462643383279502884197f
 
 /*
  ******************************************************************************
@@ -18,6 +27,11 @@ extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
+extern RawData raw_data;
+extern CompensatedData comp_data;
+extern BinarySemaphore imu_sem;
+
+extern uint32_t itg3200_period;
 
 /*
  ******************************************************************************
@@ -33,6 +47,13 @@ extern GlobalParam_t global_data[];
  *******************************************************************************
  */
 
+/**
+ * ѕолучение приращени€ угла исход€ из угловой скорости и временем между выборками
+ */
+static float get_degrees(float raw){
+  float t = (float)itg3200_period / 1000000.0;
+  return raw * ((t * 180) / PI);
+}
 
 /**
  * ѕоток обработки инерациальных данных
@@ -41,15 +62,43 @@ static WORKING_AREA(waImu, 256);
 static msg_t Imu(void *arg) {
   (void)arg;
   chRegSetThreadName("IMU");
+  msg_t sem_status = RDY_TIMEOUT;
+
+  while (TRUE) {
+    sem_status = chBSemWaitTimeout(&imu_sem, MS2ST(100));
+    if (sem_status == RDY_OK){
+      comp_data.xgyro_angle += get_degrees(comp_data.xgyrorate);
+      comp_data.ygyro_angle += get_degrees(comp_data.ygyrorate);
+      comp_data.zgyro_angle += get_degrees(comp_data.zgyrorate);
+    }
+  }
+  return 0;
+}
+
+/**
+ * ѕосылалка телеметрии
+ */
+static WORKING_AREA(waImuSender, 256);
+static msg_t ImuSender(void *arg) {
+  (void)arg;
+  chRegSetThreadName("IMU_Sender");
 
   Mail tolink_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
 
-  uint32_t index = key_value_search("IMU_send_ms");
+  uint32_t i = key_value_search("IMU_send_ms");
 
   while (TRUE) {
-    chThdSleepMilliseconds(global_data[index].value);
+    chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail.payload == NULL){
-      mavlink_raw_imu_struct.time_usec = TimeUsec;
+      mavlink_raw_imu_struct.xgyro      = floorf(comp_data.xgyro_angle);
+      mavlink_raw_imu_struct.ygyro      = floorf(comp_data.ygyro_angle);
+      mavlink_raw_imu_struct.zgyro      = floorf(comp_data.zgyro_angle);
+//      mavlink_raw_imu_struct.xgyro      = raw_data.xgyro;
+//      mavlink_raw_imu_struct.ygyro      = raw_data.ygyro;
+//      mavlink_raw_imu_struct.zgyro      = raw_data.zgyro;
+
+      mavlink_raw_imu_struct.time_usec  = TimeUsec;
+
       tolink_mail.payload = &mavlink_raw_imu_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail, TIME_IMMEDIATE);
     }
@@ -63,7 +112,9 @@ static msg_t Imu(void *arg) {
  *******************************************************************************
  */
 void ImuInit(void){
+  //dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
+  chThdCreateStatic(waImuSender, sizeof(waImuSender), NORMALPRIO, ImuSender, NULL);
 }
 
 /**
