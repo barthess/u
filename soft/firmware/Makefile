@@ -105,8 +105,8 @@ CSRC = $(PORTSRC) \
        src/kinematic/imu.c \
        src/kinematic/airspeed.c \
        src/sanity.c \
-       src/param.c \
-       src/param_persistant.c \
+       src/parameters/param.c \
+       src/parameters/persistant.c \
        src/timekeeping.c \
        src/sensors/adc_pns.c \
        src/sensors/max1236.c \
@@ -175,6 +175,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/link \
          src/sensors \
          src/kinematic \
+         src/parameters \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart
