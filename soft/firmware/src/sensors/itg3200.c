@@ -167,37 +167,37 @@ static msg_t PollGyroThread(void *arg){
 static void search_indexes(void){
   int32_t i = -1;
 
-  i = key_value_search("GYRO_xsens");
+  i = KeyValueSearch("GYRO_xsens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xsens_index = i;
 
-  i = key_value_search("GYRO_ysens");
+  i = KeyValueSearch("GYRO_ysens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     ysens_index = i;
 
-  i = key_value_search("GYRO_zsens");
+  i = KeyValueSearch("GYRO_zsens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     zsens_index = i;
 
-  i = key_value_search("GYRO_xpol");
+  i = KeyValueSearch("GYRO_xpol");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xpol_index = i;
 
-  i = key_value_search("GYRO_ypol");
+  i = KeyValueSearch("GYRO_ypol");
   if (i == -1)
     chDbgPanic("key not found");
   else
     ypol_index = i;
 
-  i = key_value_search("GYRO_zpol");
+  i = KeyValueSearch("GYRO_zpol");
   if (i == -1)
     chDbgPanic("key not found");
   else

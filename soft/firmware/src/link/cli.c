@@ -238,7 +238,7 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
 
   int sh_enable_index = -1;
 
-  sh_enable_index = key_value_search("SH_enable");
+  sh_enable_index = KeyValueSearch("SH_enable");
   if (sh_enable_index == -1)
     chDbgPanic("not found");
   else

@@ -111,49 +111,49 @@ static msg_t PollAccelThread(void *arg){
 void init_mma8451(void){
   int32_t i = -1;
 
-  i = key_value_search("ACC_xoffset");
+  i = KeyValueSearch("ACC_xoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xoffset_index = i;
-  i = key_value_search("ACC_yoffset");
+  i = KeyValueSearch("ACC_yoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     yoffset_index = i;
-  i = key_value_search("ACC_zoffset");
+  i = KeyValueSearch("ACC_zoffset");
   if (i == -1)
     chDbgPanic("key not found");
   else
     zoffset_index = i;
 
-  i = key_value_search("ACC_xsens");
+  i = KeyValueSearch("ACC_xsens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xsens_index = i;
-  i = key_value_search("ACC_ysens");
+  i = KeyValueSearch("ACC_ysens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     ysens_index = i;
-  i = key_value_search("ACC_zsens");
+  i = KeyValueSearch("ACC_zsens");
   if (i == -1)
     chDbgPanic("key not found");
   else
     zsens_index = i;
 
-  i = key_value_search("ACC_xpol");
+  i = KeyValueSearch("ACC_xpol");
   if (i == -1)
     chDbgPanic("key not found");
   else
     xpol_index = i;
-  i = key_value_search("ACC_ypol");
+  i = KeyValueSearch("ACC_ypol");
   if (i == -1)
     chDbgPanic("key not found");
   else
     ypol_index = i;
-  i = key_value_search("ACC_zpol");
+  i = KeyValueSearch("ACC_zpol");
   if (i == -1)
     chDbgPanic("key not found");
   else

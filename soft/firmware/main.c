@@ -76,8 +76,6 @@ Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
 static msg_t param_mb_buf[2];
-Mailbox manual_control_mb;            /* сообщения ручного управлеия */
-static msg_t manual_control_mb_buf[1];
 Mailbox mavlinkcmd_mb;                /* сообщения с командами */
 static msg_t mavlinkcmd_mb_buf[1];
 Mailbox logwriter_mb;                 /* сообщения для писалки логов */
@@ -91,11 +89,12 @@ mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
 mavlink_sys_status_t        mavlink_sys_status_struct;
 mavlink_command_long_t      mavlink_command_long_struct;
 
-mavlink_bart_manual_control_t mavlink_bart_manual_control_struct;
-
 /* heap for (link threads) OR (shell thread)*/
 MemoryHeap LinkThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE];
+
+/* источник событий связанных с управлением питанием */
+EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -114,6 +113,8 @@ static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE];
 int main(void) {
   halInit();
   chSysInit();
+  chEvtInit(&pwrmgmt_event);
+
   chThdSleepMilliseconds(1);
 
   /* раздача питалова нуждающимся */
@@ -139,7 +140,6 @@ int main(void) {
   chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
   chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
-  chMBInit(&manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
   chMBInit(&logwriter_mb,     logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 
@@ -176,6 +176,7 @@ int main(void) {
 
   while (TRUE){
     chThdSleepMilliseconds(666);
+    //chEvtBroadcastFlags(&pwrmgmt_event, EVENT_MASK(PWRMGMT_SIGHALT_EVID));
   }
 
   return 0;

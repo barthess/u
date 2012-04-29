@@ -130,14 +130,14 @@ static msg_t PowerKeeperThread(void *arg){
   int32_t i = -1;
 
   /* get current battery capacitance from parameter structure */
-  i = key_value_search("BAT_cap");
+  i = KeyValueSearch("BAT_cap");
   if (i == -1)
     chDbgPanic("key not found");
   else
     batcap = 3600 * ((uint32_t)floorf(global_data[i].value));
 
   /* get battery fill in percents and calculate fill in A*mS*/
-  i = key_value_search("BAT_fill");
+  i = KeyValueSearch("BAT_fill");
   if (i == -1)
     chDbgPanic("key not found");
   else

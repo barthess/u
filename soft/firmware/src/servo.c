@@ -16,8 +16,6 @@
  ******************************************************************************
  */
 extern GlobalParam_t global_data[];
-//extern Mailbox tolink_mb;
-extern Mailbox manual_control_mb;
 
 /*
  ******************************************************************************
@@ -141,24 +139,9 @@ static WORKING_AREA(ServoThreadWA, 512);
 static msg_t ServoThread(void *arg){
   chRegSetThreadName("Servo");
   (void)arg;
-  msg_t tmp;
-  mavlink_bart_manual_control_t *control = NULL;
 
   while (TRUE) {
-    chMBFetch(&manual_control_mb, &tmp, TIME_INFINITE);
-    control = (((Mail*)tmp)->payload);
-
-    ServoSetAngle(1, control->servo1);
-    ServoSetAngle(2, control->servo2);
-    ServoSetAngle(3, control->servo3);
-    ServoSetAngle(4, control->servo4);
-    ServoSetAngle(5, control->servo5);
-    ServoSetAngle(6, control->servo6);
-    ServoSetAngle(7, control->servo7);
-    ServoSetAngle(8, control->servo8);
-
-    /* данные обработаны */
-    ((Mail*)tmp)->payload = NULL;
+    chThdSleepMilliseconds(100);
   }
   return 0;
 }
@@ -200,7 +183,7 @@ void ServoNeutral(void){
 void ServoInit(void){
 
   /* determine offset */
-  servoblock_offset = key_value_search("SERVO_1_min");
+  servoblock_offset = KeyValueSearch("SERVO_1_min");
   if (servoblock_offset == -1)
     chDbgPanic("key not found");
 

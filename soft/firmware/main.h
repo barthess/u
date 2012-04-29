@@ -26,12 +26,17 @@
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
 
+/******************************************************************/
+/* при наступлении данного события все подсистемы должны себе корректно остановить */
+#define PWRMGMT_SIGHALT_EVID  0
+#define PWRMGMT_REBOOT_EVID   1
+
 /******************************************************************
 * статусы возвращаемые разными подсистемами */
-#define PARAMETERS_SUCCESS  FALSE
-#define PARAMETERS_FAILED   TRUE
-#define LINK_SUCCESS        FALSE
-#define LINK_FAILED         TRUE
+#define PARAM_SUCCESS  CH_SUCCESS
+#define PARAM_FAILED   CH_FAILED
+#define LINK_SUCCESS   CH_SUCCESS
+#define LINK_FAILED    CH_FAILED
 
 /******************************************************************
 * константы для мавлинка */

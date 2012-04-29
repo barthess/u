@@ -69,10 +69,10 @@ bool_t load_params_from_eeprom(void){
     /* reade field from EEPROM and check number of read bytes */
     status = chFileStreamRead(&EepromFile, eeprombuf, sizeof(eeprombuf));
     if (status < sizeof(eeprombuf))
-      return PARAMETERS_FAILED;
+      return PARAM_FAILED;
 
     /* search value by key and set it if found */
-    index = key_value_search((char *)eeprombuf);
+    index = KeyValueSearch((char *)eeprombuf);
       if (index != -1){
         u.u32 = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
                 eeprombuf[PARAM_ID_SIZE + 1] << 16 |
@@ -88,14 +88,13 @@ bool_t load_params_from_eeprom(void){
     else
       global_data[i].value = u.f32;
   }
-  return PARAMETERS_SUCCESS;
+  return PARAM_SUCCESS;
 }
 
 
 
 /**
  * Сохранение значений параметров в EEPROM
- * param[in]  общее количество параметров в памяти
  */
 bool_t save_params_to_eeprom(void){
   uint32_t i, j;

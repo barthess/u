@@ -101,7 +101,7 @@ static msg_t ImuSender(void *arg) {
   mavlink_attitude_t attitude_struct;
   Mail tolink_mail_raw_imu = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
   Mail tolink_mail_attitude = {NULL, MAVLINK_MSG_ID_ATTITUDE, NULL};
-  uint32_t i = key_value_search("IMU_send_ms");
+  uint32_t i = KeyValueSearch("IMU_send_ms");
 
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);

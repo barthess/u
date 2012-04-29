@@ -3,15 +3,15 @@
 
 #include <mavlink.h>
 #include <common.h>
-#include <bart.h>
 
 
 #define ONBOARD_PARAM_NAME_LENGTH 15
 #define PARAM_ID_SIZE             16
 
-
-
 typedef struct GlobalParam_t GlobalParam_t;
+
+typedef bool_t (*setval_t)(float value, GlobalParam_t *param);
+
 struct GlobalParam_t
 {
   const char *name;
@@ -19,8 +19,10 @@ struct GlobalParam_t
   float value;
   const float max;
   const uint8_t param_type;
+  /* this function checks and sets value. If value out of range than it will
+   * be set to neares allowable value */
+  const setval_t setval;
 };
-
 
 
 //typedef struct GlobalParam_t GlobalParam_t;
@@ -43,6 +45,6 @@ struct GlobalParam_t
 
 
 void ParametersInit(void);
-int32_t key_value_search(char* key);
+int32_t KeyValueSearch(char* key);
 
 #endif /* PARAM_H_ */

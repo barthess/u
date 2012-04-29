@@ -16,6 +16,7 @@
 extern Mailbox tolink_mb;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
 extern uint32_t GlobalFlags;
+extern EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -28,12 +29,14 @@ extern uint32_t GlobalFlags;
 #define SYS_STATUS_ABS_PRES  ((uint32_t)1 << 3)
 #define SYS_STATUS_DIFF_PRES ((uint32_t)1 << 4)
 #define SYS_STATUS_GPS       ((uint32_t)1 << 5)
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
+/* for debugging purpose */
+static Thread *tp = NULL;
 
 /*
  *******************************************************************************
@@ -46,6 +49,9 @@ static WORKING_AREA(SanityControlThreadWA, 256);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
+
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   mavlink_heartbeat_t mavlink_heartbeat_struct;
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
@@ -76,10 +82,17 @@ static msg_t SanityControlThread(void *arg) {
       chThdSleepMilliseconds(50);
     }
 
+    /* этим светодиодом будем обозначать процесс выставки гироскопов */
     if (GlobalFlags & GYRO_CAL)
       palClearPad(GPIOB, GPIOB_LED_B);
     else
       palSetPad(GPIOB, GPIOB_LED_B);
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID)){
+      palClearPad(GPIOB, GPIOB_LED_B);
+      palClearPad(GPIOB, GPIOB_LED_R);
+      chThdExit(RDY_OK);
+    }
   }
   return 0;
 }
@@ -96,7 +109,7 @@ void SanityControlInit(void){
       SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
       SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
 
-  chThdCreateStatic(SanityControlThreadWA,
+  tp = chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),
           NORMALPRIO,
           SanityControlThread,
