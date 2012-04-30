@@ -52,13 +52,13 @@ static bool_t default_setval(float value,  GlobalParam_t *param){
  * to invert direction values.
  */
 bool_t polarity_setval(float value,  GlobalParam_t *param){
-  if ((value != -1) || (value != 1)){
-    param->value = 1;
-    return PARAM_FAILED;
+  if ((value > -1.1) && (value < -0.9)){
+    param->value = -1;
+    return PARAM_SUCCESS;
   }
   else{
-    param->value = value;
-    return PARAM_SUCCESS;
+    param->value = 1;
+    return PARAM_FAILED;
   }
 }
 
@@ -364,7 +364,7 @@ static msg_t ParametersThread(void *arg){
  * @retval -1   key not found.
  */
 int32_t KeyValueSearch(char* key){
-  uint32_t i = 0;
+  int32_t i = 0;
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
     if (strcmp(key, global_data[i].name) == 0)
