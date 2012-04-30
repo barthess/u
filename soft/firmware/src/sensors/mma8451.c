@@ -76,8 +76,7 @@ static msg_t PollAccelThread(void *arg){
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&mma8451_sem, MS2ST(20));
     txbuf[0] = ACCEL_STATUS;
-    if (i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK &&
-                                           sem_status == RDY_OK){
+    if ((sem_status == RDY_OK) && (i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK)){
       raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
       raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
       raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);

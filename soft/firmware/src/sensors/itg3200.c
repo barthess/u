@@ -127,7 +127,7 @@ static msg_t PollGyroThread(void *arg){
     sem_status = chBSemWaitTimeout(&itg3200_sem, MS2ST(20));
 
     txbuf[0] = GYRO_OUT_DATA;     // register address
-    if (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK && sem_status == RDY_OK){
+    if ((sem_status == RDY_OK) && (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK)){
       raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);

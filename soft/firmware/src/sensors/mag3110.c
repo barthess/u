@@ -68,8 +68,7 @@ static msg_t PollMagThread(void *arg){
 
     /* посмотрим, чё там померялось */
     txbuf[0] = MAG_OUT_DATA;
-    if (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK &&
-                                           sem_status == RDY_OK){
+    if ((sem_status == RDY_OK) && (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK)){
       raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.ymag = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.zmag = complement2signed(rxbuf[4], rxbuf[5]);
