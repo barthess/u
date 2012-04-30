@@ -1,3 +1,8 @@
+/*
+ *      Author: starlino
+ *              http://www.starlino.com/dcm_tutorial.html
+ */
+
 #include <math.h>
 
 #include "ch.h"
@@ -5,6 +10,7 @@
 
 #include "dcm.h"
 #include "vector3d.h"
+#include "param.h"
 
 /*
 Output variables are:
@@ -24,7 +30,7 @@ Output variables are:
 #define ACC_WEIGHT_MAX 0.04F
 
 /* accelerometer data weight relative to gyro's weight of 1 */
-#define ACC_WEIGHT 0.01
+#define ACC_WEIGHT (global_data[accweight_index].value)
 
 /* maximum accelerometer errror relative to 1g ,
  * when error exceeds this value accelerometer weight becomes 0
@@ -33,7 +39,7 @@ Output variables are:
 #define ACC_ERR_MAX 0.3
 
 /* magnetometer data weight relative to gyro's weight of 1 */
-#define MAG_WEIGHT 0.01
+#define MAG_WEIGHT (global_data[magweight_index].value) //0.01
 
 /* maximum magnetometer error relative to normal value of 1
  * (corresponding to earth's magnetic field) when error exceeds this
@@ -48,12 +54,14 @@ Output variables are:
  */
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
+extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+uint32_t accweight_index, magweight_index;
 
 /*
  *******************************************************************************
@@ -120,7 +128,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   uint32_t i;
   float Kacc[3];          //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];          //I(b) vector accordng to magnetometer in body's coordinates
-  float modulus_acc = 1.0;
   imu_step++;
 
   //interval since last call
@@ -146,7 +153,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Kacc[1] = -yacc;
   Kacc[2] = -zacc;
   vector3d_normalize(Kacc);
-  modulus_acc = vector3d_modulus(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc vector (K vector according to accelerometer)
   float wA[3];
@@ -177,10 +183,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
-    if (modulus_acc < (1.0 + ACC_ERR_MAX))
-      w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i])/(1.0+ACC_WEIGHT+MAG_WEIGHT);
-    else
-      w[i] = (w[i] + MAG_WEIGHT*wM[i])/(1.0 + MAG_WEIGHT);
+    w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i])/(1.0+ACC_WEIGHT+MAG_WEIGHT);
   }
 
   dcm_rotate(dcmEst, w);
@@ -191,6 +194,22 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 // imu_init
 //-------------------------------------------------------------------
 void dcmInit(){
+  int32_t i = -1;
+
+  i = KeyValueSearch("IMU_accweight");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else{
+    accweight_index = i;
+  }
+
+  i = KeyValueSearch("IMU_magweight");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else{
+    magweight_index = i;
+  }
+
   //TODO: load coefficients from param struct
   return;
 }

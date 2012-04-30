@@ -223,7 +223,6 @@ static void search_indexes(void){
     samplescnt_index = i;
     awg_samplescnt = global_data[samplescnt_index].value;
   }
-
 }
 
 /*

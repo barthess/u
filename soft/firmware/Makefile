@@ -103,6 +103,7 @@ CSRC = $(PORTSRC) \
        src/storage.c \
        src/servo.c \
        src/kinematic/imu.c \
+       src/kinematic/vector3d.c \
        src/kinematic/dcm.c \
        src/kinematic/airspeed.c \
        src/sanity.c \
