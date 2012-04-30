@@ -53,7 +53,6 @@ including, the "$" and "*".
  ******************************************************************************
  */
 extern RawData raw_data;
-extern uint64_t TimeUsec;
 extern Mailbox tolink_mb;
 
 /*
