@@ -28,6 +28,7 @@ extern BinarySemaphore mag3110_sem;
 //extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern RawData raw_data;
+extern EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -54,6 +55,9 @@ static msg_t PollMagThread(void *arg){
   chRegSetThreadName("PollMag");
   (void)arg;
   msg_t sem_status = RDY_OK;
+
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
@@ -94,6 +98,9 @@ static msg_t PollMagThread(void *arg){
       txbuf[1] = MAG_RST;
       i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
     }
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
 
   return 0;
@@ -155,6 +162,7 @@ void init_mag3110(void){
           I2C_THREADS_PRIO,
           PollMagThread,
           NULL);
+  chThdSleepMilliseconds(1);
 }
 
 

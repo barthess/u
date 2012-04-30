@@ -122,12 +122,11 @@ CSRC = $(PORTSRC) \
        src/link/link.c \
        src/link/link_sortout.c \
        src/link/link_sortin.c \
-       src/link/link_cmd.c \
        src/eeprom/24aa.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
-       #src/autopilot.c \
-       src/bkp.c
+       src/autopilot.c \
+       #src/bkp.c
        
        
 

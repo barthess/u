@@ -2,7 +2,6 @@
 #include "hal.h"
 
 #include "link.h"
-#include "link_cmd.h"
 #include "link_sortin.h"
 #include "message.h"
 #include "main.h"
@@ -22,6 +21,7 @@ extern Mailbox param_mb;
 extern Mailbox mavlinkcmd_mb;
 extern mavlink_system_t mavlink_system;
 extern mavlink_command_long_t mavlink_command_long_struct;
+extern mavlink_set_mode_t mavlink_set_mode_struct;
 
 /*
  ******************************************************************************
@@ -104,6 +104,12 @@ bool_t sort_input_messages(mavlink_message_t *msg){
     }
     else
       return LINK_SUCCESS;
+    break;
+
+  case MAVLINK_MSG_ID_SET_MODE:
+    mavlink_msg_set_mode_decode(msg, &mavlink_set_mode_struct);
+    if (mavlink_set_mode_struct.target_system == mavlink_system.sysid)
+      mavlink_system.mode = mavlink_set_mode_struct.custom_mode | mavlink_set_mode_struct.base_mode;
     break;
 
   default:

@@ -165,8 +165,8 @@ GlobalParam_t global_data[] = {
   {"SERVO_8_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_8_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   /* машинко-специфичные настройки */
-  {"SERVO_car_max",   0,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
-  {"SERVO_car_dz",    0,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"SERVO_car_max",   1,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
   /**/
   {"IMU_accweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_magweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
@@ -178,8 +178,11 @@ GlobalParam_t global_data[] = {
   {"IMU_reserved5",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_reserved6",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
 
+  /* sample count for zeroing */
+  {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
+
   /* fake field with 14 symbols name */
-  {"fake_14_bytes_",  0,          1048,       1224,       MAVLINK_TYPE_FLOAT,     default_setval},
+  {"fake_14_bytes_",  1,          1048,       1224,       MAVLINK_TYPE_UINT32_T,  default_setval},
 };
 
 const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));

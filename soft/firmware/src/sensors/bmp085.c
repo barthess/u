@@ -32,6 +32,7 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern BinarySemaphore bmp085_sem;
+extern EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -190,6 +191,9 @@ static msg_t PollBaroThread(void *arg){
   (void)arg;
   uint32_t t = 0;
 
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+
   while (TRUE) {
     /* we get temperature every 0x1F cycle */
     if ((t & 0x1F) == 0x1F)
@@ -199,6 +203,9 @@ static msg_t PollBaroThread(void *arg){
     bmp085_calc();
 
     t++;
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
   return 0;
 }
@@ -225,10 +232,12 @@ void init_bmp085(void){
   mc  = (rxbuf[18] << 8) + rxbuf[19];
   md  = (rxbuf[20] << 8) + rxbuf[21];
 
+  chThdSleepMilliseconds(2);
   chThdCreateStatic(PollBaroThreadWA,
           sizeof(PollBaroThreadWA),
           I2C_THREADS_PRIO,
           PollBaroThread,
           NULL);
+  chThdSleepMilliseconds(2);
 }
 

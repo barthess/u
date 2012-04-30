@@ -120,7 +120,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   uint32_t i;
   float Kacc[3];          //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];          //I(b) vector accordng to magnetometer in body's coordinates
-
+  float modulus_acc = 1.0;
   imu_step++;
 
   //interval since last call
@@ -146,6 +146,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Kacc[1] = -yacc;
   Kacc[2] = -zacc;
   vector3d_normalize(Kacc);
+  modulus_acc = vector3d_modulus(Kacc);
+
   //calculate correction vector to bring dcmEst's K vector closer to Acc vector (K vector according to accelerometer)
   float wA[3];
   vector3d_cross(dcmEst[2],Kacc,wA);  // wA = Kgyro x  Kacc , rotation needed to bring Kacc to Kgyro
@@ -175,7 +177,10 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
-    w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i])/(1.0+ACC_WEIGHT+MAG_WEIGHT);
+    if (modulus_acc < (1.0 + ACC_ERR_MAX))
+      w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i])/(1.0+ACC_WEIGHT+MAG_WEIGHT);
+    else
+      w[i] = (w[i] + MAG_WEIGHT*wM[i])/(1.0 + MAG_WEIGHT);
   }
 
   dcm_rotate(dcmEst, w);

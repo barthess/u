@@ -28,8 +28,9 @@
 
 /******************************************************************/
 /* при наступлении данного события все подсистемы должны себе корректно остановить */
-#define PWRMGMT_SIGHALT_EVID  0
-#define PWRMGMT_REBOOT_EVID   1
+#define PWRMGMT_SIGHALT_EVID      0
+/* означает критическую просадку напряжения */
+#define PWRMGMT_POWERFAILE_EVID   1
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */
@@ -53,8 +54,8 @@
 * дефайны для модема */
 #define BAUDRATE_XBEE 115200
 #define xbee_reset_assert() {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
-#define xbee_reset_clear()  {palSetPad(GPIOE, GPIOE_XBEE_RESET);}
-#define xbee_sleep_assert() {palClearPad(GPIOE, GPIOE_XBEE_SLEEP);}
+#define xbee_reset_clear()  {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
+#define xbee_sleep_assert() {palSetPad(GPIOE, GPIOE_XBEE_SLEEP);}
 #define xbee_sleep_clear()  {palSetPad(GPIOE, GPIOE_XBEE_RESET);}
 
 /******************************************************************

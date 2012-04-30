@@ -32,6 +32,7 @@ extern CompensatedData comp_data;
  */
 static uint8_t rxbuf[TMP75_RX_DEPTH] = {0x55, 0x55};
 static uint8_t txbuf[TMP75_TX_DEPTH] = {0,0};
+extern EventSource pwrmgmt_event;
 
 /*
  *******************************************************************************
@@ -44,6 +45,9 @@ static WORKING_AREA(PollTmp75ThreadWA, 256);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
+
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   while (TRUE) {
     txbuf[0] = 0b00000001; // point to Configuration Register
@@ -59,6 +63,9 @@ static msg_t PollTmp75Thread(void *arg){
       comp_data.temp_onboard = raw_data.temp_tmp75 / 256;
     }
     chThdSleepMilliseconds(1000);
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
   return 0;
 }

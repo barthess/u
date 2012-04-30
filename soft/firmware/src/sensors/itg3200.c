@@ -29,6 +29,8 @@
 #define YSENS         (global_data[ysens_index].value)
 #define ZSENS         (global_data[zsens_index].value)
 
+//#define AVG_SAMPLES_CNT  (global_data[samplescnt_index].value)
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -43,6 +45,8 @@ extern BinarySemaphore imu_sem;
 //extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
 extern uint32_t itg3200_period;
+extern EventSource pwrmgmt_event;
+extern mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -58,6 +62,8 @@ static uint32_t zero_cnt = 0;
 /* индексы в структуре с параметрами */
 static uint32_t xsens_index, ysens_index, zsens_index;
 static uint32_t xpol_index,  ypol_index,  zpol_index;
+static uint32_t samplescnt_index;
+static uint32_t awg_samplescnt;
 
 /*
  *******************************************************************************
@@ -80,6 +86,7 @@ void gyrozeroing(void){
   }
   else{
     clearGlobalFlag(GYRO_CAL);
+    mavlink_system.state = MAV_STATE_STANDBY;
   }
 }
 
@@ -88,7 +95,7 @@ void gyrozeroing(void){
  */
 static float calc_gyro_rate(int32_t raw, float sens){
   float tmp = (float)raw;
-  tmp /= (float)GYRO_AVG_SAMPLES_CNT;
+  tmp /= (float)awg_samplescnt;
   tmp /= sens;
   tmp *= (PI / 180.0);
   return tmp;
@@ -113,6 +120,9 @@ static msg_t PollGyroThread(void *arg){
   int32_t gyroX, gyroY, gyroZ;
   msg_t sem_status = RDY_OK;
 
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&itg3200_sem, MS2ST(20));
 
@@ -128,9 +138,9 @@ static msg_t PollGyroThread(void *arg){
       else{
         /* correct placement (we need to swap just x and y axis)
          * and advance to zero offset */
-        gyroX = ((int32_t)raw_data.ygyro) * GYRO_AVG_SAMPLES_CNT - raw_data.ygyro_zero;
-        gyroY = ((int32_t)raw_data.xgyro) * GYRO_AVG_SAMPLES_CNT - raw_data.xgyro_zero;
-        gyroZ = ((int32_t)raw_data.zgyro) * GYRO_AVG_SAMPLES_CNT - raw_data.zgyro_zero;
+        gyroX = ((int32_t)raw_data.ygyro) * awg_samplescnt - raw_data.ygyro_zero;
+        gyroY = ((int32_t)raw_data.xgyro) * awg_samplescnt - raw_data.xgyro_zero;
+        gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
         /* adjust rotation direction */
         gyroX *= XPOL;
         gyroY *= YPOL;
@@ -156,6 +166,9 @@ static msg_t PollGyroThread(void *arg){
       raw_data.ygyro = -32768;
       raw_data.zgyro = -32768;
     }
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
   return 0;
 }
@@ -202,6 +215,15 @@ static void search_indexes(void){
     chDbgPanic("key not found");
   else
     zpol_index = i;
+
+  i = KeyValueSearch("GYRO_zeroconut");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else{
+    samplescnt_index = i;
+    awg_samplescnt = global_data[samplescnt_index].value;
+  }
+
 }
 
 /*
@@ -244,12 +266,15 @@ void init_itg3200(void){
   while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
     ;
 
+  chThdSleepMilliseconds(2);
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
           I2C_THREADS_PRIO + 1,
           PollGyroThread,
           NULL);
+  chThdSleepMilliseconds(2);
 
+  mavlink_system.state = MAV_STATE_CALIBRATING;
   gyro_refresh_zeros();
 }
 
@@ -264,7 +289,7 @@ void gyro_refresh_zeros(void){
   raw_data.ygyro_zero = 0;
   raw_data.zgyro_zero = 0;
 
-  zero_cnt = GYRO_AVG_SAMPLES_CNT;
+  zero_cnt = awg_samplescnt;
   GlobalFlags |= GYRO_CAL;
 
   chSysUnlock();

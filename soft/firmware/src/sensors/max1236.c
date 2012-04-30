@@ -31,6 +31,7 @@ extern CompensatedData comp_data;
 extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
+extern EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -63,6 +64,9 @@ static msg_t PollMax1236Thread(void *arg) {
   int16_t press_diff_raw = 0;
   int16_t sonar_raw = 0;
 
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+
   Mail air_data_mail;
   air_data_mail.payload = NULL;
   air_data_mail.invoice = MAVLINK_MSG_ID_RAW_PRESSURE;
@@ -94,6 +98,9 @@ static msg_t PollMax1236Thread(void *arg) {
     }
 
     n++;
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
   return 0;
 }
@@ -127,5 +134,6 @@ void init_max1236(void){
           I2C_THREADS_PRIO,
           PollMax1236Thread,
           NULL);
+  chThdSleepMilliseconds(1);
 }
 

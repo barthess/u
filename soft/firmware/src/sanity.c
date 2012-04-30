@@ -17,6 +17,7 @@ extern Mailbox tolink_mb;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
 extern uint32_t GlobalFlags;
 extern EventSource pwrmgmt_event;
+extern mavlink_system_t mavlink_system;
 
 /*
  ******************************************************************************
@@ -57,15 +58,15 @@ static msg_t SanityControlThread(void *arg) {
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
   Mail sys_status_mail = {NULL, MAVLINK_MSG_ID_SYS_STATUS, NULL};
 
-  mavlink_heartbeat_struct.autopilot = MAV_TYPE_FIXED_WING;
-  mavlink_heartbeat_struct.base_mode = MAV_MODE_MANUAL_DISARMED;
-  mavlink_heartbeat_struct.system_status = MAV_STATE_STANDBY;
+  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
+  mavlink_heartbeat_struct.type = mavlink_system.type;
+  mavlink_heartbeat_struct.custom_mode = 0;
 
   mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
   mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
 
   while (TRUE) {
-    palSetPad(GPIOB, GPIOB_LED_R);
+    palSetPad(GPIOB, GPIOB_LED_B);
     chThdSleepMilliseconds(950);
 
     if (sys_status_mail.payload == NULL){
@@ -75,22 +76,25 @@ static msg_t SanityControlThread(void *arg) {
     }
 
     if (heartbeat_mail.payload == NULL){
+      mavlink_heartbeat_struct.base_mode = mavlink_system.mode;
+      mavlink_heartbeat_struct.system_status = mavlink_system.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
 
-      palClearPad(GPIOB, GPIOB_LED_R); /* blink*/
+      palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
       chThdSleepMilliseconds(50);
     }
 
     /* этим светодиодом будем обозначать процесс выставки гироскопов */
     if (GlobalFlags & GYRO_CAL)
-      palClearPad(GPIOB, GPIOB_LED_B);
+      palClearPad(GPIOB, GPIOB_LED_R);
     else
-      palSetPad(GPIOB, GPIOB_LED_B);
+      palSetPad(GPIOB, GPIOB_LED_R);
 
     if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID)){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
+      xbee_reset_assert();
       chThdExit(RDY_OK);
     }
   }

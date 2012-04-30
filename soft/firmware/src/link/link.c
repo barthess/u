@@ -7,7 +7,6 @@
 #include "main.h"
 #include "param.h"
 
-#include "link_cmd.h"
 #include "link_sortin.h"
 #include "link_sortout.h"
 
@@ -30,12 +29,6 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern Mailbox mavlinkcmd_mb;
-//extern Mailbox autopilot_mb;
-//extern Mailbox toservo_mb;
-//extern Mailbox param_mb;
-//extern Mailbox manual_control_mb;
-
 extern MemoryHeap LinkThdHeap;
 
 /*
@@ -46,7 +39,6 @@ extern MemoryHeap LinkThdHeap;
 /* pointers to spawned threads */
 static Thread *linkout_tp = NULL;
 static Thread *linkin_tp = NULL;
-static Thread *linkcmdparser_tp = NULL;
 
 /*
  *******************************************************************************
@@ -116,32 +108,6 @@ static msg_t LinkInThread(void *sdp){
   return 0;
 }
 
-/**
- * Поток приема команд.
- */
-static WORKING_AREA(LinkCmdParserThreadWA, 1024);
-static msg_t LinkCmdParserThread(void *arg){
-  chRegSetThreadName("MAVCmdParser");
-  (void)arg;
-  msg_t tmp;
-  Mail *mailp = NULL;
-  mavlink_command_long_t *cmdp;
-
-  while (TRUE) {
-    if (chThdShouldTerminate())
-      chThdExit(0);
-
-    if (chMBFetch(&mavlinkcmd_mb, &tmp, MS2ST(200)) == RDY_OK){
-      mailp = (Mail *)tmp;
-      cmdp = (mavlink_command_long_t *)(mailp->payload);
-      analize_mavlink_cmd(cmdp);
-      //TODO: анализ вёрнутого значения и генерация ответа в tolink_mb
-      mailp->payload = NULL;
-    }
-  }
-  return 0;
-}
-
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -154,11 +120,9 @@ static msg_t LinkCmdParserThread(void *arg){
 void KillMavlinkThreads(void){
   chThdTerminate(linkout_tp);
   chThdTerminate(linkin_tp);
-  chThdTerminate(linkcmdparser_tp);
 
   chThdWait(linkout_tp);
   chThdWait(linkin_tp);
-  chThdWait(linkcmdparser_tp);
 }
 
 /**
@@ -183,12 +147,6 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
                             sizeof(LinkInThreadWA),
                             LINK_THREADS_PRIO,
                             LinkInThread,
-                            sdp);
-
-  linkcmdparser_tp = chThdCreateFromHeap(&LinkThdHeap,
-                            sizeof(LinkCmdParserThreadWA),
-                            LINK_THREADS_PRIO - 1,
-                            LinkCmdParserThread,
                             sdp);
 }
 

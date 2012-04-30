@@ -106,9 +106,9 @@ static msg_t ImuSender(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail_raw_imu.payload == NULL){
-      mavlink_raw_imu_struct.xgyro = floorf(comp_data.xgyro_angle);
-      mavlink_raw_imu_struct.ygyro = floorf(comp_data.ygyro_angle);
-      mavlink_raw_imu_struct.zgyro = floorf(comp_data.zgyro_angle);
+      mavlink_raw_imu_struct.xgyro = floorf(comp_data.xgyro_angle * 10);
+      mavlink_raw_imu_struct.ygyro = floorf(comp_data.ygyro_angle * 10);
+      mavlink_raw_imu_struct.zgyro = floorf(comp_data.zgyro_angle * 10);
 //      mavlink_raw_imu_struct.xgyro      = raw_data.xgyro;
 //      mavlink_raw_imu_struct.ygyro      = raw_data.ygyro;
 //      mavlink_raw_imu_struct.zgyro      = raw_data.zgyro;

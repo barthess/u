@@ -1,20 +1,32 @@
+#include "mavlink.h"
+#include "common.h"
+
+#include "main.h"
 #include "autopilot.h"
 #include "servo.h"
 #include "message.h"
 #include "eeprom.h"
+#include "persistant.h"
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox autopilot_mb;
-extern RoutePoint route_point;
+extern Mailbox mavlinkcmd_mb;
+//extern Mailbox autopilot_mb;
+extern Mailbox tolink_mb;
+
+extern mavlink_system_t mavlink_system;
+extern EventSource pwrmgmt_event;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+mavlink_command_ack_t mavlink_command_ack_struct;
+Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
 
 /*
  *******************************************************************************
@@ -23,96 +35,153 @@ extern RoutePoint route_point;
  *******************************************************************************
  *******************************************************************************
  */
-/**
- * ‘ункци€ дл€ автоматического приземлени€ самолета в случае обрыва св€зи
- * TODO: настроить аварийную посадку более тонко
- */
-void EmergencyLanding(void){
-  Servo_NeutralSet(); /* ¬сЄ в нейтральные положени€ */
+
+/* helper funcion */
+void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
+  mavlink_command_ack_struct.result = result;
+  mavlink_command_ack_struct.command = cmd;
+  command_ack_mail.payload = &mavlink_command_ack_struct;
+  chMBPostAhead(&tolink_mb, (msg_t)&command_ack_mail, TIME_IMMEDIATE);
+}
+
+#define send_accepted() (confirmation(MAV_RESULT_ACCEPTED, mavlink_command_long_struct->command))
+#define send_denied() (confirmation(MAV_RESULT_DENIED, mavlink_command_long_struct->command))
+
+
+
+
+
+
+
+void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
+
+  /* all this flags defined in MAV_CMD enum */
+  switch(mavlink_command_long_struct->command){
+  case MAV_CMD_DO_SET_MODE:
+    /* Set system mode. |Mode, as defined by ENUM MAV_MODE| Empty| Empty| Empty| Empty| Empty| Empty|  */
+    mavlink_system.mode = mavlink_command_long_struct->param1;
+    send_accepted();
+    break;
+
+  /*
+   * (пере)запуск калибровки
+   */
+  case MAV_CMD_PREFLIGHT_CALIBRATION:
+    /* Trigger calibration. This command will be only accepted if in pre-flight mode. |Gyro calibration: 0: no, 1: yes| Magnetometer calibration: 0: no, 1: yes| Ground pressure: 0: no, 1: yes| Radio calibration: 0: no, 1: yes| Empty| Empty| Empty|  */
+    if (mavlink_system.mode != MAV_MODE_PREFLIGHT){
+      send_denied();
+      return;
+    }
+    else{
+
+    }
+    break;
+
+  case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
+    /* Request the reboot or shutdown of system components. |0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.| 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.| Reserved| Reserved| Empty| Empty| Empty|  */
+    if (mavlink_system.mode != MAV_MODE_PREFLIGHT){
+      send_denied();
+      return;
+    }
+    else{
+      chEvtBroadcastFlags(&pwrmgmt_event, PWRMGMT_SIGHALT_EVID);
+      send_accepted();
+    }
+    break;
+    /**
+     *  оманды дл€ загрузки/вычитки параметров из EEPROM
+     */
+    case MAV_CMD_PREFLIGHT_STORAGE:
+      if (mavlink_system.mode != MAV_MODE_PREFLIGHT)
+        return;
+
+      if (mavlink_command_long_struct->param1 == 0)
+        load_params_from_eeprom();
+      else if (mavlink_command_long_struct->param1 == 1)
+        save_params_to_eeprom();
+
+      if (mavlink_command_long_struct->param2 == 0)
+        load_mission_from_eeprom();
+      else if (mavlink_command_long_struct->param2 == 1)
+        save_mission_to_eeprom();
+
+      break;
+
+  default:
+    return;
+    break;
+  }
 }
 
 
-/**
- * –азбиралка байт дл€ ручного управлени€.
- * ѕросто использует внешний API из servo.c дл€ записи значений.
- */
-void ApplyManualDriving(uint8_t *buf){
-  set_aileron (buf[0]);
-  set_elevator(buf[1]);
-  set_throttle(buf[2]);
-  set_rudder  (buf[3]);
-}
 
 
-/**
- * состо€ни€ автопилота
- */
-typedef enum{
-  MANUAL_DRV = 1,
-  AUTO_DRV = 2,
-  EMERGENCY_LANDING = 3,
-} autopilot_state;
+
+
+
+
+
+
 
 
 /**
  *
  */
-static WORKING_AREA(AutopilotThreadWA, 256);
+static WORKING_AREA(AutopilotThreadWA, 512);
 Thread *autopilot_tp = NULL;
-__attribute__((noreturn))
 static msg_t AutopilotThread(void* arg){
   chRegSetThreadName("Autopilot");
   (void)arg;
 
-  #define AP_MANUAL_DRV_TIMEOUT 2000  /* по истечении будет произведена посадка */
-  autopilot_state state = MANUAL_DRV; /* состо€ние после сброса контроллера */
-  msg_t msg = 0;                      /* временна€ переменна€ дл€ хранени€ полученного письма из почтового €щика */
-  msg_t mb_status;                    /* статус, возвращаемый после чтени€ почтового €щика*/
-
-  while(TRUE){
-
-    // TODO: провер€ть факт достижени€ точки. ѕосле достижени€ загружать в ѕ»ƒ следующую точку
-    //      eeprom_write(EEPROM_ROUTE_OFFSET, EEPROM_ROUTEPOINT_SIZE, rpbuf);
-    //      eeprom_read(EEPROM_ROUTE_OFFSET, EEPROM_ROUTE_SIZE, rpbuf);
-    //      unpack_routepoint(&route_point, rpbuf);
-
-
-    switch(state){
-    case MANUAL_DRV:
-      mb_status = chMBFetch(&autopilot_mb, &msg, AP_MANUAL_DRV_TIMEOUT);
-      if (mb_status == RDY_TIMEOUT)
-        //state = EMERGENCY_LANDING;
-        EmergencyLanding();
-      else
-        ApplyManualDriving((uint8_t*)msg);
-      msg = 0;
-      break;
-
-    case AUTO_DRV:
-      chThdSleepMilliseconds(500);
-      break;
-
-    case EMERGENCY_LANDING:
-      chThdSleepMilliseconds(10);
-      EmergencyLanding();
-      break;
-
-    default:
-      break;
-    }
+  while (TRUE) {
+    chThdSleepMilliseconds(10);
   }
-  #undef AP_MANUAL_DRV_TIMEOUT
+
+  return 0;
 }
 
 
 
+/**
+ * ѕоток, принимающий команды с земли.
+ */
+static WORKING_AREA(CmdThreadWA, 512);
+static msg_t CmdThread(void* arg){
+  chRegSetThreadName("CMD_excutor");
+  (void)arg;
+  msg_t tmp = 0;
+  msg_t status = 0;
+  Mail *input_mail = NULL;
+
+  while (TRUE) {
+    status = chMBFetch(&mavlinkcmd_mb, &tmp, TIME_INFINITE);
+    (void)status;
+    input_mail = (Mail*)tmp;
+    process_cmd((mavlink_command_long_t *)input_mail->payload);
+    input_mail->payload = NULL;
+  }
+
+  return 0;
+}
 
 
-inline void AutopilotInit(void){
 
-  autopilot_tp = chThdCreateStatic(AutopilotThreadWA,
-      sizeof(AutopilotThreadWA),
-      NORMALPRIO,
-      AutopilotThread,
-      NULL);
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+void AutopilotInit(void){
+
+  chThdCreateStatic(CmdThreadWA,
+        sizeof(CmdThreadWA),
+        NORMALPRIO,
+        CmdThread,
+        NULL);
+
+  chThdCreateStatic(AutopilotThreadWA,
+        sizeof(AutopilotThreadWA),
+        NORMALPRIO,
+        AutopilotThread,
+        NULL);
 }

@@ -3,7 +3,7 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
-// TODO: добавить корректное выключение для нормальной остановки I2C (сигнал HALT)
+// TODO: корректно погасить I2C датчики, присылающие данные без запросов
 // TODO: последние удачные координаты в BKP
 // TODO: обработчик прерывания по просадке питания (рассылка сообщения, возможно поток PwrHypervisor)
 // TODO: добвить событий на сбои разных подсистем (gyro_failed, gps_failed, etc.)
@@ -77,7 +77,7 @@ static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
 static msg_t param_mb_buf[2];
 Mailbox mavlinkcmd_mb;                /* сообщения с командами */
-static msg_t mavlinkcmd_mb_buf[1];
+static msg_t mavlinkcmd_mb_buf[2];
 Mailbox logwriter_mb;                 /* сообщения для писалки логов */
 static msg_t logwriter_mb_buf[4];
 
@@ -88,6 +88,8 @@ mavlink_raw_imu_t           mavlink_raw_imu_struct;
 mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
 mavlink_sys_status_t        mavlink_sys_status_struct;
 mavlink_command_long_t      mavlink_command_long_struct;
+mavlink_vfr_hud_t           mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
+mavlink_set_mode_t          mavlink_set_mode_struct;
 
 /* heap for (link threads) OR (shell thread)*/
 MemoryHeap LinkThdHeap;
@@ -149,8 +151,8 @@ int main(void) {
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
   mavlink_system.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
-  mavlink_system.type   = MAV_TYPE_GROUND_ROVER;
-  mavlink_system.state  = MAV_STATE_UNINIT;
+  mavlink_system.type   = MAV_TYPE_FIXED_WING;
+  mavlink_system.state  = MAV_STATE_BOOT;
   mavlink_system.mode   = MAV_MODE_PREFLIGHT;
 
   EepromOpen(&EepromFile);
@@ -161,12 +163,11 @@ int main(void) {
   TimekeepingInit();
   I2CInit_pns();
 //  eeprom_testsuit_run();
-  ParametersInit(); /* читает настройки из EEPROM, поэтому должно идти после I2C*/
   ServoInit();
   ADCInit_pns();
   ImuInit();
   GPSInit();
-//  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
+  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
   StorageInit();
 
   #if ENABLE_IRQ_STORM

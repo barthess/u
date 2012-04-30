@@ -64,7 +64,7 @@ static msg_t LinkMgrThread(void *arg){
     shell_active = TRUE;
   }
 
-  /* а теперь в цикле следим за изменения и запускаем нужные потоки */
+  /* а теперь в цикле следим за изменениями и запускаем нужные потоки */
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if(shell_active == TRUE){

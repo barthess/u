@@ -40,6 +40,7 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
 extern RawData raw_data;
 extern CompensatedData comp_data;
+extern EventSource pwrmgmt_event;
 
 /*
  ******************************************************************************
@@ -68,6 +69,9 @@ static msg_t PollAccelThread(void *arg){
   (void)arg;
 
   msg_t sem_status = RDY_OK;
+
+  struct EventListener self_el;
+  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&mma8451_sem, MS2ST(20));
@@ -99,6 +103,9 @@ static msg_t PollAccelThread(void *arg){
       mavlink_raw_imu_struct.yacc = -32768;
       mavlink_raw_imu_struct.zacc = -32768;
     }
+
+    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+      chThdExit(RDY_OK);
   }
   return 0;
 }
@@ -177,37 +184,37 @@ void init_mma8451(void){
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_CTRL_REG1;
   txbuf[1] = 0b0; //set standby to allow configure device
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_XYZ_DATA_CFG;
   txbuf[1] = (uint8_t)(ACCEL_SENS >> 2);
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_CTRL_REG2;
   txbuf[1] = 0b10; //High Resolution
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_CTRL_REG3;
   txbuf[1] = 0b10; //Interrupt active high
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_CTRL_REG4;
   txbuf[1] = 0b01; //Interrupt on data ready
   while (i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  chThdSleepMilliseconds(2);
+  chThdSleepMilliseconds(4);
   txbuf[0] = ACCEL_CTRL_REG1;
   //txbuf[1] = 0b11101; //100Hz, low noice, active
   //txbuf[1] = 0b11001; //100Hz, normal noice, active
@@ -221,6 +228,7 @@ void init_mma8451(void){
           I2C_THREADS_PRIO,
           PollAccelThread,
           NULL);
+  chThdSleepMilliseconds(1);
 }
 
 
