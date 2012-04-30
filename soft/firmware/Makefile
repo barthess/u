@@ -98,7 +98,6 @@ CSRC = $(PORTSRC) \
        src/exti_pns.c \
        src/microrl/src/microrl.c \
        src/gps.c \
-       src/checksum.c \
        src/irq_storm.c \
        src/storage.c \
        src/servo.c \
