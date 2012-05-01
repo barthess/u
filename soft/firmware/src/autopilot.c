@@ -42,16 +42,12 @@ void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
   command_ack_mail.payload = &mavlink_command_ack_struct;
   chMBPostAhead(&tolink_mb, (msg_t)&command_ack_mail, TIME_IMMEDIATE);
 }
-
+/* helper macros */
 #define command_accepted() (confirmation(MAV_RESULT_ACCEPTED, mavlink_command_long_struct->command))
 #define command_denied() (confirmation(MAV_RESULT_DENIED, mavlink_command_long_struct->command))
 
 
-
-
-
-
-
+/* прием и обработка комманд с земли*/
 void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
   /* all this flags defined in MAV_CMD enum */
@@ -111,15 +107,6 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     break;
   }
 }
-
-
-
-
-
-
-
-
-
 
 
 
