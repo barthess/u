@@ -37,6 +37,7 @@
  */
 extern BinarySemaphore mma8451_sem;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern GlobalParam_t global_data[];
 extern RawData raw_data;
 extern CompensatedData comp_data;
@@ -76,23 +77,23 @@ static msg_t PollAccelThread(void *arg){
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&mma8451_sem, MS2ST(20));
     txbuf[0] = ACCEL_STATUS;
-    if ((sem_status == RDY_OK) && (i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK)){
+    if ((i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK) && (sem_status == RDY_OK)){
       raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
       raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
       raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
 
-//      mavlink_raw_imu_struct.xacc = raw_data.xacc;
-//      mavlink_raw_imu_struct.yacc = raw_data.yacc;
-//      mavlink_raw_imu_struct.zacc = raw_data.zacc;
-
-      /* there is no need of correcting of placement. Just get milliG */
+      /* there is no need of correcting of placement. Just get milli g */
+      mavlink_raw_imu_struct.xacc = raw_data.xacc * XPOL;
+      mavlink_raw_imu_struct.yacc = raw_data.yacc * YPOL;
+      mavlink_raw_imu_struct.zacc = raw_data.zacc * ZPOL;
       comp_data.xacc = 1000 * (((int32_t)raw_data.xacc) * XPOL + XOFFSET) / XSENS;
       comp_data.yacc = 1000 * (((int32_t)raw_data.yacc) * YPOL + YOFFSET) / YSENS;
       comp_data.zacc = 1000 * (((int32_t)raw_data.zacc) * ZPOL + ZOFFSET) / ZSENS;
 
-      mavlink_raw_imu_struct.xacc = comp_data.xacc;
-      mavlink_raw_imu_struct.yacc = comp_data.yacc;
-      mavlink_raw_imu_struct.zacc = comp_data.zacc;
+      /* fill scaled debug struct */
+      mavlink_scaled_imu_struct.xacc = comp_data.xacc;
+      mavlink_scaled_imu_struct.yacc = comp_data.yacc;
+      mavlink_scaled_imu_struct.zacc = comp_data.zacc;
     }
     else{
       raw_data.xacc = -32768;
@@ -101,6 +102,9 @@ static msg_t PollAccelThread(void *arg){
       mavlink_raw_imu_struct.xacc = -32768;
       mavlink_raw_imu_struct.yacc = -32768;
       mavlink_raw_imu_struct.zacc = -32768;
+      mavlink_scaled_imu_struct.xacc = -32768;
+      mavlink_scaled_imu_struct.yacc = -32768;
+      mavlink_scaled_imu_struct.zacc = -32768;
     }
 
     if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))

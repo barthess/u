@@ -168,15 +168,15 @@ GlobalParam_t global_data[] = {
   {"SERVO_car_max",   1,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
   /**/
-  {"IMU_accweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_magweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_gpsweight",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved1",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved2",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved3",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved4",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved5",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_reserved6",   0.0001,     0.01,       0.05,       MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_accweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_magweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_gpsweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved1",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved2",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved3",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved4",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved5",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_reserved6",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
 
   /* sample count for zeroing */
   {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
@@ -263,7 +263,8 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
+    //status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
+    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
     if (status != RDY_OK)
       return PARAM_FAILED;
 

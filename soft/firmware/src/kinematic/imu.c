@@ -26,8 +26,8 @@
 extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern GlobalParam_t global_data[];
-//extern RawData raw_data;
 extern CompensatedData comp_data;
 extern BinarySemaphore imu_sem;
 extern uint32_t itg3200_period;
@@ -52,10 +52,10 @@ static void get_attitude(mavlink_attitude_t *attitude_struct){
   attitude_struct->time_boot_ms = TIME_BOOT_MS;
   attitude_struct->pitch = asin(dcmEst[2][0]);
   attitude_struct->roll = asin(dcmEst[2][1]);
-  attitude_struct->yaw = comp_data.zgyro_angle * PI / 180;
+  attitude_struct->yaw = -comp_data.zgyro_angle * PI / 180;
   attitude_struct->rollspeed = comp_data.xgyro;
   attitude_struct->pitchspeed = comp_data.ygyro;
-  attitude_struct->yawspeed = comp_data.zgyro;
+  attitude_struct->yawspeed = -comp_data.zgyro;
 }
 
 /**
@@ -93,34 +93,33 @@ static msg_t Imu(void *arg) {
 /**
  * Посылалка телеметрии
  */
-static WORKING_AREA(waImuSender, 256);
+static WORKING_AREA(waImuSender, 512);
 static msg_t ImuSender(void *arg) {
   (void)arg;
   chRegSetThreadName("IMU_Sender");
 
   mavlink_attitude_t attitude_struct;
   Mail tolink_mail_raw_imu = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
+  Mail tolink_mail_scaled_imu = {NULL, MAVLINK_MSG_ID_SCALED_IMU, NULL};
   Mail tolink_mail_attitude = {NULL, MAVLINK_MSG_ID_ATTITUDE, NULL};
+
   uint32_t i = KeyValueSearch("IMU_send_ms");
 
   while (TRUE) {
     chThdSleepMilliseconds(global_data[i].value);
     if (tolink_mail_raw_imu.payload == NULL){
-      mavlink_raw_imu_struct.xgyro = floorf(comp_data.xgyro_angle * 10);
-      mavlink_raw_imu_struct.ygyro = floorf(comp_data.ygyro_angle * 10);
-      mavlink_raw_imu_struct.zgyro = floorf(comp_data.zgyro_angle * 10);
-//      mavlink_raw_imu_struct.xgyro      = raw_data.xgyro;
-//      mavlink_raw_imu_struct.ygyro      = raw_data.ygyro;
-//      mavlink_raw_imu_struct.zgyro      = raw_data.zgyro;
 
       mavlink_raw_imu_struct.time_usec  = TimeUsec;
-
       tolink_mail_raw_imu.payload = &mavlink_raw_imu_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail_raw_imu, TIME_IMMEDIATE);
 
       get_attitude(&attitude_struct);
       tolink_mail_attitude.payload = &attitude_struct;
       chMBPost(&tolink_mb, (msg_t)&tolink_mail_attitude, TIME_IMMEDIATE);
+
+      mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
+      tolink_mail_scaled_imu.payload = &mavlink_scaled_imu_struct;
+      chMBPost(&tolink_mb, (msg_t)&tolink_mail_scaled_imu, TIME_IMMEDIATE);
     }
   }
   return 0;

@@ -42,11 +42,13 @@ extern RawData raw_data;
 extern CompensatedData comp_data;
 extern BinarySemaphore itg3200_sem;
 extern BinarySemaphore imu_sem;
-//extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern GlobalParam_t global_data[];
 extern uint32_t itg3200_period;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system;
+
+extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
 /*
  ******************************************************************************
@@ -127,7 +129,7 @@ static msg_t PollGyroThread(void *arg){
     sem_status = chBSemWaitTimeout(&itg3200_sem, MS2ST(20));
 
     txbuf[0] = GYRO_OUT_DATA;     // register address
-    if ((sem_status == RDY_OK) && (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK)){
+    if ((i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK) && (sem_status == RDY_OK)){
       raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
@@ -136,23 +138,35 @@ static msg_t PollGyroThread(void *arg){
       if (GlobalFlags & GYRO_CAL)
         gyrozeroing();
       else{
-        /* correct placement (we need to swap just x and y axis)
-         * and advance to zero offset */
+        /* correct placement (we need to swap just x and y axis) and advance to zero offset */
         gyroX = ((int32_t)raw_data.ygyro) * awg_samplescnt - raw_data.ygyro_zero;
         gyroY = ((int32_t)raw_data.xgyro) * awg_samplescnt - raw_data.xgyro_zero;
         gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
+
         /* adjust rotation direction */
         gyroX *= XPOL;
         gyroY *= YPOL;
         gyroZ *= ZPOL;
+
+        /* fill debug struct */
+        mavlink_raw_imu_struct.xgyro = gyroX;
+        mavlink_raw_imu_struct.ygyro = gyroY;
+        mavlink_raw_imu_struct.zgyro = gyroZ;
+
         /* now get angular velocity in rad/sec */
         comp_data.xgyro = calc_gyro_rate(gyroX, XSENS);
         comp_data.ygyro = calc_gyro_rate(gyroY, YSENS);
         comp_data.zgyro = calc_gyro_rate(gyroZ, ZSENS);
+
         /* calc summary angle for debug purpose */
         comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
         comp_data.ygyro_angle += get_degrees(comp_data.ygyro);
         comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
+
+        /* fill scaled debug struct */
+        mavlink_scaled_imu_struct.xgyro = (int16_t)(1000 * comp_data.xgyro);
+        mavlink_scaled_imu_struct.ygyro = (int16_t)(1000 * comp_data.ygyro);
+        mavlink_scaled_imu_struct.zgyro = (int16_t)(1000 * comp_data.zgyro);
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(&imu_sem);
@@ -268,7 +282,7 @@ void init_itg3200(void){
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
-          I2C_THREADS_PRIO + 1,
+          I2C_THREADS_PRIO + 2,
           PollGyroThread,
           NULL);
   chThdSleepMilliseconds(2);

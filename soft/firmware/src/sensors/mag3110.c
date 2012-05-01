@@ -17,7 +17,12 @@
  ******************************************************************************
  */
 #define mag3110addr 0b0001110
+#define mag3110sens 0.1F /* uT/LSB */
 #define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
+
+#define XOFFSET     (global_data[xoffset_index].value)
+#define YOFFSET     (global_data[yoffset_index].value)
+#define ZOFFSET     (global_data[zoffset_index].value)
 
 /*
  ******************************************************************************
@@ -25,8 +30,9 @@
  ******************************************************************************
  */
 extern BinarySemaphore mag3110_sem;
-//extern GlobalParam_t global_data[];
+extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
 extern EventSource pwrmgmt_event;
 
@@ -68,14 +74,23 @@ static msg_t PollMagThread(void *arg){
 
     /* посмотрим, чё там померялось */
     txbuf[0] = MAG_OUT_DATA;
-    if ((sem_status == RDY_OK) && (i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK)){
+    if ((i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK) && (sem_status == RDY_OK)){
       raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
       raw_data.ymag = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.zmag = complement2signed(rxbuf[4], rxbuf[5]);
 
+      /* fill raw */
       mavlink_raw_imu_struct.xmag = raw_data.xmag;
-      mavlink_raw_imu_struct.ymag = raw_data.xmag;
-      mavlink_raw_imu_struct.zmag = raw_data.xmag;
+      mavlink_raw_imu_struct.ymag = raw_data.ymag;
+      mavlink_raw_imu_struct.zmag = raw_data.zmag;
+
+      /* fill scaled. Sensitivity is 0.1uT/LSB = 10^-1 */
+//      mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET) / 10;
+//      mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET) / 10;
+//      mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET) / 10;
+      mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET);
+      mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET);
+      mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET);
     }
     else{
       /* выставляем знамение ошибки */
@@ -83,8 +98,11 @@ static msg_t PollMagThread(void *arg){
       raw_data.ymag = -32768;
       raw_data.zmag = -32768;
       mavlink_raw_imu_struct.xmag = raw_data.xmag;
-      mavlink_raw_imu_struct.ymag = raw_data.xmag;
-      mavlink_raw_imu_struct.zmag = raw_data.xmag;
+      mavlink_raw_imu_struct.ymag = raw_data.ymag;
+      mavlink_raw_imu_struct.zmag = raw_data.zmag;
+      mavlink_scaled_imu_struct.xmag = raw_data.xmag;
+      mavlink_scaled_imu_struct.ymag = raw_data.ymag;
+      mavlink_scaled_imu_struct.zmag = raw_data.zmag;
     }
 
     /* если датчик передознулся - надо произвести сброс. В принципе,

@@ -73,7 +73,7 @@ EepromFileStream EepromFile;
 Mailbox autopilot_mb;                 /* сообщения для автопилота */
 static msg_t autopilot_mb_buf[4];
 Mailbox tolink_mb;                    /* сообщения для отправки через модем */
-static msg_t tolink_mb_buf[8];
+static msg_t tolink_mb_buf[10];
 Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
 Mailbox param_mb;                     /* сообщения с параметрами */
@@ -95,7 +95,7 @@ mavlink_set_mode_t          mavlink_set_mode_struct;
 
 /* heap for (link threads) OR (shell thread)*/
 MemoryHeap LinkThdHeap;
-static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE];
+static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
 /* источник событий связанных с управлением питанием */
 EventSource pwrmgmt_event;
@@ -148,7 +148,7 @@ int main(void) {
   chMBInit(&logwriter_mb,     logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 
   /* инициализация кучи под потоки связи */
-  chHeapInit(&LinkThdHeap, link_thd_buf, LINK_THD_HEAP_SIZE);
+  chHeapInit(&LinkThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
 
   /* первоначальная настройка мавлинка */
   mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane

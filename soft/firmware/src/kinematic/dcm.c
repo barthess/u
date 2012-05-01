@@ -149,9 +149,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //K vector coincides with the z coordinate of body's i,j,k vectors expressed in global coordinates (K.i , K.j, K.k)
 
   //Acc can estimate global K vector(zenith) measured in body's coordinate systems (the reverse of gravitation vector)
-  Kacc[0] = -xacc;
-  Kacc[1] = -yacc;
-  Kacc[2] = -zacc;
+  Kacc[0] = xacc;
+  Kacc[1] = yacc;
+  Kacc[2] = zacc;
   vector3d_normalize(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc vector (K vector according to accelerometer)
@@ -177,9 +177,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //about a fixed earth's (global) frame, if we look from the perspective of device then
   //the global vectors (I,K,J) rotation direction will be the inverse
   float w[3];         //gyro rates (angular velocity of a global vector in local coordinates)
-  w[0] = -ygyro; //rotation rate about accelerometer's X axis (GY output)
-  w[1] = -xgyro; //rotation rate about accelerometer's Y axis (GX output)
-  w[2] = -zgyro; //rotation rate about accelerometer's Z axis (GZ output)
+  w[0] = ygyro; //rotation rate about accelerometer's X axis (GY output)
+  w[1] = xgyro; //rotation rate about accelerometer's Y axis (GX output)
+  w[2] = zgyro; //rotation rate about accelerometer's Z axis (GZ output)
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector

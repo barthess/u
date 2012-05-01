@@ -18,6 +18,18 @@
   return len;                                                                 \
 }
 
+/* */
+#define SENDCASE(lowercase, UPPERCASE, ID){                                   \
+case MAVLINK_MSG_ID_ ## UPPERCASE:                                            \
+  len = mavlink_msg_ ## lowercase ## _encode (                                \
+      mavlink_system.sysid,                                                   \
+      MAV_COMP_ID_ ## ID,                                                     \
+      mavlink_msgbuf,                                                         \
+      (const mavlink_ ## lowercase ## _t*)(mailp->payload));                  \
+  finalize_receive_mail();                                                    \
+  break;                                                                      \
+}
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -56,77 +68,17 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
 
   switch(mailp->invoice){
 
-  case MAVLINK_MSG_ID_HEARTBEAT:
-    len = mavlink_msg_heartbeat_encode(
-        mavlink_system.sysid,
-        MAV_COMP_ID_ALL,
-        mavlink_msgbuf,
-        (const mavlink_heartbeat_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
+    SENDCASE(heartbeat, HEARTBEAT,                      ALL)
+    SENDCASE(sys_status, SYS_STATUS,                    ALL)
+    SENDCASE(param_value, PARAM_VALUE,                  ALL)
 
-  case MAVLINK_MSG_ID_SYS_STATUS:
-    len = mavlink_msg_sys_status_encode(
-        mavlink_system.sysid,
-        MAV_COMP_ID_ALL,
-        mavlink_msgbuf,
-        (const mavlink_sys_status_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
+    SENDCASE(gps_raw_int, GPS_RAW_INT,                  GPS)
+    SENDCASE(global_position_int, GLOBAL_POSITION_INT,  GPS)
 
-  case MAVLINK_MSG_ID_PARAM_VALUE:
-    len = mavlink_msg_param_value_encode(
-        mavlink_system.sysid,
-        MAV_COMP_ID_ALL,
-        mavlink_msgbuf,
-        (const mavlink_param_value_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
-
-  case MAVLINK_MSG_ID_RAW_IMU:
-    len = mavlink_msg_raw_imu_encode (
-        mavlink_system.sysid,
-        MAV_COMP_ID_IMU,
-        mavlink_msgbuf,
-        (const mavlink_raw_imu_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
-
-  case MAVLINK_MSG_ID_GPS_RAW_INT:
-    len = mavlink_msg_gps_raw_int_encode (
-        mavlink_system.sysid,
-        MAV_COMP_ID_GPS,
-        mavlink_msgbuf,
-        (const mavlink_gps_raw_int_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
-
-  case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-    len = mavlink_msg_global_position_int_encode (
-        mavlink_system.sysid,
-        MAV_COMP_ID_GPS,
-        mavlink_msgbuf,
-        (const mavlink_global_position_int_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
-
-  case MAVLINK_MSG_ID_ATTITUDE:
-    len = mavlink_msg_attitude_encode (
-        mavlink_system.sysid,
-        MAV_COMP_ID_IMU,
-        mavlink_msgbuf,
-        (const mavlink_attitude_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
-
-  case MAVLINK_MSG_ID_RAW_PRESSURE:
-    len = mavlink_msg_raw_pressure_encode (
-        mavlink_system.sysid,
-        MAV_COMP_ID_IMU,
-        mavlink_msgbuf,
-        (const mavlink_raw_pressure_t*)(mailp->payload));
-    finalize_receive_mail();
-    break;
+    SENDCASE(raw_imu, RAW_IMU,                          IMU)
+    SENDCASE(scaled_imu, SCALED_IMU,                    IMU)
+    SENDCASE(attitude, ATTITUDE,                        IMU)
+    SENDCASE(raw_pressure, RAW_PRESSURE,                IMU)
 
   default:
     break;
@@ -134,4 +86,4 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   return 0;
 }
 
-#undef finalize_receive_mail
+
