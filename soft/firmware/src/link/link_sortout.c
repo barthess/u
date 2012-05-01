@@ -10,23 +10,20 @@
  * DEFINES
  ******************************************************************************
  */
-#define finalize_receive_mail() {                                             \
-  mailp->payload = NULL;                                                      \
-  if (mailp->confirmbox != NULL){                                             \
-    chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);                         \
-  }                                                                           \
-  return len;                                                                 \
-}
 
 /* */
 #define SENDCASE(lowercase, UPPERCASE, ID){                                   \
 case MAVLINK_MSG_ID_ ## UPPERCASE:                                            \
   len = mavlink_msg_ ## lowercase ## _encode (                                \
-      mavlink_system.sysid,                                                   \
-      MAV_COMP_ID_ ## ID,                                                     \
-      mavlink_msgbuf,                                                         \
-      (const mavlink_ ## lowercase ## _t*)(mailp->payload));                  \
-  finalize_receive_mail();                                                    \
+        mavlink_system.sysid,                                                 \
+        MAV_COMP_ID_ ## ID,                                                   \
+        mavlink_msgbuf,                                                       \
+        (const mavlink_ ## lowercase ## _t*)(mailp->payload));                \
+  mailp->payload = NULL;                                                      \
+  if (mailp->confirmbox != NULL){                                             \
+    chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);                         \
+  }                                                                           \
+  return len;                                                                 \
   break;                                                                      \
 }
 
