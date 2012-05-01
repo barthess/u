@@ -42,7 +42,11 @@
 /******************************************************************
 * константы для мавлинка */
 #define GROUND_STATION_ID   255
-#define TIME_BOOT_MS        (chTimeNow()) /* метка времени для пакетов */
+
+/* метка времени для пакетов */
+#if (CH_FREQUENCY) >= 1000
+#define TIME_BOOT_MS ((chTimeNow()) / ((CH_FREQUENCY) / 1000))
+#endif
 
 /******************************************************************
 * data offsets in eeprom "file" */
