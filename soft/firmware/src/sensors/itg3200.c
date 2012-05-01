@@ -45,7 +45,7 @@ extern BinarySemaphore imu_sem;
 extern GlobalParam_t global_data[];
 extern uint32_t itg3200_period;
 extern EventSource pwrmgmt_event;
-extern mavlink_system_t mavlink_system;
+extern mavlink_system_t mavlink_system_struct;
 
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
@@ -88,7 +88,7 @@ void gyrozeroing(void){
   }
   else{
     clearGlobalFlag(GYRO_CAL);
-    mavlink_system.state = MAV_STATE_STANDBY;
+    mavlink_system_struct.state = MAV_STATE_STANDBY;
   }
 }
 
@@ -287,7 +287,7 @@ void init_itg3200(void){
           NULL);
   chThdSleepMilliseconds(2);
 
-  mavlink_system.state = MAV_STATE_CALIBRATING;
+  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
   gyro_refresh_zeros();
 }
 

@@ -17,7 +17,7 @@ extern Mailbox tolink_mb;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
 extern uint32_t GlobalFlags;
 extern EventSource pwrmgmt_event;
-extern mavlink_system_t mavlink_system;
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -59,7 +59,7 @@ static msg_t SanityControlThread(void *arg) {
   Mail sys_status_mail = {NULL, MAVLINK_MSG_ID_SYS_STATUS, NULL};
 
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
-  mavlink_heartbeat_struct.type = mavlink_system.type;
+  mavlink_heartbeat_struct.type = mavlink_system_struct.type;
   mavlink_heartbeat_struct.custom_mode = 0;
 
   mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
@@ -76,8 +76,8 @@ static msg_t SanityControlThread(void *arg) {
     }
 
     if (heartbeat_mail.payload == NULL){
-      mavlink_heartbeat_struct.base_mode = mavlink_system.mode;
-      mavlink_heartbeat_struct.system_status = mavlink_system.state;
+      mavlink_heartbeat_struct.base_mode = mavlink_system_struct.mode;
+      mavlink_heartbeat_struct.system_status = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
 

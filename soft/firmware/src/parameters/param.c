@@ -28,9 +28,9 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox param_mb;
+extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
-extern mavlink_system_t mavlink_system;
+extern mavlink_system_t mavlink_system_struct;
 
 /**
  * Default boundary checker.
@@ -308,7 +308,7 @@ static msg_t ParametersThread(void *arg){
   bool_t status = PARAM_FAILED;
 
   while (TRUE) {
-    chMBFetch(&param_mb, &tmp, TIME_INFINITE);
+    chMBFetch(&mavlink_param_set_mb, &tmp, TIME_INFINITE);
     input_mail = (Mail*)tmp;
 
     switch (input_mail->invoice){
@@ -331,7 +331,7 @@ static msg_t ParametersThread(void *arg){
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
       list = (mavlink_param_request_list_t *)(input_mail->payload);
       input_mail->payload = NULL;
-      if (list->target_system == mavlink_system.sysid)
+      if (list->target_system == mavlink_system_struct.sysid)
         send_all_values(&param_value_mail, &param_value_struct);
       break;
 

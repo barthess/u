@@ -13,12 +13,12 @@
 
 /* */
 #define SENDCASE(lowercase, UPPERCASE, ID){                                   \
-case MAVLINK_MSG_ID_ ## UPPERCASE:                                            \
-  len = mavlink_msg_ ## lowercase ## _encode (                                \
-        mavlink_system.sysid,                                                 \
-        MAV_COMP_ID_ ## ID,                                                   \
+case MAVLINK_MSG_ID_##UPPERCASE:                                              \
+  len = mavlink_msg_##lowercase##_encode (                                    \
+        mavlink_system_struct.sysid,                                          \
+        MAV_COMP_ID_##ID,                                                     \
         mavlink_msgbuf,                                                       \
-        (const mavlink_ ## lowercase ## _t*)(mailp->payload));                \
+        (const mavlink_##lowercase##_t*)(mailp->payload));                    \
   mailp->payload = NULL;                                                      \
   if (mailp->confirmbox != NULL){                                             \
     chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);                         \
@@ -32,7 +32,7 @@ case MAVLINK_MSG_ID_ ## UPPERCASE:                                            \
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_system_t mavlink_system;
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************

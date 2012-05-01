@@ -76,15 +76,15 @@ Mailbox tolink_mb;                    /* сообщения для отправки через модем */
 static msg_t tolink_mb_buf[10];
 Mailbox toservo_mb;                   /* сообщения для обслуживателя серв */
 static msg_t toservo_mb_buf[1];
-Mailbox param_mb;                     /* сообщения с параметрами */
+Mailbox mavlink_param_set_mb;                     /* сообщения с параметрами */
 static msg_t param_mb_buf[2];
-Mailbox mavlinkcmd_mb;                /* сообщения с командами */
+Mailbox mavlink_command_long_mb;                /* сообщения с командами */
 static msg_t mavlinkcmd_mb_buf[2];
 Mailbox logwriter_mb;                 /* сообщения для писалки логов */
 static msg_t logwriter_mb_buf[4];
 
 /* переменные, касающиеся мавлинка */
-mavlink_system_t            mavlink_system;
+mavlink_system_t            mavlink_system_struct;
 mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
 mavlink_raw_imu_t           mavlink_raw_imu_struct;
 mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
@@ -143,19 +143,19 @@ int main(void) {
   chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&toservo_mb,       toservo_mb_buf,         (sizeof(toservo_mb_buf)/sizeof(msg_t)));
-  chMBInit(&param_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
-  chMBInit(&mavlinkcmd_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_param_set_mb,         param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_command_long_mb,    mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
   chMBInit(&logwriter_mb,     logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 
   /* инициализация кучи под потоки связи */
   chHeapInit(&LinkThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
 
   /* первоначальная настройка мавлинка */
-  mavlink_system.sysid  = 20;                   ///< ID 20 for this airplane
-  mavlink_system.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
-  mavlink_system.type   = MAV_TYPE_FIXED_WING;
-  mavlink_system.state  = MAV_STATE_BOOT;
-  mavlink_system.mode   = MAV_MODE_PREFLIGHT;
+  mavlink_system_struct.sysid  = 20;                   ///< ID 20 for this airplane
+  mavlink_system_struct.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
+  mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
+  mavlink_system_struct.state  = MAV_STATE_BOOT;
+  mavlink_system_struct.mode   = MAV_MODE_PREFLIGHT;
 
   EepromOpen(&EepromFile);
 
