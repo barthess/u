@@ -169,7 +169,7 @@ GlobalParam_t global_data[] = {
   {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
   /**/
   {"IMU_accweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_magweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
+  {"IMU_magweight",   0.0,        0.01,       0.9,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_gpsweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_reserved1",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_reserved2",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},

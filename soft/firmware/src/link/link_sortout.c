@@ -75,6 +75,7 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     SENDCASE(raw_imu, RAW_IMU,                          IMU)
     SENDCASE(scaled_imu, SCALED_IMU,                    IMU)
     SENDCASE(attitude, ATTITUDE,                        IMU)
+    SENDCASE(attitude_quaternion, ATTITUDE_QUATERNION,  IMU)
     SENDCASE(raw_pressure, RAW_PRESSURE,                IMU)
 
   default:

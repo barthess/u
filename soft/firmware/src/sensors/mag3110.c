@@ -20,6 +20,10 @@
 #define mag3110sens 0.1F /* uT/LSB */
 #define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
 
+#define XPOL        (global_data[xpol_index].value)
+#define YPOL        (global_data[ypol_index].value)
+#define ZPOL        (global_data[zpol_index].value)
+
 #define XOFFSET     (global_data[xoffset_index].value)
 #define YOFFSET     (global_data[yoffset_index].value)
 #define ZOFFSET     (global_data[zoffset_index].value)
@@ -35,6 +39,7 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
 extern EventSource pwrmgmt_event;
+extern CompensatedData comp_data;
 
 /*
  ******************************************************************************
@@ -47,6 +52,7 @@ static uint8_t txbuf[MAG_TX_DEPTH];
 
 /* индексы в структуре с параметрами */
 static uint32_t xoffset_index, yoffset_index, zoffset_index;
+static uint32_t xpol_index,  ypol_index,  zpol_index;
 
 /*
  *******************************************************************************
@@ -79,18 +85,18 @@ static msg_t PollMagThread(void *arg){
       raw_data.ymag = complement2signed(rxbuf[2], rxbuf[3]);
       raw_data.zmag = complement2signed(rxbuf[4], rxbuf[5]);
 
-      /* fill raw */
+      /* fill */
       mavlink_raw_imu_struct.xmag = raw_data.xmag;
       mavlink_raw_imu_struct.ymag = raw_data.ymag;
       mavlink_raw_imu_struct.zmag = raw_data.zmag;
+      mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET) * XPOL;
+      mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET) * YPOL;
+      mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET) * ZPOL;
 
       /* fill scaled. Sensitivity is 0.1uT/LSB = 10^-1 */
-//      mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET) / 10;
-//      mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET) / 10;
-//      mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET) / 10;
-      mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET);
-      mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET);
-      mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET);
+      comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
+      comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
+      comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
     }
     else{
       /* выставляем знамение ошибки */
@@ -146,6 +152,30 @@ void search_indexes(void){
     chDbgPanic("key not found");
   else
     zoffset_index = i;
+
+
+
+
+
+  i = KeyValueSearch("MAG_xpol");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    xpol_index = i;
+
+  i = KeyValueSearch("MAG_ypol");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    ypol_index = i;
+
+  i = KeyValueSearch("MAG_zpol");
+  if (i == -1)
+    chDbgPanic("key not found");
+  else
+    zpol_index = i;
+
+
 }
 
 /*

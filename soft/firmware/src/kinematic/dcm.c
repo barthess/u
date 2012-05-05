@@ -36,7 +36,7 @@ Output variables are:
  * when error exceeds this value accelerometer weight becomes 0
  * this helps reject external accelerations (non-gravitational
  * innertial forces caused by device acceleration) */
-#define ACC_ERR_MAX 0.3
+//#define ACC_ERR_MAX 0.3
 
 /* magnetometer data weight relative to gyro's weight of 1 */
 #define MAG_WEIGHT (global_data[magweight_index].value) //0.01
@@ -45,7 +45,7 @@ Output variables are:
  * (corresponding to earth's magnetic field) when error exceeds this
  * value magnetometer weight becomes 0 this helps reject magnetic
  * forces that are not attributed to earth's magnetic field */
-#define MAG_ERR_MAX 0.3
+#define MAG_ERR_MAX 0.5
 
 /*
  ******************************************************************************
@@ -55,6 +55,7 @@ Output variables are:
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
 extern GlobalParam_t global_data[];
+extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 
 /*
  ******************************************************************************
@@ -62,6 +63,7 @@ extern GlobalParam_t global_data[];
  ******************************************************************************
  */
 uint32_t accweight_index, magweight_index;
+float mag_modulus = 0;
 
 /*
  *******************************************************************************
@@ -120,10 +122,11 @@ void dcm_rotate(float dcm[3][3], float w[3]){
 
 /* accelerations in g,
  * angular rates in rad/s,
- * TODO: magnetic flux in Tesla,
+ * magnetic flux in T,
  * time in s */
 void dcmUpdate(float xacc,  float yacc,  float zacc,
-               float ygyro, float xgyro, float zgyro,
+               float xgyro, float ygyro, float zgyro,
+               float xmag,  float ymag,  float zmag,
                float imu_interval){
   uint32_t i;
   float Kacc[3];          //K(b) vector according to accelerometer in body's coordinates
@@ -144,31 +147,68 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //---------------
   //Acelerometer
   //---------------
-  //Accelerometer measures gravity vector G in body coordinate system
-  //Gravity vector is the reverse of K unity vector of global system expressed in local coordinates
-  //K vector coincides with the z coordinate of body's i,j,k vectors expressed in global coordinates (K.i , K.j, K.k)
+  /* Accelerometer measures gravity vector G in body coordinate system
+  Gravity vector is the reverse of K unity vector of global system
+  expressed in local coordinates K vector coincides with the z
+  coordinate of body's i,j,k vectors expressed in global
+  coordinates (K.i , K.j, K.k)
 
-  //Acc can estimate global K vector(zenith) measured in body's coordinate systems (the reverse of gravitation vector)
+  Acc can estimate global K vector(zenith) measured in body's coordinate
+  systems (the reverse of gravitation vector) */
+
+//  Kacc[0] = -xacc;
+//  Kacc[1] = -yacc;
+//  Kacc[2] = -zacc;
+
+  /* Поскольку на вход функции мы подаем значения измеренных ускорений по осям,
+  а не вектор гравитации, то ничего инвертировать не надо.
+  Вектор кажущегося ускорения совпадает с зенитным вектором К. */
+
   Kacc[0] = xacc;
   Kacc[1] = yacc;
   Kacc[2] = zacc;
   vector3d_normalize(Kacc);
 
-  //calculate correction vector to bring dcmEst's K vector closer to Acc vector (K vector according to accelerometer)
+  //calculate correction vector to bring dcmEst's K vector closer to Acc
+  // vector (K vector according to accelerometer)
   float wA[3];
-  vector3d_cross(dcmEst[2],Kacc,wA);  // wA = Kgyro x  Kacc , rotation needed to bring Kacc to Kgyro
+  // wA = Kgyro x  Kacc , rotation needed to bring Kacc to Kgyro
+  vector3d_cross(dcmEst[2], Kacc, wA);
 
   //---------------
   //Magnetomer
   //---------------
-  //calculate correction vector to bring dcmEst's I vector closer to Mag vector (I vector according to magnetometer)
+  //calculate correction vector to bring dcmEst's I vector closer
+  // to Mag vector (I vector according to magnetometer)
   float wM[3];
-  //in the absense of magnetometer let's assume North vector (I) is always in XZ plane of the device (y coordinate is 0)
-  Imag[0] = sqrtf(1-dcmEst[0][2]*dcmEst[0][2]);
-  Imag[1] = 0;
-  Imag[2] = dcmEst[0][2];
+  //in the absense of magnetometer let's assume North vector (I) is
+  // always in XZ plane of the device (y coordinate is 0)
+//    Imag[0] = sqrtf(1 - dcmEst[0][2] * dcmEst[0][2]);
+//    Imag[1] = 0;
+//    Imag[2] = dcmEst[0][2];
 
-  vector3d_cross(dcmEst[0],Imag,wM);  // wM = Igyro x Imag, roation needed to bring Imag to Igyro
+  Imag[0] = xmag;
+  Imag[1] = ymag;
+  Imag[2] = zmag;
+  if (mag_modulus == 0)
+    mag_modulus = vector3d_modulus(Imag);
+
+  float newmod = vector3d_modulus(Imag);
+  if (((newmod / mag_modulus) - 1) < MAG_ERR_MAX){
+    float tmpM[3];
+    vector3d_normalize(Imag);
+    vector3d_cross(Kacc, Imag, tmpM);
+//    vector3d_normalize(tmpM);
+    vector3d_cross(tmpM, Kacc, Imag);
+    vector3d_normalize(Imag);
+    // wM = Igyro x Imag, roation needed to bring Imag to Igyro
+    vector3d_cross(dcmEst[0], Imag, wM);
+  }
+  else{
+    wM[0] = 0.0;
+    wM[1] = 0.0;
+    wM[2] = 0.0;
+  }
 
   //---------------
   //dcmEst
@@ -177,13 +217,13 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //about a fixed earth's (global) frame, if we look from the perspective of device then
   //the global vectors (I,K,J) rotation direction will be the inverse
   float w[3];         //gyro rates (angular velocity of a global vector in local coordinates)
-  w[0] = ygyro; //rotation rate about accelerometer's X axis (GY output)
-  w[1] = xgyro; //rotation rate about accelerometer's Y axis (GX output)
-  w[2] = zgyro; //rotation rate about accelerometer's Z axis (GZ output)
+  w[0] = -xgyro; //rotation rate about accelerometer's X axis (GY output)
+  w[1] = -ygyro; //rotation rate about accelerometer's Y axis (GX output)
+  w[2] = -zgyro; //rotation rate about accelerometer's Z axis (GZ output)
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
-    w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i])/(1.0+ACC_WEIGHT+MAG_WEIGHT);
+    w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i]) / (1.0 + ACC_WEIGHT + MAG_WEIGHT);
   }
 
   dcm_rotate(dcmEst, w);

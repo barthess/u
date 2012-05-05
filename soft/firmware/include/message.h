@@ -23,6 +23,10 @@ struct CompensatedData{
   int16_t   xacc;
   int16_t   yacc;
   int16_t   zacc;
+  /* магнитное поле в T */
+  float     xmag;
+  float     ymag;
+  float     zmag;
 
   /**/
   int16_t   baro_altitude;  /* высота по барометру bmp085. Целое (dm)*/
