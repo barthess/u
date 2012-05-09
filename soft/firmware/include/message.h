@@ -1,6 +1,10 @@
 #ifndef MESSAGE_H_
 #define MESSAGE_H_
 
+#include <mavlink.h>
+#include <common.h>
+
+
 /**
  * структура определяет формат сообщений типа "письмо" для обмена данными.
  */

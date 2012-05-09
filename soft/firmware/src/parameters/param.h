@@ -1,9 +1,6 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
-#include <mavlink.h>
-#include <common.h>
-
 
 #define ONBOARD_PARAM_NAME_LENGTH 15
 #define PARAM_ID_SIZE             16
