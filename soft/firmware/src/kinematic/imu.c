@@ -31,8 +31,11 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern GlobalParam_t global_data[];
 extern CompensatedData comp_data;
-extern uint32_t itg3200_period;
 extern float dcmEst[3][3];
+
+extern uint32_t itg3200_period;
+uint32_t imu_step = 0;                /* incremented on each call to imu_update */
+float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 
 /*
  ******************************************************************************

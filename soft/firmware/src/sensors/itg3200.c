@@ -38,11 +38,11 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
+uint32_t itg3200_period;
 
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern GlobalParam_t global_data[];
-extern uint32_t itg3200_period;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
 

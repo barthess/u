@@ -38,11 +38,9 @@
 #include "sensors.h"
 #include "autopilot.h"
 #include "eeprom.h"
-#include "eeprom_testsuit.h"
 #include "exti_pns.h"
 #include "storage.h"
-#include "cli.h"
-#include "imu.h"
+
 
 /*
  ******************************************************************************
@@ -51,24 +49,6 @@
  */
 uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoch) */
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
-
-
-
-
-
-
-uint32_t itg3200_period = 0;          /* время получения сэмплов с гироскопа (uS)*/
-uint32_t imu_step = 0;                /* incremented on each call to imu_update */
-float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
-
-
-
-
-
-
-
-
-
 
 /* примонтированный файл EEPROM */
 EepromFileStream EepromFile;
