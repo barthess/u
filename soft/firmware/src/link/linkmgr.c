@@ -20,6 +20,7 @@
  ******************************************************************************
  */
 extern GlobalParam_t global_data[];
+extern EventSource modem_event;
 
 /*
  ******************************************************************************
@@ -63,6 +64,9 @@ static msg_t LinkMgrThread(void *arg){
     SpawnShellThreads((SerialDriver *)arg);
     shell_active = TRUE;
   }
+
+  /* say to all that modem is ready */
+  chEvtBroadcastFlags(&modem_event, EVENT_MASK(MODEM_READY));
 
   /* а теперь в цикле следим за изменениями и запускаем нужные потоки */
   while (TRUE) {

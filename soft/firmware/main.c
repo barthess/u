@@ -57,6 +57,7 @@ static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
 /* источник событий связанных с управлением питанием */
 EventSource pwrmgmt_event;
+EventSource modem_event;
 
 /*
  ******************************************************************************
@@ -74,7 +75,9 @@ EventSource pwrmgmt_event;
 int main(void) {
   halInit();
   chSysInit();
+
   chEvtInit(&pwrmgmt_event);
+  chEvtInit(&modem_event);
 
   chThdSleepMilliseconds(1);
 

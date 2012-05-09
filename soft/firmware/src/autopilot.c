@@ -104,14 +104,6 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     break;
 
 
-
-
-
-
-
-
-
-
   case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
     /* Request the reboot or shutdown of system components. |0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.| 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.| Reserved| Reserved| Empty| Empty| Empty|  */
     if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
@@ -119,7 +111,7 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
       return;
     }
     else{
-      chEvtBroadcastFlags(&pwrmgmt_event, PWRMGMT_SIGHALT_EVID);
+      chEvtBroadcastFlags(&pwrmgmt_event, EVENT_MASK(PWRMGMT_SIGHALT_EVID));
       command_accepted();
     }
     break;

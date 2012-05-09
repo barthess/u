@@ -24,14 +24,17 @@ Mailbox mavlink_command_long_mb;  /* сообщения с командами */
 Mailbox logwriter_mb;             /* сообщения для писалки логов */
 
 /* переменные, касающиеся мавлинка */
-mavlink_system_t            mavlink_system_struct;
-mavlink_raw_pressure_t      mavlink_raw_pressure_struct;
-mavlink_raw_imu_t           mavlink_raw_imu_struct;
-mavlink_scaled_imu_t        mavlink_scaled_imu_struct;
-mavlink_sys_status_t        mavlink_sys_status_struct;
-mavlink_command_long_t      mavlink_command_long_struct;
-mavlink_vfr_hud_t           mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
-mavlink_set_mode_t          mavlink_set_mode_struct;
+mavlink_system_t              mavlink_system_struct;
+mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
+mavlink_raw_imu_t             mavlink_raw_imu_struct;
+mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
+mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
+mavlink_sys_status_t          mavlink_sys_status_struct;
+mavlink_command_long_t        mavlink_command_long_struct;
+mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
+mavlink_set_mode_t            mavlink_set_mode_struct;
+mavlink_global_position_int_t mavlink_global_position_int_struct;
+mavlink_attitude_t            mavlink_attitude_struct;
 
 /*
  ******************************************************************************

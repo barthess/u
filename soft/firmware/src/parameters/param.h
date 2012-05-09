@@ -2,8 +2,15 @@
 #define PARAM_H_
 
 
+/* периодичность посылки данных в милисекундах */
+#define SEND_MIN                  20
+#define SEND_MAX                  5000
+#define SEND_OFF                  SEND_MIN - 1
+
+
 #define ONBOARD_PARAM_NAME_LENGTH 15
 #define PARAM_ID_SIZE             16
+
 
 typedef struct GlobalParam_t GlobalParam_t;
 

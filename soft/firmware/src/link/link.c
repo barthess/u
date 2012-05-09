@@ -11,7 +11,8 @@
 #include "link_sortout.h"
 
 
-/*
+/**
+ * This code performs:
  * - receiving and sending of packages via UART
  * - decoding and encoding of packages
  * - passing and receiving of decoded messages

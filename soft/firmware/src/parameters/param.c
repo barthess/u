@@ -19,9 +19,6 @@
  * DEFINES
  ******************************************************************************
  */
-/* периодичность посылки данных в милисекундах */
-#define SEND_MIN                  25
-#define SEND_MAX                  10000
 
 /*
  ******************************************************************************
@@ -40,6 +37,21 @@ static bool_t default_setval(float value,  GlobalParam_t *param){
 
   putinrange(value, param->min, param->max);
   param->value = value;
+
+  if (value == initial_value)
+    return PARAM_SUCCESS;
+  else
+    return PARAM_FAILED;
+}
+
+/**
+ * Default boundary checker for integer values.
+ */
+static bool_t int_setval(float value,  GlobalParam_t *param){
+  float initial_value = value;
+
+  putinrange(value, param->min, param->max);
+  param->value = roundf(value);
 
   if (value == initial_value)
     return PARAM_SUCCESS;
@@ -181,6 +193,17 @@ GlobalParam_t global_data[] = {
   /* sample count for zeroing */
   {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
+  /* время между посылками данных определенного типа в mS
+   * 60001 - означает отключение посылок данного типа */
+  {"T_raw_imu",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_raw_press",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_scal_imu",      SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_scal_press",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_attitude",      SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_vfr_hud",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_gps_int",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_sys_status",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_heartbeat",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  1,          1048,       1224,       MAVLINK_TYPE_UINT32_T,  default_setval},
 };

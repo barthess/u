@@ -55,6 +55,7 @@ including, the "$" and "*".
  */
 extern RawData raw_data;
 extern Mailbox tolink_mb;
+extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 
 /*
  ******************************************************************************
@@ -107,25 +108,25 @@ static msg_t gpsRxThread(void *arg){
   gps_mail.invoice = MAVLINK_MSG_ID_GLOBAL_POSITION_INT;
   gps_mail.confirmbox = NULL;
 
-  mavlink_global_position_int_t global_pos_struct;
 
-  global_pos_struct.time_boot_ms = 0;
-  global_pos_struct.lat = 0;
-  global_pos_struct.lon = 0;
-  global_pos_struct.alt = 0;
-  global_pos_struct.relative_alt = 0;
-  global_pos_struct.vx = 0;
-  global_pos_struct.vy = 0;
-  global_pos_struct.vz = 0;
-  global_pos_struct.hdg = 65535;
+
+  mavlink_global_position_int_struct.time_boot_ms = 0;
+  mavlink_global_position_int_struct.lat = 0;
+  mavlink_global_position_int_struct.lon = 0;
+  mavlink_global_position_int_struct.alt = 0;
+  mavlink_global_position_int_struct.relative_alt = 0;
+  mavlink_global_position_int_struct.vx = 0;
+  mavlink_global_position_int_struct.vy = 0;
+  mavlink_global_position_int_struct.vz = 0;
+  mavlink_global_position_int_struct.hdg = 65535;
 
   while (TRUE) {
 
 EMPTY:
 
     if ((n >= 2) && (gps_mail.payload == NULL)){
-      global_pos_struct.time_boot_ms = TIME_BOOT_MS;
-      gps_mail.payload = &global_pos_struct;
+      mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
+      gps_mail.payload = &mavlink_global_position_int_struct;
       chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
       n = 0;
     }
@@ -145,14 +146,14 @@ EMPTY:
 		tmp = tmp + sdGet(&GPSSD);
 		if (tmp == GGA_SENTENCE){
 	    if (get_gps_sentence(ggabuf, ggachecksum) == 0){
-	      parse_gga(ggabuf, &global_pos_struct);
+	      parse_gga(ggabuf, &mavlink_global_position_int_struct);
 	      n++;
 	    }
 	    goto EMPTY;
 		}
 		if (tmp == RMC_SENTENCE){
 	    if (get_gps_sentence(rmcbuf, rmcchecksum) == 0){
-	      parse_rmc(rmcbuf, &global_pos_struct);
+	      parse_rmc(rmcbuf, &mavlink_global_position_int_struct);
 	      n++;
 	    }
 	    goto EMPTY;

@@ -29,7 +29,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern Mailbox tolink_mb;
 extern uint64_t TimeUsec;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 extern EventSource pwrmgmt_event;
@@ -58,7 +57,7 @@ static uint8_t txbuf[MAX1236_TX_DEPTH];
  * ѕри частоте 100к√ц на вычитывание 4 значений уйдет примерно:
  * 10 * (4 * 2 * 8) + 8.3 * 4 = 673.2 uS
  */
-static WORKING_AREA(PollMax1236ThreadWA, 512);
+static WORKING_AREA(PollMax1236ThreadWA, 256);
 static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
@@ -67,13 +66,6 @@ static msg_t PollMax1236Thread(void *arg) {
 
   struct EventListener self_el;
   chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
-
-  Mail air_data_mail;
-  air_data_mail.payload = NULL;
-  air_data_mail.invoice = MAVLINK_MSG_ID_RAW_PRESSURE;
-  air_data_mail.confirmbox = NULL;
-
-  uint32_t n = 0;
 
   while (TRUE) {
     chThdSleepMilliseconds(20);
@@ -92,13 +84,6 @@ static msg_t PollMax1236Thread(void *arg) {
     mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
     mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
-
-    if (((n & 7) == 7) && (air_data_mail.payload == NULL)){
-      air_data_mail.payload = &mavlink_raw_pressure_struct;
-      chMBPost(&tolink_mb, (msg_t)&air_data_mail, TIME_IMMEDIATE);
-    }
-
-    n++;
 
     if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
       chThdExit(RDY_OK);
