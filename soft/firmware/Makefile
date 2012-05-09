@@ -127,6 +127,7 @@ CSRC = $(PORTSRC) \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
        src/autopilot.c \
+       src/message.c \
        #src/bkp.c
        
        

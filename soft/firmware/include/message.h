@@ -26,5 +26,10 @@ struct Mail{
   Mailbox *confirmbox;
 };
 
+
+void MsgInit(void);
+
+
+
 #endif /* MESSAGE_H_ */
 
