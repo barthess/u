@@ -40,7 +40,6 @@ extern uint32_t GlobalFlags;
 
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern BinarySemaphore itg3200_sem;
 extern BinarySemaphore imu_sem;
 extern GlobalParam_t global_data[];
 extern uint32_t itg3200_period;
@@ -114,9 +113,8 @@ static float get_degrees(float raw){
  * Поток для опроса хероскопа
  */
 static WORKING_AREA(PollGyroThreadWA, 512);
-static msg_t PollGyroThread(void *arg){
+static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
-  (void)arg;
 
   int32_t gyroX, gyroY, gyroZ;
   msg_t sem_status = RDY_OK;
@@ -125,7 +123,7 @@ static msg_t PollGyroThread(void *arg){
   chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout(&itg3200_sem, MS2ST(20));
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
 
     txbuf[0] = GYRO_OUT_DATA;     // register address
     if ((i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK) && (sem_status == RDY_OK)){
@@ -220,7 +218,7 @@ static void search_indexes(void){
 /**
  *
  */
-void init_itg3200(void){
+void init_itg3200(BinarySemaphore *itg3200_semp){
 
   search_indexes();
 
@@ -255,7 +253,7 @@ void init_itg3200(void){
           sizeof(PollGyroThreadWA),
           I2C_THREADS_PRIO + 2,
           PollGyroThread,
-          NULL);
+          itg3200_semp);
   chThdSleepMilliseconds(2);
 
   /* fireup calibration */

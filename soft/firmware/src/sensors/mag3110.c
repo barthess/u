@@ -41,7 +41,6 @@
  */
 extern uint32_t GlobalFlags;
 
-extern BinarySemaphore mag3110_sem;
 extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
@@ -103,9 +102,8 @@ static void clear_statistics(RawData *raw_data, int16_t extremums[6]);
  * ѕоток дл€ опроса магнитометра
  */
 static WORKING_AREA(PollMagThreadWA, 512);
-static msg_t PollMagThread(void *arg){
+static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
-  (void)arg;
 
   msg_t sem_status = RDY_OK;
 
@@ -117,7 +115,7 @@ static msg_t PollMagThread(void *arg){
      * прерываение прилетит на лапку раньше, чем подхватитс€ EXTI. ƒл€ того,
      * чтобы прерывание нормально работало, надо об€зательно читать данные
      * из как минимум первого регистра. */
-    sem_status = chBSemWaitTimeout(&mag3110_sem, MS2ST(200));
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
 
     /* посмотрим, чЄ там помер€лось */
     txbuf[0] = MAG_OUT_DATA;
@@ -290,7 +288,7 @@ void search_indexes(void){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void init_mag3110(void){
+void init_mag3110(BinarySemaphore *mag3110_semp){
 
   state = MAG_UNINIT;
 
@@ -325,7 +323,7 @@ void init_mag3110(void){
           sizeof(PollMagThreadWA),
           I2C_THREADS_PRIO,
           PollMagThread,
-          NULL);
+          mag3110_semp);
   state = MAG_ACTIVE;
   chThdSleepMilliseconds(1);
 }

@@ -20,9 +20,7 @@
 
 // Hardware
 // TODO: один из таймеров использовать для тактирования гироскопа
-// TODO: выход тахометра завести на один из таймеров
 
-#include <stdlib.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -38,6 +36,7 @@
 #include "gps.h"
 #include "servo.h"
 #include "message.h"
+#include "sensors.h"
 #include "autopilot.h"
 #include "eeprom.h"
 #include "eeprom_testsuit.h"
@@ -63,10 +62,7 @@ uint32_t imu_step = 0;                /* incremented on each call to imu_update 
 float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 
 BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и датчиков */
-BinarySemaphore mag3110_sem;          /* синхронизация потока с прерыванием от датчика */
-BinarySemaphore mma8451_sem;          /* синхронизация потока с прерыванием от датчика */
-BinarySemaphore bmp085_sem;           /* синхронизация потока с прерыванием от датчика */
-BinarySemaphore itg3200_sem;          /* синхронизация потока с прерыванием от датчика */
+
 
 /* примонтированный файл EEPROM */
 EepromFileStream EepromFile;
@@ -135,10 +131,6 @@ int main(void) {
 
   /* примитивов синхронизации */
   chBSemInit(&imu_sem,      TRUE);
-  chBSemInit(&mag3110_sem,  TRUE);
-  chBSemInit(&mma8451_sem,  TRUE);
-  chBSemInit(&bmp085_sem,   TRUE);
-  chBSemInit(&itg3200_sem,  TRUE);
 
   /* инициализация почтовых ящиков */
   chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
@@ -162,9 +154,13 @@ int main(void) {
 
   LinkMgrInit();
   SanityControlInit();
-  ExtiInit(); /* I2C и RTC используют его */
   TimekeepingInit();
   I2CInit_pns();
+
+
+  SensorsInit();
+
+
 //  eeprom_testsuit_run();
   ServoInit();
   ADCInit_pns();

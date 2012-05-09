@@ -27,12 +27,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-
-extern BinarySemaphore mag3110_sem;
-extern BinarySemaphore mma8451_sem;
-extern BinarySemaphore bmp085_sem;
-extern BinarySemaphore itg3200_sem;
-
 extern uint32_t itg3200_period;
 
 /*
@@ -40,6 +34,12 @@ extern uint32_t itg3200_period;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+
+BinarySemaphore *mag3110_semp = NULL;
+BinarySemaphore *mma8451_semp = NULL;
+BinarySemaphore *bmp085_semp = NULL;
+BinarySemaphore *itg3200_semp = NULL;
+
 /**
  * Глобальный счетчик оборотов.
  * Инкрементируется по внешнему прерыванию.
@@ -119,7 +119,7 @@ static void bmp085_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(&bmp085_sem);
+  chBSemSignalI(bmp085_semp);
   chSysUnlockFromIsr();
 }
 
@@ -127,7 +127,7 @@ static void mag3110_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(&mag3110_sem);
+  chBSemSignalI(mag3110_semp);
   chSysUnlockFromIsr();
 }
 
@@ -157,7 +157,7 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
     itg3200_period_measured++;
   }
 
-  chBSemSignalI(&itg3200_sem);
+  chBSemSignalI(itg3200_semp);
   chSysUnlockFromIsr();
 }
 
@@ -165,7 +165,7 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(&mma8451_sem);
+  chBSemSignalI(mma8451_semp);
   chSysUnlockFromIsr();
 }
 
@@ -224,7 +224,16 @@ static const EXTConfig extcfg = {
  *******************************************************************************
  */
 
-void ExtiInit(void){
+void ExtiInit(BinarySemaphore *mag3110_sem,
+              BinarySemaphore *mma8451_sem,
+              BinarySemaphore *bmp085_sem,
+              BinarySemaphore *itg3200_sem){
+
+  mag3110_semp = mag3110_sem;
+  mma8451_semp = mma8451_sem;
+  bmp085_semp = bmp085_sem;
+  itg3200_semp = itg3200_sem;
+
   chSysLock();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   chSysUnlock();

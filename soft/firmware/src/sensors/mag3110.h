@@ -18,6 +18,6 @@
   #define MAG_RST       (1 << 4)
 
 
-void init_mag3110(void);
+void init_mag3110(BinarySemaphore *mag3110_semp);
 
 #endif /* MAG3110_H_ */

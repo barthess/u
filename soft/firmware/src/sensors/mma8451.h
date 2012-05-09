@@ -23,6 +23,6 @@
 
 #define ACCEL_XYZ_DATA_CFG 0x0E
 
-void init_mma8451(void);
+void init_mma8451(BinarySemaphore *mma8451_semp);
 
 #endif /* MMA8451_H_ */

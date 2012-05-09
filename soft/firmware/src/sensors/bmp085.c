@@ -31,7 +31,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern BinarySemaphore bmp085_sem;
 extern EventSource pwrmgmt_event;
 
 /*
@@ -142,14 +141,14 @@ ERROR:
 /**
  * Функция для вычитывания температуры из датчика
  */
-static uint32_t get_temperature(void){
+static uint32_t get_temperature(BinarySemaphore *semp){
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
   if (i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     return TEMPERATURE_ERROR;
 
   /* wait temperature results (datasheet says 4.5 ms) */
-  if (chBSemWaitTimeout(&bmp085_sem, MS2ST(5)) != RDY_OK)
+  if (chBSemWaitTimeout(semp, MS2ST(5)) != RDY_OK)
     return TEMPERATURE_ERROR;
 
   /* read measured value */
@@ -163,7 +162,7 @@ static uint32_t get_temperature(void){
 /**
  * Функция для вычитывания довления из датчика
  */
-static uint32_t get_pressure(void){
+static uint32_t get_pressure(BinarySemaphore *semp){
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = (0x34 + (OSS<<6));
@@ -171,7 +170,7 @@ static uint32_t get_pressure(void){
     return PRESSURE_ERROR;
 
   /* wait temperature results (datasheet says 25.5 ms) */
-  if (chBSemWaitTimeout(&bmp085_sem, MS2ST(26)) != RDY_OK)
+  if (chBSemWaitTimeout(semp, MS2ST(26)) != RDY_OK)
     return PRESSURE_ERROR;
 
   /* acqure pressure */
@@ -186,9 +185,8 @@ static uint32_t get_pressure(void){
  * Polling thread
  */
 static WORKING_AREA(PollBaroThreadWA, 512);
-static msg_t PollBaroThread(void *arg){
+static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
-  (void)arg;
   uint32_t t = 0;
 
   struct EventListener self_el;
@@ -197,9 +195,9 @@ static msg_t PollBaroThread(void *arg){
   while (TRUE) {
     /* we get temperature every 0x1F cycle */
     if ((t & 0x1F) == 0x1F)
-      ut = get_temperature();
+      ut = get_temperature((BinarySemaphore*)semp);
 
-    up = get_pressure();
+    up = get_pressure((BinarySemaphore*)semp);
     bmp085_calc();
 
     t++;
@@ -215,7 +213,7 @@ static msg_t PollBaroThread(void *arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void init_bmp085(void){
+void init_bmp085(BinarySemaphore *bmp085_semp){
 
   txbuf[0] = 0xAA;
   while(i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22) != RDY_OK)
@@ -237,7 +235,7 @@ void init_bmp085(void){
           sizeof(PollBaroThreadWA),
           I2C_THREADS_PRIO,
           PollBaroThread,
-          NULL);
+          bmp085_semp);
   chThdSleepMilliseconds(2);
 }
 

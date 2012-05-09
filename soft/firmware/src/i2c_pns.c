@@ -5,13 +5,6 @@
 #include "main.h"
 
 #include "param.h"
-#include "eeprom.h"
-#include "itg3200.h"
-#include "mma8451.h"
-#include "tmp75.h"
-#include "max1236.h"
-#include "bmp085.h"
-#include "mag3110.h"
 
 /*
  ******************************************************************************
@@ -50,14 +43,6 @@ void I2CInit_pns(void){
   chThdSleepMilliseconds(1);
   ParametersInit(); /* читает настройки из EEPROM по I2C*/
   chThdSleepMilliseconds(1);
-
-  /* startups */
-  init_itg3200();
-  init_mma8451();
-  init_tmp75();
-  init_max1236();
-  init_mag3110();
-  init_bmp085();
 }
 
 

@@ -35,7 +35,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern BinarySemaphore mma8451_sem;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern GlobalParam_t global_data[];
@@ -65,9 +64,8 @@ static uint32_t xpol_index,    ypol_index,    zpol_index;
  */
 /* Поток для запроса акселерометра */
 static WORKING_AREA(PollAccelThreadWA, 512);
-static msg_t PollAccelThread(void *arg){
+static msg_t PollAccelThread(void *semp){
   chRegSetThreadName("PollAccel");
-  (void)arg;
 
   msg_t sem_status = RDY_OK;
 
@@ -75,7 +73,7 @@ static msg_t PollAccelThread(void *arg){
   chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout(&mma8451_sem, MS2ST(20));
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
     txbuf[0] = ACCEL_STATUS;
     if ((i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7) == RDY_OK) && (sem_status == RDY_OK)){
       raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
@@ -135,7 +133,7 @@ static void search_indexes(void){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void init_mma8451(void){
+void init_mma8451(BinarySemaphore *mma8451_semp){
 
   search_indexes();
 
@@ -200,7 +198,7 @@ void init_mma8451(void){
           sizeof(PollAccelThreadWA),
           I2C_THREADS_PRIO,
           PollAccelThread,
-          NULL);
+          mma8451_semp);
   chThdSleepMilliseconds(1);
 }
 

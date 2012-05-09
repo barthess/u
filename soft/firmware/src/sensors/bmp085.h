@@ -17,7 +17,7 @@
 #define BOSCH_TYPE				0xD0
 
 
-void init_bmp085(void);
+void init_bmp085(BinarySemaphore *itg3200_semp);
 
 
 #endif /* BMP085_H_ */
