@@ -38,7 +38,7 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-uint32_t itg3200_period;
+uint32_t imu_update_period;
 
 extern RawData raw_data;
 extern CompensatedData comp_data;
@@ -107,7 +107,7 @@ static float calc_gyro_rate(int32_t raw, float sens){
  * Получение приращения угла исходя из угловой скорости и временем между выборками
  */
 static float get_degrees(float raw){
-  float t = (float)itg3200_period / 1000000.0;
+  float t = (float)imu_update_period / 1000000.0;
   return raw * ((t * 180) / PI);
 }
 

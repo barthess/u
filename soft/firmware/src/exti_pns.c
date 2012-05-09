@@ -27,7 +27,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern uint32_t itg3200_period;
+extern uint32_t imu_update_period;
 
 /*
  ******************************************************************************
@@ -152,7 +152,7 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
     }
     else if(itg3200_period_measured == 1){
       tmStopMeasurement(&itg3200_tmup);
-      itg3200_period = RTT2US(itg3200_tmup.last);
+      imu_update_period = RTT2US(itg3200_tmup.last);
     }
     itg3200_period_measured++;
   }

@@ -33,7 +33,7 @@ extern GlobalParam_t global_data[];
 extern CompensatedData comp_data;
 extern float dcmEst[3][3];
 
-extern uint32_t itg3200_period;
+extern uint32_t imu_update_period;
 uint32_t imu_step = 0;                /* incremented on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 
@@ -99,11 +99,11 @@ static msg_t Imu(void *semp) {
   msg_t sem_status = RDY_TIMEOUT;
   float interval = 0; /* time between 2 gyro measurements */
 
-  while (itg3200_period == 0){
+  while (imu_update_period == 0){
     /* wait until giro sampling time measured */
     chThdSleepMilliseconds(10);
   }
-  interval = (((float)itg3200_period)/1000000.0);
+  interval = (((float)imu_update_period)/1000000.0);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(100));
