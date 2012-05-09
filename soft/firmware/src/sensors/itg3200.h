@@ -20,7 +20,7 @@
 #define GYRO_PWR_MGMT   0x3E
 
 
-void init_itg3200(BinarySemaphore *itg3200_sem);
+void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp);
 void gyro_refresh_zeros(void);
 
 

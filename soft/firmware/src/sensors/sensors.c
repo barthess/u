@@ -4,8 +4,8 @@
 #include "sensors.h"
 #include "message.h"
 
+#include "imu.h"
 #include "adc_pns.h"
-
 #include "exti_pns.h"
 #include "itg3200.h"
 #include "mma8451.h"
@@ -25,6 +25,8 @@
  * EXTERNS
  ******************************************************************************
  */
+RawData raw_data;                     /* структура с сырыми данными с датчиков */
+CompensatedData comp_data;            /* обработанные данные */
 
 /*
  ******************************************************************************
@@ -37,6 +39,9 @@ static BinarySemaphore mag3110_sem;
 static BinarySemaphore mma8451_sem;
 static BinarySemaphore bmp085_sem;
 static BinarySemaphore itg3200_sem;
+
+/* семафор для синхронизации инерциалки и датчиков */
+static BinarySemaphore imu_sem;
 
 /*
  ******************************************************************************
@@ -64,6 +69,7 @@ void SensorsInit(void){
   chBSemInit(&mma8451_sem,  TRUE);
   chBSemInit(&bmp085_sem,   TRUE);
   chBSemInit(&itg3200_sem,  TRUE);
+  chBSemInit(&imu_sem,      TRUE);
 
   /* Запуск контроллера внешних прерываний.
    * ПОМНИ! I2C и RTC используют его */
@@ -71,10 +77,12 @@ void SensorsInit(void){
   ADCInit_pns();
 
   /* start I2C sensors */
-  init_itg3200(&itg3200_sem);
+  init_itg3200(&itg3200_sem, &imu_sem);
   init_mma8451(&mma8451_sem);
   init_tmp75();
   init_max1236();
   init_mag3110(&mag3110_sem);
   init_bmp085(&bmp085_sem);
+
+  ImuInit(&imu_sem);
 }

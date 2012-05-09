@@ -31,7 +31,6 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern GlobalParam_t global_data[];
 extern CompensatedData comp_data;
-extern BinarySemaphore imu_sem;
 extern uint32_t itg3200_period;
 extern float dcmEst[3][3];
 
@@ -40,7 +39,6 @@ extern float dcmEst[3][3];
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static TimeMeasurement imu_tmup;
 
 /*
  *******************************************************************************
@@ -92,8 +90,8 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
  * ѕоток обработки инерациальных данных
  */
 static WORKING_AREA(waImu, 1024);
-static msg_t Imu(void *arg) {
-  (void)arg;
+static msg_t Imu(void *semp) {
+
   chRegSetThreadName("IMU");
   msg_t sem_status = RDY_TIMEOUT;
   float interval = 0; /* time between 2 gyro measurements */
@@ -105,7 +103,7 @@ static msg_t Imu(void *arg) {
   interval = (((float)itg3200_period)/1000000.0);
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout(&imu_sem, MS2ST(100));
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(100));
     if (sem_status == RDY_OK){
       dcmUpdate(((float)comp_data.xacc) / 1000,
                 ((float)comp_data.yacc) / 1000,
@@ -163,10 +161,9 @@ static msg_t ImuSender(void *arg) {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ImuInit(void){
-  tmObjectInit(&imu_tmup);
+void ImuInit(BinarySemaphore *imu_semp){
   dcmInit();
-  chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
+  chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, imu_semp);
   chThdCreateStatic(waImuSender, sizeof(waImuSender), NORMALPRIO, ImuSender, NULL);
 }
 

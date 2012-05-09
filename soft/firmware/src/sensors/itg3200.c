@@ -41,7 +41,6 @@ extern uint32_t GlobalFlags;
 
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern BinarySemaphore imu_sem;
 extern GlobalParam_t global_data[];
 extern uint32_t itg3200_period;
 extern EventSource pwrmgmt_event;
@@ -65,6 +64,8 @@ static uint32_t zero_cnt = 0;
 static uint32_t xsens_index, ysens_index, zsens_index;
 static uint32_t xpol_index,  ypol_index,  zpol_index;
 static uint32_t awg_samplescnt;
+
+static BinarySemaphore *imusync_semp = NULL;
 
 /*
  *******************************************************************************
@@ -170,7 +171,7 @@ static msg_t PollGyroThread(void *semp){
         mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
 
         /* say to IMU "we have fresh data "*/
-        chBSemSignal(&imu_sem);
+        chBSemSignal(imusync_semp);
       }
     }
     else{
@@ -219,7 +220,14 @@ static void search_indexes(void){
 /**
  *
  */
-void init_itg3200(BinarySemaphore *itg3200_semp){
+void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
+
+  imusync_semp = imu_semp;
+
+  // обнуление инкрементальных сумм
+  comp_data.xgyro_angle = 0;
+  comp_data.ygyro_angle = 0;
+  comp_data.zgyro_angle = 0;
 
   search_indexes();
 

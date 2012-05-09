@@ -50,17 +50,24 @@
  ******************************************************************************
  */
 uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoch) */
-
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
-RawData raw_data;                     /* структура с сырыми данными с датчиков */
-CompensatedData comp_data;            /* обработанные данные */
+
+
+
+
 
 uint32_t itg3200_period = 0;          /* время получения сэмплов с гироскопа (uS)*/
 uint32_t imu_step = 0;                /* incremented on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 
-BinarySemaphore imu_sem;              /* семафор для синхронизации инерциалки и датчиков */
+
+
+
+
+
+
+
 
 
 /* примонтированный файл EEPROM */
@@ -123,14 +130,6 @@ int main(void) {
   xbee_reset_clear();
   xbee_sleep_clear();
 
-  // обнуление инкрементальных сумм
-  comp_data.xgyro_angle = 0;
-  comp_data.ygyro_angle = 0;
-  comp_data.zgyro_angle = 0;
-
-  /* примитивов синхронизации */
-  chBSemInit(&imu_sem,      TRUE);
-
   /* инициализация почтовых ящиков */
   chMBInit(&autopilot_mb,     autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,        tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
@@ -154,15 +153,12 @@ int main(void) {
   LinkMgrInit();
   SanityControlInit();
   TimekeepingInit();
+
   I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
+  SensorsInit(); /* uses I2C */
 
-
-  SensorsInit();
-
-
-//  eeprom_testsuit_run();
   ServoInit();
-  ImuInit();
+
   GPSInit();
   AutopilotInit();  /* автопилот должен стартовать только после установки связи */
   StorageInit();

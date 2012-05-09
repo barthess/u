@@ -2,7 +2,7 @@
 #define IMU_H_
 
 
-void ImuInit(void);
+void ImuInit(BinarySemaphore *imu_semp);
 
 
 #endif /* IMU_H_ */
