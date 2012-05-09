@@ -108,7 +108,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_OPTIMIZE_SPEED) || defined(__DOXYGEN__)
-#define CH_OPTIMIZE_SPEED               FALSE
+#define CH_OPTIMIZE_SPEED               TRUE
 #endif
 
 /*===========================================================================*/

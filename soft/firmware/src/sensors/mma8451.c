@@ -119,53 +119,15 @@ static msg_t PollAccelThread(void *arg){
 static void search_indexes(void){
   int32_t i = -1;
 
-  i = KeyValueSearch("ACC_xoffset");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    xoffset_index = i;
-  i = KeyValueSearch("ACC_yoffset");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    yoffset_index = i;
-  i = KeyValueSearch("ACC_zoffset");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    zoffset_index = i;
-
-  i = KeyValueSearch("ACC_xsens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    xsens_index = i;
-  i = KeyValueSearch("ACC_ysens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    ysens_index = i;
-  i = KeyValueSearch("ACC_zsens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    zsens_index = i;
-
-  i = KeyValueSearch("ACC_xpol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    xpol_index = i;
-  i = KeyValueSearch("ACC_ypol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    ypol_index = i;
-  i = KeyValueSearch("ACC_zpol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    zpol_index = i;
+  kvs(ACC, xoffset);
+  kvs(ACC, yoffset);
+  kvs(ACC, zoffset);
+  kvs(ACC, xsens);
+  kvs(ACC, ysens);
+  kvs(ACC, zsens);
+  kvs(ACC, xpol);
+  kvs(ACC, ypol);
+  kvs(ACC, zpol);
 }
 
 /*
@@ -174,7 +136,6 @@ static void search_indexes(void){
  *******************************************************************************
  */
 void init_mma8451(void){
-  int32_t i = -1;
 
   search_indexes();
 
@@ -186,7 +147,7 @@ void init_mma8451(void){
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
-    i = 0;
+    uint32_t i = 0;
     for (i = 0; i < ACCEL_TX_DEPTH; i++){txbuf[i] = 0x55;}
     for (i = 0; i < ACCEL_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif

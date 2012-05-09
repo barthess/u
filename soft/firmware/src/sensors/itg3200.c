@@ -64,7 +64,6 @@ static uint32_t zero_cnt = 0;
 /* индексы в структуре с параметрами */
 static uint32_t xsens_index, ysens_index, zsens_index;
 static uint32_t xpol_index,  ypol_index,  zpol_index;
-static uint32_t samplescnt_index;
 static uint32_t awg_samplescnt;
 
 /*
@@ -76,7 +75,7 @@ static uint32_t awg_samplescnt;
  */
 
 /**
- * ќпределение спещени€ нулей.
+ * ќпределение смещени€ нулей.
  */
 void gyrozeroing(void){
   if (zero_cnt > 0){
@@ -87,7 +86,7 @@ void gyrozeroing(void){
     return;
   }
   else{
-    clearGlobalFlag(GYRO_CAL);
+    clearGlobalFlag(GYRO_CAL_FLAG);
     mavlink_system_struct.state = MAV_STATE_STANDBY;
   }
 }
@@ -135,7 +134,7 @@ static msg_t PollGyroThread(void *arg){
       raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
       raw_data.zgyro      = complement2signed(rxbuf[6], rxbuf[7]);
 
-      if (GlobalFlags & GYRO_CAL)
+      if (GlobalFlags & GYRO_CAL_FLAG)
         gyrozeroing();
       else{
         /* correct placement (we need to swap just x and y axis) and advance to zero offset */
@@ -197,48 +196,18 @@ static msg_t PollGyroThread(void *arg){
 static void search_indexes(void){
   int32_t i = -1;
 
-  i = KeyValueSearch("GYRO_xsens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    xsens_index = i;
-
-  i = KeyValueSearch("GYRO_ysens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    ysens_index = i;
-
-  i = KeyValueSearch("GYRO_zsens");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    zsens_index = i;
-
-  i = KeyValueSearch("GYRO_xpol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    xpol_index = i;
-
-  i = KeyValueSearch("GYRO_ypol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    ypol_index = i;
-
-  i = KeyValueSearch("GYRO_zpol");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    zpol_index = i;
+  kvs(GYRO, xsens);
+  kvs(GYRO, ysens);
+  kvs(GYRO, zsens);
+  kvs(GYRO, xpol);
+  kvs(GYRO, ypol);
+  kvs(GYRO, zpol);
 
   i = KeyValueSearch("GYRO_zeroconut");
   if (i == -1)
     chDbgPanic("key not found");
   else{
-    samplescnt_index = i;
-    awg_samplescnt = global_data[samplescnt_index].value;
+    awg_samplescnt = global_data[i].value;
   }
 }
 
@@ -252,13 +221,12 @@ static void search_indexes(void){
  *
  */
 void init_itg3200(void){
-  int32_t i = -1;
 
   search_indexes();
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
-    i = 0;
+    uint32_t i = 0;
     for (i = 0; i < GYRO_TX_DEPTH; i++){txbuf[i] = 0x55;}
     for (i = 0; i < GYRO_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif
@@ -290,7 +258,9 @@ void init_itg3200(void){
           NULL);
   chThdSleepMilliseconds(2);
 
+  /* fireup calibration */
   mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  setGlobalFlag(GYRO_CAL_FLAG);
   gyro_refresh_zeros();
 }
 
@@ -298,16 +268,9 @@ void init_itg3200(void){
  * —брасывает рассчитанные нули и проводит калибровку заново.
  */
 void gyro_refresh_zeros(void){
-
-  chSysLock();
-
   raw_data.xgyro_zero = 0;
   raw_data.ygyro_zero = 0;
   raw_data.zgyro_zero = 0;
-
   zero_cnt = awg_samplescnt;
-  GlobalFlags |= GYRO_CAL;
-
-  chSysUnlock();
 }
 

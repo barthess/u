@@ -55,7 +55,6 @@ Output variables are:
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
 extern GlobalParam_t global_data[];
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 
 /*
  ******************************************************************************
@@ -120,17 +119,17 @@ void dcm_rotate(float dcm[3][3], float w[3]){
  *******************************************************************************
  */
 
-/* accelerations in g,
- * angular rates in rad/s,
- * magnetic flux in T,
+/* accelerations in g (scale does not matter because values will be normolized),
+ * angular rates in rad/s (scale is MATTER),
+ * magnetic flux in uT (scale does not matter because values will be normolized),
  * time in s */
 void dcmUpdate(float xacc,  float yacc,  float zacc,
                float xgyro, float ygyro, float zgyro,
                float xmag,  float ymag,  float zmag,
                float imu_interval){
   uint32_t i;
-  float Kacc[3];          //K(b) vector according to accelerometer in body's coordinates
-  float Imag[3];          //I(b) vector accordng to magnetometer in body's coordinates
+  float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
+  float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
   imu_step++;
 
   //interval since last call
@@ -183,26 +182,29 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   float wM[3];
   //in the absense of magnetometer let's assume North vector (I) is
   // always in XZ plane of the device (y coordinate is 0)
-//    Imag[0] = sqrtf(1 - dcmEst[0][2] * dcmEst[0][2]);
-//    Imag[1] = 0;
-//    Imag[2] = dcmEst[0][2];
+  //    Imag[0] = sqrtf(1 - dcmEst[0][2] * dcmEst[0][2]);
+  //    Imag[1] = 0;
+  //    Imag[2] = dcmEst[0][2];
 
   Imag[0] = xmag;
   Imag[1] = ymag;
   Imag[2] = zmag;
+
+  /* get length of vector if not yet present */
   if (mag_modulus == 0)
     mag_modulus = vector3d_modulus(Imag);
 
-  float newmod = vector3d_modulus(Imag);
-  if (((newmod / mag_modulus) - 1) < MAG_ERR_MAX){
+  /* ignore magnetometer readings if external magnetic field too strong */
+  if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
     float tmpM[3];
     vector3d_normalize(Imag);
     vector3d_cross(Kacc, Imag, tmpM);
-//    vector3d_normalize(tmpM);
+    vector3d_normalize(tmpM);
     vector3d_cross(tmpM, Kacc, Imag);
     vector3d_normalize(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
     vector3d_cross(dcmEst[0], Imag, wM);
+    //TODO: игнорировать магнетометр при слишком больших кренах
   }
   else{
     wM[0] = 0.0;
@@ -216,10 +218,10 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //gyro rate direction is usually specified (in datasheets) as the device's(body's) rotation
   //about a fixed earth's (global) frame, if we look from the perspective of device then
   //the global vectors (I,K,J) rotation direction will be the inverse
-  float w[3];         //gyro rates (angular velocity of a global vector in local coordinates)
-  w[0] = -xgyro; //rotation rate about accelerometer's X axis (GY output)
-  w[1] = -ygyro; //rotation rate about accelerometer's Y axis (GX output)
-  w[2] = -zgyro; //rotation rate about accelerometer's Z axis (GZ output)
+  float w[3];     //gyro rates (angular velocity of a global vector in local coordinates)
+  w[0] = -xgyro;  //rotation rate about accelerometer's X axis (GY output)
+  w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
+  w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
@@ -236,20 +238,20 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 void dcmInit(){
   int32_t i = -1;
 
-  i = KeyValueSearch("IMU_accweight");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else{
-    accweight_index = i;
-  }
+  kvs(IMU, accweight);
+  kvs(IMU, magweight);
 
-  i = KeyValueSearch("IMU_magweight");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else{
-    magweight_index = i;
-  }
-
-  //TODO: load coefficients from param struct
-  return;
+//  i = KeyValueSearch("IMU_accweight");
+//  if (i == -1)
+//    chDbgPanic("key not found");
+//  else{
+//    accweight_index = i;
+//  }
+//
+//  i = KeyValueSearch("IMU_magweight");
+//  if (i == -1)
+//    chDbgPanic("key not found");
+//  else{
+//    magweight_index = i;
+//  }
 }

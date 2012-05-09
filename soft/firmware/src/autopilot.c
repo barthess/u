@@ -13,6 +13,8 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
+
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
 
@@ -34,6 +36,36 @@ Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
  *******************************************************************************
  *******************************************************************************
  */
+
+void handle_calibration_cmd(mavlink_command_long_t *mavlink_command_long_struct){
+  /* Trigger calibration. This command will be only accepted if in pre-flight mode.
+  * | Gyro calibration: 0: no, 1: yes
+  * | Magnetometer calibration: 0: no, 1: yes
+  * | Ground pressure: 0: no, 1: yes
+  * | Radio calibration: 0: no, 1: yes
+  * | Empty| Empty| Empty|  */
+
+  /* Gyro */
+  if (mavlink_command_long_struct->param1 == 1){
+    setGlobalFlag(GYRO_CAL_FLAG);
+    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  }
+  else{
+    clearGlobalFlag(GYRO_CAL_FLAG);
+    mavlink_system_struct.state = MAV_STATE_STANDBY;
+  }
+
+  /* Magnetometer */
+  if (mavlink_command_long_struct->param2 == 1){
+    setGlobalFlag(MAG_CAL_FLAG);
+    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  }
+  else{
+    clearGlobalFlag(MAG_CAL_FLAG);
+    mavlink_system_struct.state = MAV_STATE_STANDBY;
+  }
+}
+
 
 /* helper funcion */
 void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
@@ -62,15 +94,23 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
    * (пере)запуск калибровки
    */
   case MAV_CMD_PREFLIGHT_CALIBRATION:
-    /* Trigger calibration. This command will be only accepted if in pre-flight mode. |Gyro calibration: 0: no, 1: yes| Magnetometer calibration: 0: no, 1: yes| Ground pressure: 0: no, 1: yes| Radio calibration: 0: no, 1: yes| Empty| Empty| Empty|  */
-    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
+     if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
       command_denied();
       return;
     }
     else{
-
+      handle_calibration_cmd(mavlink_command_long_struct);
     }
     break;
+
+
+
+
+
+
+
+
+
 
   case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
     /* Request the reboot or shutdown of system components. |0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.| 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.| Reserved| Reserved| Empty| Empty| Empty|  */

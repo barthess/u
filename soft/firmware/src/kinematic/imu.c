@@ -79,15 +79,8 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asin(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asin(Ryz));
   }
-//  float roll_axis[3] = {Rxx, Rxy, Rxz};
-//  float N[3] = {1, 0, 0};
-//  float yaw[3];
-//  vector3d_cross(roll_axis, N, yaw);
-  //mavlink_attitude_struct->yaw          = -asin(Rxz);
   mavlink_attitude_struct->yaw          = atan2(Rxy, Rxx);
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
-
-
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
   mavlink_attitude_struct->pitchspeed   = -comp_data.ygyro;

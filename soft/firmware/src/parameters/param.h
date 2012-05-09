@@ -24,6 +24,23 @@ struct GlobalParam_t
   const setval_t setval;
 };
 
+/**
+ * Macro for searching in global value struct with returning parameter checking
+ * family - for example "MAG"
+ * token  - for example "xoffset"
+ */
+//  i = KeyValueSearch("MAG_xoffset");
+//  if (i == -1)
+//    chDbgPanic("key not found");
+//  else
+//    xoffset_index = i;
+#define kvs(family, token){                                                   \
+    i = KeyValueSearch(#family"_"#token);                                     \
+    if (i == -1)                                                              \
+      chDbgPanic(#family"_"#token "key not found");                           \
+    else                                                                      \
+      token##_index = i;                                                      \
+}
 
 //typedef struct GlobalParam_t GlobalParam_t;
 //struct GlobalParam_t

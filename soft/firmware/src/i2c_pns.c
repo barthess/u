@@ -74,7 +74,7 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
     i2cStop(&I2CD2);
     chThdSleepMilliseconds(1);
     i2cStart(&I2CD2, &i2cfg2);
-    setGlobalFlag(I2C_RESTARTED);
+    setGlobalFlag(I2C_RESTARTED_FLAG);
     return status;
   }
   return status;
@@ -93,7 +93,7 @@ msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
     i2cStop(&I2CD2);
     chThdSleepMilliseconds(1);
     i2cStart(&I2CD2, &i2cfg2);
-    setGlobalFlag(I2C_RESTARTED);
+    setGlobalFlag(I2C_RESTARTED_FLAG);
     return status;
   }
   return status;

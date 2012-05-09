@@ -83,9 +83,9 @@ GlobalParam_t global_data[] = {
   {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   /**** чувствительность магнитометра ****/
-  {"MAG_xsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
-  {"MAG_ysens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
-  {"MAG_zsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
+  {"MAG_xsens",       0,          8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
+  {"MAG_ysens",       0,          8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
+  {"MAG_zsens",       0,          8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
   /**** полярности осей. Направление осей приведено к осям автопилота ****/
   {"MAG_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"MAG_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},

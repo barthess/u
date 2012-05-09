@@ -86,7 +86,7 @@ static msg_t SanityControlThread(void *arg) {
     }
 
     /* этим светодиодом будем обозначать процесс выставки гироскопов */
-    if (GlobalFlags & GYRO_CAL)
+    if (GlobalFlags & GYRO_CAL_FLAG)
       palClearPad(GPIOB, GPIOB_LED_R);
     else
       palSetPad(GPIOB, GPIOB_LED_R);
