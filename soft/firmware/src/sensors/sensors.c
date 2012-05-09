@@ -4,6 +4,8 @@
 #include "sensors.h"
 #include "message.h"
 
+#include "adc_pns.h"
+
 #include "exti_pns.h"
 #include "itg3200.h"
 #include "mma8451.h"
@@ -66,8 +68,9 @@ void SensorsInit(void){
   /* Запуск контроллера внешних прерываний.
    * ПОМНИ! I2C и RTC используют его */
   ExtiInit(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
+  ADCInit_pns();
 
-  /* startups */
+  /* start I2C sensors */
   init_itg3200(&itg3200_sem);
   init_mma8451(&mma8451_sem);
   init_tmp75();

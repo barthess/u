@@ -30,7 +30,6 @@
 #include "sanity.h"
 #include "irq_storm.h"
 #include "i2c_pns.h"
-#include "adc_pns.h"
 #include "timekeeping.h"
 #include "linkmgr.h"
 #include "gps.h"
@@ -163,7 +162,6 @@ int main(void) {
 
 //  eeprom_testsuit_run();
   ServoInit();
-  ADCInit_pns();
   ImuInit();
   GPSInit();
   AutopilotInit();  /* автопилот должен стартовать только после установки связи */
