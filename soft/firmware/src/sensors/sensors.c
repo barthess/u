@@ -73,7 +73,7 @@ void SensorsInit(void){
   chBSemInit(&imu_sem,      TRUE);
 
   /* Запуск контроллера внешних прерываний.
-   * ПОМНИ! I2C и RTC используют его */
+   * ПОМНИ! I2C-датчики и RTC используют его */
   ExtiInit(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
   ADCInit_pns();
 
