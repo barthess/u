@@ -2,7 +2,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "message.h"
+#include "sensors.h"
 #include "exti_pns.h"
 #include "rtc.h"
 

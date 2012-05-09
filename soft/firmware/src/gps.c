@@ -4,6 +4,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "sensors.h"
 #include "message.h"
 #include "gps.h"
 #include "main.h"

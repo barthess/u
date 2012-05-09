@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "imu.h"
 #include "itg3200.h"
+#include "sensors.h"
 #include "message.h"
 #include "param.h"
 #include "main.h"

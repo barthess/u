@@ -3,6 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "sensors.h"
 #include "message.h"
 #include "main.h"
 #include "imu.h"

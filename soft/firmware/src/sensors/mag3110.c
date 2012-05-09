@@ -6,9 +6,9 @@
 #include "i2c_pns.h"
 #include "utils.h"
 #include "mag3110.h"
+#include "sensors.h"
 #include "message.h"
 #include "param.h"
-#include "persistant.h"
 #include "main.h"
 #include "link.h"
 

@@ -4,6 +4,7 @@
 #include "hal.h"
 
 #include "adc_pns.h"
+#include "sensors.h"
 #include "message.h"
 #include "main.h"
 #include "imu.h"

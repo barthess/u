@@ -3,6 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "sensors.h"
 #include "i2c_pns.h"
 #include "utils.h"
 #include "mma8451.h"
