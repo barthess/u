@@ -5,6 +5,7 @@
 #include "message.h"
 
 #include "imu.h"
+#include "gps.h"
 #include "adc_pns.h"
 #include "exti_pns.h"
 #include "itg3200.h"
@@ -85,4 +86,5 @@ void SensorsInit(void){
   init_bmp085(&bmp085_sem);
 
   ImuInit(&imu_sem);
+  GPSInit();
 }

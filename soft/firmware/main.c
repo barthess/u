@@ -133,13 +133,9 @@ int main(void) {
   LinkMgrInit();
   SanityControlInit();
   TimekeepingInit();
-
   I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
   SensorsInit(); /* uses I2C */
-
   ServoInit();
-
-  GPSInit();
   AutopilotInit();  /* автопилот должен стартовать только после установки связи */
   StorageInit();
 
