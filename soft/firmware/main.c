@@ -59,6 +59,9 @@ static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 EventSource pwrmgmt_event;
 EventSource modem_event;
 
+/* указатель на Idle поток. Оттуда мы будем брать данные для расчета загрузки проца */
+Thread *IdleThread_p = NULL;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -74,7 +77,7 @@ EventSource modem_event;
  */
 int main(void) {
   halInit();
-  chSysInit();
+  IdleThread_p = chSysInit();
 
   chEvtInit(&pwrmgmt_event);
   chEvtInit(&modem_event);

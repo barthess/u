@@ -14,22 +14,16 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern mavlink_sys_status_t mavlink_sys_status_struct;
 extern uint32_t GlobalFlags;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
+extern Thread *IdleThread_p;
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define SYS_STATUS_3D_GYRO   ((uint32_t)1 << 0)
-#define SYS_STATUS_3D_ACCEL  ((uint32_t)1 << 1)
-#define SYS_STATUS_3D_MAG    ((uint32_t)1 << 2)
-#define SYS_STATUS_ABS_PRES  ((uint32_t)1 << 3)
-#define SYS_STATUS_DIFF_PRES ((uint32_t)1 << 4)
-#define SYS_STATUS_GPS       ((uint32_t)1 << 5)
 
 /*
  ******************************************************************************
@@ -39,12 +33,20 @@ extern mavlink_system_t mavlink_system_struct;
 /* for debugging purpose */
 static Thread *tp = NULL;
 
+/* переменные для оценки загруженности процессора */
+static uint32_t last_sys_ticks = 0;
+static uint32_t last_idle_ticks = 0;
+
 /*
  *******************************************************************************
  *******************************************************************************
  * LOCAL FUNCTIONS
  *******************************************************************************
  *******************************************************************************
+ */
+
+/**
+ * посылает heartbeat пакеты и моргает светодиодиком
  */
 static WORKING_AREA(SanityControlThreadWA, 256);
 static msg_t SanityControlThread(void *arg) {
@@ -60,10 +62,6 @@ static msg_t SanityControlThread(void *arg) {
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
   mavlink_heartbeat_struct.type = mavlink_system_struct.type;
   mavlink_heartbeat_struct.custom_mode = 0;
-
-  mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
-  mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
-  mavlink_sys_status_struct.load = 231;
 
   while (TRUE) {
     palSetPad(GPIOB, GPIOB_LED_B);
@@ -102,15 +100,40 @@ static msg_t SanityControlThread(void *arg) {
  *******************************************************************************
  */
 void SanityControlInit(void){
-
-  mavlink_sys_status_struct.onboard_control_sensors_present = (
-      SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
-      SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
-
   tp = chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),
           NORMALPRIO,
           SanityControlThread,
           NULL);
 }
+
+/**
+ * Рассчитывает загрузку проца.
+ * Возвращает десятые доли процента.
+ */
+uint16_t get_cpu_load(void){
+
+  uint32_t i, s; /* "мгновенные" значения количества тиков idle, system */
+
+  /* получаем мгновенное значение счетчика из Idle */
+  if (chThdGetTicks(IdleThread_p) >= last_idle_ticks)
+    i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
+  else /* произошло переполнение */
+    i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
+
+  /* получаем мгновенное значение счетчика из системы */
+  if (chTimeNow() >= last_sys_ticks)
+    s = chTimeNow() - last_sys_ticks;
+  else /* произошло переполнение */
+    s = chTimeNow() + (0xFFFFFFFF - last_sys_ticks);
+
+  /* обновляем счетчики */
+  last_idle_ticks = chThdGetTicks(IdleThread_p);
+  last_sys_ticks = chTimeNow();
+
+  return ((s - i) * 1000) / s;
+}
+
+
+
 

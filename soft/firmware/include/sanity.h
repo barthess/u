@@ -3,6 +3,7 @@
 
 
 void SanityControlInit(void);
+uint16_t get_cpu_load(void);
 
 
 #endif /* SANITY_H_ */

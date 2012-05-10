@@ -5,22 +5,32 @@
 #include "param.h"
 #include "message.h"
 #include "main.h"
+#include "sanity.h"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define RAW_IMU       (global_data[raw_imu_index].value)
-#define RAW_PRESS     (global_data[raw_press_index].value)
-#define SCAL_IMU      (global_data[scal_imu_index].value)
-#define SCAL_PRESS    (global_data[scal_press_index].value)
-#define ATTITUDE      (global_data[attitude_index].value)
-#define VFR_HUD       (global_data[vfr_hud_index].value)
-#define GPS_INT       (global_data[gps_int_index].value)
-#define SYS_STATUS    (global_data[sys_status_index].value)
+#define SYS_STATUS_3D_GYRO    ((uint32_t)1 << 0)
+#define SYS_STATUS_3D_ACCEL   ((uint32_t)1 << 1)
+#define SYS_STATUS_3D_MAG     ((uint32_t)1 << 2)
+#define SYS_STATUS_ABS_PRES   ((uint32_t)1 << 3)
+#define SYS_STATUS_DIFF_PRES  ((uint32_t)1 << 4)
+#define SYS_STATUS_GPS        ((uint32_t)1 << 5)
 
+#define RAW_IMU               (global_data[raw_imu_index].value)
+#define RAW_PRESS             (global_data[raw_press_index].value)
+#define SCAL_IMU              (global_data[scal_imu_index].value)
+#define SCAL_PRESS            (global_data[scal_press_index].value)
+#define ATTITUDE              (global_data[attitude_index].value)
+#define VFR_HUD               (global_data[vfr_hud_index].value)
+#define GPS_INT               (global_data[gps_int_index].value)
+#define SYS_STATUS            (global_data[sys_status_index].value)
+
+/* Sieze of working area for sending threads */
 #define SEND_THD_SIZE 96
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -265,6 +275,10 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(SYS_STATUS);
     if ((sys_status_mail.payload == NULL) && (SYS_STATUS != SEND_OFF)){
+
+
+      mavlink_sys_status_struct.load = get_cpu_load();
+
       sys_status_mail.payload = &mavlink_sys_status_struct;
       chMBPost(&tolink_mb, (msg_t)&sys_status_mail, TIME_IMMEDIATE);
     }
@@ -340,6 +354,11 @@ void MavSenderInit(void){
           LINK_THREADS_PRIO - 1,
           SYS_STAT_SenderThread,
           NULL);
+  mavlink_sys_status_struct.onboard_control_sensors_present = (
+      SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
+      SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
+  mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
+  mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
 }
 
 
