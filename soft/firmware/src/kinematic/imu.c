@@ -53,14 +53,14 @@ float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
-    mavlink_attitude_struct->pitch        = -asin(Rxz);
-    mavlink_attitude_struct->roll         = -asin(Ryz);
+    mavlink_attitude_struct->pitch        = -asinf(Rxz);
+    mavlink_attitude_struct->roll         = -asinf(Ryz);
   }
   else{
-    mavlink_attitude_struct->pitch        = PI - (-asin(Rxz));
-    mavlink_attitude_struct->roll         = PI - (-asin(Ryz));
+    mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
+    mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  mavlink_attitude_struct->yaw          = atan2(Rxy, Rxx);
+  mavlink_attitude_struct->yaw          = atan2f(Rxy, Rxx);
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
