@@ -30,8 +30,8 @@ extern Thread *IdleThread_p;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* for debugging purpose */
-static Thread *tp = NULL;
+/* указатель на Idle поток. Оттуда мы будем брать данные для расчета загрузки проца */
+Thread *IdleThread_p = NULL;
 
 /* переменные для оценки загруженности процессора */
 static uint32_t last_sys_ticks = 0;
@@ -100,7 +100,10 @@ static msg_t SanityControlThread(void *arg) {
  *******************************************************************************
  */
 void SanityControlInit(void){
-  tp = chThdCreateStatic(SanityControlThreadWA,
+
+  IdleThread_p = chSysGetIdleThread();
+
+  chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),
           NORMALPRIO,
           SanityControlThread,
