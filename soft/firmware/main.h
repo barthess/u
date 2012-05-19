@@ -10,10 +10,11 @@
 
 /******************************************************************
  * приоритеты для потоков */
-#define I2C_THREADS_PRIO    (NORMALPRIO + 5)
-#define LINK_THREADS_PRIO   (NORMALPRIO - 5)
-#define CMD_THREADS_PRIO    (LINK_THREADS_PRIO - 2)
-#define GPS_THREAD_PRIO     (NORMALPRIO - 2)
+#define I2C_THREADS_PRIO          (NORMALPRIO + 5)
+#define TIMEKEEPER_THREAD_PRIO    (I2C_THREADS_PRIO - 1)
+#define LINK_THREADS_PRIO         (NORMALPRIO - 5)
+#define CMD_THREADS_PRIO          (LINK_THREADS_PRIO - 2)
+#define GPS_THREAD_PRIO           (NORMALPRIO - 2)
 
 
 /******************************************************************

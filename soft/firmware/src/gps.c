@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -9,6 +10,7 @@
 #include "gps.h"
 #include "main.h"
 #include "link.h"
+#include "exti_pns.h"
 
 /**
  * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,
@@ -56,6 +58,7 @@ including, the "$" and "*".
 extern RawData raw_data;
 extern Mailbox tolink_mb;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
+extern struct tm gps_timp;
 
 /*
  ******************************************************************************
@@ -76,6 +79,7 @@ static SerialConfig gps_ser_cfg = {
  */
 static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct);
 static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct);
+static void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd);
 static int32_t parse_decimal(uint8_t *p);
 static int32_t parse_degrees(uint8_t *p);
 static uint32_t gpsatol(const uint8_t *str);
@@ -96,6 +100,7 @@ static msg_t gpsRxThread(void *arg){
   (void)arg;
   uint32_t tmp = 0;
   uint32_t n = 0;
+
   // буфера под принятые сообщения
   static uint8_t ggabuf[GPS_MSG_LEN];
   static uint8_t rmcbuf[GPS_MSG_LEN];
@@ -107,8 +112,6 @@ static msg_t gpsRxThread(void *arg){
   gps_mail.payload = NULL;
   gps_mail.invoice = MAVLINK_MSG_ID_GLOBAL_POSITION_INT;
   gps_mail.confirmbox = NULL;
-
-
 
   mavlink_global_position_int_struct.time_boot_ms = 0;
   mavlink_global_position_int_struct.lat = 0;
@@ -253,9 +256,11 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   int32_t  gps_speed_knots = 0;
   int32_t  gps_course = 0;
 
+  uint8_t *buft, *bufd;
   uint8_t i = 1;  /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
   uint8_t valid = 'V';
 
+  buft = &(rmcbuf[i]);
   while(rmcbuf[i] != ','){i++;}                   /* Time (UTC) */
     i++;
 
@@ -283,12 +288,17 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   while(rmcbuf[i] != ','){i++;}
     i++;
 
+  bufd = &(rmcbuf[i]);
+  while(rmcbuf[i] != ','){i++;}                   /* Date (UTC) */
+    i++;
+
   if (valid == 'A'){                              /* если координаты достоверны */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
 
     global_pos_struct->hdg = 65535;
     //global_pos_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
+    get_time(&gps_timp, buft, bufd);
   }
   else{
   	raw_data.gps_course = 0;
@@ -296,6 +306,34 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
 
     global_pos_struct->hdg = 65535;
   }
+}
+
+/**
+ * Выковыривает дату и время из RMC
+ *
+ * timp - указатель на структуру с временем
+ * buft - указатель на строку с временем
+ * bufd - указатель на строку с датой
+ *
+int tm_sec       seconds after minute [0-61] (61 allows for 2 leap-seconds)
+int tm_min       minutes after hour [0-59]
+int tm_hour      hours after midnight [0-23]
+int tm_mday      day of the month [1-31]
+int tm_mon       month of year [0-11]
+int tm_year      current year-1900
+int tm_wday      days since Sunday [0-6]
+int tm_yday      days since January 1st [0-365]
+int tm_isdst     daylight savings indicator (1 = yes, 0 = no, -1 = unknown)
+ */
+
+void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
+  timp->tm_hour = 10 * (buft[0] - '0') + (buft[1] - '0');
+  timp->tm_min  = 10 * (buft[2] - '0') + (buft[3] - '0');
+  timp->tm_sec  = 10 * (buft[4] - '0') + (buft[5] - '0');
+
+  timp->tm_mday = 10 * (bufd[0] - '0') + (bufd[1] - '0');
+  timp->tm_mon  = 10 * (bufd[2] - '0') + (bufd[3] - '0') - 1;
+  timp->tm_year = 10 * (bufd[4] - '0') + (bufd[5] - '0') + 2000 - 1900;
 }
 
 uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
@@ -412,5 +450,19 @@ void GPSInit(void){
           GPS_THREAD_PRIO,
           gpsRxThread,
           NULL);
+
+  /* clear time structure */
+  gps_timp.tm_isdst = -1;
+  gps_timp.tm_wday  = 0;
+  gps_timp.tm_mday  = 0;
+  gps_timp.tm_yday  = 0;
+  gps_timp.tm_mon   = 0;
+  gps_timp.tm_year  = 0;
+  gps_timp.tm_sec   = 0;
+  gps_timp.tm_min   = 0;
+  gps_timp.tm_hour  = 0;
+
+  /* enable interrupts from PPS pin */
+  ExtiEnablePps();
 }
 

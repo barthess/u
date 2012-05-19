@@ -222,7 +222,7 @@ NOT_READY:
   err = f_getfree("/", &clusters, &fsp);
   if (err != FR_OK)
     return RDY_RESET;
-  if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)SDC_BLOCK_SIZE) < (16*1024*1024))
+  if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)MMCSD_BLOCK_SIZE) < (16*1024*1024))
     return RDY_RESET;
 
   /* open file for writing log */
@@ -259,7 +259,7 @@ NOT_READY:
 /**
  * Create file.
  */
-void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
+void cmd_touch(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void)argc;
   FRESULT err;
   FIL FileObject;

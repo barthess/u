@@ -28,6 +28,7 @@
  */
 extern RawData raw_data;
 extern uint32_t imu_update_period;
+extern BinarySemaphore rtc_sem;
 
 /*
  ******************************************************************************
@@ -35,9 +36,10 @@ extern uint32_t imu_update_period;
  ******************************************************************************
  */
 
+BinarySemaphore *rtc_semp     = &rtc_sem;
 BinarySemaphore *mag3110_semp = NULL;
 BinarySemaphore *mma8451_semp = NULL;
-BinarySemaphore *bmp085_semp = NULL;
+BinarySemaphore *bmp085_semp  = NULL;
 BinarySemaphore *itg3200_semp = NULL;
 
 /**
@@ -54,6 +56,9 @@ static VirtualTimer tachocheck_vt;
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
+
+/* для измерения периода получения сэмплов с гироскопа */
+static TimeMeasurement itg3200_tmup;
 
 /*
  *******************************************************************************
@@ -113,6 +118,9 @@ static void microsd_inset_cb(EXTDriver *extp, expchannel_t channel){
 static void gps_pps_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
+  chSysLockFromIsr();
+  chBSemSignalI(rtc_semp);
+  chSysUnlockFromIsr();
 }
 
 static void bmp085_cb(EXTDriver *extp, expchannel_t channel){
@@ -138,8 +146,6 @@ static void mma8451_int1_cb(EXTDriver *extp, expchannel_t channel){
 //  chBSemSignalI(&mma8451_sem);
 //  chSysUnlockFromIsr();
 }
-
-static TimeMeasurement itg3200_tmup;
 
 static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
@@ -169,27 +175,24 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
   chSysUnlockFromIsr();
 }
 
-
-
-
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, gps_pps_cb},// секундная метка с GPS
+    {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOE, gps_pps_cb},// секундная метка с GPS
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, microsd_inset_cb}, // микросдшка
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, microsd_inset_cb}, // микросдшка
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},//5
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, bmp085_cb}, // датчик давления
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, mag3110_cb}, // magnetometer
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, mma8451_int1_cb}, // первое прерывание с акселерометра
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, bmp085_cb}, // датчик давления
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mag3110_cb}, // magnetometer
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int1_cb}, // первое прерывание с акселерометра
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, itg3200_cb}, // хероскоп
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, itg3200_cb}, // хероскоп
     {EXT_CH_MODE_DISABLED, NULL},//11
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART, tachometer_cb}, // оптрон тахометра
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, tachometer_cb}, // оптрон тахометра
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, mma8451_int2_cb},//15
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int2_cb},//15
     {EXT_CH_MODE_DISABLED, NULL},//PVD
     {EXT_CH_MODE_RISING_EDGE, rtcalarm_cb},// RTC alarms
     {EXT_CH_MODE_DISABLED, NULL},
@@ -197,25 +200,29 @@ static const EXTConfig extcfg = {
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},// timestamp
     {EXT_CH_MODE_RISING_EDGE, rtcwakeup_cb},// wakeup
-  },
-  EXT_MODE_EXTI(
-      EXT_MODE_GPIOE,// GPS_PPS
-      0,
-      0,
-      EXT_MODE_GPIOE,// microSD detect
-      0,
-      0,//5
-      EXT_MODE_GPIOE,// давленометр
-      EXT_MODE_GPIOE,// магнитометр
-      EXT_MODE_GPIOE,// accelerometer int1
-      0,
-      EXT_MODE_GPIOE,// gyro
-      0,
-      EXT_MODE_GPIOE,//оптрон
-      0,
-      0,//14
-      EXT_MODE_GPIOE)// accelerometer int2
+  }
 };
+
+
+
+/*
+EXT_MODE_GPIOE,// GPS_PPS
+0,
+0,
+EXT_MODE_GPIOE,// microSD detect
+0,
+0,//5
+EXT_MODE_GPIOE,// давленометр
+EXT_MODE_GPIOE,// магнитометр
+EXT_MODE_GPIOE,// accelerometer int1
+0,
+EXT_MODE_GPIOE,// gyro
+0,
+EXT_MODE_GPIOE,//оптрон
+0,
+0,//14
+EXT_MODE_GPIOE)// accelerometer int2
+*/
 
 
 /*
@@ -231,7 +238,7 @@ void ExtiInit(BinarySemaphore *mag3110_sem,
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;
-  bmp085_semp = bmp085_sem;
+  bmp085_semp  = bmp085_sem;
   itg3200_semp = itg3200_sem;
 
   chSysLock();
@@ -243,7 +250,12 @@ void ExtiInit(BinarySemaphore *mag3110_sem,
   extStart(&EXTD1, &extcfg);
 }
 
-
+/**
+ * Enables interrupts from PPS
+ */
+void ExtiEnablePps(void){
+  extChannelEnable(&EXTD1, 0);
+}
 
 
 

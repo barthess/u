@@ -6,6 +6,7 @@
 #include "message.h"
 #include "main.h"
 #include "sanity.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -38,7 +39,6 @@
  */
 extern Mailbox tolink_mb;
 extern GlobalParam_t global_data[];
-extern uint64_t TimeUsec;
 extern EventSource modem_event;
 
 extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
@@ -95,7 +95,7 @@ static msg_t RAW_IMU_SenderThread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(RAW_IMU);
     if ((raw_imu_mail.payload == NULL) && (RAW_IMU != SEND_OFF)){
-      mavlink_raw_imu_struct.time_usec = TimeUsec;
+      mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
       raw_imu_mail.payload = &mavlink_raw_imu_struct;
       chMBPost(&tolink_mb, (msg_t)&raw_imu_mail, TIME_IMMEDIATE);
     }
@@ -173,7 +173,7 @@ static msg_t RAW_PRESSURE_SenderThread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(RAW_PRESS);
     if ((raw_pressure_mail.payload == NULL) && (RAW_PRESS != SEND_OFF)){
-      mavlink_raw_pressure_struct.time_usec = TimeUsec;
+      mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
       raw_pressure_mail.payload = &mavlink_raw_pressure_struct;
       chMBPost(&tolink_mb, (msg_t)&raw_pressure_mail, TIME_IMMEDIATE);
     }

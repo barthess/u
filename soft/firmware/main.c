@@ -45,7 +45,9 @@
  * EXTERNS
  ******************************************************************************
  */
-uint64_t TimeUsec;                    /* Timestamp (microseconds since UNIX epoch) */
+BinarySemaphore rtc_sem;  /* для синхронизации часов по PPS */
+struct tm gps_timp;       /* структура для хранения времени, полученного из GPS */
+
 uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
 
 /* примонтированный файл EEPROM */
@@ -75,6 +77,8 @@ EventSource modem_event;
 int main(void) {
   halInit();
   chSysInit();
+
+  chBSemInit(&rtc_sem, TRUE);
 
   chEvtInit(&pwrmgmt_event);
   chEvtInit(&modem_event);

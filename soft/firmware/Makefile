@@ -7,7 +7,7 @@
 ifeq ($(USE_OPT),)
   #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
   USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
-  #USE_OPT = -O3 -ggdb -fomit-frame-pointer -std=gnu99
+  #USE_OPT = -O0 -ggdb -fomit-frame-pointer -std=gnu99
   #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
   #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
   #USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
@@ -194,7 +194,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 # -lm - это указание линкеру для подключения математической либы.
 # добавлено именно здесь, потому что больше некуда
 MCU  = cortex-m4 -lm
-#MCU  = cortex-m3
+#MCU  = cortex-m3 -lm
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-

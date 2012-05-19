@@ -1,7 +1,9 @@
 #include <time.h>
+#include <stdlib.h>
 
 #include "ch.h"
 #include "hal.h"
+#include "chrtclib.h"
 
 #include "timekeeping.h"
 #include "main.h"
@@ -11,21 +13,32 @@
  * DEFINES
  ******************************************************************************
  */
-#define SOFT_RTC_PERIOD 10
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
-extern uint64_t TimeUsec;
+extern BinarySemaphore rtc_sem;
+extern struct tm gps_timp;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static VirtualTimer timekeeping_vt;
+
+/* Boot timestamp (microseconds since UNIX epoch). Inits in boot time. Latter
+ * uses to calculate current time using TIME_BOOT_MS. Periodically synced with
+ * GPS to correct systick drift */
+static int64_t BootTimestamp = 0;
+
+/* Можно вносить поправку прямо в метку времени, но точное время запуска
+ * может еще понадобиться, поэтому заведем отдельную переменную */
+static int64_t Correction = 0;
+
+/* Время последней коррекции */
+static int64_t LastCorrTimestamp = 0;
 
 /*
  *******************************************************************************
@@ -35,50 +48,33 @@ static VirtualTimer timekeeping_vt;
  *******************************************************************************
  */
 
-/**
- * Перевод из STM32 BCD в классическое представление
- */
-void bcd2tm(struct tm *timp, uint32_t tv_time, uint32_t tv_date){
-  timp->tm_isdst = -1;
+static WORKING_AREA(TimekeeperThreadWA, 512);
+static msg_t TimekeeperThread(void *arg){
+  chRegSetThreadName("Timekeeper");
+  (void)arg;
 
-  timp->tm_wday = ((tv_date >> 13) & 0x7);
-  if(timp->tm_wday == 7)
-    timp->tm_wday = 0;
-  timp->tm_mday = (tv_date & 0xF) + ((tv_date >> 4) & 0x3) * 10;
-  timp->tm_mon  = (((tv_date >> 8) & 0xF) + ((tv_date >> 12) & 0x1) * 10) - 1;
-  timp->tm_year = (((tv_date >> 16)& 0xF) + ((tv_date >> 20) & 0xF) * 10) + 2000 - 1900;
+  int64_t  gps_time = 0;
+  int64_t  pns_time = 0;
 
-  timp->tm_sec  = (tv_time & 0xF) + ((tv_time >> 4) & 0x7) * 10;
-  timp->tm_min  = ((tv_time >> 8)& 0xF) + ((tv_time >> 12) & 0x7) * 10;
-  timp->tm_hour = ((tv_time >> 16)& 0xF) + ((tv_time >> 20) & 0x3) * 10;
-}
+  msg_t sem_status = RDY_RESET;
 
-/**
- * Перевод из классического представления в STM32 BCD формат
- */
-void tm2bcd(struct tm *timp, RTCTime *timespec){
-  uint32_t p = 0; // вспомогательная переменная
+  while (TRUE) {
+    sem_status = chBSemWaitTimeout(&rtc_sem, MS2ST(2000));
+    if (sem_status == RDY_OK){
+      pns_time = pnsGetTimeUnixUsec();
 
-  timespec->tv_date = 0;
-  timespec->tv_time = 0;
+      gps_time = (int64_t)mktime(&gps_timp) * 1000000;
+      Correction += gps_time - pns_time;
+      LastCorrTimestamp = pnsGetTimeUnixUsec();
 
-  p = timp->tm_year - 100;
-  timespec->tv_date |= (((p / 10) & 0xF) << 20) | ((p % 10) << 16);
-  if (timp->tm_wday == 0)
-    p = 7;
-  else
-    p = timp->tm_wday;
-  timespec->tv_date |= (p & 7) << 13;
-  p = timp->tm_mon + 1;
-  timespec->tv_date |= (((p / 10) & 1) << 12) | ((p % 10) << 8);
-  p = timp->tm_mday;
-  timespec->tv_date |= (((p / 10) & 3) << 4) | (p % 10);
-  p = timp->tm_hour;
-  timespec->tv_time |= (((p / 10) & 3) << 20) | ((p % 10) << 16);
-  p = timp->tm_min;
-  timespec->tv_time |= (((p / 10) & 7) << 12) | ((p % 10) << 8);
-  p = timp->tm_sec;
-  timespec->tv_time |= (((p / 10) & 7) << 4) | (p % 10);
+      /* now correct time in internal RTC (if needed) */
+      time_t t1 = pnsGetTimeUnixUsec()/1000000;
+      time_t t2 = rtcGetTimeUnixSec(&RTCD1);
+      if (abs(t1 - t2) > 2)
+        rtcSetTimeUnixSec(&RTCD1, t1);
+    }
+  }
+  return 0;
 }
 
 /*
@@ -87,39 +83,26 @@ void tm2bcd(struct tm *timp, RTCTime *timespec){
  *******************************************************************************
  */
 
-/**
- * Function incrementing global time value by TIMEKEEPING_VT_PERIOD_SEC
- */
-static void vtcb(void *arg) {
-  (void)arg;
-  if (!chVTIsArmedI(&timekeeping_vt)){
-    chSysLockFromIsr();
-    chVTSetI(&timekeeping_vt, MS2ST(SOFT_RTC_PERIOD), vtcb, NULL);
-    TimeUsec += 1000 * SOFT_RTC_PERIOD;
-    chSysUnlockFromIsr();
-  }
+void TimekeepingInit(void){
+
+  BootTimestamp = rtcGetTimeUnixUsec(&RTCD1);
+  /* поскольку вычитывание метки можеть происходить не сразу же после запуска -
+   * внесем коррективы */
+  BootTimestamp -= (int64_t)TIME_BOOT_MS * 1000;
+
+  chThdCreateStatic(TimekeeperThreadWA,
+          sizeof(TimekeeperThreadWA),
+          TIMEKEEPER_THREAD_PRIO,
+          TimekeeperThread,
+          NULL);
 }
 
 /**
- * Читает время из RTC
- * Конвертает в счетчик микросекунд
+ * Return current time using lightweight approximation to avoid calling
+ * of heavy time conversion (from hardware RTC) functions.
  */
-void TimekeepingInit(void){
-  RTCTime  timespec;
-  struct tm timp;
-  uint64_t t = 0;
-
-  rtc_lld_get_time(&RTCD1, &timespec);
-  bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
-  t = mktime(&timp);
-  if (t != -1){
-    TimeUsec = t * 1000000;
-    chSysLock();
-    chVTSetI(&timekeeping_vt, S2ST(SOFT_RTC_PERIOD), vtcb, NULL);
-    chSysUnlock();
-  }
-  else
-    chDbgPanic("time collapsed");
+uint64_t pnsGetTimeUnixUsec(void){
+  return BootTimestamp + (int64_t)(TIME_BOOT_MS) * 1000 + Correction;
 }
 
 /**
