@@ -68,7 +68,7 @@ static msg_t TimekeeperThread(void *arg){
       LastCorrTimestamp = pnsGetTimeUnixUsec();
 
       /* now correct time in internal RTC (if needed) */
-      time_t t1 = pnsGetTimeUnixUsec()/1000000;
+      time_t t1 = pnsGetTimeUnixUsec() / 1000000;
       time_t t2 = rtcGetTimeUnixSec(&RTCD1);
       if (abs(t1 - t2) > 2)
         rtcSetTimeUnixSec(&RTCD1, t1);
