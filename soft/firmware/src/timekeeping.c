@@ -37,9 +37,6 @@ static int64_t BootTimestamp = 0;
  * может еще понадобиться, поэтому заведем отдельную переменную */
 static int64_t Correction = 0;
 
-/* Время последней коррекции */
-static int64_t LastCorrTimestamp = 0;
-
 /*
  *******************************************************************************
  *******************************************************************************
@@ -65,7 +62,6 @@ static msg_t TimekeeperThread(void *arg){
 
       gps_time = (int64_t)mktime(&gps_timp) * 1000000;
       Correction += gps_time - pns_time;
-      LastCorrTimestamp = pnsGetTimeUnixUsec();
 
       /* now correct time in internal RTC (if needed) */
       time_t t1 = pnsGetTimeUnixUsec() / 1000000;
