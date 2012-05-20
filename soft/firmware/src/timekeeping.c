@@ -14,6 +14,7 @@
  ******************************************************************************
  */
 
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -36,6 +37,13 @@ static int64_t BootTimestamp = 0;
 /* Можно вносить поправку прямо в метку времени, но точное время запуска
  * может еще понадобиться, поэтому заведем отдельную переменную */
 static int64_t Correction = 0;
+
+/* количество переполнений системного таймера. Фактически для программного
+ * расширения разрядности счетчика на 32 бита */
+static uint32_t WrapCount = 0;
+
+/* последнее значение счетчика для отлова момента переполнения */
+static uint32_t LastTimeBootMs = 0;
 
 /*
  *******************************************************************************
@@ -98,7 +106,15 @@ void TimekeepingInit(void){
  * of heavy time conversion (from hardware RTC) functions.
  */
 uint64_t pnsGetTimeUnixUsec(void){
-  return BootTimestamp + (int64_t)(TIME_BOOT_MS) * 1000 + Correction;
+
+  if (TIME_BOOT_MS < LastTimeBootMs)
+    WrapCount++;
+
+  LastTimeBootMs = TIME_BOOT_MS;
+  return BootTimestamp
+         + (int64_t)(TIME_BOOT_MS) * 1000
+         + Correction
+         + 0x100000000ull * WrapCount;
 }
 
 /**
