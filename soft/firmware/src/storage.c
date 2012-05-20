@@ -17,6 +17,8 @@
 #define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
 #define SYNC_PERIOD                     5000
+/* размер буфера под имя файла */
+#define MAX_FILENAME_SIZE               32
 
 /*
  ******************************************************************************
@@ -125,22 +127,10 @@ static void remove_handler(void) {
 /**
  *
  */
-static void name_from_time(uint8_t *buf){
-  //TODO: file named like YYYY.MM.DD_hh.mm.ss
-  time_t t = 0;
-
-  t = rtcGetTimeUnixSec(&RTCD1);
-  *buf++ = *"0";
-  *buf++ = *":";
-  while (t > 0) {
-    *buf++ = (t % 10) + 48;
-    t /= 10;
-  }
-  *buf++ = *".";
-  *buf++ = *"l";
-  *buf++ = *"o";
-  *buf++ = *"g";
-  *buf++ = 0;
+static size_t name_from_time(char *buf){
+  struct tm timp;
+  rtcGetTimeTm(&RTCD1, &timp);
+  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.log", &timp);
 }
 
 /**
@@ -225,12 +215,15 @@ NOT_READY:
   if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)MMCSD_BLOCK_SIZE) < (16*1024*1024))
     return RDY_RESET;
 
+
   /* open file for writing log */
-  uint8_t namebuf[32];
+  char namebuf[MAX_FILENAME_SIZE];
   name_from_time(namebuf);
-  err = f_open(&Log, (char *)namebuf, FA_WRITE | FA_OPEN_ALWAYS);
+  err = f_open(&Log, namebuf, FA_WRITE | FA_OPEN_ALWAYS);
   if (err != FR_OK)
     return RDY_RESET;
+
+
 
   /* main write cycle */
   while TRUE{
