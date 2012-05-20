@@ -38,6 +38,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox logwriter_mb;
 extern GlobalParam_t global_data[];
 extern EventSource modem_event;
 
@@ -286,6 +287,35 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   return 0;
 }
 
+
+
+
+
+
+
+static WORKING_AREA(logThreadWA, 256);
+static msg_t logThread(void *arg) {
+  chRegSetThreadName("log");
+  (void)arg;
+
+  uint8_t teststr[] = "|this is test message++++++++++\r\n";
+  Mail test = {NULL, sizeof(teststr) - 1, NULL};
+
+  while (TRUE) {
+    chThdSleepMilliseconds(20);
+    if (test.payload == NULL){
+      test.payload = teststr;
+      chMBPost(&logwriter_mb, (msg_t)&test, TIME_INFINITE);
+    }
+  }
+  return 0;
+}
+
+
+
+
+
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -359,6 +389,13 @@ void MavSenderInit(void){
       SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
   mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
   mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
+
+
+  chThdCreateStatic(logThreadWA,
+          sizeof(logThreadWA),
+          LINK_THREADS_PRIO - 1,
+          logThread,
+          NULL);
 }
 
 

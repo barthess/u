@@ -100,6 +100,7 @@ CSRC = $(PORTSRC) \
        src/gps.c \
        src/irq_storm.c \
        src/storage/microsd.c \
+       src/storage/logger.c \
        src/servo.c \
        src/kinematic/imu.c \
        src/kinematic/vector3d.c \
