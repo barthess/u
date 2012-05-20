@@ -17,7 +17,6 @@ extern Mailbox tolink_mb;
 extern uint32_t GlobalFlags;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
-extern Thread *IdleThread_p;
 
 /*
  ******************************************************************************
@@ -31,7 +30,7 @@ extern Thread *IdleThread_p;
  ******************************************************************************
  */
 /* указатель на Idle поток. Оттуда мы будем брать данные для расчета загрузки проца */
-Thread *IdleThread_p = NULL;
+static Thread *IdleThread_p = NULL;
 
 /* переменные для оценки загруженности процессора */
 static uint32_t last_sys_ticks = 0;

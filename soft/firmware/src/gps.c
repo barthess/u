@@ -180,13 +180,11 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
   int32_t  gps_latitude = 0;
   int32_t  gps_longitude = 0;
   int32_t  gps_altitude = 0;
-  uint32_t gps_time = 0;
 
   uint8_t i = 1; /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
   uint8_t fix = 0, satellites_visible = 0;
 
-  gps_time = parse_decimal(&ggabuf[i]);         /* time */
-  while(ggabuf[i] != ','){i++;}
+  while(ggabuf[i] != ','){i++;}                 /* time */
   i++;
 
   gps_latitude = parse_degrees(&ggabuf[i]);     /* latitude */
@@ -229,7 +227,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     i++;
 
 	if (fix > 0){  /* если есть достоверные координаты */
-	  raw_data.gps_time      = gps_time;
 		raw_data.gps_latitude  = gps_latitude;
 		raw_data.gps_longitude = gps_longitude;
 	  raw_data.gps_altitude  = gps_altitude;
@@ -240,7 +237,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 	  global_pos_struct->alt = gps_altitude * 10;
 	}
 	else{
-	  raw_data.gps_time = 0;
 		raw_data.gps_latitude = 0;
 		raw_data.gps_longitude = 0;
 		raw_data.gps_altitude = 0;
