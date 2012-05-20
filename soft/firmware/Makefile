@@ -99,7 +99,7 @@ CSRC = $(PORTSRC) \
        src/microrl/src/microrl.c \
        src/gps.c \
        src/irq_storm.c \
-       src/storage.c \
+       src/storage/microsd.c \
        src/servo.c \
        src/kinematic/imu.c \
        src/kinematic/vector3d.c \
@@ -177,6 +177,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/eeprom \
          src/link \
          src/sensors \
+         src/storage \
          src/kinematic \
          src/parameters \
          $(MAVLINKDIR) \

@@ -31,7 +31,7 @@
 #include "autopilot.h"
 #include "eeprom.h"
 #include "exti_pns.h"
-#include "storage.h"
+#include "microsd.h"
 
 /*
  ******************************************************************************
