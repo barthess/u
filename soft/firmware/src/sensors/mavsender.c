@@ -6,6 +6,7 @@
 #include "message.h"
 #include "main.h"
 #include "sanity.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -37,8 +38,8 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox logwriter_mb;
 extern GlobalParam_t global_data[];
-extern uint64_t TimeUsec;
 extern EventSource modem_event;
 
 extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
@@ -95,7 +96,7 @@ static msg_t RAW_IMU_SenderThread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(RAW_IMU);
     if ((raw_imu_mail.payload == NULL) && (RAW_IMU != SEND_OFF)){
-      mavlink_raw_imu_struct.time_usec = TimeUsec;
+      mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
       raw_imu_mail.payload = &mavlink_raw_imu_struct;
       chMBPost(&tolink_mb, (msg_t)&raw_imu_mail, TIME_IMMEDIATE);
     }
@@ -173,7 +174,7 @@ static msg_t RAW_PRESSURE_SenderThread(void *arg) {
   while (TRUE) {
     chThdSleepMilliseconds(RAW_PRESS);
     if ((raw_pressure_mail.payload == NULL) && (RAW_PRESS != SEND_OFF)){
-      mavlink_raw_pressure_struct.time_usec = TimeUsec;
+      mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
       raw_pressure_mail.payload = &mavlink_raw_pressure_struct;
       chMBPost(&tolink_mb, (msg_t)&raw_pressure_mail, TIME_IMMEDIATE);
     }
@@ -286,6 +287,35 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   return 0;
 }
 
+
+
+
+
+
+
+static WORKING_AREA(logThreadWA, 256);
+static msg_t logThread(void *arg) {
+  chRegSetThreadName("log");
+  (void)arg;
+
+  uint8_t teststr[] = "|this is test message++++++++++\r\n";
+  Mail test = {NULL, sizeof(teststr) - 1, NULL};
+
+  while (TRUE) {
+    chThdSleepMilliseconds(20);
+    if (test.payload == NULL){
+      test.payload = teststr;
+      chMBPost(&logwriter_mb, (msg_t)&test, TIME_INFINITE);
+    }
+  }
+  return 0;
+}
+
+
+
+
+
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -359,6 +389,13 @@ void MavSenderInit(void){
       SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
   mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
   mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
+
+
+  chThdCreateStatic(logThreadWA,
+          sizeof(logThreadWA),
+          LINK_THREADS_PRIO - 1,
+          logThread,
+          NULL);
 }
 
 

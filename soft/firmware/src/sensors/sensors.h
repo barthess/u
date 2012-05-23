@@ -95,11 +95,7 @@ struct RawData{
   int32_t  gps_altitude;
   int32_t  gps_speed_knots;
   int32_t  gps_course;
-  uint32_t gps_time;
   uint8_t  gps_satellites;
-
-  uint32_t rtc_sec;           /* время по внутренним часам. Секунды с начала эпохи */
-  uint16_t rtc_msec;          /* дробная часть */
 
   uint16_t engine_rpm;        /* Тахометр (rpm)*/
 };

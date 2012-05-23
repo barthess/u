@@ -9,6 +9,7 @@
 #include "i2c_pns.h"
 #include "max1236.h"
 #include "link.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -29,7 +30,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern uint64_t TimeUsec;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 extern EventSource pwrmgmt_event;
 
@@ -80,7 +80,7 @@ static msg_t PollMax1236Thread(void *arg) {
       raw_data.altitude_sonar = sonar_raw;
     }
 
-    mavlink_raw_pressure_struct.time_usec = TimeUsec;
+    mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
     mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
     mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;

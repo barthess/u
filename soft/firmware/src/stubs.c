@@ -6,7 +6,7 @@
 
 #include "stubs.h"
 
-// FIXME: Glibc stubs - HATE THEM
+// Glibc stubs - HATE THEM
 void _exit(int status){
    (void) status;
    chSysHalt();

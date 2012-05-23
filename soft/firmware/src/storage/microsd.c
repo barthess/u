@@ -6,7 +6,8 @@
 #include "chrtclib.h"
 #include "ff.h"
 
-#include "storage.h"
+#include "microsd.h"
+#include "logger.h"
 #include "message.h"
 
 /*
@@ -17,6 +18,8 @@
 #define SDC_POLLING_INTERVAL            100
 #define SDC_POLLING_DELAY               5
 #define SYNC_PERIOD                     5000
+/* размер буфера под имя файла */
+#define MAX_FILENAME_SIZE               32
 
 /*
  ******************************************************************************
@@ -42,11 +45,14 @@ static FATFS SDC_FS;
 /* FS mounted and ready.*/
 static bool_t fs_ready = FALSE;
 
+/* флаг необходимости синхронизации по таймауту */
+static bool_t sync_tmo = FALSE;
+
+/* флаг обозначающий наличие свежих данных, чтобы зря не дергать sync */
+static bool_t fresh_data = FALSE;
+
 /* по этому таймеру будет синхронизироваться файл лога */
 static VirtualTimer sync_vt;
-
-/* флаг необходимости синхронизации */
-static bool_t need_sync = FALSE;
 
 /*
  *******************************************************************************
@@ -125,22 +131,10 @@ static void remove_handler(void) {
 /**
  *
  */
-static void name_from_time(uint8_t *buf){
-  //TODO: file named like YYYY.MM.DD_hh.mm.ss
-  time_t t = 0;
-
-  t = rtcGetTimeUnixSec(&RTCD1);
-  *buf++ = *"0";
-  *buf++ = *":";
-  while (t > 0) {
-    *buf++ = (t % 10) + 48;
-    t /= 10;
-  }
-  *buf++ = *".";
-  *buf++ = *"l";
-  *buf++ = *"o";
-  *buf++ = *"g";
-  *buf++ = 0;
+static size_t name_from_time(char *buf){
+  struct tm timp;
+  rtcGetTimeTm(&RTCD1, &timp);
+  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.log", &timp);
 }
 
 /**
@@ -150,59 +144,46 @@ void sync_cb(void *par){
   (void)par;
   chSysLockFromIsr();
   chVTSetI(&sync_vt, MS2ST(SYNC_PERIOD), &sync_cb, NULL);
-  need_sync = TRUE;
+  sync_tmo = TRUE;
   chSysUnlockFromIsr();
 }
 
 /**
- *
+ * По нескольким критериям определяет, надо ли сбрасывать буфер и при
+ * необходимости сбрасывает.
  */
-FRESULT write_log(FIL *Log){
-  uint32_t bytes_written;
-  FRESULT err;
-  msg_t tmp;
+FRESULT fs_sync(FIL *Log){
+  FRESULT err = FR_OK;
 
-  /* Field 'invoice' contains number of bytes to written.
-   * Zero value denotes that we must perform emergency close of log file. */
-  Mail *mailp = NULL;
-
-  chThdSleepSeconds(1);
-
-  if (chMBFetch(&logwriter_mb, &tmp, TIME_INFINITE) == RDY_OK){
-    mailp = (Mail*)tmp;
-    if (mailp->invoice == 0){
-      f_close(Log);
-      remove_handler();
-      return !FR_OK;
-    }
-  }
-
-  err = f_write(Log, mailp->payload, mailp->invoice, (void *)&bytes_written);
-  if (err != FR_OK)
-    return err;
-
-  if (need_sync){
+  if (sync_tmo && fresh_data){
     err = f_sync(Log);
-    if (err != FR_OK)
-      return err;
-    need_sync = FALSE;
+    sync_tmo = FALSE;
+    fresh_data = FALSE;
   }
-
   return err;
 }
 
 /**
- * Monitors presence of SD card in slot.
+ * Проверяет вёрнутый статус.
  */
-static WORKING_AREA(LogWriterThreadWA, 2048);
-static msg_t LogWriterThread(void *arg){
-  chRegSetThreadName("LogWriter");
+#define err_check()   if(err != FR_OK){return RDY_RESET;}
+
+
+/**
+ * Если произошла ошибка - просто тушится
+ * поток логгера, потому что исправить всё равно ничего нельзя.
+ */
+static WORKING_AREA(SdThreadWA, 2048);
+static msg_t SdThread(void *arg){
+  chRegSetThreadName("MicroSD");
   (void)arg;
 
   FRESULT err;
   uint32_t clusters;
   FATFS *fsp;
   FIL Log;
+
+  msg_t tmp;
 
   /* wait until card not ready */
 NOT_READY:
@@ -220,34 +201,37 @@ NOT_READY:
 
   /* are we have at least 16MB of free space? */
   err = f_getfree("/", &clusters, &fsp);
-  if (err != FR_OK)
-    return RDY_RESET;
-  if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)SDC_BLOCK_SIZE) < (16*1024*1024))
+  err_check();
+  if ((clusters * (uint32_t)SDC_FS.csize * (uint32_t)MMCSD_BLOCK_SIZE) < (16*1024*1024))
     return RDY_RESET;
 
   /* open file for writing log */
-  uint8_t namebuf[32];
+  char namebuf[MAX_FILENAME_SIZE];
   name_from_time(namebuf);
-  err = f_open(&Log, (char *)namebuf, FA_WRITE | FA_OPEN_ALWAYS);
-  if (err != FR_OK)
-    return RDY_RESET;
+  err = f_open(&Log, namebuf, FA_WRITE | FA_CREATE_ALWAYS);
+  err_check();
+
 
   /* main write cycle */
   while TRUE{
-    //TODO: wait pointer to buffer
-    if (!sdcIsCardInserted(&SDCD1)){
-      remove_handler();
-      goto NOT_READY;
+    // wait pointer to buffer
+    if (chMBFetch(&logwriter_mb, &tmp, TIME_INFINITE) == RDY_OK){
+      if (!sdcIsCardInserted(&SDCD1)){
+        remove_handler();
+        chMBReset(&logwriter_mb);
+        goto NOT_READY;
+      }
+      err = WriteLog(&Log, (Mail*)tmp, &fresh_data);
+      err_check();
     }
-    else{
-      if (write_log(&Log) != FR_OK)
-        return RDY_RESET;
-    }
-    chThdSleepMilliseconds(10);
+
+    err = fs_sync(&Log);
+    err_check();
   }
 
   return 0;
 }
+
 
 
 /*
@@ -259,7 +243,7 @@ NOT_READY:
 /**
  * Create file.
  */
-void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
+void cmd_touch(BaseSequentialStream *chp, int argc, char *argv[]) {
   (void)argc;
   FRESULT err;
   FIL FileObject;
@@ -301,10 +285,10 @@ void cmd_touch(BaseChannel *chp, int argc, char *argv[]) {
  * Init.
  */
 void StorageInit(void){
-  chThdCreateStatic(LogWriterThreadWA,
-          sizeof(LogWriterThreadWA),
+  chThdCreateStatic(SdThreadWA,
+          sizeof(SdThreadWA),
           NORMALPRIO - 5,
-          LogWriterThread,
+          SdThread,
           NULL);
 
   chSysLock();
