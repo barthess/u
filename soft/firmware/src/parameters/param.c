@@ -204,6 +204,10 @@ GlobalParam_t global_data[] = {
   {"T_gps_int",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_sys_status",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_heartbeat",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+
+  /* 1 - сервы работают в машинном режиме, 0 - в самолетном */
+  {"SERVO_car_mode",  -1,         1,          2,          MAVLINK_TYPE_UINT32_T,  default_setval},
+
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  1,          1048,       1224,       MAVLINK_TYPE_UINT32_T,  default_setval},
 };

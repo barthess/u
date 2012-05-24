@@ -96,7 +96,7 @@ int main(void) {
   I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
   SensorsInit(); /* uses I2C */
   ServoInit();
-  AutopilotInit();  /* автопилот должен стартовать только после установки связи */
+  AutopilotInit();  /* автопилот должен стартовать только после запуска серв */
   StorageInit();
 
   #if ENABLE_IRQ_STORM

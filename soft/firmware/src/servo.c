@@ -8,7 +8,6 @@
 #include "message.h"
 #include "main.h"
 #include "param.h"
-#include "link.h"
 
 /*
  ******************************************************************************
@@ -27,10 +26,16 @@ extern GlobalParam_t global_data[];
    „тобы получить 20мс (стандартна€ частота сервоприводов) - надо в счетчик
    Ў»ћ загружать значение 20 * 1000 / 0.5 = 40000 */
 #define PWM_FREQ      1000000 /* 1MHz частота тактировани€ счетчика Ў»ћ */
+
 /* «начение регистра автоперезагрузки (период повторени€ импульсов) дл€ самолета */
 #define RELOAD_PLANE  20000
+
 /* «начение регистра автоперезагрузки (период повторени€ импульсов) дл€ машинки */
 #define RELOAD_CAR    SERVO_MAX
+
+/* мертва€ зона дл€ машинки */
+#define DZ  ((uint8_t)(global_data[dz_index].value))
+#define CAR_MODE  (global_data[car_mode_index].value)
 
 /*
  ******************************************************************************
@@ -38,7 +43,7 @@ extern GlobalParam_t global_data[];
  ******************************************************************************
  */
 
-static const PWMConfig pwm1cfg = {
+static const PWMConfig pwm1plane_cfg = {
     PWM_FREQ,
     RELOAD_PLANE,
     NULL, //pwm1cb,
@@ -51,7 +56,7 @@ static const PWMConfig pwm1cfg = {
     0,
 };
 
-static const PWMConfig pwm4cfg = {
+static const PWMConfig pwm4plane_cfg = {
     PWM_FREQ,
     RELOAD_PLANE,
     NULL,//pwm4cb,
@@ -64,18 +69,18 @@ static const PWMConfig pwm4cfg = {
     0,
 };
 
-//static const PWMConfig pwm1carcfg = {
-//    PWM_FREQ,
-//    RELOAD_CAR,
-//    NULL, //pwm1cb,
-//    {
-//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-//      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-//      {PWM_OUTPUT_ACTIVE_HIGH, NULL}
-//    },
-//    0,
-//};
+static const PWMConfig pwm1car_cfg = {
+    PWM_FREQ,
+    RELOAD_CAR,
+    NULL, //pwm1cb,
+    {
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+      {PWM_OUTPUT_ACTIVE_HIGH, NULL}
+    },
+    0,
+};
 
 /**
  * массив конфигов серв
@@ -92,7 +97,11 @@ static const ServoConfig servocfg_array[] = {
 };
 
 /* смещение блока настроек серв в глобальном блоке настроек */
-static int16_t servoblock_offset;
+static int32_t servoblock_index = -1;
+static int32_t dz_index = -1;
+static int32_t car_mode_index = -1;
+
+/**/
 static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
 
 /*
@@ -106,7 +115,7 @@ static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
 /**
  * –ассчитывает значение, которое надо загрузить в регистры Ў»ћа
  * на основании зачений минимума, максимума и нейтрали
- * @param[in]   n     номер сервы, нумераци€ с 1.
+ * @param[in]   n     номер сервы, нумераци€ с 0.
  * @param[in]   angle отклонение сервы в условных единицах 0..255
  */
 void ServoSetAngle(uint16_t n, uint8_t angle){
@@ -115,7 +124,7 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
   uint16_t max = 0;
   uint16_t neutral = 0;
   uint16_t val = 0;
-  uint16_t i = servoblock_offset + (n-1) * 3;
+  uint16_t i = servoblock_index + (n) * 3;
 
   min = global_data[i].value;
   max = global_data[i+1].value;
@@ -129,21 +138,7 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
     len = neutral - min;
     val = neutral - (len - ((len * angle) >> 7));
   }
-  pwmEnableChannel(servocfg_array[n-1].pwmp, servocfg_array[n-1].pwmchannel, val);
-}
-
-/**
- * ѕоток дл€ обслуживани€ серв
- */
-static WORKING_AREA(ServoThreadWA, 512);
-static msg_t ServoThread(void *arg){
-  chRegSetThreadName("Servo");
-  (void)arg;
-
-  while (TRUE) {
-    chThdSleepMilliseconds(100);
-  }
-  return 0;
+  pwmEnableChannel(servocfg_array[n].pwmp, servocfg_array[n].pwmchannel, val);
 }
 
 /*
@@ -153,55 +148,58 @@ static msg_t ServoThread(void *arg){
  */
 
 /* дл€ установки газа/тормоза машинки, размазанного на 2 канала */
-//void CarThrottle(uint8_t angle){
-//  uint8_t dz = 32; /* мертва€ зона */
-//  uint32_t throttle = 0;
-//  uint32_t break_ = 0;
-//
-//  throttle = __USAT((angle - (128 + dz/2)), 8);
-//  throttle = (throttle * SERVO_MAX) / (128 - dz/2);
-//  break_   = (SERVO_MAX * angle) / (128 - dz/2);
-//  break_   = __USAT((SERVO_MAX - break_), 16);
-//
-//  cartrottlecfg.value = (uint16_t)(throttle & 0xFFFF);
-//  carbreakcfg.value   = (uint16_t)(break_   & 0xFFFF);
-//
-//  servo_refresh(&cartrottlecfg);
-//  servo_refresh(&carbreakcfg);
-//}
+void ServoCarThrottleSet(uint8_t angle){
+  uint32_t throttle = 0;
+  uint32_t break_   = 0;
+
+  if (CAR_MODE == 1){
+    throttle = __USAT((angle - (128 + DZ/2)), 8);
+    throttle = (throttle * SERVO_MAX) / (128 - DZ/2);
+    break_   = (SERVO_MAX * angle) / (128 - DZ/2);
+    break_   = __USAT((SERVO_MAX - break_), 16);
+
+    Servo6Set((uint16_t)(throttle & 0xFFFF));
+    Servo7Set((uint16_t)(break_   & 0xFFFF));
+  }
+  else
+    return;
+}
 
 /**
  * ”станавливает нейтральные значени€
  */
 void ServoNeutral(void){
   uint32_t i = 0;
-  for (i = 1; i < SERVO_COUNT+1; i++)
+  for (i = 0; i < SERVO_COUNT; i++)
     ServoSetAngle(i, 128);
 }
 
 
 void ServoInit(void){
-
-  /* determine offset */
-  servoblock_offset = KeyValueSearch("SERVO_1_min");
-  if (servoblock_offset == -1)
+  servoblock_index = KeyValueSearch("SERVO_1_min");
+  if (servoblock_index == -1)
     chDbgPanic("key not found");
 
-  /* эти 2 строки нужны только чтобы избавитьс€ от варнинга */
-//  pwmStart(&PWMD1, &pwm1carcfg);
-//  pwmStop(&PWMD1);
+  dz_index = KeyValueSearch("SERVO_1_min");
+    if (dz_index == -1)
+      chDbgPanic("key not found");
 
-  /* по умолчанию Ў»ћы запускаютс€ с самолетными конфигами */
-	pwmStart(&PWMD1, &pwm1cfg);
-	pwmStart(&PWMD4, &pwm4cfg);
+  car_mode_index = KeyValueSearch("SERVO_car_mode");
+    if (car_mode_index == -1)
+      chDbgPanic("key not found");
 
-	ServoNeutral();   /* запуск серв в нейтральном положении */
 
-  chThdCreateStatic(ServoThreadWA,
-          sizeof(ServoThreadWA),
-          NORMALPRIO,
-          ServoThread,
-          NULL);
+  /* этот канал всегда запускаетс€ в самолетном режиме */
+  pwmStart(&PWMD4, &pwm4plane_cfg);
+
+  /* а этот по-разному */
+  if (CAR_MODE == 1)
+    pwmStart(&PWMD1, &pwm1car_cfg);
+  else
+    pwmStart(&PWMD1, &pwm1plane_cfg);
+
+  /* запуск серв в нейтральном положении */
+	ServoNeutral();
 }
 
 

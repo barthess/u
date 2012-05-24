@@ -143,7 +143,8 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
 
 /**
- *
+ * Предположительно:
+ * крутит ПИД и на его основе выставляет значения в сервы
  */
 static WORKING_AREA(AutopilotThreadWA, 512);
 Thread *autopilot_tp = NULL;
@@ -153,8 +154,13 @@ static msg_t AutopilotThread(void* arg){
 
   while (TRUE) {
     chThdSleepMilliseconds(10);
+    /* тестовые величины в ШИМ */
+    Servo0Set(0);
+    Servo0Set(64);
+    Servo0Set(128);
+    Servo0Set(255);
+    ServoCarThrottleSet(255);
   }
-
   return 0;
 }
 
