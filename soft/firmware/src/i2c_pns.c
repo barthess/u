@@ -42,7 +42,7 @@ void I2CInit_pns(void){
 
   chThdSleepMilliseconds(1);
   ParametersInit(); /* читает настройки из EEPROM по I2C*/
-  chThdSleepMilliseconds(1);
+  chThdSleepMilliseconds(10);
 }
 
 

@@ -76,7 +76,7 @@ int main(void) {
   chEvtInit(&pwrmgmt_event);
   chEvtInit(&modem_event);
 
-  chThdSleepMilliseconds(1);
+  chThdSleepMilliseconds(100);
 
   /* раздача питалова нуждающимся */
   pwr5v_power_on();

@@ -156,9 +156,9 @@ static msg_t AutopilotThread(void* arg){
     chThdSleepMilliseconds(10);
     /* тестовые величины в ШИМ */
     Servo0Set(0);
-    Servo0Set(64);
-    Servo0Set(128);
-    Servo0Set(255);
+    Servo1Set(64);
+    Servo2Set(128);
+    Servo3Set(255);
     ServoCarThrottleSet(255);
   }
   return 0;

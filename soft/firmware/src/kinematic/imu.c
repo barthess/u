@@ -60,7 +60,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  mavlink_attitude_struct->yaw          = atan2f(Rxy, Rxx);
+  mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
