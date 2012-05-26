@@ -176,15 +176,15 @@ void ServoNeutral(void){
 
 
 void ServoInit(void){
-  servoblock_index = KeyValueSearch("SERVO_1_min");
+  servoblock_index = _key_index_search("SERVO_1_min");
   if (servoblock_index == -1)
     chDbgPanic("key not found");
 
-  dz_index = KeyValueSearch("SERVO_1_min");
+  dz_index = _key_index_search("SERVO_1_min");
     if (dz_index == -1)
       chDbgPanic("key not found");
 
-  car_mode_index = KeyValueSearch("SERVO_car_mode");
+  car_mode_index = _key_index_search("SERVO_car_mode");
     if (car_mode_index == -1)
       chDbgPanic("key not found");
 

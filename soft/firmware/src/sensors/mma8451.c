@@ -19,18 +19,6 @@
  */
 #define mma8451addr 0b0011100
 
-#define XPOL          (global_data[xpol_index].value)
-#define YPOL          (global_data[ypol_index].value)
-#define ZPOL          (global_data[zpol_index].value)
-
-#define XSENS         (global_data[xsens_index].value)
-#define YSENS         (global_data[ysens_index].value)
-#define ZSENS         (global_data[zsens_index].value)
-
-#define XOFFSET       (global_data[xoffset_index].value)
-#define YOFFSET       (global_data[yoffset_index].value)
-#define ZOFFSET       (global_data[zoffset_index].value)
-
 /*
  ******************************************************************************
  * EXTERNS
@@ -38,7 +26,6 @@
  */
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
-extern GlobalParam_t global_data[];
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource pwrmgmt_event;
@@ -51,10 +38,8 @@ extern EventSource pwrmgmt_event;
 static uint8_t rxbuf[ACCEL_RX_DEPTH];
 static uint8_t txbuf[ACCEL_TX_DEPTH];
 
-/* индексы в структуре с параметрами */
-static uint32_t xoffset_index, yoffset_index, zoffset_index;
-static uint32_t xsens_index,   ysens_index,   zsens_index;
-static uint32_t xpol_index,    ypol_index,    zpol_index;
+/* указатели в структуре с параметрами */
+static float *xpol, *ypol, *zpol, *xsens, *ysens, *zsens, *xoffset, *yoffset, *zoffset;
 
 /*
  *******************************************************************************
@@ -82,12 +67,12 @@ static msg_t PollAccelThread(void *semp){
       raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
 
       /* there is no need of correcting of placement. Just get milli g */
-      mavlink_raw_imu_struct.xacc = raw_data.xacc * XPOL;
-      mavlink_raw_imu_struct.yacc = raw_data.yacc * YPOL;
-      mavlink_raw_imu_struct.zacc = raw_data.zacc * ZPOL;
-      comp_data.xacc = 1000 * (((int32_t)raw_data.xacc) * XPOL + XOFFSET) / XSENS;
-      comp_data.yacc = 1000 * (((int32_t)raw_data.yacc) * YPOL + YOFFSET) / YSENS;
-      comp_data.zacc = 1000 * (((int32_t)raw_data.zacc) * ZPOL + ZOFFSET) / ZSENS;
+      mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
+      mavlink_raw_imu_struct.yacc = raw_data.yacc * *ypol;
+      mavlink_raw_imu_struct.zacc = raw_data.zacc * *zpol;
+      comp_data.xacc = 1000 * (((int32_t)raw_data.xacc) * *xpol + *xoffset) / *xsens;
+      comp_data.yacc = 1000 * (((int32_t)raw_data.yacc) * *ypol + *yoffset) / *ysens;
+      comp_data.zacc = 1000 * (((int32_t)raw_data.zacc) * *zpol + *zoffset) / *zsens;
 
       /* fill scaled debug struct */
       mavlink_scaled_imu_struct.xacc = comp_data.xacc;
@@ -116,17 +101,15 @@ static msg_t PollAccelThread(void *semp){
  * Поиск индексов в массиве настроек
  */
 static void search_indexes(void){
-  int32_t i = -1;
-
-  kvs(ACC, xoffset);
-  kvs(ACC, yoffset);
-  kvs(ACC, zoffset);
-  kvs(ACC, xsens);
-  kvs(ACC, ysens);
-  kvs(ACC, zsens);
-  kvs(ACC, xpol);
-  kvs(ACC, ypol);
-  kvs(ACC, zpol);
+  xoffset = ValueSearch("ACC_xoffset");
+  yoffset = ValueSearch("ACC_yoffset");
+  zoffset = ValueSearch("ACC_zoffset");
+  xpol    = ValueSearch("ACC_xpol");
+  ypol    = ValueSearch("ACC_ypol");
+  zpol    = ValueSearch("ACC_zpol");
+  xsens   = ValueSearch("ACC_xsens");
+  ysens   = ValueSearch("ACC_ysens");
+  zsens   = ValueSearch("ACC_zsens");
 }
 
 /*

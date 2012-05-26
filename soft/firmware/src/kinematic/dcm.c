@@ -17,35 +17,29 @@ Output variables are:
   DcmEst[0..2] which are the direction cosine of the X,Y,Z axis
 */
 
-/*
- ******************************************************************************
- * DEFINES
- ******************************************************************************
- */
 /* maximum accelerometer weight in accelerometer-gyro fusion
  * formula this value is tuned-up experimentally:
  * if you get too much noise - decrease it if you get a delayed
  * response of the filtered values - increase it starting with
  * a value of  0.01 .. 0.05 will work for most sensors */
-#define ACC_WEIGHT_MAX 0.04F
 
-/* accelerometer data weight relative to gyro's weight of 1 */
-#define ACC_WEIGHT (global_data[accweight_index].value)
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
 
 /* maximum accelerometer errror relative to 1g ,
  * when error exceeds this value accelerometer weight becomes 0
  * this helps reject external accelerations (non-gravitational
  * innertial forces caused by device acceleration) */
-//#define ACC_ERR_MAX 0.3
-
-/* magnetometer data weight relative to gyro's weight of 1 */
-#define MAG_WEIGHT (global_data[magweight_index].value) //0.01
+#define ACC_ERR_MAX 0.3
 
 /* maximum magnetometer error relative to normal value of 1
  * (corresponding to earth's magnetic field) when error exceeds this
  * value magnetometer weight becomes 0 this helps reject magnetic
  * forces that are not attributed to earth's magnetic field */
-#define MAG_ERR_MAX 0.5
+#define MAG_ERR_MAX 0.2
 
 /*
  ******************************************************************************
@@ -54,15 +48,19 @@ Output variables are:
  */
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
-extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-uint32_t accweight_index, magweight_index;
 float mag_modulus = 0;
+
+/* accelerometer data weight relative to gyro's weight of 1 */
+float *accweight = NULL;
+
+/* magnetometer data weight relative to gyro's weight of 1. */
+float *magweight = NULL;
 
 /*
  *******************************************************************************
@@ -204,7 +202,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     vector3d_normalize(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
     vector3d_cross(dcmEst[0], Imag, wM);
-    //TODO: игнорировать магнетометр при слишком больших кренах
   }
   else{
     wM[0] = 0.0;
@@ -225,33 +222,22 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   for(i=0;i<3;i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
-    w[i] = (w[i] + ACC_WEIGHT*wA[i] + MAG_WEIGHT*wM[i]) / (1.0 + ACC_WEIGHT + MAG_WEIGHT);
+    w[i] = (w[i] + *accweight*wA[i] + *magweight*wM[i]) / (1.0f + *accweight + *magweight);
   }
 
   dcm_rotate(dcmEst, w);
 }
 
-
 //-------------------------------------------------------------------
 // imu_init
 //-------------------------------------------------------------------
 void dcmInit(){
-  int32_t i = -1;
-
-  kvs(IMU, accweight);
-  kvs(IMU, magweight);
-
-//  i = KeyValueSearch("IMU_accweight");
-//  if (i == -1)
-//    chDbgPanic("key not found");
-//  else{
-//    accweight_index = i;
-//  }
-//
-//  i = KeyValueSearch("IMU_magweight");
-//  if (i == -1)
-//    chDbgPanic("key not found");
-//  else{
-//    magweight_index = i;
-//  }
+  magweight = ValueSearch("IMU_magweight");
+  accweight = ValueSearch("IMU_accweight");
 }
+
+
+
+
+
+

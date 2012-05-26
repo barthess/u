@@ -60,6 +60,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
+  // TODO: replace this hardcoding with values from global data
   mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 

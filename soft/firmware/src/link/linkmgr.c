@@ -99,7 +99,7 @@ void LinkMgrInit(void){
 
   sdStart(&LINKSD, &xbee_ser_cfg);
 
-  sh_enable_index = KeyValueSearch("SH_enable");
+  sh_enable_index = _key_index_search("SH_enable");
   if (sh_enable_index == -1)
     chDbgPanic("not found");
 

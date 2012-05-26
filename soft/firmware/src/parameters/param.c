@@ -237,7 +237,7 @@ static msg_t param_confirm_mb_buf[1];
 static bool_t set_parameter(mavlink_param_set_t *paramset){
   int32_t index = -1;
 
-  index = KeyValueSearch(paramset->param_id);
+  index = _key_index_search(paramset->param_id);
 
   if (index >= 0){
     // Only write and emit changes if there is actually a difference
@@ -275,7 +275,7 @@ static bool_t send_value(Mail *param_value_mail,
   uint32_t j = 0;
 
   if (key != NULL)
-    index = KeyValueSearch(key);
+    index = _key_index_search(key);
   else
     index = n;
 
@@ -386,12 +386,12 @@ static msg_t ParametersThread(void *arg){
  */
 
 /**
- * @brief   Performs key-value search.
+ * @brief   Performs key-value search. Low level function
  *
  * @return      Index in dictionary.
  * @retval -1   key not found.
  */
-int32_t KeyValueSearch(char* key){
+int32_t _key_index_search(char* key){
   int32_t i = 0;
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
@@ -400,6 +400,26 @@ int32_t KeyValueSearch(char* key){
   }
   return -1;
 }
+
+/**
+ * Возвращает указатель прямо на значение.
+ *
+ * Данный функционал вынесен в отдельную функцию на тот случай, если
+ * приложению понадобится знать другие поля структуры
+ */
+float *ValueSearch(char *str){
+  int32_t i = -1;
+
+  i = _key_index_search(str);
+  if (i == -1){
+    chDbgPanic("key not found");
+    return NULL;
+  }
+  else
+    return &(global_data[i].value);
+}
+
+
 
 void ParametersInit(void){
 
