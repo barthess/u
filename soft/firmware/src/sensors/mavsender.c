@@ -379,17 +379,16 @@ void MavSenderInit(void){
           SCAL_PRESS_SenderThread,
           NULL);
 
+  mavlink_sys_status_struct.onboard_control_sensors_present = (
+          SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
+          SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
+  mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
+  mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
   chThdCreateStatic(SYS_STAT_SenderThreadWA,
           sizeof(SYS_STAT_SenderThreadWA),
           LINK_THREADS_PRIO - 1,
           SYS_STAT_SenderThread,
           NULL);
-  mavlink_sys_status_struct.onboard_control_sensors_present = (
-      SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
-      SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
-  mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
-  mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
-
 
   chThdCreateStatic(logThreadWA,
           sizeof(logThreadWA),

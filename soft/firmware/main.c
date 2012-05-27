@@ -96,6 +96,10 @@ int main(void) {
   SanityControlInit();
   TimekeepingInit();
   I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
+
+  /** инициализация мавлинковых констант, в т.ч. выбор между самолетом и машиной
+   * Должно идти после I2C, т.к. читает оттуда настройки */
+  MavInit();
   SensorsInit(); /* uses I2C */
   ServoInit();
   AutopilotInit();  /* автопилот должен стартовать только после запуска серв */

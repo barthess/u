@@ -7,6 +7,7 @@
 
 void TimekeepingInit(void);
 uint64_t pnsGetTimeUnixUsec(void);
+systime_t GetTimeInterval(systime_t *last);
 
 Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 

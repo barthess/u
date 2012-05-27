@@ -32,7 +32,7 @@ struct Mail{
 
 
 void MsgInit(void);
-
+void MavInit(void);
 
 
 #endif /* MESSAGE_H_ */

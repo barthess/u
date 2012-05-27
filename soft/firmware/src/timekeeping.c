@@ -118,6 +118,27 @@ uint64_t pnsGetTimeUnixUsec(void){
 }
 
 /**
+ * @brief   Return number of system ticks since last call.
+ * @note    Function modifies the last value itself.
+ *
+ * @param[in] last      pointer to the value containing last call time
+ * @return              The number of ticks.
+ *
+ * @api
+ */
+systime_t GetTimeInterval(systime_t *last){
+  systime_t t = 0;
+
+  if (chTimeNow() >= *last)
+    t = chTimeNow() - *last;
+  else /* произошло переполнение */
+    t = chTimeNow() + (0xFFFFFFFF - *last);
+  /* refresh last value */
+  *last = chTimeNow();
+  return t;
+}
+
+/**
  * Command to handle real time.
  */
 Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){

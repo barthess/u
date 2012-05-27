@@ -5,17 +5,20 @@
 #include "sensors.h"
 #include "exti_pns.h"
 #include "rtc.h"
-
+#include "message.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-/**
- * Периодичность подсчета оборотов.
- */
-#define TACHO_CHECK_T 83 /* 1000 / 12 ~ 83 (12 лопастей в датчике)*/
+
+/* Периодичность подсчета оборотов. */
+#define TACHO_CHECK_T 500 /* 1000 / 2 = 500 (2 лопасти в датчике)*/
+
+/* строка для (пере)запуска тахометрового таймера*/
+#define starttacho_vt() {chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);}
 
 /*
  ******************************************************************************
@@ -25,6 +28,7 @@
 extern RawData raw_data;
 extern uint32_t imu_update_period;
 extern BinarySemaphore rtc_sem;
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -43,11 +47,9 @@ BinarySemaphore *itg3200_semp = NULL;
  * Инкрементируется по внешнему прерыванию.
  * Сбрасывается по виртуальному таймеру.
  */
-static uint32_t rpmcnt = 0;
+static uint32_t pulsecnt = 0;
 
-/**
- * таймер для обновления значения RPM
- */
+/* таймер для обновления значения RPM */
 static VirtualTimer tachocheck_vt;
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
@@ -55,6 +57,11 @@ static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропус
 
 /* для измерения периода получения сэмплов с гироскопа */
 static TimeMeasurement itg3200_tmup;
+
+/**
+ * Время последнего импульса со спидометра. Актуально только для машины.
+ */
+static systime_t last_measure = 0;
 
 /*
  *******************************************************************************
@@ -64,12 +71,12 @@ static TimeMeasurement itg3200_tmup;
  *******************************************************************************
  */
 
-void vt_tachocheck_cb(void *par){
+static void vt_tachocheck_cb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
-  raw_data.engine_rpm = rpmcnt;
-  rpmcnt = 0;
+  starttacho_vt();
+  raw_data.engine_rpm = pulsecnt;
+  pulsecnt = 0;
   chSysUnlockFromIsr();
 }
 
@@ -101,8 +108,13 @@ static void rtcwakeup_cb(EXTDriver *extp, expchannel_t channel){
 static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
-  rpmcnt++;
+
+  pulsecnt++;
   raw_data.odometer++;
+
+  /* для машинки посчитаем скорость в условных единицах */
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+    raw_data.groundspeed = GetTimeInterval(&last_measure);
 }
 
 static void microsd_inset_cb(EXTDriver *extp, expchannel_t channel){
@@ -237,14 +249,17 @@ void ExtiInit(BinarySemaphore *mag3110_sem,
   itg3200_semp = itg3200_sem;
 
   raw_data.odometer = 0;
-  chSysLock();
-  chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
-  chSysUnlock();
+  last_measure = chTimeNow();
+  /* виртуальный таймер счетчика RPM нужен только для самолета */
+  if (mavlink_system_struct.type == MAV_TYPE_FIXED_WING){
+    chSysLock();
+    starttacho_vt();
+    chSysUnlock();
+  }
 
   tmObjectInit(&itg3200_tmup);
 
   extStart(&EXTD1, &extcfg);
-//  extChannelEnable(&EXTD1, 1);
 }
 
 /**

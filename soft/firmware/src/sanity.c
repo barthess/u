@@ -7,6 +7,7 @@
 #include "message.h"
 #include "main.h"
 #include "link.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -59,7 +60,6 @@ static msg_t SanityControlThread(void *arg) {
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
-  mavlink_heartbeat_struct.type = mavlink_system_struct.type;
   mavlink_heartbeat_struct.custom_mode = 0;
 
   while (TRUE) {
@@ -67,8 +67,9 @@ static msg_t SanityControlThread(void *arg) {
     chThdSleepMilliseconds(950);
 
     if (heartbeat_mail.payload == NULL){
-      mavlink_heartbeat_struct.base_mode = mavlink_system_struct.mode;
-      mavlink_heartbeat_struct.system_status = mavlink_system_struct.state;
+      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
+      mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
+      mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
 
@@ -122,16 +123,11 @@ uint16_t get_cpu_load(void){
     i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
   else /* произошло переполнение */
     i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
+  /* обновляем счетчик */
+    last_idle_ticks = chThdGetTicks(IdleThread_p);
 
   /* получаем мгновенное значение счетчика из системы */
-  if (chTimeNow() >= last_sys_ticks)
-    s = chTimeNow() - last_sys_ticks;
-  else /* произошло переполнение */
-    s = chTimeNow() + (0xFFFFFFFF - last_sys_ticks);
-
-  /* обновляем счетчики */
-  last_idle_ticks = chThdGetTicks(IdleThread_p);
-  last_sys_ticks = chTimeNow();
+  s = GetTimeInterval(&last_sys_ticks);
 
   return ((s - i) * 1000) / s;
 }
