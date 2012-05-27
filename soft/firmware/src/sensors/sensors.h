@@ -36,6 +36,8 @@ struct CompensatedData{
   uint16_t main_voltage;      // mV
   uint32_t main_current;      // mA
   uint16_t secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
+
+  uint32_t odometer;          /* одометр, миллиметры */
 };
 
 
@@ -97,6 +99,7 @@ struct RawData{
   int32_t  gps_course;
   uint8_t  gps_satellites;
 
+  uint32_t odometer;          /* количество импульсов с одометра */
   uint16_t engine_rpm;        /* Тахометр (rpm)*/
 };
 

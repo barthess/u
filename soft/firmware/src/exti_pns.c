@@ -15,11 +15,7 @@
 /**
  * Периодичность подсчета оборотов.
  */
-#define TACHO_CHECK_T 500
-/**
- * Количество лопаток в датчике оборотов
- */
-#define TACHO_BLADES  2
+#define TACHO_CHECK_T 83 /* 1000 / 12 ~ 83 (12 лопастей в датчике)*/
 
 /*
  ******************************************************************************
@@ -72,8 +68,6 @@ void vt_tachocheck_cb(void *par){
   (void)par;
   chSysLockFromIsr();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
-  /* если данные брать каждый 0.5 секунд с 2-лопастного винта, то получаются как раз герцы */
-  //log_item.engine_rpm = (rpmcnt * 1000) / (TACHO_CHECK_T * TACHO_BLADES);
   raw_data.engine_rpm = rpmcnt;
   rpmcnt = 0;
   chSysUnlockFromIsr();
@@ -108,6 +102,7 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   rpmcnt++;
+  raw_data.odometer++;
 }
 
 static void microsd_inset_cb(EXTDriver *extp, expchannel_t channel){
@@ -178,7 +173,7 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOE, gps_pps_cb},// секундная метка с GPS
-    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOB, tachometer_cb},// оптрон тахометра
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, microsd_inset_cb}, // микросдшка
     {EXT_CH_MODE_DISABLED, NULL},
@@ -189,7 +184,7 @@ static const EXTConfig extcfg = {
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, itg3200_cb}, // хероскоп
     {EXT_CH_MODE_DISABLED, NULL},//11
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, tachometer_cb}, // оптрон тахометра
+    {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int2_cb},//15
@@ -241,6 +236,7 @@ void ExtiInit(BinarySemaphore *mag3110_sem,
   bmp085_semp  = bmp085_sem;
   itg3200_semp = itg3200_sem;
 
+  raw_data.odometer = 0;
   chSysLock();
   chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);
   chSysUnlock();
@@ -248,6 +244,7 @@ void ExtiInit(BinarySemaphore *mag3110_sem,
   tmObjectInit(&itg3200_tmup);
 
   extStart(&EXTD1, &extcfg);
+//  extChannelEnable(&EXTD1, 1);
 }
 
 /**

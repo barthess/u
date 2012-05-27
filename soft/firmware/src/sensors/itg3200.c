@@ -192,7 +192,7 @@ static void search_indexes(void){
   ypol = ValueSearch("GYRO_ypol");
   zpol = ValueSearch("GYRO_zpol");
 
-  awg_samplescnt = floorf(*(ValueSearch("GYRO_zpol")));
+  awg_samplescnt = floorf(*(ValueSearch("GYRO_zeroconut")));
 }
 
 /*
