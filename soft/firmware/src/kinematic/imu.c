@@ -60,8 +60,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  /* комплексированные данные */
-  // TODO: replace this hardcoding with values from global data
+  /* комплексированные данные из DCM */
   //mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
   mavlink_attitude_struct->yaw = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
 

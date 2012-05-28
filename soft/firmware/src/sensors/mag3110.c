@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -131,14 +132,14 @@ void acquire_data(uint8_t *rxbuf){
   mavlink_raw_imu_struct.xmag = raw_data.xmag;
   mavlink_raw_imu_struct.ymag = raw_data.ymag;
   mavlink_raw_imu_struct.zmag = raw_data.zmag;
-  mavlink_scaled_imu_struct.xmag = (raw_data.xmag - *xoffset) * *xpol;
-  mavlink_scaled_imu_struct.ymag = (raw_data.ymag - *yoffset) * *ypol;
-  mavlink_scaled_imu_struct.zmag = (raw_data.zmag - *zoffset) * *zpol;
+  mavlink_scaled_imu_struct.xmag = (raw_data.xmag - *xoffset) * *xpol * roundf(*xsens * 100.0f);
+  mavlink_scaled_imu_struct.ymag = (raw_data.ymag - *yoffset) * *ypol * roundf(*ysens * 100.0f);
+  mavlink_scaled_imu_struct.zmag = (raw_data.zmag - *zoffset) * *zpol * roundf(*zsens * 100.0f);
 
   /* Sensitivity is 0.1uT/LSB */
-  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag) * *xsens;
-  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag) * *ysens;
-  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag) * *zsens;
+  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
+  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
+  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
 
   /* collect statistics for calibration purpose */
   if (GlobalFlags & MAG_CAL_FLAG){

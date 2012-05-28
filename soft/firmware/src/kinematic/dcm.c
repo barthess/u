@@ -195,6 +195,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   /* ignore magnetometer readings if external magnetic field too strong */
   if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
+    /* Проработать комплексирование с нижним рядом DCM вместо вектора
+     * гравитации. Какие-то непонятные результаты получаются, или я их
+     * готовить не умею. */
     float tmpM[3];
     vector3d_normalize(Imag);
     vector3d_cross(Kacc, Imag, tmpM);
@@ -228,6 +231,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     }
   }
   else{
+    /* обычный режим */
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       //compute weighted average with the accelerometer correction vector
