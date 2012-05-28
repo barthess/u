@@ -3,6 +3,8 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: ускоренное выставление магнитного курса за счет увеличения веса магнитометра
+// TODO: комплексирование магнитометра не с акселем а самой DCM
 // TODO: выставка нуля магнитометра и акселя
 // TODO: переписать нахуй этот пиздец с приемом-отправкой сообщений
 // TODO: последние удачные координаты в BKP
@@ -76,7 +78,7 @@ int main(void) {
   chEvtInit(&pwrmgmt_event);
   chEvtInit(&modem_event);
 
-  chThdSleepMilliseconds(1);
+  chThdSleepMilliseconds(100);
 
   /* раздача питалова нуждающимся */
   pwr5v_power_on();
@@ -94,6 +96,10 @@ int main(void) {
   SanityControlInit();
   TimekeepingInit();
   I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
+
+  /** инициализация мавлинковых констант, в т.ч. выбор между самолетом и машиной
+   * Должно идти после I2C, т.к. читает оттуда настройки */
+  MavInit();
   SensorsInit(); /* uses I2C */
   ServoInit();
   AutopilotInit();  /* автопилот должен стартовать только после запуска серв */

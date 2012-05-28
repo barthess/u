@@ -15,6 +15,7 @@
  ******************************************************************************
  */
 extern GlobalParam_t global_data[];
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -32,10 +33,6 @@ extern GlobalParam_t global_data[];
 
 /* Значение регистра автоперезагрузки (период повторения импульсов) для машинки */
 #define RELOAD_CAR    SERVO_MAX
-
-/* мертвая зона для машинки */
-#define DZ  ((uint8_t)(global_data[dz_index].value))
-#define CAR_MODE  (global_data[car_mode_index].value)
 
 /*
  ******************************************************************************
@@ -98,8 +95,9 @@ static const ServoConfig servocfg_array[] = {
 
 /* смещение блока настроек серв в глобальном блоке настроек */
 static int32_t servoblock_index = -1;
-static int32_t dz_index = -1;
-static int32_t car_mode_index = -1;
+
+/* размер мертвой зоны, актуален только для ручного управления */
+static float *car_dz;
 
 /**/
 static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
@@ -151,11 +149,13 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
 void ServoCarThrottleSet(uint8_t angle){
   uint32_t throttle = 0;
   uint32_t break_   = 0;
+  uint8_t dz = 0;
 
-  if (CAR_MODE == 1){
-    throttle = __USAT((angle - (128 + DZ/2)), 8);
-    throttle = (throttle * SERVO_MAX) / (128 - DZ/2);
-    break_   = (SERVO_MAX * angle) / (128 - DZ/2);
+  dz = (uint8_t)*car_dz;
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
+    throttle = __USAT((angle - (128 + dz/2)), 8);
+    throttle = (throttle * SERVO_MAX) / (128 - dz/2);
+    break_   = (SERVO_MAX * angle) / (128 - dz/2);
     break_   = __USAT((SERVO_MAX - break_), 16);
 
     Servo6Set((uint16_t)(throttle & 0xFFFF));
@@ -176,24 +176,18 @@ void ServoNeutral(void){
 
 
 void ServoInit(void){
-  servoblock_index = KeyValueSearch("SERVO_1_min");
+
+  servoblock_index = _key_index_search("SERVO_1_min");
   if (servoblock_index == -1)
     chDbgPanic("key not found");
 
-  dz_index = KeyValueSearch("SERVO_1_min");
-    if (dz_index == -1)
-      chDbgPanic("key not found");
-
-  car_mode_index = KeyValueSearch("SERVO_car_mode");
-    if (car_mode_index == -1)
-      chDbgPanic("key not found");
-
+  car_dz = ValueSearch("SERVO_car_dz");
 
   /* этот канал всегда запускается в самолетном режиме */
   pwmStart(&PWMD4, &pwm4plane_cfg);
 
   /* а этот по-разному */
-  if (CAR_MODE == 1)
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     pwmStart(&PWMD1, &pwm1car_cfg);
   else
     pwmStart(&PWMD1, &pwm1plane_cfg);

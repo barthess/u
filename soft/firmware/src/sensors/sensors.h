@@ -33,9 +33,11 @@ struct CompensatedData{
   uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
   // напряжение и ток бортовой сети
-  uint16_t main_voltage;      // mV
-  uint32_t main_current;      // mA
-  uint16_t secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
+  uint16_t  main_voltage;      // mV
+  uint32_t  main_current;      // mA
+  uint16_t  secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
+
+  float     groundspeed;        ///< Current ground speed in m/s
 };
 
 
@@ -97,6 +99,8 @@ struct RawData{
   int32_t  gps_course;
   uint8_t  gps_satellites;
 
+  uint32_t odometer;          /* количество импульсов с одометра */
+  uint32_t groundspeed;       /* земляная скорость (количество миллисекунд между импульсами)*/
   uint16_t engine_rpm;        /* Тахометр (rpm)*/
 };
 

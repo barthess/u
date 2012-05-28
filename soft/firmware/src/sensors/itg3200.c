@@ -22,16 +22,6 @@
 #define itg3200addr   0b1101000
 #define PI            3.14159265f
 
-#define XPOL          (global_data[xpol_index].value)
-#define YPOL          (global_data[ypol_index].value)
-#define ZPOL          (global_data[zpol_index].value)
-
-#define XSENS         (global_data[xsens_index].value)
-#define YSENS         (global_data[ysens_index].value)
-#define ZSENS         (global_data[zsens_index].value)
-
-//#define AVG_SAMPLES_CNT  (global_data[samplescnt_index].value)
-
 /*
  ******************************************************************************
  * EXTERNS
@@ -42,7 +32,6 @@ uint32_t imu_update_period;
 
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern GlobalParam_t global_data[];
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
 
@@ -61,10 +50,12 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
 static uint32_t zero_cnt = 0;
 
 /* индексы в структуре с параметрами */
-static uint32_t xsens_index, ysens_index, zsens_index;
-static uint32_t xpol_index,  ypol_index,  zpol_index;
 static uint32_t awg_samplescnt;
 
+/* указатели на коэффициенты */
+static float *xpol, *ypol, *zpol, *xsens, *ysens, *zsens;
+
+/* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
 
 /*
@@ -143,9 +134,9 @@ static msg_t PollGyroThread(void *semp){
         gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
 
         /* adjust rotation direction */
-        gyroX *= XPOL;
-        gyroY *= YPOL;
-        gyroZ *= ZPOL;
+        gyroX *= *xpol;
+        gyroY *= *ypol;
+        gyroZ *= *zpol;
 
         /* fill debug struct */
         mavlink_raw_imu_struct.xgyro = gyroX;
@@ -153,9 +144,9 @@ static msg_t PollGyroThread(void *semp){
         mavlink_raw_imu_struct.zgyro = gyroZ;
 
         /* now get angular velocity in rad/sec */
-        comp_data.xgyro = calc_gyro_rate(gyroX, XSENS);
-        comp_data.ygyro = calc_gyro_rate(gyroY, YSENS);
-        comp_data.zgyro = calc_gyro_rate(gyroZ, ZSENS);
+        comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
+        comp_data.ygyro = calc_gyro_rate(gyroY, *ysens);
+        comp_data.zgyro = calc_gyro_rate(gyroZ, *zsens);
 
         /* calc summary angle for debug purpose */
         comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
@@ -194,21 +185,14 @@ static msg_t PollGyroThread(void *semp){
  *  perform searching of indexes
  */
 static void search_indexes(void){
-  int32_t i = -1;
+  xsens = ValueSearch("GYRO_xsens");
+  ysens = ValueSearch("GYRO_ysens");
+  zsens = ValueSearch("GYRO_zsens");
+  xpol = ValueSearch("GYRO_xpol");
+  ypol = ValueSearch("GYRO_ypol");
+  zpol = ValueSearch("GYRO_zpol");
 
-  kvs(GYRO, xsens);
-  kvs(GYRO, ysens);
-  kvs(GYRO, zsens);
-  kvs(GYRO, xpol);
-  kvs(GYRO, ypol);
-  kvs(GYRO, zpol);
-
-  i = KeyValueSearch("GYRO_zeroconut");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else{
-    awg_samplescnt = global_data[i].value;
-  }
+  awg_samplescnt = floorf(*(ValueSearch("GYRO_zeroconut")));
 }
 
 /*

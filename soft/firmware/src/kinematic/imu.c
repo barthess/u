@@ -27,10 +27,9 @@
  */
 //extern GlobalParam_t global_data[];
 extern CompensatedData comp_data;
-extern float dcmEst[3][3];
 extern mavlink_attitude_t            mavlink_attitude_struct;
-
 extern uint32_t imu_update_period;
+
 uint32_t imu_step = 0;                /* incremented on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
 
@@ -39,6 +38,7 @@ float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+float *magypol, *magxpol;
 
 /*
  *******************************************************************************
@@ -60,7 +60,12 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  mavlink_attitude_struct->yaw          = atan2f(Rxy, Rxx);
+  /* комплексированные данные */
+  // TODO: replace this hardcoding with values from global data
+  //mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
+  mavlink_attitude_struct->yaw = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
+
+  /* либо данные чисто с гироскопа */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
@@ -135,6 +140,9 @@ static msg_t Imu(void *semp) {
  *******************************************************************************
  */
 void ImuInit(BinarySemaphore *imu_semp){
+  magxpol = ValueSearch("MAG_xpol");
+  magypol = ValueSearch("MAG_ypol");
+
   dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, imu_semp);
 }

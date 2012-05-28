@@ -2,6 +2,8 @@
 #include "hal.h"
 
 #include "message.h"
+#include "param.h"
+#include "math.h"
 
 /*
  ******************************************************************************
@@ -77,14 +79,16 @@ void MsgInit(void){
   chMBInit(&mavlink_param_set_mb,     param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlink_command_long_mb,  mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
   chMBInit(&logwriter_mb,             logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
+}
 
+void MavInit(void){
   /* первоначальная настройка мавлинка */
   mavlink_system_struct.sysid  = 20;                   ///< ID 20 for this airplane
   mavlink_system_struct.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
-  mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
   mavlink_system_struct.state  = MAV_STATE_BOOT;
   mavlink_system_struct.mode   = MAV_MODE_PREFLIGHT;
+
+  //mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
+  mavlink_system_struct.type = (uint8_t)roundf(*(ValueSearch("SYS_mavtype")));
 }
-
-
 

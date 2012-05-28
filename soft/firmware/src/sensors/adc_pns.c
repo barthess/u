@@ -126,19 +126,19 @@ static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
 
-  uint32_t batcap = 0;  /* battery capacitance in A*mS*/
-  uint32_t batfill = 0; /* battery filling in A*mS*/
+  uint32_t batcap = 0;  /* battery capacitance in A*mS */
+  uint32_t batfill = 0; /* battery filling in A*mS */
   int32_t i = -1;
 
   /* get current battery capacitance from parameter structure */
-  i = KeyValueSearch("BAT_cap");
+  i = _key_index_search("BAT_cap");
   if (i == -1)
     chDbgPanic("key not found");
   else
     batcap = 3600 * ((uint32_t)floorf(global_data[i].value));
 
   /* get battery fill in percents and calculate fill in A*mS*/
-  i = KeyValueSearch("BAT_fill");
+  i = _key_index_search("BAT_fill");
   if (i == -1)
     chDbgPanic("key not found");
   else

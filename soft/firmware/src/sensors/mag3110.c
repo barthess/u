@@ -22,26 +22,12 @@
 #define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
 #define ERR_VAL     -32700  /* это значение является символом ошибки чтения */
 
-#define XPOL        (global_data[xpol_index].value)
-#define YPOL        (global_data[ypol_index].value)
-#define ZPOL        (global_data[zpol_index].value)
-
-#define XOFFSET     (global_data[xoffset_index].value)
-#define YOFFSET     (global_data[yoffset_index].value)
-#define ZOFFSET     (global_data[zoffset_index].value)
-
-#define XSENS       (global_data[xsens_index].value)
-#define YSENS       (global_data[ysens_index].value)
-#define ZSENS       (global_data[zsens_index].value)
-
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-
-extern GlobalParam_t global_data[];
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
@@ -57,10 +43,8 @@ extern CompensatedData comp_data;
 static uint8_t rxbuf[MAG_RX_DEPTH];
 static uint8_t txbuf[MAG_TX_DEPTH];
 
-/* индексы в структуре с параметрами */
-static uint32_t xoffset_index,  yoffset_index,  zoffset_index;
-static uint32_t xsens_index,    ysens_index,    zsens_index;
-static uint32_t xpol_index,     ypol_index,     zpol_index;
+/* указатели в структуре с параметрами */
+static float *xpol, *ypol, *zpol, *xoffset, *yoffset, *zoffset, *xsens, *ysens, *zsens;
 
 /* массив максимальных и минмальных показаний по осям для калибровки смещения */
 static int16_t extremums[6]; //minx, maxx, miny, maxy, mixz, maxz
@@ -82,7 +66,6 @@ static magnetometerstate_t state;
  * PROTOTYPES
  ******************************************************************************
  */
-static void search_indexes(void);
 static void raise_error_flags(void);
 static void check_and_clean_overdose(void);
 static void acquire_data(uint8_t *rxbuf);
@@ -148,14 +131,14 @@ void acquire_data(uint8_t *rxbuf){
   mavlink_raw_imu_struct.xmag = raw_data.xmag;
   mavlink_raw_imu_struct.ymag = raw_data.ymag;
   mavlink_raw_imu_struct.zmag = raw_data.zmag;
-  mavlink_scaled_imu_struct.xmag = (raw_data.xmag - XOFFSET) * XPOL;
-  mavlink_scaled_imu_struct.ymag = (raw_data.ymag - YOFFSET) * YPOL;
-  mavlink_scaled_imu_struct.zmag = (raw_data.zmag - ZOFFSET) * ZPOL;
+  mavlink_scaled_imu_struct.xmag = (raw_data.xmag - *xoffset) * *xpol;
+  mavlink_scaled_imu_struct.ymag = (raw_data.ymag - *yoffset) * *ypol;
+  mavlink_scaled_imu_struct.zmag = (raw_data.zmag - *zoffset) * *zpol;
 
   /* Sensitivity is 0.1uT/LSB */
-  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag) * XSENS;
-  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag) * YSENS;
-  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag) * ZSENS;
+  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag) * *xsens;
+  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag) * *ysens;
+  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag) * *zsens;
 
   /* collect statistics for calibration purpose */
   if (GlobalFlags & MAG_CAL_FLAG){
@@ -184,16 +167,16 @@ void calc_coefficients(int16_t extremums[6]){
   int16_t ymagnitude = extremums[3] - extremums[2];
   int16_t zmagnitude = extremums[5] - extremums[4];
 
-  XOFFSET = extremums[1] - xmagnitude / 2;
-  YOFFSET = extremums[3] - ymagnitude / 2;
-  ZOFFSET = extremums[5] - zmagnitude / 2;
+  *xoffset = extremums[1] - xmagnitude / 2;
+  *yoffset = extremums[3] - ymagnitude / 2;
+  *zoffset = extremums[5] - zmagnitude / 2;
 
   float avg = (float)(xmagnitude + ymagnitude + zmagnitude) / 3.0;
 
   /* slightly correct stock sens (0.1uT/LSB) */
-  XSENS = mag3110sens * (avg / (float)xmagnitude);
-  YSENS = mag3110sens * (avg / (float)ymagnitude);
-  ZSENS = mag3110sens * (avg / (float)zmagnitude);
+  *xsens = mag3110sens * (avg / (float)xmagnitude);
+  *ysens = mag3110sens * (avg / (float)ymagnitude);
+  *zsens = mag3110sens * (avg / (float)zmagnitude);
 }
 
 
@@ -267,21 +250,6 @@ void raise_error_flags(void){
   mavlink_scaled_imu_struct.zmag = raw_data.zmag;
 }
 
-/**
- * Поиск индексов в массиве настроек
- */
-void search_indexes(void){
-  int32_t i = -1;
-  kvs(MAG, xoffset);
-  kvs(MAG, yoffset);
-  kvs(MAG, zoffset);
-  kvs(MAG, xpol);
-  kvs(MAG, ypol);
-  kvs(MAG, zpol);
-  kvs(MAG, xsens);
-  kvs(MAG, ysens);
-  kvs(MAG, zsens);
-}
 
 /*
  *******************************************************************************
@@ -292,7 +260,16 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
 
   state = MAG_UNINIT;
 
-  search_indexes();
+  /* Поиск индексов в массиве настроек */
+  xoffset = ValueSearch("MAG_xoffset");
+  yoffset = ValueSearch("MAG_yoffset");
+  zoffset = ValueSearch("MAG_zoffset");
+  xpol    = ValueSearch("MAG_xpol");
+  ypol    = ValueSearch("MAG_ypol");
+  zpol    = ValueSearch("MAG_zpol");
+  xsens   = ValueSearch("MAG_xsens");
+  ysens   = ValueSearch("MAG_ysens");
+  zsens   = ValueSearch("MAG_zsens");
 
   // TODO: сначала вообще убедиться, что девайс отвечает путем запроса его WHOAMI
   // TODO: запустить в нем самодиагностику

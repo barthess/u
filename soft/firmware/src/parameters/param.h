@@ -39,7 +39,7 @@ struct GlobalParam_t
 //  else
 //    xoffset_index = i;
 #define kvs(family, token){                                                   \
-    i = KeyValueSearch(#family"_"#token);                                     \
+    i = _key_index_search(#family"_"#token);                                  \
     if (i == -1)                                                              \
       chDbgPanic(#family"_"#token "key not found");                           \
     else                                                                      \
@@ -66,6 +66,7 @@ struct GlobalParam_t
 
 
 void ParametersInit(void);
-int32_t KeyValueSearch(char* key);
+int32_t _key_index_search(char* key);
+float *ValueSearch(char *str);
 
 #endif /* PARAM_H_ */

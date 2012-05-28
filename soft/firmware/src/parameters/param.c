@@ -79,7 +79,10 @@ GlobalParam_t global_data[] = {
   /*  key             min         val         max         type                    checker_fucntion   */
   /*--------------------------------------------------------------------------------------------------*/
   {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T,  default_setval},
-  {"SYS_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
+  /* тип автопилота (см. MAV_TYPE enum)
+   * для возможности переключения между машиной и самолетом. Изменения
+   * вступают в силу только после ребута. */
+  {"SYS_mavtype",     0,          1,          16,         MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** всякие флаги для коммандной оболочки ****/
   {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T,  default_setval},
@@ -179,7 +182,8 @@ GlobalParam_t global_data[] = {
   /* машинко-специфичные настройки */
   {"SERVO_car_max",   1,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
-  /**/
+
+  /* настройки инерциалки */
   {"IMU_accweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_magweight",   0.0,        0.01,       0.9,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_gpsweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
@@ -204,9 +208,12 @@ GlobalParam_t global_data[] = {
   {"T_gps_int",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_sys_status",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_heartbeat",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
-
-  /* 1 - сервы работают в машинном режиме, 0 - в самолетном */
-  {"SERVO_car_mode",  -1,         1,          2,          MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"T_reserved1",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved2",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved3",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved4",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved5",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved6",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
 
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  1,          1048,       1224,       MAVLINK_TYPE_UINT32_T,  default_setval},
@@ -237,7 +244,7 @@ static msg_t param_confirm_mb_buf[1];
 static bool_t set_parameter(mavlink_param_set_t *paramset){
   int32_t index = -1;
 
-  index = KeyValueSearch(paramset->param_id);
+  index = _key_index_search(paramset->param_id);
 
   if (index >= 0){
     // Only write and emit changes if there is actually a difference
@@ -275,7 +282,7 @@ static bool_t send_value(Mail *param_value_mail,
   uint32_t j = 0;
 
   if (key != NULL)
-    index = KeyValueSearch(key);
+    index = _key_index_search(key);
   else
     index = n;
 
@@ -386,12 +393,12 @@ static msg_t ParametersThread(void *arg){
  */
 
 /**
- * @brief   Performs key-value search.
+ * @brief   Performs key-value search. Low level function
  *
  * @return      Index in dictionary.
  * @retval -1   key not found.
  */
-int32_t KeyValueSearch(char* key){
+int32_t _key_index_search(char* key){
   int32_t i = 0;
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
@@ -400,6 +407,26 @@ int32_t KeyValueSearch(char* key){
   }
   return -1;
 }
+
+/**
+ * Возвращает указатель прямо на значение.
+ *
+ * Данный функционал вынесен в отдельную функцию на тот случай, если
+ * приложению понадобится знать другие поля структуры
+ */
+float *ValueSearch(char *str){
+  int32_t i = -1;
+
+  i = _key_index_search(str);
+  if (i == -1){
+    chDbgPanic("key not found");
+    return NULL;
+  }
+  else
+    return &(global_data[i].value);
+}
+
+
 
 void ParametersInit(void){
 
