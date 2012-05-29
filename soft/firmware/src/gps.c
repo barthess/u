@@ -8,6 +8,7 @@
 #include "sensors.h"
 #include "message.h"
 #include "gps.h"
+#include "bkp.h"
 #include "main.h"
 #include "link.h"
 #include "exti_pns.h"
@@ -123,6 +124,11 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.vz = 0;
   mavlink_global_position_int_struct.hdg = 65535;
 
+  /* отправим последние достоверные кординаты */
+  mavlink_global_position_int_struct.lat = bkpLoadGpsLatitude();
+  mavlink_global_position_int_struct.lon = bkpLoadGpsLongitude();
+  mavlink_global_position_int_struct.alt = bkpLoadGpsAltitude();
+
   while (TRUE) {
 
 EMPTY:
@@ -227,7 +233,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     i++;
 
 	if (fix > 0){  /* если есть достоверные координаты */
-		raw_data.gps_latitude  = gps_latitude;
+	  raw_data.gps_latitude  = gps_latitude;
 		raw_data.gps_longitude = gps_longitude;
 	  raw_data.gps_altitude  = gps_altitude;
 	  raw_data.gps_satellites = satellites_visible;
@@ -235,6 +241,11 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 	  global_pos_struct->lat = gps_latitude * 100;
 	  global_pos_struct->lon = gps_longitude * 100;
 	  global_pos_struct->alt = gps_altitude * 10;
+
+	  /* сохраним координаты на будущее */
+	  bkpSaveGpsLatitude(global_pos_struct->lat);
+	  bkpSaveGpsLongitude(global_pos_struct->lon);
+    bkpSaveGpsAltitude(global_pos_struct->alt);
 	}
 	else{
 		raw_data.gps_latitude = 0;
@@ -242,9 +253,10 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 		raw_data.gps_altitude = 0;
 		raw_data.gps_satellites = 0;
 
-    global_pos_struct->lat = 0;
-    global_pos_struct->lon = 0;
-    global_pos_struct->alt = 0;
+		/* отправим последние достоверные кординаты */
+    global_pos_struct->lat = bkpLoadGpsLatitude();
+    global_pos_struct->lon = bkpLoadGpsLongitude();
+    global_pos_struct->alt = bkpLoadGpsAltitude();
 	}
 }
 

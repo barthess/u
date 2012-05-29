@@ -94,6 +94,7 @@ CSRC = $(PORTSRC) \
        main.c \
        src/stubs.c \
        src/utils.c \
+       src/bkp.c \
        src/i2c_pns.c \
        src/exti_pns.c \
        src/microrl/src/microrl.c \

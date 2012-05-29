@@ -1,19 +1,13 @@
-/*
- * bkp.h
- *
- *  Created on: 24.07.2011
- *      Author: barthess
- */
-
 #ifndef BKP_H_
 #define BKP_H_
 
+void bkpSaveGpsLongitude(uint32_t n);
+uint32_t bkpLoadGpsLongitude(void);
 
-#define BKP_DR_EEPROMLOG (BKP->DR1) // адрес последней записи лога
-#define BKP_DR_ROUTEPOINTNUM (BKP->DR2) // тут хранится общее количество точек маршрута
+void bkpSaveGpsLatitude(uint32_t n);
+uint32_t bkpLoadGpsLatitude(void);
 
-
-
-void bkpInit(void);
+void bkpSaveGpsAltitude(uint32_t n);
+uint32_t bkpLoadGpsAltitude(void);
 
 #endif /* BKP_H_ */
