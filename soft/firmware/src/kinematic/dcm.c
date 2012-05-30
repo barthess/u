@@ -33,13 +33,13 @@ Output variables are:
  * when error exceeds this value accelerometer weight becomes 0
  * this helps reject external accelerations (non-gravitational
  * innertial forces caused by device acceleration) */
-#define ACC_ERR_MAX 0.3
+#define ACC_ERR_MAX 0.3f
 
 /* maximum magnetometer error relative to normal value of 1
  * (corresponding to earth's magnetic field) when error exceeds this
  * value magnetometer weight becomes 0 this helps reject magnetic
  * forces that are not attributed to earth's magnetic field */
-#define MAG_ERR_MAX 0.2
+#define MAG_ERR_MAX 0.2f
 
 /*
  ******************************************************************************
@@ -54,13 +54,15 @@ extern float dcmEst[3][3];
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-float mag_modulus = 0;
+
+/* modulus of magnetic flux */
+static float mag_modulus = 0;
 
 /* accelerometer data weight relative to gyro's weight of 1 */
-float *accweight = NULL;
+static float *accweight = NULL;
 
 /* magnetometer data weight relative to gyro's weight of 1. */
-float *magweight = NULL;
+static float *magweight = NULL;
 
 /*
  *******************************************************************************
@@ -99,7 +101,7 @@ void dcm_rotate(float dcm[3][3], float w[3]){
   //float dcmTmp[3][3];
   //matrix_multiply(3,3,3,(float*)W,(float*)dcm,(float*)dcmTmp);
 
-  int i;
+  uint32_t i;
   float dR[3];
   //update matrix using formula R(t+1)= R(t) + dR(t) = R(t) + w x R(t)
   for(i=0;i<3;i++){
@@ -128,7 +130,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   uint32_t i;
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
-  imu_step++;
 
   //interval since last call
   //imu_interval_ms = itg3200_period;
@@ -194,6 +195,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   /* ignore magnetometer readings if external magnetic field too strong */
   if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
+    /* Проработать комплексирование с нижним рядом DCM вместо вектора
+     * гравитации. Какие-то непонятные результаты получаются, или я их
+     * готовить не умею. */
     float tmpM[3];
     vector3d_normalize(Imag);
     vector3d_cross(Kacc, Imag, tmpM);
@@ -219,13 +223,24 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   w[0] = -xgyro;  //rotation rate about accelerometer's X axis (GY output)
   w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
   w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
-  for(i=0;i<3;i++){
-    w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
-    //compute weighted average with the accelerometer correction vector
-    w[i] = (w[i] + *accweight*wA[i] + *magweight*wM[i]) / (1.0f + *accweight + *magweight);
+  if (imu_step < 200){
+    /* ускоренная выставка магнитного курса */
+    for(i=0;i<3;i++){
+      w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
+      w[i] = (w[i] + *accweight*wA[i] + 0.1f*wM[i]) / (1.0f + *accweight + 0.1f);
+    }
+  }
+  else{
+    /* обычный режим */
+    for(i=0;i<3;i++){
+      w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
+      //compute weighted average with the accelerometer correction vector
+      w[i] = (w[i] + *accweight*wA[i] + *magweight*wM[i]) / (1.0f + *accweight + *magweight);
+    }
   }
 
   dcm_rotate(dcmEst, w);
+  imu_step++;
 }
 
 //-------------------------------------------------------------------

@@ -46,10 +46,10 @@ extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 extern mavlink_raw_imu_t             mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
 extern mavlink_sys_status_t          mavlink_sys_status_struct;
-extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_attitude_t            mavlink_attitude_struct;
 extern mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
+extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
 
 /*
  ******************************************************************************
@@ -153,9 +153,6 @@ static msg_t AttitudeSenderThread(void *arg) {
   }
   return 0;
 }
-
-
-
 
 /**
  *
@@ -287,12 +284,9 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   return 0;
 }
 
-
-
-
-
-
-
+/**
+ *
+ */
 static WORKING_AREA(logThreadWA, 256);
 static msg_t logThread(void *arg) {
   chRegSetThreadName("log");

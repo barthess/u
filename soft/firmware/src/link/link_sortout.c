@@ -68,6 +68,7 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
     SENDCASE(heartbeat, HEARTBEAT,                      ALL)
     SENDCASE(sys_status, SYS_STATUS,                    ALL)
     SENDCASE(param_value, PARAM_VALUE,                  ALL)
+    SENDCASE(vfr_hud, VFR_HUD,                          ALL)
 
     SENDCASE(gps_raw_int, GPS_RAW_INT,                  GPS)
     SENDCASE(global_position_int, GLOBAL_POSITION_INT,  GPS)
