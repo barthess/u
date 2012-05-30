@@ -11,7 +11,7 @@
 #include "bkp.h"
 #include "main.h"
 #include "link.h"
-#include "exti_pns.h"
+#include "exti_local.h"
 
 /**
  * Ўирота  Ч это угол между отвесной линией в данной точке и плоскостью экватора,

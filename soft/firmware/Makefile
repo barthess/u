@@ -95,8 +95,8 @@ CSRC = $(PORTSRC) \
        src/stubs.c \
        src/utils.c \
        src/bkp.c \
-       src/i2c_pns.c \
-       src/exti_pns.c \
+       src/i2c_local.c \
+       src/exti_local.c \
        src/microrl/src/microrl.c \
        src/gps.c \
        src/irq_storm.c \

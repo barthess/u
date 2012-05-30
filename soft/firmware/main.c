@@ -22,7 +22,7 @@
 #include "param.h"
 #include "sanity.h"
 #include "irq_storm.h"
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "timekeeping.h"
 #include "linkmgr.h"
 #include "gps.h"
@@ -31,7 +31,7 @@
 #include "sensors.h"
 #include "autopilot.h"
 #include "eeprom.h"
-#include "exti_pns.h"
+#include "exti_local.h"
 #include "microsd.h"
 
 /*
@@ -94,7 +94,7 @@ int main(void) {
   MsgInit();
   SanityControlInit();
   TimekeepingInit();
-  I2CInit_pns(); /* also starts EEPROM and load global parameters from it */
+  I2CInitLocal(); /* also starts EEPROM and load global parameters from it */
 
   /** инициализация мавлинковых констант, в т.ч. выбор между самолетом и машиной
    * Должно идти после I2C, т.к. читает оттуда настройки */

@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "main.h"
 
 #include "param.h"
@@ -36,7 +36,7 @@ static const I2CConfig i2cfg2 = {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void I2CInit_pns(void){
+void I2CInitLocal(void){
 
   i2cStart(&I2CD2, &i2cfg2);
 

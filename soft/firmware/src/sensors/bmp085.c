@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "bmp085.h"
 #include "bmp085_table.h"
 #include "sensors.h"

@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "airspeed.h"
 #include "main.h"
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "max1236.h"
 #include "link.h"
 #include "timekeeping.h"

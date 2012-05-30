@@ -3,7 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "sensors.h"
-#include "exti_pns.h"
+#include "exti_local.h"
 #include "rtc.h"
 #include "message.h"
 #include "timekeeping.h"
@@ -238,10 +238,10 @@ EXT_MODE_GPIOE)// accelerometer int2
  *******************************************************************************
  */
 
-void ExtiInit(BinarySemaphore *mag3110_sem,
-              BinarySemaphore *mma8451_sem,
-              BinarySemaphore *bmp085_sem,
-              BinarySemaphore *itg3200_sem){
+void ExtiInitLocal(BinarySemaphore *mag3110_sem,
+                   BinarySemaphore *mma8451_sem,
+                   BinarySemaphore *bmp085_sem,
+                   BinarySemaphore *itg3200_sem){
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;

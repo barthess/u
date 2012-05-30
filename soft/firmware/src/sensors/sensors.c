@@ -8,7 +8,7 @@
 #include "imu.h"
 #include "gps.h"
 #include "adc_pns.h"
-#include "exti_pns.h"
+#include "exti_local.h"
 #include "itg3200.h"
 #include "mma8451.h"
 #include "tmp75.h"
@@ -75,7 +75,7 @@ void SensorsInit(void){
 
   /* Запуск контроллера внешних прерываний.
    * ПОМНИ! I2C-датчики и RTC используют его */
-  ExtiInit(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
+  ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
   ADCInit_pns();
 
   /* start I2C sensors */

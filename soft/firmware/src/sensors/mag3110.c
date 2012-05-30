@@ -4,7 +4,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "utils.h"
 #include "mag3110.h"
 #include "sensors.h"

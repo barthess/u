@@ -6,7 +6,7 @@
 #include "sensors.h"
 #include "message.h"
 #include "main.h"
-#include "i2c_pns.h"
+#include "i2c_local.h"
 #include "tmp75.h"
 #include "link.h"
 #include "utils.h"
