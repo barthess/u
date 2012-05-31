@@ -197,8 +197,7 @@ GlobalParam_t global_data[] = {
   /* sample count for zeroing */
   {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /* время между посылками данных определенного типа в mS
-   * 60001 - означает отключение посылок данного типа */
+  /* время между посылками данных определенного типа в mS */
   {"T_raw_imu",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_raw_press",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_scal_imu",      SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
