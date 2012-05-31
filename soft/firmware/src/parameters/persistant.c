@@ -50,7 +50,7 @@ static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
  */
 bool_t load_params_from_eeprom(void){
   uint32_t i = 0;
-  uint32_t index = -1;
+  int32_t  index = -1;
   uint32_t status = 0;
 
   union{

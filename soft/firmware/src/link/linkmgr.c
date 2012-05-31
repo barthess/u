@@ -34,7 +34,7 @@ static SerialConfig xbee_ser_cfg = {
     USART_CR3_CTSE,
 };
 
-static uint32_t sh_enable_index = -1;
+static int32_t sh_enable_index = -1;
 
 /*
  *******************************************************************************
