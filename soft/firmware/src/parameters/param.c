@@ -285,7 +285,7 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
 
-  if ((index >= 0) && (index <= ONBOARD_PARAM_COUNT)){
+  if ((index >= 0) && (index <= (int)ONBOARD_PARAM_COUNT)){
     /* fill all fields */
     param_value_struct->param_value = global_data[index].value;
     param_value_struct->param_count = ONBOARD_PARAM_COUNT;
@@ -400,7 +400,7 @@ static msg_t ParametersThread(void *arg){
 int32_t _key_index_search(char* key){
   int32_t i = 0;
 
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < (int)ONBOARD_PARAM_COUNT; i++){
     if (strcmp(key, global_data[i].name) == 0)
       return i;
   }
