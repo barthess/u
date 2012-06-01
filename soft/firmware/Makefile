@@ -6,7 +6,7 @@
 # Compiler options here.
 ifeq ($(USE_OPT),)
   #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
   #USE_OPT = -O0 -ggdb -fomit-frame-pointer -std=gnu99
   #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
   #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
@@ -139,6 +139,10 @@ DSPSRC = cortex_dsp
 CSRC += $(DSPSRC)/arm_common_tables.c \
 		$(DSPSRC)/arm_sqrt_q31.c \
         $(DSPSRC)/arm_sqrt_q15.c \
+        $(DSPSRC)/arm_cos_f32.c \
+        $(DSPSRC)/arm_cos_q31.c \
+        $(DSPSRC)/FilteringFunctions/arm_fir_q31.c \
+        $(DSPSRC)/FilteringFunctions/arm_fir_fast_q31.c \
         
         
 
@@ -222,7 +226,7 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Wstrict-prototypes -Wno-sign-compare
+CWARN = -Wall -Wextra -Wstrict-prototypes #-Wno-sign-compare
 
 # Define C++ warning options here
 CPPWARN = -Wall -Wextra

@@ -96,8 +96,9 @@ static msg_t PollMagThread(void *semp){
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
-     * прерываение прилетит на лапку раньше, чем подхватится EXTI. Для того,
-     * чтобы прерывание нормально работало, надо обязательно читать данные
+     * прерываение прилетит на лапку раньше, чем подхватится EXTI.
+     * Кроме того, для того,
+     * чтобы прерывание работало, надо обязательно читать данные
      * из как минимум первого регистра. */
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
 
@@ -285,7 +286,9 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   /* Except for STANDBY mode selection, the device must be in STANDBY mode
    to change any of the fields within CTRL_REG1 (0x10). */
   txbuf[0] = MAG_CTRL_REG1; // register address
-  txbuf[1] = 0b11001;       // выводим из спящего режима, настраиваем чувствительность
+  /* выводим из спящего режима, настраиваем чувствительность */
+  //txbuf[1] = 0b11001;    // 10 Hz, 8 samples
+  txbuf[1] = 0b1001;       // 40 Hz, 2 samples
   while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
