@@ -208,7 +208,7 @@ static msg_t ShellThread(void *arg){
   microrl_set_execute_callback(&microrl_shell, execute);
 
   // set callback for completion (optionally)
-  microrl_set_complite_callback(&microrl_shell, complete);
+  microrl_set_complete_callback(&microrl_shell, complete);
 
   // set callback for ctrl+c handling (optionally)
   microrl_set_sigint_callback(&microrl_shell, sigint);
