@@ -15,7 +15,7 @@ ser = serial.Serial("/dev/ttyS0", 115200)
 
 
 STEP = 1 # шаг по оси Х
-SCOPE_LEN = 200 # количество точек на экране
+SCOPE_LEN = 500 # количество точек на экране
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -28,12 +28,13 @@ ax.set_ylim(-1800, -1950)
 taps = fir.get_taps()
 print taps
 
-def animate(i):
+def animate(i):#{{{ функция анимирует
     origin.set_data(i)
     filtered.set_data(i[0], lfilter(taps, 1.0, i[1]))
     xmin, xmax = ax.get_xlim()
     # ax.set_xlim( (xmin + STEP, xmax + STEP) )
     return origin, filtered
+#}}}
 
 def gen():
     i = 0
