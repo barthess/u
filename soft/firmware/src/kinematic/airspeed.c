@@ -1,12 +1,10 @@
+#include <math.h>
 /*
  * Pressure measurement unit
  * Рассчитывает воздушную скорость по сырым данным с MPX5100
  */
 #include "ch.h"
 #include "hal.h"
-
-#define ARM_MATH_CM4
-#include "arm_math.h"
 
 #include "sensors.h"
 #include "utils.h"
