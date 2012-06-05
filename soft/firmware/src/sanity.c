@@ -18,6 +18,7 @@ extern Mailbox tolink_mb;
 extern uint32_t GlobalFlags;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
+extern mavlink_heartbeat_t mavlink_heartbeat_struct;
 
 /*
  ******************************************************************************
@@ -56,7 +57,6 @@ static msg_t SanityControlThread(void *arg) {
   struct EventListener self_el;
   chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
 
-  mavlink_heartbeat_t mavlink_heartbeat_struct;
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;

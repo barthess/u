@@ -31,7 +31,7 @@
  */
 extern Mailbox tolink_mb;
 extern MemoryHeap LinkThdHeap;
-
+extern mavlink_status_t mavlink_status_struct;
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -59,6 +59,7 @@ static msg_t LinkOutThread(void *sdp){
   /* Переменная для формирования сообщения. Одна на всех,
      поскольку сообещиня обрабатываются по одному. */
   mavlink_message_t mavlink_msgbuf;
+
   /* выходной буфер для отправки данных */
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
@@ -84,12 +85,11 @@ static msg_t LinkOutThread(void *sdp){
 /**
  * Поток разбора входящих данных.
  */
-static WORKING_AREA(LinkInThreadWA, 1024);
+static WORKING_AREA(LinkInThreadWA, 512);
 static msg_t LinkInThread(void *sdp){
   chRegSetThreadName("MAVLinkIn");
 
   mavlink_message_t msg;
-  mavlink_status_t status;
   msg_t c = 0;
 
   while (TRUE) {
@@ -99,7 +99,7 @@ static msg_t LinkInThread(void *sdp){
     // Try to get a new message
     c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
     if (c != Q_TIMEOUT){
-      if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &status)) {
+      if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &mavlink_status_struct)) {
         if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
           sort_input_messages(&msg);
         }

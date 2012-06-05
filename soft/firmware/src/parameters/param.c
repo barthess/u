@@ -22,58 +22,22 @@
 
 /*
  ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+static bool_t default_setval(float value,  GlobalParam_t *param);
+static bool_t int_setval(float value,  GlobalParam_t *param);
+bool_t polarity_setval(float value,  GlobalParam_t *param);
+
+/*
+ ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
-
-/**
- * Default boundary checker.
- */
-static bool_t default_setval(float value,  GlobalParam_t *param){
-  float initial_value = value;
-
-  putinrange(value, param->min, param->max);
-  param->value = value;
-
-  if (value == initial_value)
-    return PARAM_SUCCESS;
-  else
-    return PARAM_FAILED;
-}
-
-/**
- * Default boundary checker for integer values.
- */
-static bool_t int_setval(float value,  GlobalParam_t *param){
-  float initial_value = value;
-
-  putinrange(value, param->min, param->max);
-  param->value = roundf(value);
-
-  if (value == initial_value)
-    return PARAM_SUCCESS;
-  else
-    return PARAM_FAILED;
-}
-
-/**
- * Cheker for inversion coefficients used (for example) in gyros
- * to invert direction values.
- */
-bool_t polarity_setval(float value,  GlobalParam_t *param){
-  if ((value > -1.1) && (value < -0.9)){
-    param->value = -1;
-    return PARAM_SUCCESS;
-  }
-  else{
-    param->value = 1;
-    return PARAM_FAILED;
-  }
-}
-
+extern mavlink_param_value_t param_value_struct;
 
 GlobalParam_t global_data[] = {
   /*  key             min         val         max         type                    checker_fucntion   */
@@ -238,6 +202,51 @@ static msg_t param_confirm_mb_buf[1];
  */
 
 /**
+ * Default boundary checker.
+ */
+static bool_t default_setval(float value,  GlobalParam_t *param){
+  float initial_value = value;
+
+  putinrange(value, param->min, param->max);
+  param->value = value;
+
+  if (value == initial_value)
+    return PARAM_SUCCESS;
+  else
+    return PARAM_FAILED;
+}
+
+/**
+ * Default boundary checker for integer values.
+ */
+static bool_t int_setval(float value,  GlobalParam_t *param){
+  float initial_value = value;
+
+  putinrange(value, param->min, param->max);
+  param->value = roundf(value);
+
+  if (value == initial_value)
+    return PARAM_SUCCESS;
+  else
+    return PARAM_FAILED;
+}
+
+/**
+ * Cheker for inversion coefficients used (for example) in gyros
+ * to invert direction values.
+ */
+bool_t polarity_setval(float value,  GlobalParam_t *param){
+  if ((value > -1.1) && (value < -0.9)){
+    param->value = -1;
+    return PARAM_SUCCESS;
+  }
+  else{
+    param->value = 1;
+    return PARAM_FAILED;
+  }
+}
+
+/**
  * Checks parameter and writes it to global struct.
  */
 static bool_t set_parameter(mavlink_param_set_t *paramset){
@@ -329,7 +338,6 @@ static msg_t ParametersThread(void *arg){
   (void)arg;
 
   /* переменные для отправки установленных параметров */
-  mavlink_param_value_t param_value_struct;
   Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
 
   /* переменные для приема параметров */

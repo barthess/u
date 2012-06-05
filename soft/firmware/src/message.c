@@ -27,6 +27,7 @@ Mailbox logwriter_mb;             /* сообщения для писалки логов */
 
 /* переменные, касающиеся мавлинка */
 mavlink_system_t              mavlink_system_struct;
+mavlink_status_t              mavlink_status_struct;
 mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 mavlink_raw_imu_t             mavlink_raw_imu_struct;
 mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
@@ -37,6 +38,8 @@ mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная ск
 mavlink_set_mode_t            mavlink_set_mode_struct;
 mavlink_global_position_int_t mavlink_global_position_int_struct;
 mavlink_attitude_t            mavlink_attitude_struct;
+mavlink_heartbeat_t           mavlink_heartbeat_struct;
+mavlink_param_value_t         param_value_struct;
 
 /*
  ******************************************************************************
