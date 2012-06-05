@@ -8,7 +8,7 @@
 #include "main.h"
 #include "cli.h"
 #include "cli_cmd.h"
-
+#include "sensors.h"
 
 /*
  ******************************************************************************
@@ -22,6 +22,7 @@
  ******************************************************************************
  */
 extern MemoryHeap LinkThdHeap;
+extern RawData raw_data;
 
 /*
  ******************************************************************************
@@ -86,21 +87,35 @@ Thread* help_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
 }
 
 
-static WORKING_AREA(LoopCmdThreadWA, 128);
+
+
+
+static WORKING_AREA(LoopCmdThreadWA, 1024);
 static msg_t LoopCmdThread(void *arg){
   chRegSetThreadName("LoopCmd");
   (void)arg;
-  int i = 20;
 
-  while (i > 0){
-    cli_print("This is loop function test. Press ^C to stop it.\n\r");
-    chThdSleepMilliseconds(1000);
-    i--;
+  cli_print("This is loop function test. Press ^C to stop it.\n\r");
+  while (TRUE){
+    int n = 16;
+    char str[n];
+
+    snprintf(str, n, "%i\r\n", raw_data.zmag);
+    cli_print(str);
+    chThdSleepMilliseconds(25);
+
     if (chThdShouldTerminate())
       chThdExit(0);
   }
   return 0;
 }
+
+
+
+
+
+
+
 
 Thread* loop_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
@@ -175,7 +190,7 @@ Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
   (void)argc;
   (void)argv;
 
-  int n = 64;
+  int n = 80;
   int nres = 0;
   char str[n];
 

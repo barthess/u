@@ -111,7 +111,7 @@ CSRC = $(PORTSRC) \
        src/parameters/param.c \
        src/parameters/persistant.c \
        src/timekeeping.c \
-       src/sensors/adc_pns.c \
+       src/sensors/adc_local.c \
        src/sensors/sensors.c \
        src/sensors/max1236.c \
        src/sensors/tmp75.c \

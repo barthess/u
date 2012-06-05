@@ -3,7 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "adc_pns.h"
+#include "adc_local.h"
 #include "sensors.h"
 #include "message.h"
 #include "main.h"
@@ -172,7 +172,7 @@ static msg_t PowerKeeperThread(void *arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ADCInit_pns(void){
+void ADCInit_local(void){
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);
