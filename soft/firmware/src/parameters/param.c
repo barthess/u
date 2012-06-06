@@ -37,7 +37,7 @@ bool_t polarity_setval(float value,  GlobalParam_t *param);
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
-extern mavlink_param_value_t param_value_struct;
+extern mavlink_param_value_t mavlink_param_value_struct;
 
 GlobalParam_t global_data[] = {
   /*  key             min         val         max         type                    checker_fucntion   */
@@ -362,7 +362,7 @@ static msg_t ParametersThread(void *arg){
       input_mail->payload = NULL;
       status = set_parameter(set);
       if (status == SUCCESS){
-        send_value(&param_value_mail, &param_value_struct, set->param_id, 0);
+        send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
       }
       break;
 
@@ -373,7 +373,7 @@ static msg_t ParametersThread(void *arg){
       list = (mavlink_param_request_list_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (list->target_system == mavlink_system_struct.sysid)
-        send_all_values(&param_value_mail, &param_value_struct);
+        send_all_values(&param_value_mail, &mavlink_param_value_struct);
       break;
 
     /*
@@ -383,9 +383,9 @@ static msg_t ParametersThread(void *arg){
       read = (mavlink_param_request_read_t *)(input_mail->payload);
       input_mail->payload = NULL;
       if (read->param_index >= 0)
-        send_value(&param_value_mail, &param_value_struct, NULL, read->param_index);
+        send_value(&param_value_mail, &mavlink_param_value_struct, NULL, read->param_index);
       else
-        send_value(&param_value_mail, &param_value_struct, read->param_id, 0);
+        send_value(&param_value_mail, &mavlink_param_value_struct, read->param_id, 0);
       break;
     }
   }

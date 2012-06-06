@@ -10,7 +10,6 @@
 #include "link_sortin.h"
 #include "link_sortout.h"
 
-
 /**
  * This code performs:
  * - receiving and sending of packages via UART
@@ -32,6 +31,7 @@
 extern Mailbox tolink_mb;
 extern MemoryHeap LinkThdHeap;
 extern mavlink_status_t mavlink_status_struct;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
