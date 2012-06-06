@@ -1,25 +1,26 @@
 #!/usr/bin/env python
 
-# test
-
-names = ["sys_status",
-        "heartbeat",
-        "raw_pressure",
-        "raw_imu",
-        "scaled_imu",
-        "scaled_pressure",
-        "command_long",
-        "vfr_hud",
-        "set_mode",
-        "global_position_int",
-        "attitude",
-        "param_value",
+#           name              component id
+names = [
+        ("sys_status",          "ALL"),
+        ("heartbeat",           "ALL"),
+        ("vfr_hud",             "ALL"),
+        ("param_value",         "ALL"),
+        ("set_mode",            "IMU"),
+        ("attitude",            "IMU"),
+        ("raw_pressure",        "IMU"),
+        ("raw_imu",             "IMU"),
+        ("scaled_imu",          "IMU"),
+        ("scaled_pressure",     "IMU"),
+        ("command_long",        "IMU"),
+        ("global_position_int", "GPS"),
+        ("gps_raw_int",         "GPS")
         ]
 
 for i in names:
     print(
-    "  case MAVLINK_MSG_ID_" + str.upper(i) + ":\n"
-    "    len = mavlink_msg_" + i + "_encode(system_id, component_id, msg, (mavlink_" + i + "_t*)content);\n"
+    "  case MAVLINK_MSG_ID_" + str.upper(i[0]) + ":\n"
+    "    len = mavlink_msg_" + i[0] + "_encode(system_id, MAV_COMP_ID_" + i[1] + ", msg, (mavlink_" + i[0] + "_t*)content);\n"
     "    break;"
     )
 
