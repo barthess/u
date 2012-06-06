@@ -25,10 +25,10 @@
  * EXTERNS
  ******************************************************************************
  */
-//extern GlobalParam_t global_data[];
 extern CompensatedData comp_data;
-extern mavlink_attitude_t            mavlink_attitude_struct;
+extern mavlink_attitude_t mavlink_attitude_struct;
 extern uint32_t imu_update_period;
+extern Mailbox logwriter_mb;
 
 uint32_t imu_step = 0;                /* incremented on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
@@ -70,6 +70,9 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
   mavlink_attitude_struct->pitchspeed   = -comp_data.ygyro;
   mavlink_attitude_struct->yawspeed     = -comp_data.zgyro;
+  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
+
+  chMBPost(&logwriter_mb, MAVLINK_MSG_ID_ATTITUDE, TIME_IMMEDIATE);
 }
 
 

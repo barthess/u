@@ -50,7 +50,7 @@ extern GlobalParam_t global_data[];
 #define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
 #define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
 
-#define PWR_CHECK_PERIOD          10 /* mS */
+#define PWR_CHECK_PERIOD          20 /* mS */
 
 /*
  ******************************************************************************

@@ -183,7 +183,7 @@ static msg_t SdThread(void *arg){
   FATFS *fsp;
   FIL Log;
 
-  msg_t tmp;
+  msg_t id;
 
   /* wait until card not ready */
 NOT_READY:
@@ -212,16 +212,19 @@ NOT_READY:
   err_check();
 
 
-  /* main write cycle */
+  /* main write cycle
+   * This writer waits msg_t with mavlink message ID. Based on that ID it
+   * will pack extern mavlink struct with proper packing function. */
+  chMBReset(&logwriter_mb); /* just to be safe */
   while TRUE{
-    // wait pointer to buffer
-    if (chMBFetch(&logwriter_mb, &tmp, TIME_INFINITE) == RDY_OK){
+    /* wait ID */
+    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
       if (!sdcIsCardInserted(&SDCD1)){
         remove_handler();
         chMBReset(&logwriter_mb);
         goto NOT_READY;
       }
-      err = WriteLog(&Log, (Mail*)tmp, &fresh_data);
+      err = WriteLog(&Log, id, &fresh_data);
       err_check();
     }
 

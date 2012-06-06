@@ -5,13 +5,15 @@
 
 #include "message.h"
 #include "logger.h"
+#include "link_sortout.h"
+
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
 
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 8192
 
 /* сколько свободных байт осталось в буфере */
 #define FREE (BUFF_SIZE - offset)
@@ -21,6 +23,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern mavlink_system_t              mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -37,6 +40,10 @@ static uint8_t* currbuf = b0;
 
 /* смещение в текущем рабочем буфере */
 static uint32_t offset = 0;
+
+/* some buffers for mavlink handling */
+static mavlink_message_t mavlink_msgbuf_log;
+static uint8_t logbuf[MAVLINK_MAX_PACKET_LEN];
 
 /*
  ******************************************************************************
@@ -96,15 +103,21 @@ uint8_t* bufferize(uint8_t *payload, uint32_t count){
  */
 
 /**
- * @note Field 'invoice' in mail MUST contains number of bytes to be written.
+ * Get id of data
+ * Pack it
+ * Store to FS buffer
+ * Raise bool flag if fresh data available
  */
-FRESULT WriteLog(FIL *Log, Mail *mailp, bool_t *fresh_data){
+FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
   uint32_t bytes_written;
   uint8_t *fs_buf;
   FRESULT err = FR_OK;
+  uint16_t len = 0;
 
-  fs_buf = bufferize(mailp->payload, mailp->invoice);
-  mailp->payload = NULL;
+  mavencoder(id, mavlink_system_struct.sysid, &mavlink_msgbuf_log);
+  len = mavlink_msg_to_send_buffer(logbuf, &mavlink_msgbuf_log);
+
+  fs_buf = bufferize(logbuf, len);
 
   if (fs_buf != NULL){
     err = f_write(Log, fs_buf, BUFF_SIZE, (void *)&bytes_written);
