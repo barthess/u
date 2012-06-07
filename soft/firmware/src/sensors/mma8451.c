@@ -11,6 +11,7 @@
 #include "param.h"
 #include "main.h"
 #include "link.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -70,6 +71,10 @@ static msg_t PollAccelThread(void *semp){
       mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
       mavlink_raw_imu_struct.yacc = raw_data.yacc * *ypol;
       mavlink_raw_imu_struct.zacc = raw_data.zacc * *zpol;
+      chSysLock();
+      mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+      chSysUnlock();
+
       comp_data.xacc = 1000 * (((int32_t)raw_data.xacc) * *xpol + *xoffset) / *xsens;
       comp_data.yacc = 1000 * (((int32_t)raw_data.yacc) * *ypol + *yoffset) / *ysens;
       comp_data.zacc = 1000 * (((int32_t)raw_data.zacc) * *zpol + *zoffset) / *zsens;
@@ -78,6 +83,7 @@ static msg_t PollAccelThread(void *semp){
       mavlink_scaled_imu_struct.xacc = comp_data.xacc;
       mavlink_scaled_imu_struct.yacc = comp_data.yacc;
       mavlink_scaled_imu_struct.zacc = comp_data.zacc;
+      mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
     }
     else{
       raw_data.xacc = -32768;

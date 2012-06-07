@@ -13,6 +13,7 @@
 #include "param.h"
 #include "main.h"
 #include "link.h"
+#include "timekeeping.h"
 
 /*
  ******************************************************************************
@@ -28,16 +29,15 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-uint32_t imu_update_period;
-
+extern Mailbox logwriter_mb;
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource pwrmgmt_event;
 extern mavlink_system_t mavlink_system_struct;
-
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
+uint32_t imu_update_period;
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -142,6 +142,9 @@ static msg_t PollGyroThread(void *semp){
         mavlink_raw_imu_struct.xgyro = gyroX;
         mavlink_raw_imu_struct.ygyro = gyroY;
         mavlink_raw_imu_struct.zgyro = gyroZ;
+        chSysLock();
+        mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+        chSysUnlock();
 
         /* now get angular velocity in rad/sec */
         comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
@@ -160,9 +163,12 @@ static msg_t PollGyroThread(void *semp){
         mavlink_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
         mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
         mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
+        mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(imusync_semp);
+        chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_RAW_IMU);
+        chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_SCALED_IMU);
       }
     }
     else{

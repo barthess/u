@@ -40,6 +40,7 @@ mavlink_global_position_int_t mavlink_global_position_int_struct;
 mavlink_attitude_t            mavlink_attitude_struct;
 mavlink_heartbeat_t           mavlink_heartbeat_struct;
 mavlink_param_value_t         mavlink_param_value_struct;
+mavlink_gps_raw_int_t         mavlink_gps_raw_int_struct;
 
 /*
  ******************************************************************************
@@ -48,11 +49,11 @@ mavlink_param_value_t         mavlink_param_value_struct;
  */
 /* буфера для почтовых ящиков */
 static msg_t autopilot_mb_buf[4];
-static msg_t tolink_mb_buf[10];
+static msg_t tolink_mb_buf[8];
 static msg_t toservo_mb_buf[1];
 static msg_t param_mb_buf[2];
 static msg_t mavlinkcmd_mb_buf[2];
-static msg_t logwriter_mb_buf[4];
+static msg_t logwriter_mb_buf[10];
 
 /*
  ******************************************************************************

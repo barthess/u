@@ -4,6 +4,6 @@
 #include "message.h"
 #include "ff.h"
 
-FRESULT WriteLog(FIL *Log, Mail *mailp, bool_t *fresh_data);
+FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data);
 
 #endif /* LOGGER_H_ */

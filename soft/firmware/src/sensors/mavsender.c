@@ -36,7 +36,6 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern Mailbox logwriter_mb;
 extern EventSource modem_event;
 
 extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
@@ -280,28 +279,6 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   return 0;
 }
 
-/**
- *
- */
-static WORKING_AREA(logThreadWA, 256);
-static msg_t logThread(void *arg) {
-  chRegSetThreadName("log");
-  (void)arg;
-
-  uint8_t teststr[] = "|this is test message++++++++++\r\n";
-  Mail test = {NULL, sizeof(teststr) - 1, NULL};
-
-  while (TRUE) {
-    chThdSleepMilliseconds(20);
-    if (test.payload == NULL){
-      test.payload = teststr;
-      chMBPost(&logwriter_mb, (msg_t)&test, TIME_INFINITE);
-    }
-  }
-  return 0;
-}
-
-
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -374,12 +351,6 @@ void MavSenderInit(void){
           sizeof(SYS_STAT_SenderThreadWA),
           LINK_THREADS_PRIO - 1,
           SYS_STAT_SenderThread,
-          NULL);
-
-  chThdCreateStatic(logThreadWA,
-          sizeof(logThreadWA),
-          LINK_THREADS_PRIO - 1,
-          logThread,
           NULL);
 }
 
