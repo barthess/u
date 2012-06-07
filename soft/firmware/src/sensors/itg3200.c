@@ -13,6 +13,7 @@
 #include "param.h"
 #include "main.h"
 #include "link.h"
+#include "logger.h"
 #include "timekeeping.h"
 
 /*
@@ -38,6 +39,7 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
 uint32_t imu_update_period;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -142,9 +144,7 @@ static msg_t PollGyroThread(void *semp){
         mavlink_raw_imu_struct.xgyro = gyroX;
         mavlink_raw_imu_struct.ygyro = gyroY;
         mavlink_raw_imu_struct.zgyro = gyroZ;
-        chSysLock();
         mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-        chSysUnlock();
 
         /* now get angular velocity in rad/sec */
         comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
@@ -167,8 +167,8 @@ static msg_t PollGyroThread(void *semp){
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(imusync_semp);
-        chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_RAW_IMU);
-        chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_SCALED_IMU);
+        log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
+        log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
       }
     }
     else{

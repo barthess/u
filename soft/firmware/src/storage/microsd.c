@@ -134,7 +134,7 @@ static void remove_handler(void) {
 static size_t name_from_time(char *buf){
   struct tm timp;
   rtcGetTimeTm(&RTCD1, &timp);
-  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.log", &timp);
+  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.mavlink", &timp);
 }
 
 /**

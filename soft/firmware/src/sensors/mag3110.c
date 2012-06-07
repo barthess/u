@@ -134,9 +134,6 @@ void acquire_data(uint8_t *rxbuf){
   mavlink_raw_imu_struct.xmag = raw_data.xmag;
   mavlink_raw_imu_struct.ymag = raw_data.ymag;
   mavlink_raw_imu_struct.zmag = raw_data.zmag;
-  chSysLock();
-  mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-  chSysUnlock();
 
   mavlink_scaled_imu_struct.xmag = (raw_data.xmag - *xoffset) * *xpol * roundf(*xsens * 100.0f);
   mavlink_scaled_imu_struct.ymag = (raw_data.ymag - *yoffset) * *ypol * roundf(*ysens * 100.0f);

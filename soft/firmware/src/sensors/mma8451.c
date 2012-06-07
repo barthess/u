@@ -71,9 +71,6 @@ static msg_t PollAccelThread(void *semp){
       mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
       mavlink_raw_imu_struct.yacc = raw_data.yacc * *ypol;
       mavlink_raw_imu_struct.zacc = raw_data.zacc * *zpol;
-      chSysLock();
-      mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-      chSysUnlock();
 
       comp_data.xacc = 1000 * (((int32_t)raw_data.xacc) * *xpol + *xoffset) / *xsens;
       comp_data.yacc = 1000 * (((int32_t)raw_data.yacc) * *ypol + *yoffset) / *ysens;

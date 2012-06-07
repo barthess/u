@@ -8,6 +8,7 @@
 #include "main.h"
 #include "imu.h"
 #include "link.h"
+#include "logger.h"
 #include "param.h"
 #include "itg3200.h"
 #include "dcm.h"
@@ -72,7 +73,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->yawspeed     = -comp_data.zgyro;
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
 
-  chMBPost(&logwriter_mb, MAVLINK_MSG_ID_ATTITUDE, TIME_IMMEDIATE);
+  log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
 }
 
 

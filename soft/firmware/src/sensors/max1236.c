@@ -83,9 +83,7 @@ static msg_t PollMax1236Thread(void *arg) {
     mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
     mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
-    chSysLock();
     mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
-    chSysUnlock();
 
     if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
       chThdExit(RDY_OK);
