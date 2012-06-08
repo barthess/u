@@ -111,6 +111,10 @@ static WORKING_AREA(PollGyroThreadWA, 512);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 
+  /* variables for regulate log writing frequency */
+  uint32_t i = 0;
+  const uint32_t decimator = 0b11;
+
   int32_t gyroX, gyroY, gyroZ;
   msg_t sem_status = RDY_OK;
 
@@ -167,8 +171,11 @@ static msg_t PollGyroThread(void *semp){
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(imusync_semp);
-        log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
-        log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
+        if ((i & decimator) == decimator){
+          log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
+          log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
+        }
+        i++;
       }
     }
     else{

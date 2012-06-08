@@ -72,8 +72,6 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->pitchspeed   = -comp_data.ygyro;
   mavlink_attitude_struct->yawspeed     = -comp_data.zgyro;
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-
-  log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
 }
 
 
@@ -106,10 +104,14 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
  */
 static WORKING_AREA(waImu, 1024);
 static msg_t Imu(void *semp) {
-
   chRegSetThreadName("IMU");
+
   msg_t sem_status = RDY_TIMEOUT;
   float interval = 0; /* time between 2 gyro measurements */
+
+  /* variables for regulate log writing frequency */
+  uint32_t i = 0;
+  const uint32_t decimator = 0b11;
 
   while (imu_update_period == 0){
     /* wait until giro sampling time measured */
@@ -132,6 +134,10 @@ static msg_t Imu(void *semp) {
                 interval);
 
       get_attitude(&mavlink_attitude_struct);
+
+      if ((i & decimator) == decimator)
+        log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
+      i++;
     }
   }
   return 0;
@@ -151,7 +157,7 @@ void ImuInit(BinarySemaphore *imu_semp){
 }
 
 /**
- * —брасывает всЄ рассчитанное инерциалкой в начальное состо€ние
+ *
  */
 void ImuReset(void){
 
