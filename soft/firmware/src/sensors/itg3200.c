@@ -142,9 +142,6 @@ static msg_t PollGyroThread(void *semp){
         mavlink_raw_imu_struct.xgyro = gyroX;
         mavlink_raw_imu_struct.ygyro = gyroY;
         mavlink_raw_imu_struct.zgyro = gyroZ;
-        chSysLock();
-        mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-        chSysUnlock();
 
         /* now get angular velocity in rad/sec */
         comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
@@ -163,17 +160,20 @@ static msg_t PollGyroThread(void *semp){
         mavlink_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
         mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
         mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-        mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(imusync_semp);
+        /* update timestamps */
+        mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
+        mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+        /* star writing to logfile */
         chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_RAW_IMU);
         chMBPostI(&logwriter_mb, MAVLINK_MSG_ID_SCALED_IMU);
       }
     }
     else{
       //TODO: event GyroFail
-      /* значения, сигнализирующие о сбое */
+      /* this values denote failed */
       raw_data.gyro_temp = -32768;
       raw_data.xgyro = -32768;
       raw_data.ygyro = -32768;

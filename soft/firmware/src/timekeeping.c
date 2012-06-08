@@ -107,10 +107,12 @@ void TimekeepingInit(void){
  */
 uint64_t pnsGetTimeUnixUsec(void){
 
+  chSysLock();
   if (TIME_BOOT_MS < LastTimeBootMs)
     WrapCount++;
 
   LastTimeBootMs = TIME_BOOT_MS;
+  chSysUnlock();
   return BootTimestamp
          + (int64_t)(TIME_BOOT_MS) * 1000
          + Correction
@@ -131,7 +133,7 @@ systime_t GetTimeInterval(systime_t *last){
 
   if (chTimeNow() >= *last)
     t = chTimeNow() - *last;
-  else /* произошло переполнение */
+  else /* overflow happens */
     t = chTimeNow() + (0xFFFFFFFF - *last);
   /* refresh last value */
   *last = chTimeNow();
