@@ -36,7 +36,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern EventSource modem_event;
+extern EventSource init_event;
 
 extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 extern mavlink_raw_imu_t             mavlink_raw_imu_struct;
@@ -83,10 +83,11 @@ static msg_t RAW_IMU_SenderThread(void *arg) {
   (void)arg;
 
   Mail raw_imu_mail = {NULL, MAVLINK_MSG_ID_RAW_IMU, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
+
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*raw_imu);
@@ -108,10 +109,10 @@ static msg_t ScaledImuSenderThread(void *arg) {
   (void)arg;
 
   Mail scaled_imu_mail = {NULL, MAVLINK_MSG_ID_SCALED_IMU, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*scal_imu);
@@ -133,10 +134,10 @@ static msg_t AttitudeSenderThread(void *arg) {
   (void)arg;
 
   Mail attitude_mail = {NULL, MAVLINK_MSG_ID_ATTITUDE, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*attitude);
@@ -158,10 +159,10 @@ static msg_t RAW_PRESSURE_SenderThread(void *arg) {
   (void)arg;
 
   Mail raw_pressure_mail = {NULL, MAVLINK_MSG_ID_RAW_PRESSURE, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*raw_press);
@@ -184,10 +185,10 @@ static msg_t VFR_HUD_SenderThread(void *arg) {
   (void)arg;
 
   Mail vfr_hud_mail = {NULL, MAVLINK_MSG_ID_VFR_HUD, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*vfr_hud);
@@ -209,10 +210,10 @@ static msg_t GPS_INT_SenderThread(void *arg) {
   (void)arg;
 
   Mail global_position_int_mail = {NULL, MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*gps_int);
@@ -234,10 +235,10 @@ static msg_t SCAL_PRESS_SenderThread(void *arg) {
   (void)arg;
 
   Mail scaled_pressure_mail = {NULL, MAVLINK_MSG_ID_SCALED_PRESSURE, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*scal_press);
@@ -260,10 +261,10 @@ static msg_t SYS_STAT_SenderThread(void *arg) {
   (void)arg;
 
   Mail sys_status_mail = {NULL, MAVLINK_MSG_ID_SYS_STATUS, NULL};
-  struct EventListener self_el;
-  chEvtRegister(&modem_event, &self_el, MODEM_READY);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, MODEM_READY_EVID);
 
-  chEvtWaitOne(EVENT_MASK(MODEM_READY));
+  chEvtWaitOne(EVENT_MASK(MODEM_READY_EVID));
 
   while (TRUE) {
     chThdSleepMilliseconds(*sys_status);

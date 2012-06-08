@@ -19,7 +19,7 @@ extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
 
 extern mavlink_system_t mavlink_system_struct;
-extern EventSource pwrmgmt_event;
+extern EventSource init_event;
 
 /*
  ******************************************************************************
@@ -111,7 +111,7 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
       return;
     }
     else{
-      chEvtBroadcastFlags(&pwrmgmt_event, EVENT_MASK(PWRMGMT_SIGHALT_EVID));
+      chEvtBroadcastFlags(&init_event, EVENT_MASK(SIGHALT_EVID));
       command_accepted();
     }
     break;

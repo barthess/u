@@ -31,7 +31,7 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
-extern EventSource pwrmgmt_event;
+extern EventSource init_event;
 
 /*
  ******************************************************************************
@@ -65,7 +65,7 @@ static msg_t PollMax1236Thread(void *arg) {
   int16_t sonar_raw = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
 
   while (TRUE) {
     chThdSleepMilliseconds(20);
@@ -85,7 +85,7 @@ static msg_t PollMax1236Thread(void *arg) {
     mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
     mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
 
-    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }
   return 0;

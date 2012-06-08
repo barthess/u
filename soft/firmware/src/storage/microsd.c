@@ -9,6 +9,7 @@
 #include "microsd.h"
 #include "logger.h"
 #include "message.h"
+#include "main.h"
 
 /*
  ******************************************************************************
@@ -27,6 +28,7 @@
  ******************************************************************************
  */
 extern Mailbox logwriter_mb;
+extern EventSource init_event;
 
 /*
  ******************************************************************************
@@ -216,6 +218,7 @@ NOT_READY:
    * This writer waits msg_t with mavlink message ID. Based on that ID it
    * will pack extern mavlink struct with proper packing function. */
   chMBReset(&logwriter_mb); /* just to be safe */
+  chEvtBroadcastFlags(&init_event, EVENT_MASK(LOGGER_READY_EVID));
   while TRUE{
     /* wait ID */
     if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){

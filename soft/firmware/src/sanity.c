@@ -16,7 +16,7 @@
  */
 extern Mailbox tolink_mb;
 extern uint32_t GlobalFlags;
-extern EventSource pwrmgmt_event;
+extern EventSource init_event;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_heartbeat_t mavlink_heartbeat_struct;
 
@@ -55,7 +55,7 @@ static msg_t SanityControlThread(void *arg) {
   (void)arg;
 
   struct EventListener self_el;
-  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
 
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 
@@ -83,7 +83,7 @@ static msg_t SanityControlThread(void *arg) {
     else
       palSetPad(GPIOB, GPIOB_LED_R);
 
-    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID)){
+    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID)){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
       xbee_reset_assert();

@@ -31,14 +31,18 @@
 
 
 /******************************************************************/
+/* "init daemon" events */
+#define MODEM_READY_EVID    0
+#define LOGGER_READY_EVID   1
+#define I2C_READY_EVID      2
+#define EEPROM_MOUNTED_EVID 3
+#define PARAMETERS_GOT_EVID 4
 /* при наступлении данного события все подсистемы должны себя корректно остановить */
-#define PWRMGMT_SIGHALT_EVID      0
+#define SIGHALT_EVID        5
 /* означает критическую просадку напряжения */
-#define PWRMGMT_POWERFAILE_EVID   1
-
-/* события готовности модема */
-#define MODEM_READY   0
-#define MODEM_FAILED  1
+#define POWERFAILE_EVID     6
+#define MODEM_FAILED        7
+#define LOGGER_FAILED       8
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */

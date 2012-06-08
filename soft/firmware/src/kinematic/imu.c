@@ -32,14 +32,16 @@ extern uint32_t imu_update_period;
 extern Mailbox logwriter_mb;
 
 uint32_t imu_step = 0;                /* incremented on each call to imu_update */
-float dcmEst[3][3] = {{1,0,0},{0,1,0},{0,0,1}};   /* estimated DCM matrix */
+float dcmEst[3][3] = {{1,0,0},
+                      {0,1,0},
+                      {0,0,1}};   /* estimated DCM matrix */
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-float *magypol, *magxpol;
+static float *magypol, *magxpol;
 
 /*
  *******************************************************************************
@@ -135,9 +137,11 @@ static msg_t Imu(void *semp) {
 
       get_attitude(&mavlink_attitude_struct);
 
-      if ((i & decimator) == decimator)
+      if (((i & decimator) == decimator) &&
+              (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
         log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
-      i++;
+        i++;
+      }
     }
   }
   return 0;

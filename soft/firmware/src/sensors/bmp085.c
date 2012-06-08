@@ -32,7 +32,7 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource pwrmgmt_event;
+extern EventSource init_event;
 
 /*
  ******************************************************************************
@@ -191,7 +191,7 @@ static msg_t PollBaroThread(void *semp){
   uint32_t t = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
 
   while (TRUE) {
     /* we get temperature every 0x1F cycle */
@@ -203,7 +203,7 @@ static msg_t PollBaroThread(void *semp){
 
     t++;
 
-    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }
   return 0;

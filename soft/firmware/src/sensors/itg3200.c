@@ -33,7 +33,7 @@ extern uint32_t GlobalFlags;
 extern Mailbox logwriter_mb;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource pwrmgmt_event;
+extern EventSource init_event;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
@@ -118,8 +118,8 @@ static msg_t PollGyroThread(void *semp){
   int32_t gyroX, gyroY, gyroZ;
   msg_t sem_status = RDY_OK;
 
-  struct EventListener self_el;
-  chEvtRegister(&pwrmgmt_event, &self_el, PWRMGMT_SIGHALT_EVID);
+  EventListener self_el;
+  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
@@ -171,11 +171,14 @@ static msg_t PollGyroThread(void *semp){
 
         /* say to IMU "we have fresh data "*/
         chBSemSignal(imusync_semp);
-        if ((i & decimator) == decimator){
+
+        /* save data to logfile */
+        if (((i & decimator) == decimator) &&
+                (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
           log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
           log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
+          i++;
         }
-        i++;
       }
     }
     else{
@@ -187,7 +190,7 @@ static msg_t PollGyroThread(void *semp){
       raw_data.zgyro = -32768;
     }
 
-    if (chThdSelf()->p_epending & EVENT_MASK(PWRMGMT_SIGHALT_EVID))
+    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }
   return 0;

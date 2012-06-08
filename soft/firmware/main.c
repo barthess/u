@@ -52,9 +52,8 @@ EepromFileStream EepromFile;
 MemoryHeap LinkThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
-/* источник событий связанных с управлением питанием */
-EventSource pwrmgmt_event;
-EventSource modem_event;
+/* primitive "init system" */
+EventSource init_event;
 
 /*
  ******************************************************************************
@@ -94,8 +93,7 @@ int main(void) {
 
   chBSemInit(&rtc_sem, TRUE);
 
-  chEvtInit(&pwrmgmt_event);
-  chEvtInit(&modem_event);
+  chEvtInit(&init_event);
 
   chThdSleepMilliseconds(100);
 
