@@ -120,8 +120,8 @@ CSRC = $(PORTSRC) \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
        src/sensors/mavsender.c \
-       src/link/cli.c \
-       src/link/cli_cmd.c \
+       src/cli/cli.c \
+       src/cli/cli_cmd.c \
        src/link/linkmgr.c \
        src/link/link.c \
        src/link/link_sortout.c \
@@ -182,6 +182,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          include \
          src/eeprom \
          src/link \
+         src/cli \
          src/sensors \
          src/storage \
          src/kinematic \
