@@ -1,7 +1,7 @@
 #!/bin/sh
 cd build
-cat ch.map | grep ".stacks         0x20000000      0x800"
-STACKS=`cat ch.map | grep ".stacks         0x20000000      0x800" | gawk '{print$3}'`
+cat ch.map | grep ".stacks         0x20000000"
+STACKS=`cat ch.map | grep ".stacks         0x20000000" | gawk '{print$3}'`
 
 cat ch.map | grep "__ram_start__ ="
 RAM_START=`cat ch.map | grep "__ram_start__ =" | gawk '{print$1}'`
