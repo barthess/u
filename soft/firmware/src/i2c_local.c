@@ -36,6 +36,9 @@ static const I2CConfig i2cfg2 = {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+/**
+ *
+ */
 void I2CInitLocal(void){
 
   i2cStart(&I2CD2, &i2cfg2);
@@ -45,8 +48,9 @@ void I2CInitLocal(void){
   chThdSleepMilliseconds(10);
 }
 
-
-/* обертка запускатор транзакции */
+/**
+ * обертка запускатор транзакции
+ */
 msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
                    uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
@@ -65,7 +69,9 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
   return status;
 }
 
-/* обертка запускатор транзакции */
+/**
+ * обертка запускатор транзакции
+ */
 msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
 

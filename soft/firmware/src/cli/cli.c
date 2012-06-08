@@ -186,7 +186,8 @@ void sigint (void){
     chThdWait(current_cmd_tp);
     current_cmd_tp = NULL;
   }
-  cli_print("^C pressed\n\r");
+  cli_print("^C pressed. Exiting...");
+  cli_print(ENDL);
 }
 
 /**
@@ -253,11 +254,17 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
  *******************************************************************************
  */
 
+/**
+ *
+ */
 void KillShellThreads(void){
   chThdTerminate(shell_tp);
   chThdWait(shell_tp);
 }
 
+/**
+ *
+ */
 void SpawnShellThreads(SerialDriver *arg){
 
   shell_tp = chThdCreateFromHeap(&LinkThdHeap,
