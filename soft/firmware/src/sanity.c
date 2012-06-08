@@ -55,7 +55,7 @@ static msg_t SanityControlThread(void *arg) {
   (void)arg;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 

@@ -191,7 +191,7 @@ static msg_t PollBaroThread(void *semp){
   uint32_t t = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     /* we get temperature every 0x1F cycle */

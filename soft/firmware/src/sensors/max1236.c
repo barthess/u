@@ -65,7 +65,7 @@ static msg_t PollMax1236Thread(void *arg) {
   int16_t sonar_raw = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     chThdSleepMilliseconds(20);

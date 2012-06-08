@@ -93,7 +93,7 @@ static msg_t PollMagThread(void *semp){
   msg_t sem_status = RDY_OK;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку

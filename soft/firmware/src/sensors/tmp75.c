@@ -48,7 +48,7 @@ static msg_t PollTmp75Thread(void *arg){
   (void)arg;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     txbuf[0] = 0b00000001; // point to Configuration Register

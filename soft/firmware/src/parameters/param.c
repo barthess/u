@@ -55,7 +55,7 @@ GlobalParam_t global_data[] = {
   {"IMU_g1",          -1,         0.1,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"IMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** смещения нулей магнитометра ****/
   {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
@@ -100,7 +100,7 @@ GlobalParam_t global_data[] = {
   {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c4",          -2000000,   60011,      2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
-  {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"PMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** ADC coefficients ****/
   // смещение нуля датчика тока

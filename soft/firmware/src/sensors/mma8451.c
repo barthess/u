@@ -57,7 +57,7 @@ static msg_t PollAccelThread(void *semp){
   msg_t sem_status = RDY_OK;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));

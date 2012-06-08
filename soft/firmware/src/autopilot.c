@@ -171,7 +171,7 @@ static msg_t AutopilotThread(void* arg){
  */
 static WORKING_AREA(CmdThreadWA, 512);
 static msg_t CmdThread(void* arg){
-  chRegSetThreadName("MAV_command_excutor");
+  chRegSetThreadName("MAV_cmd_exec");
   (void)arg;
   msg_t tmp = 0;
   msg_t status = 0;

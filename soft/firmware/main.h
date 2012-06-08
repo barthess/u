@@ -32,17 +32,18 @@
 
 /******************************************************************/
 /* "init daemon" events */
-#define MODEM_READY_EVID    0
-#define LOGGER_READY_EVID   1
-#define I2C_READY_EVID      2
-#define EEPROM_MOUNTED_EVID 3
-#define PARAMETERS_GOT_EVID 4
+#define MODEM_READY_EVID    1
+#define LOGGER_READY_EVID   2
+#define I2C_READY_EVID      3
+#define EEPROM_MOUNTED_EVID 4
+#define PARAMETERS_GOT_EVID 5
 /* при наступлении данного события все подсистемы должны себя корректно остановить */
-#define SIGHALT_EVID        5
+#define SIGHALT_EVID        6
 /* означает критическую просадку напряжения */
-#define POWERFAILE_EVID     6
-#define MODEM_FAILED        7
-#define LOGGER_FAILED       8
+#define POWERFAILE_EVID     7
+#define MODEM_FAILED        8
+#define LOGGER_FAILED       9
+#define INIT_FAKE_EVID      31
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */
