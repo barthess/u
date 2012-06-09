@@ -10,24 +10,17 @@
 #include "sanity.h"
 #include "timekeeping.h"
 
-/**
- * Код посылает данные на землю путем постинга сообщений в почтовый ящик
- * для этого предназначенный. Отдельный тред на каждый тип сообщения -
- * overkill. При нехватке оперативной памяти все это придется переписать
- * на один поток со своим "шедулером".
- */
-
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define SYS_STATUS_3D_GYRO    ((uint32_t)1 << 0)
-#define SYS_STATUS_3D_ACCEL   ((uint32_t)1 << 1)
-#define SYS_STATUS_3D_MAG     ((uint32_t)1 << 2)
-#define SYS_STATUS_ABS_PRES   ((uint32_t)1 << 3)
-#define SYS_STATUS_DIFF_PRES  ((uint32_t)1 << 4)
-#define SYS_STATUS_GPS        ((uint32_t)1 << 5)
+#define SYS_STATUS_3D_GYRO    ((uint32_t)1 << 0) /* for stub */
+#define SYS_STATUS_3D_ACCEL   ((uint32_t)1 << 1) /* for stub */
+#define SYS_STATUS_3D_MAG     ((uint32_t)1 << 2) /* for stub */
+#define SYS_STATUS_ABS_PRES   ((uint32_t)1 << 3) /* for stub */
+#define SYS_STATUS_DIFF_PRES  ((uint32_t)1 << 4) /* for stub */
+#define SYS_STATUS_GPS        ((uint32_t)1 << 5) /* for stub */
 
 #define TLM_REGISTRY_LEN (sizeof(Registy)/sizeof(tlm_registry_t))
 
