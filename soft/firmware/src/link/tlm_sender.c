@@ -208,7 +208,7 @@ void refresh_deadlines(time_t t){
         Registy[i].sender();
       }
       else
-        Registy[i].next_dealine = 0xFFFF;
+        Registy[i].next_dealine = 1200;
     }
     i++;
   }
