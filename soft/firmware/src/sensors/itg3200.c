@@ -177,8 +177,8 @@ static msg_t PollGyroThread(void *semp){
                 (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
           log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
           log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
-          i++;
         }
+        i++;
       }
     }
     else{

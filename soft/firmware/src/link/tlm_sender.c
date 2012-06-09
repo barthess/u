@@ -215,6 +215,13 @@ void refresh_deadlines(time_t t){
 }
 
 /**
+ * Update fields in mavlink structures that does not updates itself.
+ */
+void update_tlm_data(void){
+  return;
+}
+
+/**
  *
  */
 static WORKING_AREA(TlmSenderThreadWA, 128);
@@ -231,6 +238,7 @@ static msg_t TlmSenderThread(void *arg) {
   while TRUE{ /* main infinite cycle */
     t = get_sleep_time();
     chThdSleepMilliseconds(t);
+    update_tlm_data();
     refresh_deadlines(t);
   }
   return 0;

@@ -7,6 +7,7 @@
 #include "message.h"
 #include "main.h"
 #include "link.h"
+#include "sanity.h"
 #include "timekeeping.h"
 
 /*
@@ -17,8 +18,9 @@
 extern Mailbox tolink_mb;
 extern uint32_t GlobalFlags;
 extern EventSource init_event;
-extern mavlink_system_t mavlink_system_struct;
-extern mavlink_heartbeat_t mavlink_heartbeat_struct;
+extern mavlink_system_t       mavlink_system_struct;
+extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
+extern mavlink_sys_status_t   mavlink_sys_status_struct;
 
 /*
  ******************************************************************************
@@ -75,6 +77,7 @@ static msg_t SanityControlThread(void *arg) {
 
       palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
       chThdSleepMilliseconds(50);
+      mavlink_sys_status_struct.load = get_cpu_load();
     }
 
     /* этим светодиодом будем обозначать процесс выставки гироскопов */

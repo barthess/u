@@ -140,8 +140,8 @@ static msg_t Imu(void *semp) {
       if (((i & decimator) == decimator) &&
               (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
         log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
-        i++;
       }
+      i++;
     }
   }
   return 0;
