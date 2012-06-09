@@ -46,7 +46,7 @@ static int32_t sh_enable_index = -1;
 /**
  * Поток следящий за потоками связи и переключающий их по мере надобности
  */
-static WORKING_AREA(LinkMgrThreadWA, 256);
+static WORKING_AREA(LinkMgrThreadWA, 128);
 static msg_t LinkMgrThread(void *arg){
   chRegSetThreadName("LinkManager");
 

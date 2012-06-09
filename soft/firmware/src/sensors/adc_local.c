@@ -121,7 +121,7 @@ uint32_t get_comp_main_current(uint16_t raw){
 }
 
 /* Поток для запроса данных АЦП по таймеру */
-static WORKING_AREA(PowerKeeperThreadWA, 256);
+static WORKING_AREA(PowerKeeperThreadWA, 128);
 static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
