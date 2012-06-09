@@ -86,7 +86,7 @@ static void clear_statistics(RawData *raw_data, int16_t extremums[6]);
 /**
  * Поток для опроса магнитометра
  */
-static WORKING_AREA(PollMagThreadWA, 512);
+static WORKING_AREA(PollMagThreadWA, 256);
 static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
 

@@ -49,7 +49,7 @@ static uint32_t last_idle_ticks = 0;
 /**
  * посылает heartbeat пакеты и моргает светодиодиком
  */
-static WORKING_AREA(SanityControlThreadWA, 256);
+static WORKING_AREA(SanityControlThreadWA, 128);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;

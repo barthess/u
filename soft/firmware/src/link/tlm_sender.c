@@ -217,7 +217,7 @@ void refresh_deadlines(time_t t){
 /**
  *
  */
-static WORKING_AREA(TlmSenderThreadWA, 512);
+static WORKING_AREA(TlmSenderThreadWA, 128);
 static msg_t TlmSenderThread(void *arg) {
   chRegSetThreadName("TLM_Sender");
   (void)arg;
@@ -249,7 +249,7 @@ static msg_t TlmSenderThread(void *arg) {
  */
 void TlmSenderInit(void){
   Registy[0].sleepperiod = ValueSearch("T_raw_imu");
-  Registy[1].sleepperiod = ValueSearch("T_scaled_imu");
+  Registy[1].sleepperiod = ValueSearch("T_scal_imu");
   Registy[2].sleepperiod = ValueSearch("T_raw_press");
   Registy[3].sleepperiod = ValueSearch("T_sys_status");
   Registy[4].sleepperiod = ValueSearch("T_gps_int");

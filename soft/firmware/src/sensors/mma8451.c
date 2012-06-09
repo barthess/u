@@ -50,7 +50,7 @@ static float *xpol, *ypol, *zpol, *xsens, *ysens, *zsens, *xoffset, *yoffset, *z
  *******************************************************************************
  */
 /* Поток для запроса акселерометра */
-static WORKING_AREA(PollAccelThreadWA, 512);
+static WORKING_AREA(PollAccelThreadWA, 256);
 static msg_t PollAccelThread(void *semp){
   chRegSetThreadName("PollAccel");
 

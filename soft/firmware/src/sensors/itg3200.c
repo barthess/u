@@ -107,7 +107,7 @@ static float get_degrees(float raw){
 /**
  * Поток для опроса хероскопа
  */
-static WORKING_AREA(PollGyroThreadWA, 512);
+static WORKING_AREA(PollGyroThreadWA, 256);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 

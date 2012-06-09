@@ -185,7 +185,7 @@ static uint32_t get_pressure(BinarySemaphore *semp){
 /**
  * Polling thread
  */
-static WORKING_AREA(PollBaroThreadWA, 512);
+static WORKING_AREA(PollBaroThreadWA, 256);
 static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
   uint32_t t = 0;

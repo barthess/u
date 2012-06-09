@@ -104,7 +104,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
 /**
  * ѕоток обработки инерациальных данных
  */
-static WORKING_AREA(waImu, 1024);
+static WORKING_AREA(waImu, 512);
 static msg_t Imu(void *semp) {
   chRegSetThreadName("IMU");
 
