@@ -33,6 +33,8 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource init_event;
+extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
+extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
 
 /*
  ******************************************************************************
@@ -131,6 +133,8 @@ static void bmp085_calc(void){
   pres_awg = pres_awg - (pres_awg >> FIX_FORMAT) + pval;
   // calculate height
   comp_data.baro_altitude = pres_to_height(pres_awg >> FIX_FORMAT);
+  mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
+  mavlink_scaled_pressure_struct.press_abs = (float)pres_awg / (N_AWG * 100.0);
   return;
 
 ERROR:

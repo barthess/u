@@ -9,6 +9,7 @@
 #include "i2c_local.h"
 #include "max1236.h"
 #include "link.h"
+#include "logger.h"
 #include "timekeeping.h"
 
 /*
@@ -30,8 +31,12 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 extern EventSource init_event;
+extern Mailbox logwriter_mb;
+
+extern mavlink_raw_pressure_t     mavlink_raw_pressure_struct;
+extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
+extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -74,17 +79,24 @@ static msg_t PollMax1236Thread(void *arg) {
       press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      /* рассчет воздушной скорости и сохранение для нужд автопилота */
-      comp_data.air_speed = (uint16_t)(1000 * calc_air_speed(press_diff_raw));
+      mavlink_vfr_hud_struct.airspeed = calc_air_speed(press_diff_raw);
 
+      mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
+      mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
+      mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
+
+      mavlink_scaled_pressure_struct.press_diff = 0;
+      mavlink_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
+
+      comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
       raw_data.altitude_sonar = sonar_raw;
+
+      if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID)){
+        log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
+        log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
+        log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
+      }
     }
-
-    mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
-    mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
-    mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
-    mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
-
     if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }

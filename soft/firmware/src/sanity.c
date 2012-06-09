@@ -9,6 +9,7 @@
 #include "link.h"
 #include "sanity.h"
 #include "timekeeping.h"
+#include "logger.h"
 
 /*
  ******************************************************************************
@@ -16,6 +17,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox logwriter_mb;
 extern uint32_t GlobalFlags;
 extern EventSource init_event;
 extern mavlink_system_t       mavlink_system_struct;
@@ -68,17 +70,21 @@ static msg_t SanityControlThread(void *arg) {
     palSetPad(GPIOB, GPIOB_LED_B);
     chThdSleepMilliseconds(950);
 
-    if (heartbeat_mail.payload == NULL){
+    if ((chThdSelf()->p_epending & EVENT_MASK(MODEM_READY_EVID)) &&
+        (heartbeat_mail.payload == NULL)){
       mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
-
-      palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-      chThdSleepMilliseconds(50);
-      mavlink_sys_status_struct.load = get_cpu_load();
     }
+
+    if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))
+      log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
+
+    palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
+    chThdSleepMilliseconds(50);
+    mavlink_sys_status_struct.load = get_cpu_load();
 
     /* этим светодиодом будем обозначать процесс выставки гироскопов */
     if (GlobalFlags & GYRO_CAL_FLAG)

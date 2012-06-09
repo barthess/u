@@ -170,7 +170,7 @@ GlobalParam_t global_data[] = {
   {"T_vfr_hud",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_gps_int",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_sys_status",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
-  {"T_heartbeat",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved0",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved1",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved2",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved3",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},

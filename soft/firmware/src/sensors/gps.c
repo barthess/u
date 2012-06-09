@@ -59,6 +59,7 @@ including, the "$" and "*".
 extern RawData raw_data;
 extern Mailbox tolink_mb;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
+extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern struct tm gps_timp;
 
 /*
@@ -132,7 +133,6 @@ static msg_t gpsRxThread(void *arg){
   while (TRUE) {
 
 EMPTY:
-
     if ((n >= 2) && (gps_mail.payload == NULL)){
       mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
       gps_mail.payload = &mavlink_global_position_int_struct;
@@ -305,7 +305,7 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   	raw_data.gps_speed_knots = gps_speed_knots;
 
     global_pos_struct->hdg = 65535;
-    //global_pos_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
+    mavlink_vfr_hud_struct.groundspeed = (float)(gps_speed_knots * 51) / 100.0;
     get_time(&gps_timp, buft, bufd);
   }
   else{
