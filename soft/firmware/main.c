@@ -3,6 +3,7 @@
  * при компиляции без -fomit-frame-pointer срывает стэк .
  */
 
+// TODO: vfr hud
 // TODO: АЦП. По коллбэку тикать счетчиком. Как набежит 32 тика - провернуть всё через фильтр.
 // TODO: комплексирование магнитометра не с акселем а самой DCM
 // TODO: выставка нуля магнитометра и акселя
@@ -32,6 +33,7 @@
 #include "eeprom.h"
 #include "exti_local.h"
 #include "microsd.h"
+#include "tlm_sender.h"
 
 #include "arm_math.h"
 
@@ -118,6 +120,7 @@ int main(void) {
    * Должно идти после I2C, т.к. читает оттуда настройки */
   MavInit();
   SensorsInit(); /* uses I2C */
+  TlmSenderInit();
   ServoInit();
   AutopilotInit();  /* автопилот должен стартовать только после запуска серв */
   StorageInit();

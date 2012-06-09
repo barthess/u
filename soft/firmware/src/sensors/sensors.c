@@ -4,7 +4,6 @@
 #include "sensors.h"
 #include "message.h"
 
-#include "mavsender.h"
 #include "imu.h"
 #include "gps.h"
 #include "adc_local.h"
@@ -88,7 +87,5 @@ void SensorsInit(void){
 
   ImuInit(&imu_sem);
   GPSInit();
-
-  MavSenderInit();
 }
 

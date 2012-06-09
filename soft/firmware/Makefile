@@ -98,7 +98,6 @@ CSRC = $(PORTSRC) \
        src/i2c_local.c \
        src/exti_local.c \
        src/microrl/src/microrl.c \
-       src/sensors/gps.c \
        src/irq_storm.c \
        src/storage/microsd.c \
        src/storage/logger.c \
@@ -111,6 +110,7 @@ CSRC = $(PORTSRC) \
        src/parameters/param.c \
        src/parameters/persistant.c \
        src/timekeeping.c \
+       src/sensors/gps.c \
        src/sensors/adc_local.c \
        src/sensors/sensors.c \
        src/sensors/max1236.c \
@@ -119,13 +119,13 @@ CSRC = $(PORTSRC) \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
-       src/sensors/mavsender.c \
        src/cli/cli.c \
        src/cli/cli_cmd.c \
        src/link/linkmgr.c \
        src/link/link.c \
        src/link/link_sortout.c \
        src/link/link_sortin.c \
+       src/link/tlm_sender.c \
        src/eeprom/24aa.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \

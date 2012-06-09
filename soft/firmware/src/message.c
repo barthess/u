@@ -28,9 +28,9 @@ Mailbox logwriter_mb;             /* сообщения для писалки логов */
 /* переменные, касающиеся мавлинка */
 mavlink_system_t              mavlink_system_struct;
 mavlink_status_t              mavlink_status_struct;
-mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 mavlink_raw_imu_t             mavlink_raw_imu_struct;
 mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
+mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
 mavlink_sys_status_t          mavlink_sys_status_struct;
 mavlink_command_long_t        mavlink_command_long_struct;

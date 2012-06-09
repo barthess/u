@@ -15,8 +15,8 @@
  ******************************************************************************
  */
 #define bmp085addr          0b1110111
-#define TEMPERATURE_ERROR   0// флаг того, что при измерении температуры произошла ошибка
-#define PRESSURE_ERROR      0// флаг того, что при измерении довления произошла ошибка
+#define TEMPERATURE_ERROR   0
+#define PRESSURE_ERROR      0
 
 // sensor precision (see datasheet)
 #define OSS 3 // 3 -- max
