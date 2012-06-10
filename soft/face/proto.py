@@ -7,7 +7,7 @@ from binascii import hexlify
 from localconfig import *
 
 from multiprocessing import Queue, Event
-from Queue import Empty, Full # для отлова исключений
+from Queue import Empty, Full # РґР»СЏ РѕС‚Р»РѕРІР° РёСЃРєР»СЋС‡РµРЅРёР№
 
 # b signed char integer     1   
 # B unsigned char integer   1 
@@ -22,25 +22,25 @@ from Queue import Empty, Full # для отлова исключений
 def manager(q_down, q_log, q_tlm, q_servo, e_pause, e_kill):
 
     """
-    Сообщения из канээски (down). Их надо посортировать и распихать по соответствующим адресатам
+    РЎРѕРѕР±С‰РµРЅРёСЏ РёР· РєР°РЅСЌСЌСЃРєРё (down). РС… РЅР°РґРѕ РїРѕСЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ Рё СЂР°СЃРїРёС…Р°С‚СЊ РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј Р°РґСЂРµСЃР°С‚Р°Рј
     """
 
     line = None
     msgid = None
 
-    # вспомогательные функции{{{
+    # РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё{{{
     def logitem_handler(q_log, q_tlm, line):
         logitem = unpack('2i 2I 10H 8h 6B 1b 1x', line)
         #print hexlify(line)
-        # пихаем в очередь телеметрометра
+        # РїРёС…Р°РµРј РІ РѕС‡РµСЂРµРґСЊ С‚РµР»РµРјРµС‚СЂРѕРјРµС‚СЂР°
         try:    q_tlm.put_nowait(logitem)
         except Full: pass
-        # пихаем в очередь логгера
+        # РїРёС…Р°РµРј РІ РѕС‡РµСЂРµРґСЊ Р»РѕРіРіРµСЂР°
         try:    q_log.put_nowait(logitem)
         except Full: pass
     #}}}
 
-    # ждем, пока нас снимут с паузы
+    # Р¶РґРµРј, РїРѕРєР° РЅР°СЃ СЃРЅРёРјСѓС‚ СЃ РїР°СѓР·С‹
     print "--- manager ready"
     e_pause.wait()
     print "--- manager run"
@@ -52,7 +52,7 @@ def manager(q_down, q_log, q_tlm, q_servo, e_pause, e_kill):
 
         line = q_down.get()
         msgid = line[0]
-        line = line[1:]   # откусываем нахуй поле ID
+        line = line[1:]   # РѕС‚РєСѓСЃС‹РІР°РµРј РЅР°С…СѓР№ РїРѕР»Рµ ID
 
         if msgid == TEST:
             print "TEST", line

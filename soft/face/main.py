@@ -15,7 +15,7 @@ import pygame
 from pygame.locals import *
 
 
-# самопальные модули
+# СЃР°РјРѕРїР°Р»СЊРЅС‹Рµ РјРѕРґСѓР»Рё
 from dsp import *
 from localconfig import *
 import telemetry
@@ -27,33 +27,33 @@ import servotuner
 
 
 
-flags = {"lock" : Lock(), # примитив синхронизации флагов
-         "compass_flag" : 0, # если 1 -- крутить в одну сторону, если минус 1 -- крутить в другую
-         "help_flag" : False,# если взведен -- показывать экран помощи
-         "map_flag" : False,# если взведен -- показывать на экране маршрут
-         "date_set_flag" : False,# если взведен -- записать системное время в канээску и сбросить флаг
-         "servo_tune_flag" : False,# если взведен -- показывать экран настройки серв
-         "altimeter_zero_adj_flag" : False,# если взведен -- вызвать функцию установки нуля
-         "connection_interrup_flag" : False, # если взведен -- вывести на экран бирку с предупреждением
-         "logreplay_flag" : False, # если взведен -- вывести на экран значок play
+flags = {"lock" : Lock(), # РїСЂРёРјРёС‚РёРІ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё С„Р»Р°РіРѕРІ
+         "compass_flag" : 0, # РµСЃР»Рё 1 -- РєСЂСѓС‚РёС‚СЊ РІ РѕРґРЅСѓ СЃС‚РѕСЂРѕРЅСѓ, РµСЃР»Рё РјРёРЅСѓСЃ 1 -- РєСЂСѓС‚РёС‚СЊ РІ РґСЂСѓРіСѓСЋ
+         "help_flag" : False,# РµСЃР»Рё РІР·РІРµРґРµРЅ -- РїРѕРєР°Р·С‹РІР°С‚СЊ СЌРєСЂР°РЅ РїРѕРјРѕС‰Рё
+         "map_flag" : False,# РµСЃР»Рё РІР·РІРµРґРµРЅ -- РїРѕРєР°Р·С‹РІР°С‚СЊ РЅР° СЌРєСЂР°РЅРµ РјР°СЂС€СЂСѓС‚
+         "date_set_flag" : False,# РµСЃР»Рё РІР·РІРµРґРµРЅ -- Р·Р°РїРёСЃР°С‚СЊ СЃРёСЃС‚РµРјРЅРѕРµ РІСЂРµРјСЏ РІ РєР°РЅСЌСЌСЃРєСѓ Рё СЃР±СЂРѕСЃРёС‚СЊ С„Р»Р°Рі
+         "servo_tune_flag" : False,# РµСЃР»Рё РІР·РІРµРґРµРЅ -- РїРѕРєР°Р·С‹РІР°С‚СЊ СЌРєСЂР°РЅ РЅР°СЃС‚СЂРѕР№РєРё СЃРµСЂРІ
+         "altimeter_zero_adj_flag" : False,# РµСЃР»Рё РІР·РІРµРґРµРЅ -- РІС‹Р·РІР°С‚СЊ С„СѓРЅРєС†РёСЋ СѓСЃС‚Р°РЅРѕРІРєРё РЅСѓР»СЏ
+         "connection_interrup_flag" : False, # РµСЃР»Рё РІР·РІРµРґРµРЅ -- РІС‹РІРµСЃС‚Рё РЅР° СЌРєСЂР°РЅ Р±РёСЂРєСѓ СЃ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµРј
+         "logreplay_flag" : False, # РµСЃР»Рё РІР·РІРµРґРµРЅ -- РІС‹РІРµСЃС‚Рё РЅР° СЌРєСЂР°РЅ Р·РЅР°С‡РѕРє play
          }
 
 
-q_log  = Queue(1) # записывальщика лога
-q_tlm  = Queue(1) # для телеметрии
-q_drw  = Queue(1) # для пакетов ручного управления
-q_down = Queue(8) # для пакетов с самолета
-q_up   = Queue(8) # для пакетов на самолет
-q_servo= Queue(1) # для калбировочных коэффициетов серв
+q_log  = Queue(1) # Р·Р°РїРёСЃС‹РІР°Р»СЊС‰РёРєР° Р»РѕРіР°
+q_tlm  = Queue(1) # РґР»СЏ С‚РµР»РµРјРµС‚СЂРёРё
+q_drw  = Queue(1) # РґР»СЏ РїР°РєРµС‚РѕРІ СЂСѓС‡РЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ
+q_down = Queue(8) # РґР»СЏ РїР°РєРµС‚РѕРІ СЃ СЃР°РјРѕР»РµС‚Р°
+q_up   = Queue(8) # РґР»СЏ РїР°РєРµС‚РѕРІ РЅР° СЃР°РјРѕР»РµС‚
+q_servo= Queue(1) # РґР»СЏ РєР°Р»Р±РёСЂРѕРІРѕС‡РЅС‹С… РєРѕСЌС„С„РёС†РёРµС‚РѕРІ СЃРµСЂРІ
 
-# события для блокирования до тех пор, пока событие в состоянии clear
-e_pause = Event() # лок для постановки процесса на паузу
+# СЃРѕР±С‹С‚РёСЏ РґР»СЏ Р±Р»РѕРєРёСЂРѕРІР°РЅРёСЏ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° СЃРѕР±С‹С‚РёРµ РІ СЃРѕСЃС‚РѕСЏРЅРёРё clear
+e_pause = Event() # Р»РѕРє РґР»СЏ РїРѕСЃС‚Р°РЅРѕРІРєРё РїСЂРѕС†РµСЃСЃР° РЅР° РїР°СѓР·Сѓ
 e_pause.clear()
 
-e_kill = Event() # предложение умереть добровольно
+e_kill = Event() # РїСЂРµРґР»РѕР¶РµРЅРёРµ СѓРјРµСЂРµС‚СЊ РґРѕР±СЂРѕРІРѕР»СЊРЅРѕ
 e_kill.clear()
 
-e_drvsync = Event() # для синхронизации (и выборочного отключения) сообщений от ручного управления
+e_drvsync = Event() # РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё (Рё РІС‹Р±РѕСЂРѕС‡РЅРѕРіРѕ РѕС‚РєР»СЋС‡РµРЅРёСЏ) СЃРѕРѕР±С‰РµРЅРёР№ РѕС‚ СЂСѓС‡РЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ
 e_drvsync.clear()
 
 
@@ -72,8 +72,8 @@ def main(q_tlm, q_up, q_servo, config):
     pygame.display.set_caption('MOSK - Mobile Operational System Kamikaze')
     screen = pygame.display.get_surface()
 
-    #инициализируем джойстик и объявим функцию получения данных с него.
-    #Если джойстика не найдено - функция будет присылать нули
+    #РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РґР¶РѕР№СЃС‚РёРє Рё РѕР±СЉСЏРІРёРј С„СѓРЅРєС†РёСЋ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… СЃ РЅРµРіРѕ.
+    #Р•СЃР»Рё РґР¶РѕР№СЃС‚РёРєР° РЅРµ РЅР°Р№РґРµРЅРѕ - С„СѓРЅРєС†РёСЏ Р±СѓРґРµС‚ РїСЂРёСЃС‹Р»Р°С‚СЊ РЅСѓР»Рё
     try:
         j = pygame.joystick.Joystick(0)
         j.init()
@@ -91,15 +91,15 @@ def main(q_tlm, q_up, q_servo, config):
             ele = pack('B',ele)
             thr = pack('B',thr)
             rud = pack('B',rud)
-            #drv_string = MANUALDRIVING + WRITE + ail + ele + thr + rud # для самолета
-            drv_string = MANUALDRIVING + WRITE + rud + ail + thr + ele  # для машинки
+            #drv_string = MANUALDRIVING + WRITE + ail + ele + thr + rud # РґР»СЏ СЃР°РјРѕР»РµС‚Р°
+            drv_string = MANUALDRIVING + WRITE + rud + ail + thr + ele  # РґР»СЏ РјР°С€РёРЅРєРё
             return drv_string
     except:
         def get_drv():
             drv_string = MANUALDRIVING + WRITE + '\x00' + '\x00' + '\x80' + '\x80'
             return drv_string
 
-    # инициализация телеметрии
+    # РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚РµР»РµРјРµС‚СЂРёРё
     tlm = telemetry.Telemetry(config)
     tlm_data = []
     i = 0
@@ -107,50 +107,50 @@ def main(q_tlm, q_up, q_servo, config):
         tlm_data.append(0)
         i += 1
 
-    # главный цикл
+    # РіР»Р°РІРЅС‹Р№ С†РёРєР»
     while True:
-        flags["lock"].acquire() # чтобы флаги не испортить
+        flags["lock"].acquire() # С‡С‚РѕР±С‹ С„Р»Р°РіРё РЅРµ РёСЃРїРѕСЂС‚РёС‚СЊ
 
-        # обработчик джойстика
+        # РѕР±СЂР°Р±РѕС‚С‡РёРє РґР¶РѕР№СЃС‚РёРєР°
         if q_up.empty():
             q_up.put_nowait(get_drv())
 
-        # обработчик клавиш
+        # РѕР±СЂР°Р±РѕС‚С‡РёРє РєР»Р°РІРёС€
         events = pygame.event.get()
         for event in events:
             if event.type == QUIT:
                 return
 
-            # события нажатия клавиш
+            # СЃРѕР±С‹С‚РёСЏ РЅР°Р¶Р°С‚РёСЏ РєР»Р°РІРёС€
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     flags["compass_flag"] = 1
                 elif event.key == pygame.K_DOWN:
                     flags["compass_flag"] = -1
-                elif event.key == pygame.K_t: # установим на кунээске текущее системное время
+                elif event.key == pygame.K_t: # СѓСЃС‚Р°РЅРѕРІРёРј РЅР° РєСѓРЅСЌСЌСЃРєРµ С‚РµРєСѓС‰РµРµ СЃРёСЃС‚РµРјРЅРѕРµ РІСЂРµРјСЏ
                     date_str = DATE + WRITE + pack('>L', int(round(time.time())))
                     q_up.put_nowait(date_str)
-                elif event.key == pygame.K_F1: # выбросим экран помощи
+                elif event.key == pygame.K_F1: # РІС‹Р±СЂРѕСЃРёРј СЌРєСЂР°РЅ РїРѕРјРѕС‰Рё
                     flags["help_flag"] = not flags["help_flag"]
-                elif event.key == pygame.K_m: # выбросим экран маршрут
+                elif event.key == pygame.K_m: # РІС‹Р±СЂРѕСЃРёРј СЌРєСЂР°РЅ РјР°СЂС€СЂСѓС‚
                     flags["map_flag"] = not flags["map_flag"]
-                elif event.key == pygame.K_b: # установим альтиметр в ноль
+                elif event.key == pygame.K_b: # СѓСЃС‚Р°РЅРѕРІРёРј Р°Р»СЊС‚РёРјРµС‚СЂ РІ РЅРѕР»СЊ
                     flags["altimeter_zero_adj_flag"] = True
-                elif event.key == pygame.K_s: # настройка серв
+                elif event.key == pygame.K_s: # РЅР°СЃС‚СЂРѕР№РєР° СЃРµСЂРІ
                     p_servotuner = Process(target=servotuner.ServoTuner,
                                            args=(q_up, q_servo))
                     p_servotuner.start()
-                elif event.key == pygame.K_p: # закинем точки маршрута в самолет
+                elif event.key == pygame.K_p: # Р·Р°РєРёРЅРµРј С‚РѕС‡РєРё РјР°СЂС€СЂСѓС‚Р° РІ СЃР°РјРѕР»РµС‚
                     p_upload = Process(target=Route.upload, args=(q_up, ))
                     p_upload.start()
-            #события отпускания клавиш
+            #СЃРѕР±С‹С‚РёСЏ РѕС‚РїСѓСЃРєР°РЅРёСЏ РєР»Р°РІРёС€
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_DOWN or event.key == pygame.K_UP:
                     flags["compass_flag"] = 0
 
         flags["lock"].release()
 
-        #возьмем из очереди данные для телеметрии
+        #РІРѕР·СЊРјРµРј РёР· РѕС‡РµСЂРµРґРё РґР°РЅРЅС‹Рµ РґР»СЏ С‚РµР»РµРјРµС‚СЂРёРё
         try:
             tlm_data = q_tlm.get(True, 1)
             flags["lock"].acquire()
@@ -172,7 +172,7 @@ def main(q_tlm, q_up, q_servo, config):
 
 
 
-# запускатор процессов
+# Р·Р°РїСѓСЃРєР°С‚РѕСЂ РїСЂРѕС†РµСЃСЃРѕРІ
 if __name__ == '__main__':
     freeze_support()
 
@@ -183,17 +183,17 @@ if __name__ == '__main__':
             description=(''' This is stub for command prompt help. '''))
     parser.add_argument('input_file',
             metavar='filename',
-            nargs='?', # аргумент необязателен
+            nargs='?', # Р°СЂРіСѓРјРµРЅС‚ РЅРµРѕР±СЏР·Р°С‚РµР»РµРЅ
             type=file,
             help='path to telemetry log file')
     args = parser.parse_args()
 
-    # загрузим конфиг. Позднее мы его передадим каждому нуждающемуся процессу.
+    # Р·Р°РіСЂСѓР·РёРј РєРѕРЅС„РёРі. РџРѕР·РґРЅРµРµ РјС‹ РµРіРѕ РїРµСЂРµРґР°РґРёРј РєР°Р¶РґРѕРјСѓ РЅСѓР¶РґР°СЋС‰РµРјСѓСЃСЏ РїСЂРѕС†РµСЃСЃСѓ.
     config = ConfigParser.SafeConfigParser()
     config.read('default.cfg')
 
-    # главная программная вилка.
-    # Определяет, читаем мы телеметрию из лога, или из устройства
+    # РіР»Р°РІРЅР°СЏ РїСЂРѕРіСЂР°РјРјРЅР°СЏ РІРёР»РєР°.
+    # РћРїСЂРµРґРµР»СЏРµС‚, С‡РёС‚Р°РµРј РјС‹ С‚РµР»РµРјРµС‚СЂРёСЋ РёР· Р»РѕРіР°, РёР»Рё РёР· СѓСЃС‚СЂРѕР№СЃС‚РІР°
     e_pause.clear()
     e_kill.clear()
 
@@ -225,12 +225,12 @@ if __name__ == '__main__':
 
 
     p_main.start()
-    time.sleep(1) # ждем, пока все процессы подхватятся
+    time.sleep(1) # Р¶РґРµРј, РїРѕРєР° РІСЃРµ РїСЂРѕС†РµСЃСЃС‹ РїРѕРґС…РІР°С‚СЏС‚СЃСЏ
     print "--- clear global pause"
-    e_pause.set() # снимаем с паузы порожденные процессы
+    e_pause.set() # СЃРЅРёРјР°РµРј СЃ РїР°СѓР·С‹ РїРѕСЂРѕР¶РґРµРЅРЅС‹Рµ РїСЂРѕС†РµСЃСЃС‹
 
-    p_main.join() # ждем завершения главного процесса
-    e_kill.set()  # предлагаем всем остальным выйти
+    p_main.join() # Р¶РґРµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РіР»Р°РІРЅРѕРіРѕ РїСЂРѕС†РµСЃСЃР°
+    e_kill.set()  # РїСЂРµРґР»Р°РіР°РµРј РІСЃРµРј РѕСЃС‚Р°Р»СЊРЅС‹Рј РІС‹Р№С‚Рё
 
     time.sleep(0.5)
     # http://metazin.wordpress.com/2008/08/09/how-to-kill-a-process-in-windows-using-python/
