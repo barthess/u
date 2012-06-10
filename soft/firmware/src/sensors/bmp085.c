@@ -144,7 +144,7 @@ ERROR:
 }
 
 /**
- * Функция для вычитывания температуры из датчика
+ *
  */
 static uint32_t get_temperature(BinarySemaphore *semp){
   txbuf[0] = BOSCH_CTL;
@@ -165,7 +165,7 @@ static uint32_t get_temperature(BinarySemaphore *semp){
 }
 
 /**
- * Функция для вычитывания довления из датчика
+ *
  */
 static uint32_t get_pressure(BinarySemaphore *semp){
   // command to measure pressure
