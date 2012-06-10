@@ -39,7 +39,7 @@ extern mavlink_sys_status_t          mavlink_sys_status_struct;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_attitude_t            mavlink_attitude_struct;
 extern mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
-extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
+extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* РІРѕР·РґСѓС€РЅР°СЏ Рё Р·РµРјР»СЏРЅР°СЏ СЃРєРѕСЂРѕСЃС‚Рё */
 
 /*
  ******************************************************************************

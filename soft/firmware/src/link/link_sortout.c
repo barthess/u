@@ -25,7 +25,7 @@ extern mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
 extern mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
 extern mavlink_sys_status_t          mavlink_sys_status_struct;
 extern mavlink_command_long_t        mavlink_command_long_struct;
-extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
+extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* РІРѕР·РґСѓС€РЅР°СЏ Рё Р·РµРјР»СЏРЅР°СЏ СЃРєРѕСЂРѕСЃС‚Рё */
 extern mavlink_set_mode_t            mavlink_set_mode_struct;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_attitude_t            mavlink_attitude_struct;
@@ -108,10 +108,10 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
 /**
  * @brief Helper function.
  *
- * Определяет тип сообщения, чтобы применить правильную функцию упаковки.
- * Пакует письмо из ящика в мавлинковое сообщение.
- * ЗаNULLяет указатель на содержимое, как знак того, что данные обработаны.
- * Возвращает длинну сообщения получившегося сообщения.
+ * РћРїСЂРµРґРµР»СЏРµС‚ С‚РёРї СЃРѕРѕР±С‰РµРЅРёСЏ, С‡С‚РѕР±С‹ РїСЂРёРјРµРЅРёС‚СЊ РїСЂР°РІРёР»СЊРЅСѓСЋ С„СѓРЅРєС†РёСЋ СѓРїР°РєРѕРІРєРё.
+ * РџР°РєСѓРµС‚ РїРёСЃСЊРјРѕ РёР· СЏС‰РёРєР° РІ РјР°РІР»РёРЅРєРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ.
+ * Р—Р°NULLСЏРµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРѕРґРµСЂР¶РёРјРѕРµ, РєР°Рє Р·РЅР°Рє С‚РѕРіРѕ, С‡С‚Рѕ РґР°РЅРЅС‹Рµ РѕР±СЂР°Р±РѕС‚Р°РЅС‹.
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅРЅСѓ СЃРѕРѕР±С‰РµРЅРёСЏ РїРѕР»СѓС‡РёРІС€РµРіРѕСЃСЏ СЃРѕРѕР±С‰РµРЅРёСЏ.
  */
 uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   uint16_t len;

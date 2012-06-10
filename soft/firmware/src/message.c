@@ -17,11 +17,11 @@
  ******************************************************************************
  */
 
-Mailbox autopilot_mb;             /* сообщения для автопилота */
-Mailbox tolink_mb;                /* сообщения для отправки через модем */
-Mailbox mavlink_param_set_mb;     /* сообщения с параметрами */
-Mailbox mavlink_command_long_mb;  /* сообщения с командами */
-Mailbox logwriter_mb;             /* сообщения для писалки логов */
+Mailbox autopilot_mb;             /* СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ Р°РІС‚РѕРїРёР»РѕС‚Р° */
+Mailbox tolink_mb;                /* СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ РѕС‚РїСЂР°РІРєРё С‡РµСЂРµР· РјРѕРґРµРј */
+Mailbox mavlink_param_set_mb;     /* СЃРѕРѕР±С‰РµРЅРёСЏ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
+Mailbox mavlink_command_long_mb;  /* СЃРѕРѕР±С‰РµРЅРёСЏ СЃ РєРѕРјР°РЅРґР°РјРё */
+Mailbox logwriter_mb;             /* СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ РїРёСЃР°Р»РєРё Р»РѕРіРѕРІ */
 
 /* mavlink messages */
 mavlink_system_t              mavlink_system_struct;
@@ -73,7 +73,7 @@ static msg_t logwriter_mb_buf[10];
  */
 
 void MsgInit(void){
-  /* инициализация почтовых ящиков */
+  /* РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕС‡С‚РѕРІС‹С… СЏС‰РёРєРѕРІ */
   chMBInit(&autopilot_mb,             autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,                tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlink_param_set_mb,     param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));

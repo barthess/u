@@ -220,7 +220,7 @@ static msg_t ShellThread(void *arg){
     if (c != Q_TIMEOUT)
       microrl_insert_char(&microrl_shell, (char)c);
 
-    /* óìèðàåì ïî âñåì ïðàâèëàì, íå çàáûâàåì óáèòü ïîòîìêîâ */
+    /* ÑƒÐ¼Ð¸Ñ€Ð°ÐµÐ¼ Ð¿Ð¾ Ð²ÑÐµÐ¼ Ð¿Ñ€Ð°Ð²Ð¸Ð»Ð°Ð¼, Ð½Ðµ Ð·Ð°Ð±Ñ‹Ð²Ð°ÐµÐ¼ ÑƒÐ±Ð¸Ñ‚ÑŒ Ð¿Ð¾Ñ‚Ð¾Ð¼ÐºÐ¾Ð² */
     if (chThdShouldTerminate()){
       if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state != THD_STATE_FINAL)){
         chThdTerminate(current_cmd_tp);
