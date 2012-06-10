@@ -145,7 +145,7 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
  *******************************************************************************
  */
 
-/* для установки газа/тормоза машинки, размазанного на 2 канала */
+/* car throttle/break spreaded on 2 channels */
 void ServoCarThrottleSet(uint8_t angle){
   uint32_t throttle = 0;
   uint32_t break_   = 0;
@@ -166,7 +166,7 @@ void ServoCarThrottleSet(uint8_t angle){
 }
 
 /**
- * Устанавливает нейтральные значения
+ *
  */
 void ServoNeutral(void){
   uint32_t i = 0;
@@ -183,16 +183,15 @@ void ServoInit(void){
 
   car_dz = ValueSearch("SERVO_car_dz");
 
-  /* этот канал всегда запускается в самолетном режиме */
+  /* this channel allways run in plane mode */
   pwmStart(&PWMD4, &pwm4plane_cfg);
 
-  /* а этот по-разному */
+  /* this in different modes */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     pwmStart(&PWMD1, &pwm1car_cfg);
   else
     pwmStart(&PWMD1, &pwm1plane_cfg);
 
-  /* запуск серв в нейтральном положении */
 	ServoNeutral();
 }
 

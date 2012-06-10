@@ -224,14 +224,14 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
   w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
   if (imu_step < 200){
-    /* ускоренная выставка магнитного курса */
+    /* speedup magnetic course obtaining */
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       w[i] = (w[i] + *accweight*wA[i] + 0.1f*wM[i]) / (1.0f + *accweight + 0.1f);
     }
   }
   else{
-    /* обычный режим */
+    /* normal mode */
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       //compute weighted average with the accelerometer correction vector

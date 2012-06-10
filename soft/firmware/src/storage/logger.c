@@ -20,7 +20,7 @@
 /* FS buffer size */
 #define BUFF_SIZE 8192
 
-/* сколько свободных байт осталось в буфере */
+/* how many spare bytes we have in buffer */
 #define FREE (BUFF_SIZE - offset)
 
 /* length of timestamp field in mavlink log record */
@@ -46,14 +46,14 @@ extern mavlink_system_t              mavlink_system_struct;
  ******************************************************************************
  */
 
-/* два буфера, которые будут переключаться по мере заполнения */
+/* 2 switching buffers */
 static uint8_t b0[BUFF_SIZE];
 static uint8_t b1[BUFF_SIZE];
 
-/* указатель на текущий рабочий буфер */
+/* pointer to current working buffer */
 static uint8_t* currbuf = b0;
 
-/* смещение в текущем рабочем буфере */
+/* offset in current buffer */
 static uint32_t offset = 0;
 
 /* some buffers for mavlink handling */
@@ -133,7 +133,7 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
 
 #if MAVLINK_LOG_FORMAT
 #if CH_DBG_ENABLE_CHECKS
-  /* fill buffer with zeros except the timestamp region */
+  /* fill buffer with zeros except the timestamp region. Probably not necessary */
   memset(recordbuf + TIME_LEN, 0, RECORD_LEN - TIME_LEN);
 #endif
   uint64_t timestamp = pnsGetTimeUnixUsec();

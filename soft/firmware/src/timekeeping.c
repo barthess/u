@@ -141,7 +141,7 @@ systime_t GetTimeInterval(systime_t *last){
 }
 
 /**
- * Command to handle real time.
+ * Command to tune RTC.
  */
 Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;

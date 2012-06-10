@@ -63,11 +63,11 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  /* комплексированные данные из DCM */
+  /* from DCM */
   //mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
   mavlink_attitude_struct->yaw = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
 
-  /* либо данные чисто с гироскопа */
+  /* or from Z gyro */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
@@ -102,7 +102,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
 
 
 /**
- * Поток обработки инерациальных данных
+ *
  */
 static WORKING_AREA(waImu, 512);
 static msg_t Imu(void *semp) {

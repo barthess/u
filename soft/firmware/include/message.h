@@ -6,26 +6,23 @@
 
 
 /**
- * структура определ€ет формат сообщений типа "письмо" дл€ обмена данными.
+ * Structure for data exchange with confimation capability.
  */
 typedef struct Mail Mail;
 struct Mail{
   /**
-   * @brief указатель на внешний буфер.
-   * @details ѕосле того, как данные забраны берущей
-   * стороной, указатель устанавливаетс€ в NULL. Ёто будет сигналом дл€
-   * дающей стороны.
+   * @brief   pointer to external buffer.
+   * @details When receiver got data it must be set this pointer to NULL
+   *          as a ready flag.
    */
   void *payload;
   /**
-   * ѕоле заполн€етс€ по усмотрению приложени€, может содержать что угодно.
+   * Content is on program responsibility. Can be contain anything.
    */
   msg_t invoice;
   /**
-   * ”казатель на почтовый €щик, в который надо прислать подтверждение
-   * успешного выполнени€. ћожет использоватьс€ дл€ синхронизации отправл€ющего
-   * потока. јналоги€ обратного адреса на конверте письма.
-   * ћожет быть NULL.
+   * Confirmation box pointer. Suitable for sending thread sychronization.
+   * Can be NULL.
    */
   Mailbox *confirmbox;
 };

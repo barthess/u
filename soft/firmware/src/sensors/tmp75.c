@@ -53,10 +53,10 @@ static msg_t PollTmp75Thread(void *arg){
 
   while (TRUE) {
     txbuf[0] = 0b00000001; // point to Configuration Register
-    /* запуск одиночного измерения */
+    /* single measurement start */
     txbuf[1] = 0b10000001; // OS R1 R0 F1 F0 POL TM SD
     i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
-    chThdSleepMilliseconds(40); /* ждем пока померяется (под даташиту 37.5)*/
+    chThdSleepMilliseconds(40); /* wait until measured (datasheet says 37.5ms)*/
 
     txbuf[0] = 0; // point to temperature register
 
@@ -97,7 +97,7 @@ additional data is required.*/
 
 void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
-  /* настроим autoshutdown, чтобы датчик токами потребления не разогревал себя*/
+  /* enable autoshutdown, to reduce auto warmup of sensor */
   txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
   while(i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
