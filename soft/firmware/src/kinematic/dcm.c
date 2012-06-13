@@ -158,9 +158,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 //  Kacc[1] = -yacc;
 //  Kacc[2] = -zacc;
 
-  /* Поскольку на вход функции мы подаем значения измеренных ускорений по осям,
-  а не вектор гравитации, то ничего инвертировать не надо.
-  Вектор кажущегося ускорения совпадает с зенитным вектором К. */
+  /* РџРѕСЃРєРѕР»СЊРєСѓ РЅР° РІС…РѕРґ С„СѓРЅРєС†РёРё РјС‹ РїРѕРґР°РµРј Р·РЅР°С‡РµРЅРёСЏ РёР·РјРµСЂРµРЅРЅС‹С… СѓСЃРєРѕСЂРµРЅРёР№ РїРѕ РѕСЃСЏРј,
+  Р° РЅРµ РІРµРєС‚РѕСЂ РіСЂР°РІРёС‚Р°С†РёРё, С‚Рѕ РЅРёС‡РµРіРѕ РёРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ РЅРµ РЅР°РґРѕ.
+  Р’РµРєС‚РѕСЂ РєР°Р¶СѓС‰РµРіРѕСЃСЏ СѓСЃРєРѕСЂРµРЅРёСЏ СЃРѕРІРїР°РґР°РµС‚ СЃ Р·РµРЅРёС‚РЅС‹Рј РІРµРєС‚РѕСЂРѕРј Рљ. */
 
   Kacc[0] = xacc;
   Kacc[1] = yacc;
@@ -195,9 +195,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   /* ignore magnetometer readings if external magnetic field too strong */
   if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
-    /* Проработать комплексирование с нижним рядом DCM вместо вектора
-     * гравитации. Какие-то непонятные результаты получаются, или я их
-     * готовить не умею. */
+    /* РџСЂРѕСЂР°Р±РѕС‚Р°С‚СЊ РєРѕРјРїР»РµРєСЃРёСЂРѕРІР°РЅРёРµ СЃ РЅРёР¶РЅРёРј СЂСЏРґРѕРј DCM РІРјРµСЃС‚Рѕ РІРµРєС‚РѕСЂР°
+     * РіСЂР°РІРёС‚Р°С†РёРё. РљР°РєРёРµ-С‚Рѕ РЅРµРїРѕРЅСЏС‚РЅС‹Рµ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РїРѕР»СѓС‡Р°СЋС‚СЃСЏ, РёР»Рё СЏ РёС…
+     * РіРѕС‚РѕРІРёС‚СЊ РЅРµ СѓРјРµСЋ. */
     float tmpM[3];
     vector3d_normalize(Imag);
     vector3d_cross(Kacc, Imag, tmpM);
@@ -224,14 +224,14 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
   w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
   if (imu_step < 200){
-    /* ускоренная выставка магнитного курса */
+    /* speedup magnetic course obtaining */
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       w[i] = (w[i] + *accweight*wA[i] + 0.1f*wM[i]) / (1.0f + *accweight + 0.1f);
     }
   }
   else{
-    /* обычный режим */
+    /* normal mode */
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       //compute weighted average with the accelerometer correction vector

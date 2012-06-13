@@ -12,19 +12,19 @@ from binascii import hexlify
 
 # logging facilities
 def record(q_log, e_pause, e_kill):
-    """ q_log -- очередь сообщений """
+    """ q_log -- РѕС‡РµСЂРµРґСЊ СЃРѕРѕР±С‰РµРЅРёР№ """
 
-    # инициализация записывальшика лога
+    # РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·Р°РїРёСЃС‹РІР°Р»СЊС€РёРєР° Р»РѕРіР°
     st = str(datetime.now())
     clear_datetime = ''
     i = 0
-    # заменим двоеточия на точки
+    # Р·Р°РјРµРЅРёРј РґРІРѕРµС‚РѕС‡РёСЏ РЅР° С‚РѕС‡РєРё
     while i < 19:
         if st[i] == ':' :
             clear_datetime += '.'
         else: clear_datetime += st[i]
         i += 1
-    # откроем на запись файл
+    # РѕС‚РєСЂРѕРµРј РЅР° Р·Р°РїРёСЃСЊ С„Р°Р№Р»
     csvwriter = csv.writer(open(clear_datetime + '.csv', 'wb'), delimiter=';')
 
     print "--- logwriter ready"
@@ -50,9 +50,9 @@ def record(q_log, e_pause, e_kill):
 
 
 def playraw(filename, q_tlm, e_pause, e_kill, ):
-    """ смотрелка телеметрии
+    """ СЃРјРѕС‚СЂРµР»РєР° С‚РµР»РµРјРµС‚СЂРёРё
     """
-    blocksize = 64 # такими блоками лежат данные в файле
+    blocksize = 64 # С‚Р°РєРёРјРё Р±Р»РѕРєР°РјРё Р»РµР¶Р°С‚ РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р»Рµ
     filesize = os.path.getsize(filename)
 
     f = open(filename, 'rb')
@@ -62,7 +62,7 @@ def playraw(filename, q_tlm, e_pause, e_kill, ):
     time_n = float(row[3]) + float(row[4]) / 1000
     time_p = float(row[3]) + float(row[4]) / 1000
 
-    # ждем, пока нас снимут с паузы
+    # Р¶РґРµРј, РїРѕРєР° РЅР°СЃ СЃРЅРёРјСѓС‚ СЃ РїР°СѓР·С‹
     print "--- play ready"
     e_pause.wait()
     print "--- play run"
@@ -86,11 +86,11 @@ def playraw(filename, q_tlm, e_pause, e_kill, ):
 
 
 def play(filename, q_tlm, e_pause, e_kill, ):
-    """ смотрелка телеметрии
-    Парсит файл лога и передает его в функцию рисования телеметрии.
-    Так же отслеживает нажатие клавиш выхода из программы.
+    """ СЃРјРѕС‚СЂРµР»РєР° С‚РµР»РµРјРµС‚СЂРёРё
+    РџР°СЂСЃРёС‚ С„Р°Р№Р» Р»РѕРіР° Рё РїРµСЂРµРґР°РµС‚ РµРіРѕ РІ С„СѓРЅРєС†РёСЋ СЂРёСЃРѕРІР°РЅРёСЏ С‚РµР»РµРјРµС‚СЂРёРё.
+    РўР°Рє Р¶Рµ РѕС‚СЃР»РµР¶РёРІР°РµС‚ РЅР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€ РІС‹С…РѕРґР° РёР· РїСЂРѕРіСЂР°РјРјС‹.
 
-    logReader -- объект, представляющий читаемый csv-файл
+    logReader -- РѕР±СЉРµРєС‚, РїСЂРµРґСЃС‚Р°РІР»СЏСЋС‰РёР№ С‡РёС‚Р°РµРјС‹Р№ csv-С„Р°Р№Р»
     """
 
     logReader = csv.reader(open(filename, 'rb'), delimiter=';')
@@ -98,7 +98,7 @@ def play(filename, q_tlm, e_pause, e_kill, ):
     row = logReader.next()
     time_n = float(row[0])
     time_p = float(row[0])
-    # ждем, пока нас снимут с паузы
+    # Р¶РґРµРј, РїРѕРєР° РЅР°СЃ СЃРЅРёРјСѓС‚ СЃ РїР°СѓР·С‹
     print "--- play ready"
     e_pause.wait()
     print "--- play run"
@@ -112,15 +112,15 @@ def play(filename, q_tlm, e_pause, e_kill, ):
         time_n = float(row[0])
         time.sleep(time_n - time_p)
 
-        row = row[1:] # откусываем поле локального времени
+        row = row[1:] # РѕС‚РєСѓСЃС‹РІР°РµРј РїРѕР»Рµ Р»РѕРєР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё
 
-        # конвертаем строки в числа
+        # РєРѕРЅРІРµСЂС‚Р°РµРј СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Р°
         i = 0
         for st in row:
             rowint.insert(i, int(st))
             i += 1
 
         q_tlm.put(rowint)
-        rowint = [] # очищаем буфер, чтобы он не рос бесконечно
+        rowint = [] # РѕС‡РёС‰Р°РµРј Р±СѓС„РµСЂ, С‡С‚РѕР±С‹ РѕРЅ РЅРµ СЂРѕСЃ Р±РµСЃРєРѕРЅРµС‡РЅРѕ
 
 

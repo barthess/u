@@ -15,8 +15,8 @@
  ******************************************************************************
  */
 #define bmp085addr          0b1110111
-#define TEMPERATURE_ERROR   0// флаг того, что при измерении температуры произошла ошибка
-#define PRESSURE_ERROR      0// флаг того, что при измерении довления произошла ошибка
+#define TEMPERATURE_ERROR   0
+#define PRESSURE_ERROR      0
 
 // sensor precision (see datasheet)
 #define OSS 3 // 3 -- max
@@ -33,6 +33,8 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource init_event;
+extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
+extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
 
 /*
  ******************************************************************************
@@ -131,6 +133,8 @@ static void bmp085_calc(void){
   pres_awg = pres_awg - (pres_awg >> FIX_FORMAT) + pval;
   // calculate height
   comp_data.baro_altitude = pres_to_height(pres_awg >> FIX_FORMAT);
+  mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
+  mavlink_scaled_pressure_struct.press_abs = (float)pres_awg / (N_AWG * 100.0);
   return;
 
 ERROR:
@@ -140,7 +144,7 @@ ERROR:
 }
 
 /**
- * Функция для вычитывания температуры из датчика
+ *
  */
 static uint32_t get_temperature(BinarySemaphore *semp){
   txbuf[0] = BOSCH_CTL;
@@ -161,7 +165,7 @@ static uint32_t get_temperature(BinarySemaphore *semp){
 }
 
 /**
- * Функция для вычитывания довления из датчика
+ *
  */
 static uint32_t get_pressure(BinarySemaphore *semp){
   // command to measure pressure
@@ -185,13 +189,13 @@ static uint32_t get_pressure(BinarySemaphore *semp){
 /**
  * Polling thread
  */
-static WORKING_AREA(PollBaroThreadWA, 512);
+static WORKING_AREA(PollBaroThreadWA, 256);
 static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
   uint32_t t = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     /* we get temperature every 0x1F cycle */

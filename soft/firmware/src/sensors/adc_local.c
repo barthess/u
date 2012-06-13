@@ -27,14 +27,14 @@ extern GlobalParam_t global_data[];
  * DEFINES
  ******************************************************************************
  */
-#define DEFAULT_CURRENT_COEFF     1912   // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-#define DEFAULT_CURRENT_OFFSET    16   // смещение нуля датчика тока в единицах АЦП
-#define DEFAULT_VOLTAGE_COEFF     1022 // коэффициент пересчета из условных единиц в децывольты
+#define DEFAULT_CURRENT_COEFF     1912   // РєРѕСЌС„С„РёС†РёРµРЅС‚ РїРµСЂРµСЃС‡РµС‚Р° РёР· СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС† РІ Р°РјРїРµСЂС‹ РґР»СЏ СЃР°Р»РѕРјС‘С‚Р° -- 37, РґР»СЏ РјР°С€РёРЅРєРё -- 1912
+#define DEFAULT_CURRENT_OFFSET    16   // СЃРјРµС‰РµРЅРёРµ РЅСѓР»СЏ РґР°С‚С‡РёРєР° С‚РѕРєР° РІ РµРґРёРЅРёС†Р°С… РђР¦Рџ
+#define DEFAULT_VOLTAGE_COEFF     1022 // РєРѕСЌС„С„РёС†РёРµРЅС‚ РїРµСЂРµСЃС‡РµС‚Р° РёР· СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС† РІ РґРµС†С‹РІРѕР»СЊС‚С‹
 
 #define ADC_NUM_CHANNELS          6
 #define ADC_BUF_DEPTH             1
 
-/* человекочитабельные названия каналов */
+/* С‡РµР»РѕРІРµРєРѕС‡РёС‚Р°Р±РµР»СЊРЅС‹Рµ РЅР°Р·РІР°РЅРёСЏ РєР°РЅР°Р»РѕРІ */
 #define ADC_CURRENT_SENS          ADC_CHANNEL_IN10
 #define ADC_MAIN_SUPPLY           ADC_CHANNEL_IN11
 #define ADC_6V_SUPPLY             ADC_CHANNEL_IN12
@@ -42,7 +42,7 @@ extern GlobalParam_t global_data[];
 #define ADC_AN33_1                ADC_CHANNEL_IN14
 #define ADC_AN33_2                ADC_CHANNEL_IN15
 
-// где лежат текущие значения АЦП
+// РіРґРµ Р»РµР¶Р°С‚ С‚РµРєСѓС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ РђР¦Рџ
 #define ADC_CURRENT_SENS_OFFSET   (ADC_CHANNEL_IN10 - 10)
 #define ADC_MAIN_SUPPLY_OFFSET    (ADC_CHANNEL_IN11 - 10)
 #define ADC_6V_SUPPLY_OFFSET      (ADC_CHANNEL_IN12 - 10)
@@ -58,7 +58,7 @@ extern GlobalParam_t global_data[];
  ******************************************************************************
  */
 
-static ADCConfig adccfg; // для STM32 -- должна быть пустышка
+static ADCConfig adccfg; // РґР»СЏ STM32 -- РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РїСѓСЃС‚С‹С€РєР°
 
 static adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 
@@ -108,20 +108,20 @@ static const ADCConversionGroup adccg = {
  *******************************************************************************
  */
 
-/* пересчет из условных единиц АЦП в mV */
+/* РїРµСЂРµСЃС‡РµС‚ РёР· СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС† РђР¦Рџ РІ mV */
 uint16_t get_comp_secondary_voltage(uint16_t raw){
-  uint32_t v = 6200; // такое количество милливольт
-  uint32_t adc = 770;// приходится на такое количество условных единиц
+  uint32_t v = 6200; // С‚Р°РєРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РјРёР»Р»РёРІРѕР»СЊС‚
+  uint32_t adc = 770;// РїСЂРёС…РѕРґРёС‚СЃСЏ РЅР° С‚Р°РєРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС†
   return (uint16_t)(((uint32_t)raw * v) / adc);
 }
 
-/* пересчет из условных единиц в mA */
+/* РїРµСЂРµСЃС‡РµС‚ РёР· СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС† РІ mA */
 uint32_t get_comp_main_current(uint16_t raw){
   return ((raw - DEFAULT_CURRENT_OFFSET) * 1000) / DEFAULT_CURRENT_COEFF;
 }
 
-/* Поток для запроса данных АЦП по таймеру */
-static WORKING_AREA(PowerKeeperThreadWA, 256);
+/* РџРѕС‚РѕРє РґР»СЏ Р·Р°РїСЂРѕСЃР° РґР°РЅРЅС‹С… РђР¦Рџ РїРѕ С‚Р°Р№РјРµСЂСѓ */
+static WORKING_AREA(PowerKeeperThreadWA, 128);
 static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;

@@ -1,5 +1,5 @@
 
-/* Следит за состоянием здоровья органов.*/
+/* РЎР»РµРґРёС‚ Р·Р° СЃРѕСЃС‚РѕСЏРЅРёРµРј Р·РґРѕСЂРѕРІСЊСЏ РѕСЂРіР°РЅРѕРІ.*/
 
 #include "ch.h"
 #include "hal.h"
@@ -7,7 +7,9 @@
 #include "message.h"
 #include "main.h"
 #include "link.h"
+#include "sanity.h"
 #include "timekeeping.h"
+#include "logger.h"
 
 /*
  ******************************************************************************
@@ -15,10 +17,12 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
+extern Mailbox logwriter_mb;
 extern uint32_t GlobalFlags;
 extern EventSource init_event;
-extern mavlink_system_t mavlink_system_struct;
-extern mavlink_heartbeat_t mavlink_heartbeat_struct;
+extern mavlink_system_t       mavlink_system_struct;
+extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
+extern mavlink_sys_status_t   mavlink_sys_status_struct;
 
 /*
  ******************************************************************************
@@ -31,10 +35,10 @@ extern mavlink_heartbeat_t mavlink_heartbeat_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* указатель на Idle поток. Оттуда мы будем брать данные для расчета загрузки проца */
+/* СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Idle РїРѕС‚РѕРє. РћС‚С‚СѓРґР° РјС‹ Р±СѓРґРµРј Р±СЂР°С‚СЊ РґР°РЅРЅС‹Рµ РґР»СЏ СЂР°СЃС‡РµС‚Р° Р·Р°РіСЂСѓР·РєРё РїСЂРѕС†Р° */
 static Thread *IdleThread_p = NULL;
 
-/* переменные для оценки загруженности процессора */
+/* РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РѕС†РµРЅРєРё Р·Р°РіСЂСѓР¶РµРЅРЅРѕСЃС‚Рё РїСЂРѕС†РµСЃСЃРѕСЂР° */
 static uint32_t last_sys_ticks = 0;
 static uint32_t last_idle_ticks = 0;
 
@@ -47,15 +51,15 @@ static uint32_t last_idle_ticks = 0;
  */
 
 /**
- * посылает heartbeat пакеты и моргает светодиодиком
+ * РїРѕСЃС‹Р»Р°РµС‚ heartbeat РїР°РєРµС‚С‹ Рё РјРѕСЂРіР°РµС‚ СЃРІРµС‚РѕРґРёРѕРґРёРєРѕРј
  */
-static WORKING_AREA(SanityControlThreadWA, 256);
+static WORKING_AREA(SanityControlThreadWA, 128);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
 
@@ -66,18 +70,23 @@ static msg_t SanityControlThread(void *arg) {
     palSetPad(GPIOB, GPIOB_LED_B);
     chThdSleepMilliseconds(950);
 
-    if (heartbeat_mail.payload == NULL){
+    if ((chThdSelf()->p_epending & EVENT_MASK(MODEM_READY_EVID)) &&
+        (heartbeat_mail.payload == NULL)){
       mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
-
-      palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-      chThdSleepMilliseconds(50);
     }
 
-    /* этим светодиодом будем обозначать процесс выставки гироскопов */
+    if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))
+      log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
+
+    palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
+    chThdSleepMilliseconds(50);
+    mavlink_sys_status_struct.load = get_cpu_load();
+
+    /* СЌС‚РёРј СЃРІРµС‚РѕРґРёРѕРґРѕРј Р±СѓРґРµРј РѕР±РѕР·РЅР°С‡Р°С‚СЊ РїСЂРѕС†РµСЃСЃ РІС‹СЃС‚Р°РІРєРё РіРёСЂРѕСЃРєРѕРїРѕРІ */
     if (GlobalFlags & GYRO_CAL_FLAG)
       palClearPad(GPIOB, GPIOB_LED_R);
     else
@@ -111,22 +120,22 @@ void SanityControlInit(void){
 }
 
 /**
- * Рассчитывает загрузку проца.
- * Возвращает десятые доли процента.
+ * Р Р°СЃСЃС‡РёС‚С‹РІР°РµС‚ Р·Р°РіСЂСѓР·РєСѓ РїСЂРѕС†Р°.
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ РґРµСЃСЏС‚С‹Рµ РґРѕР»Рё РїСЂРѕС†РµРЅС‚Р°.
  */
 uint16_t get_cpu_load(void){
 
-  uint32_t i, s; /* "мгновенные" значения количества тиков idle, system */
+  uint32_t i, s; /* "РјРіРЅРѕРІРµРЅРЅС‹Рµ" Р·РЅР°С‡РµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° С‚РёРєРѕРІ idle, system */
 
-  /* получаем мгновенное значение счетчика из Idle */
+  /* РїРѕР»СѓС‡Р°РµРј РјРіРЅРѕРІРµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЃС‡РµС‚С‡РёРєР° РёР· Idle */
   if (chThdGetTicks(IdleThread_p) >= last_idle_ticks)
     i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
-  else /* произошло переполнение */
+  else /* РїСЂРѕРёР·РѕС€Р»Рѕ РїРµСЂРµРїРѕР»РЅРµРЅРёРµ */
     i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
-  /* обновляем счетчик */
+  /* РѕР±РЅРѕРІР»СЏРµРј СЃС‡РµС‚С‡РёРє */
     last_idle_ticks = chThdGetTicks(IdleThread_p);
 
-  /* получаем мгновенное значение счетчика из системы */
+  /* РїРѕР»СѓС‡Р°РµРј РјРіРЅРѕРІРµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЃС‡РµС‚С‡РёРєР° РёР· СЃРёСЃС‚РµРјС‹ */
   s = GetTimeInterval(&last_sys_ticks);
 
   return ((s - i) * 1000) / s;

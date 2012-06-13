@@ -50,17 +50,17 @@ static Thread *linkin_tp = NULL;
  */
 
 /**
- * Поток отправки сообещиний через канал связи на землю.
+ * РџРѕС‚РѕРє РѕС‚РїСЂР°РІРєРё СЃРѕРѕР±РµС‰РёРЅРёР№ С‡РµСЂРµР· РєР°РЅР°Р» СЃРІСЏР·Рё РЅР° Р·РµРјР»СЋ.
  */
 static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
 
-  /* Переменная для формирования сообщения. Одна на всех,
-     поскольку сообещиня обрабатываются по одному. */
+  /* РџРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃРѕРѕР±С‰РµРЅРёСЏ. РћРґРЅР° РЅР° РІСЃРµС…,
+     РїРѕСЃРєРѕР»СЊРєСѓ СЃРѕРѕР±РµС‰РёРЅСЏ РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РїРѕ РѕРґРЅРѕРјСѓ. */
   mavlink_message_t mavlink_msgbuf;
 
-  /* выходной буфер для отправки данных */
+  /* РІС‹С…РѕРґРЅРѕР№ Р±СѓС„РµСЂ РґР»СЏ РѕС‚РїСЂР°РІРєРё РґР°РЅРЅС‹С… */
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
   Mail *mailp;
@@ -83,7 +83,7 @@ static msg_t LinkOutThread(void *sdp){
 
 
 /**
- * Поток разбора входящих данных.
+ * РџРѕС‚РѕРє СЂР°Р·Р±РѕСЂР° РІС…РѕРґСЏС‰РёС… РґР°РЅРЅС‹С….
  */
 static WORKING_AREA(LinkInThreadWA, 512);
 static msg_t LinkInThread(void *sdp){
@@ -100,7 +100,7 @@ static msg_t LinkInThread(void *sdp){
     c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
     if (c != Q_TIMEOUT){
       if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &mavlink_status_struct)) {
-        if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
+        if (msg.sysid == GROUND_STATION_ID){ /* РЅР°СЃ Р·Р°РїСЂР°С€РёРІР°РµС‚ РЅР°Р·РµРјРЅР°СЏ СЃС‚Р°РЅС†РёСЏ */
           sort_input_messages(&msg);
         }
       }
@@ -127,7 +127,7 @@ void KillMavlinkThreads(void){
 }
 
 /**
- * порождает потоки сортировки\парсинга сообщений
+ * РїРѕСЂРѕР¶РґР°РµС‚ РїРѕС‚РѕРєРё СЃРѕСЂС‚РёСЂРѕРІРєРё\РїР°СЂСЃРёРЅРіР° СЃРѕРѕР±С‰РµРЅРёР№
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
 

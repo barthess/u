@@ -11,7 +11,7 @@
 #define GYRO_TX_DEPTH 4
 
 
-#define GYRO_OUT_DATA   0x1B // начиная с термометра
+#define GYRO_OUT_DATA   0x1B // РЅР°С‡РёРЅР°СЏ СЃ С‚РµСЂРјРѕРјРµС‚СЂР°
 #define GYRO_SMPLRT_DIV 0x15
 #define GYRO_INT_CFG    0x17
 #define GYRO_DLPF_FS    0x16

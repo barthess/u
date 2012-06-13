@@ -44,18 +44,18 @@ static int32_t sh_enable_index = -1;
  *******************************************************************************
  */
 /**
- * Поток следящий за потоками связи и переключающий их по мере надобности
+ * РџРѕС‚РѕРє СЃР»РµРґСЏС‰РёР№ Р·Р° РїРѕС‚РѕРєР°РјРё СЃРІСЏР·Рё Рё РїРµСЂРµРєР»СЋС‡Р°СЋС‰РёР№ РёС… РїРѕ РјРµСЂРµ РЅР°РґРѕР±РЅРѕСЃС‚Рё
  */
-static WORKING_AREA(LinkMgrThreadWA, 256);
+static WORKING_AREA(LinkMgrThreadWA, 128);
 static msg_t LinkMgrThread(void *arg){
   chRegSetThreadName("LinkManager");
 
   bool_t shell_active = FALSE;
 
-  /* ждем, пока модемы встанут в ружьё */
+  /* Р¶РґРµРј, РїРѕРєР° РјРѕРґРµРјС‹ РІСЃС‚Р°РЅСѓС‚ РІ СЂСѓР¶СЊС‘ */
   chThdSleepMilliseconds(4000);
 
-  /* по значению флага определяем, что надо изначально запустить */
+  /* РїРѕ Р·РЅР°С‡РµРЅРёСЋ С„Р»Р°РіР° РѕРїСЂРµРґРµР»СЏРµРј, С‡С‚Рѕ РЅР°РґРѕ РёР·РЅР°С‡Р°Р»СЊРЅРѕ Р·Р°РїСѓСЃС‚РёС‚СЊ */
   if (global_data[sh_enable_index].value == 0){
     SpawnMavlinkThreads((SerialDriver *)arg);
     shell_active = FALSE;
@@ -68,7 +68,7 @@ static msg_t LinkMgrThread(void *arg){
   /* say to all that modem is ready */
   chEvtBroadcastFlags(&init_event, EVENT_MASK(MODEM_READY_EVID));
 
-  /* а теперь в цикле следим за изменениями и запускаем нужные потоки */
+  /* Р° С‚РµРїРµСЂСЊ РІ С†РёРєР»Рµ СЃР»РµРґРёРј Р·Р° РёР·РјРµРЅРµРЅРёСЏРјРё Рё Р·Р°РїСѓСЃРєР°РµРј РЅСѓР¶РЅС‹Рµ РїРѕС‚РѕРєРё */
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if(shell_active == TRUE){

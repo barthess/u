@@ -4,7 +4,6 @@
 #include "sensors.h"
 #include "message.h"
 
-#include "mavsender.h"
 #include "imu.h"
 #include "gps.h"
 #include "adc_local.h"
@@ -27,8 +26,8 @@
  * EXTERNS
  ******************************************************************************
  */
-RawData raw_data;                     /* структура с сырыми данными с датчиков */
-CompensatedData comp_data;            /* обработанные данные */
+RawData raw_data;
+CompensatedData comp_data;
 
 /*
  ******************************************************************************
@@ -36,13 +35,13 @@ CompensatedData comp_data;            /* обработанные данные */
  ******************************************************************************
  */
 
-/* примитивы для синхронизации потока с прерываниеми от датчиков */
+/* semaphores to sync with external interrupts from sensors */
 static BinarySemaphore mag3110_sem;
 static BinarySemaphore mma8451_sem;
 static BinarySemaphore bmp085_sem;
 static BinarySemaphore itg3200_sem;
 
-/* семафор для синхронизации инерциалки и датчиков */
+/* sem for sync IMU with gyro */
 static BinarySemaphore imu_sem;
 
 /*
@@ -66,19 +65,17 @@ static BinarySemaphore imu_sem;
  */
 void SensorsInit(void){
 
-  /* инициализация семафоров */
   chBSemInit(&mag3110_sem,  TRUE);
   chBSemInit(&mma8451_sem,  TRUE);
   chBSemInit(&bmp085_sem,   TRUE);
   chBSemInit(&itg3200_sem,  TRUE);
   chBSemInit(&imu_sem,      TRUE);
 
-  /* Запуск контроллера внешних прерываний.
-   * ПОМНИ! I2C-датчики и RTC используют его */
+  /* EXTI start. REMEMBER! I2C and RTC needs it.*/
   ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
   ADCInit_local();
 
-  /* start I2C sensors */
+  /* start different I2C sensors */
   init_itg3200(&itg3200_sem, &imu_sem);
   init_mma8451(&mma8451_sem);
   init_tmp75();
@@ -88,7 +85,5 @@ void SensorsInit(void){
 
   ImuInit(&imu_sem);
   GPSInit();
-
-  MavSenderInit();
 }
 

@@ -25,6 +25,7 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
+extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
 
 /*
  ******************************************************************************
@@ -48,20 +49,21 @@ static msg_t PollTmp75Thread(void *arg){
   (void)arg;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     txbuf[0] = 0b00000001; // point to Configuration Register
-    /* запуск одиночного измерения */
+    /* single measurement start */
     txbuf[1] = 0b10000001; // OS R1 R0 F1 F0 POL TM SD
     i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
-    chThdSleepMilliseconds(40); /* ждем пока померяется (под даташиту 37.5)*/
+    chThdSleepMilliseconds(40); /* wait until measured (datasheet says 37.5ms)*/
 
     txbuf[0] = 0; // point to temperature register
 
     if (i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2) == RDY_OK){
       raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
       comp_data.temp_onboard = raw_data.temp_tmp75 / 256;
+      mavlink_scaled_pressure_struct.temperature = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
     }
     chThdSleepMilliseconds(1000);
 
@@ -95,7 +97,7 @@ additional data is required.*/
 
 void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
-  /* настроим autoshutdown, чтобы датчик токами потребления не разогревал себя*/
+  /* enable autoshutdown, to reduce auto warmup of sensor */
   txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
   while(i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;

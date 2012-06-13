@@ -48,16 +48,16 @@ uint32_t imu_update_period;
 static uint8_t rxbuf[GYRO_RX_DEPTH];
 static uint8_t txbuf[GYRO_TX_DEPTH];
 
-// счетчик для выставки нулей
+// СЃС‡РµС‚С‡РёРє РґР»СЏ РІС‹СЃС‚Р°РІРєРё РЅСѓР»РµР№
 static uint32_t zero_cnt = 0;
 
-/* индексы в структуре с параметрами */
+/* РёРЅРґРµРєСЃС‹ РІ СЃС‚СЂСѓРєС‚СѓСЂРµ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
 static uint32_t awg_samplescnt;
 
-/* указатели на коэффициенты */
+/* СѓРєР°Р·Р°С‚РµР»Рё РЅР° РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ */
 static float *xpol, *ypol, *zpol, *xsens, *ysens, *zsens;
 
-/* семафор для синхронизации инерциалки с хероскопом */
+/* СЃРµРјР°С„РѕСЂ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РёРЅРµСЂС†РёР°Р»РєРё СЃ С…РµСЂРѕСЃРєРѕРїРѕРј */
 static BinarySemaphore *imusync_semp = NULL;
 
 /*
@@ -69,7 +69,7 @@ static BinarySemaphore *imusync_semp = NULL;
  */
 
 /**
- * Определение смещения нулей.
+ * РћРїСЂРµРґРµР»РµРЅРёРµ СЃРјРµС‰РµРЅРёСЏ РЅСѓР»РµР№.
  */
 void gyrozeroing(void){
   if (zero_cnt > 0){
@@ -86,7 +86,7 @@ void gyrozeroing(void){
 }
 
 /**
- * пересчет из сырых значений в рад/сек
+ * РїРµСЂРµСЃС‡РµС‚ РёР· СЃС‹СЂС‹С… Р·РЅР°С‡РµРЅРёР№ РІ СЂР°Рґ/СЃРµРє
  */
 static float calc_gyro_rate(int32_t raw, float sens){
   float tmp = (float)raw;
@@ -97,7 +97,7 @@ static float calc_gyro_rate(int32_t raw, float sens){
 }
 
 /**
- * Получение приращения угла исходя из угловой скорости и временем между выборками
+ * РџРѕР»СѓС‡РµРЅРёРµ РїСЂРёСЂР°С‰РµРЅРёСЏ СѓРіР»Р° РёСЃС…РѕРґСЏ РёР· СѓРіР»РѕРІРѕР№ СЃРєРѕСЂРѕСЃС‚Рё Рё РІСЂРµРјРµРЅРµРј РјРµР¶РґСѓ РІС‹Р±РѕСЂРєР°РјРё
  */
 static float get_degrees(float raw){
   float t = (float)imu_update_period / 1000000.0;
@@ -105,9 +105,9 @@ static float get_degrees(float raw){
 }
 
 /**
- * Поток для опроса хероскопа
+ * РџРѕС‚РѕРє РґР»СЏ РѕРїСЂРѕСЃР° С…РµСЂРѕСЃРєРѕРїР°
  */
-static WORKING_AREA(PollGyroThreadWA, 512);
+static WORKING_AREA(PollGyroThreadWA, 256);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 
@@ -119,7 +119,7 @@ static msg_t PollGyroThread(void *semp){
   msg_t sem_status = RDY_OK;
 
   EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
@@ -177,8 +177,8 @@ static msg_t PollGyroThread(void *semp){
                 (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
           log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
           log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
-          i++;
         }
+        i++;
       }
     }
     else{
@@ -224,7 +224,7 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
 
   imusync_semp = imu_semp;
 
-  // обнуление инкрементальных сумм
+  // РѕР±РЅСѓР»РµРЅРёРµ РёРЅРєСЂРµРјРµРЅС‚Р°Р»СЊРЅС‹С… СЃСѓРјРј
   comp_data.xgyro_angle = 0;
   comp_data.ygyro_angle = 0;
   comp_data.zgyro_angle = 0;
@@ -252,7 +252,7 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
 
   txbuf[0] = GYRO_SMPLRT_DIV;
   txbuf[1] = 9; /* sample rate. Approximatelly (1000 / (9 + 1)) = 100Hz*/
-  txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота среза внутреннего фильтра */
+  txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* РґРёР°РїР°Р·РѕРЅ РёР·РјРµСЂРµРЅРёР№ Рё С‡Р°СЃС‚РѕС‚Р° СЃСЂРµР·Р° РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ С„РёР»СЊС‚СЂР° */
   txbuf[3] = 0b110001; /* configure and enable interrupts */
   while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
     ;
@@ -272,7 +272,7 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
 }
 
 /**
- * Сбрасывает рассчитанные нули и проводит калибровку заново.
+ * РЎР±СЂР°СЃС‹РІР°РµС‚ СЂР°СЃСЃС‡РёС‚Р°РЅРЅС‹Рµ РЅСѓР»Рё Рё РїСЂРѕРІРѕРґРёС‚ РєР°Р»РёР±СЂРѕРІРєСѓ Р·Р°РЅРѕРІРѕ.
  */
 void gyro_refresh_zeros(void){
   raw_data.xgyro_zero = 0;

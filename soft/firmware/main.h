@@ -9,7 +9,7 @@
 
 
 /******************************************************************
- * приоритеты для потоков */
+ * РїСЂРёРѕСЂРёС‚РµС‚С‹ РґР»СЏ РїРѕС‚РѕРєРѕРІ */
 #define I2C_THREADS_PRIO          (NORMALPRIO + 5)
 #define TIMEKEEPER_THREAD_PRIO    (I2C_THREADS_PRIO - 1)
 #define LINK_THREADS_PRIO         (NORMALPRIO - 5)
@@ -18,13 +18,13 @@
 
 
 /******************************************************************
- * глобальные битовые флаги */
-#define GYRO_CAL_FLAG        (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
-#define ACCEL_CAL_FLAG       (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
-#define MAG_CAL_FLAG         (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
-#define EEPROM_FAILED_FLAG   (1UL << 3)  /* единица означает сбой в EEPROM */
-#define POSTAGE_FAILED_FLAG  (1UL << 4)  /* Сбой в системе отправки сообщений */
-#define I2C_RESTARTED_FLAG   (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
+ * РіР»РѕР±Р°Р»СЊРЅС‹Рµ Р±РёС‚РѕРІС‹Рµ С„Р»Р°РіРё */
+#define GYRO_CAL_FLAG        (1UL << 0)  /* РµСЃР»Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РµРґРёРЅРёС†Сѓ, Р·РЅР°С‡РёС‚ РёРґРµС‚ РІС‹СЃС‚Р°РІРєР° РіРёСЂРѕСЃРєРѕРїРѕРІ */
+#define ACCEL_CAL_FLAG       (1UL << 1)  /* РµСЃР»Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РµРґРёРЅРёС†Сѓ, Р·РЅР°С‡РёС‚ РёРґРµС‚ РІС‹СЃС‚Р°РІРєР° Р°РєСЃРµР»РµСЂРѕРјРµС‚СЂРѕРІ */
+#define MAG_CAL_FLAG         (1UL << 2)  /* РµСЃР»Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅ РІ РµРґРёРЅРёС†Сѓ, Р·РЅР°С‡РёС‚ РёРґРµС‚ РІС‹СЃС‚Р°РІРєР° РјР°РіРЅРёС‚РѕРјРµС‚СЂР° */
+#define EEPROM_FAILED_FLAG   (1UL << 3)  /* РµРґРёРЅРёС†Р° РѕР·РЅР°С‡Р°РµС‚ СЃР±РѕР№ РІ EEPROM */
+#define POSTAGE_FAILED_FLAG  (1UL << 4)  /* РЎР±РѕР№ РІ СЃРёСЃС‚РµРјРµ РѕС‚РїСЂР°РІРєРё СЃРѕРѕР±С‰РµРЅРёР№ */
+#define I2C_RESTARTED_FLAG   (1UL << 5)  /* I2C С€РёРЅР° Р±С‹Р»Р° РїРµСЂРµР·Р°РїСѓС‰РµРЅР° РёР·-Р·Р° РїСЂРѕР±Р»РµРј */
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
@@ -32,32 +32,34 @@
 
 /******************************************************************/
 /* "init daemon" events */
-#define MODEM_READY_EVID    0
-#define LOGGER_READY_EVID   1
-#define I2C_READY_EVID      2
-#define EEPROM_MOUNTED_EVID 3
-#define PARAMETERS_GOT_EVID 4
-/* при наступлении данного события все подсистемы должны себя корректно остановить */
-#define SIGHALT_EVID        5
-/* означает критическую просадку напряжения */
-#define POWERFAILE_EVID     6
-#define MODEM_FAILED        7
-#define LOGGER_FAILED       8
+#define MODEM_READY_EVID    1
+#define LOGGER_READY_EVID   2
+#define I2C_READY_EVID      3
+#define EEPROM_MOUNTED_EVID 4
+#define PARAMETERS_GOT_EVID 5
+/* РїСЂРё РЅР°СЃС‚СѓРїР»РµРЅРёРё РґР°РЅРЅРѕРіРѕ СЃРѕР±С‹С‚РёСЏ РІСЃРµ РїРѕРґСЃРёСЃС‚РµРјС‹ РґРѕР»Р¶РЅС‹ СЃРµР±СЏ РєРѕСЂСЂРµРєС‚РЅРѕ РѕСЃС‚Р°РЅРѕРІРёС‚СЊ */
+#define SIGHALT_EVID        6
+/* РѕР·РЅР°С‡Р°РµС‚ РєСЂРёС‚РёС‡РµСЃРєСѓСЋ РїСЂРѕСЃР°РґРєСѓ РЅР°РїСЂСЏР¶РµРЅРёСЏ */
+#define POWERFAILE_EVID     7
+#define MODEM_FAILED        8
+#define LOGGER_FAILED       9
+#define INIT_FAKE_EVID      31
 
 /******************************************************************
-* статусы возвращаемые разными подсистемами */
+* СЃС‚Р°С‚СѓСЃС‹ РІРѕР·РІСЂР°С‰Р°РµРјС‹Рµ СЂР°Р·РЅС‹РјРё РїРѕРґСЃРёСЃС‚РµРјР°РјРё */
 #define PARAM_SUCCESS  CH_SUCCESS
 #define PARAM_FAILED   CH_FAILED
 #define LINK_SUCCESS   CH_SUCCESS
 #define LINK_FAILED    CH_FAILED
-
+#define TLM_SUCCESS    CH_SUCCESS
+#define TLM_FAILED     CH_FAILED
 
 /******************************************************************
-* константы для мавлинка */
+* РєРѕРЅСЃС‚Р°РЅС‚С‹ РґР»СЏ РјР°РІР»РёРЅРєР° */
 #define GROUND_STATION_ID   255
 
 
-/* метка времени для пакетов */
+/* РјРµС‚РєР° РІСЂРµРјРµРЅРё РґР»СЏ РїР°РєРµС‚РѕРІ */
 #if (CH_FREQUENCY) >= 1000
 #define TIME_BOOT_MS ((chTimeNow()) / ((CH_FREQUENCY) / 1000))
 #endif
@@ -71,7 +73,7 @@
 
 
 /******************************************************************
-* дефайны для модема */
+* РґРµС„Р°Р№РЅС‹ РґР»СЏ РјРѕРґРµРјР° */
 #define BAUDRATE_XBEE 115200
 #define xbee_reset_assert() {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
 #define xbee_reset_clear()  {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
@@ -102,12 +104,12 @@
 
 
 /******************************************************************
-* функции включения питания в 5-вольтовом домене */
+* С„СѓРЅРєС†РёРё РІРєР»СЋС‡РµРЅРёСЏ РїРёС‚Р°РЅРёСЏ РІ 5-РІРѕР»СЊС‚РѕРІРѕРј РґРѕРјРµРЅРµ */
 #define pwr5v_power_on()  {palSetPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 #define pwr5v_power_off() {palClearPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 
 
-/* включить стрессовое тестирование */
+/* РІРєР»СЋС‡РёС‚СЊ СЃС‚СЂРµСЃСЃРѕРІРѕРµ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ */
 #define ENABLE_IRQ_STORM    FALSE
 
 /* stop watchdog timer in debugging mode */

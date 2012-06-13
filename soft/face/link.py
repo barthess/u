@@ -6,7 +6,7 @@ import datetime
 from struct import *
 from multiprocessing import Queue
 from multiprocessing import Event
-from Queue import Empty, Full # для отлова исключений
+from Queue import Empty, Full # РґР»СЏ РѕС‚Р»РѕРІР° РёСЃРєР»СЋС‡РµРЅРёР№
 
 import serial
 from binascii import hexlify
@@ -19,26 +19,26 @@ from localconfig import *
 
 def linkxbee(q_down, q_up, e_pause, e_kill, config):
     """
-    собиралка телеметрии.
-    получает пакет с xbee, тут же бросает в линию данные
-    затем не спеша отрисовывает полученные данные
+    СЃРѕР±РёСЂР°Р»РєР° С‚РµР»РµРјРµС‚СЂРёРё.
+    РїРѕР»СѓС‡Р°РµС‚ РїР°РєРµС‚ СЃ xbee, С‚СѓС‚ Р¶Рµ Р±СЂРѕСЃР°РµС‚ РІ Р»РёРЅРёСЋ РґР°РЅРЅС‹Рµ
+    Р·Р°С‚РµРј РЅРµ СЃРїРµС€Р° РѕС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
 
     """
-    # подсос значений из конфига
+    # РїРѕРґСЃРѕСЃ Р·РЅР°С‡РµРЅРёР№ РёР· РєРѕРЅС„РёРіР°
     baudrate = config.getint('Link', 'baudrate')
     port     = config.getint('Link', 'port')
 
-    # 2 стоп-бита стоит установить при наличии глюков с xbee на 115200
+    # 2 СЃС‚РѕРї-Р±РёС‚Р° СЃС‚РѕРёС‚ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРё РЅР°Р»РёС‡РёРё РіР»СЋРєРѕРІ СЃ xbee РЅР° 115200
     ser = serial.Serial(port, baudrate, stopbits=2)
 
     xbee = ZigBee(ser, escaped=True)
     device={"GND":'\x00\x13\xA2\x00\x40\x5D\xF9\xEA',
             "PNS":'\x00\x13\xA2\x00\x40\x5D\xF9\xE9'}
 
-    xbee_response = None # пришедший с модема пакет
-    msg_up = None # строка, которую надо запихнуть в пакет для отправки
+    xbee_response = None # РїСЂРёС€РµРґС€РёР№ СЃ РјРѕРґРµРјР° РїР°РєРµС‚
+    msg_up = None # СЃС‚СЂРѕРєР°, РєРѕС‚РѕСЂСѓСЋ РЅР°РґРѕ Р·Р°РїРёС…РЅСѓС‚СЊ РІ РїР°РєРµС‚ РґР»СЏ РѕС‚РїСЂР°РІРєРё
 
-    # ждем, пока нас снимут с паузы
+    # Р¶РґРµРј, РїРѕРєР° РЅР°СЃ СЃРЅРёРјСѓС‚ СЃ РїР°СѓР·С‹
     print "---- link ready"
     e_pause.wait()
     print "---- link run"
@@ -48,25 +48,25 @@ def linkxbee(q_down, q_up, e_pause, e_kill, config):
             print "=== Link. Kill signal received. Exiting"
             return
 
-        # читаем из модема
+        # С‡РёС‚Р°РµРј РёР· РјРѕРґРµРјР°
         try:
             xbee_response = xbee.wait_read_frame()
         except:
             print "xbee not respond"
 
-        # пихаем нагрузку из пришедшего пакета в очередь протокольного анализатора
+        # РїРёС…Р°РµРј РЅР°РіСЂСѓР·РєСѓ РёР· РїСЂРёС€РµРґС€РµРіРѕ РїР°РєРµС‚Р° РІ РѕС‡РµСЂРµРґСЊ РїСЂРѕС‚РѕРєРѕР»СЊРЅРѕРіРѕ Р°РЅР°Р»РёР·Р°С‚РѕСЂР°
         if (xbee_response != None) and (xbee_response['id'] == 'rx'):
             try:
                 q_down.put_nowait(xbee_response['rf_data'])
             except Full:
                 print "Input packet lost"
 
-        # тут же берем из очереди сообщение для отправки
+        # С‚СѓС‚ Р¶Рµ Р±РµСЂРµРј РёР· РѕС‡РµСЂРµРґРё СЃРѕРѕР±С‰РµРЅРёРµ РґР»СЏ РѕС‚РїСЂР°РІРєРё
         try:
             msg_up = q_up.get_nowait()
         except Empty:
             pass
-        if msg_up != None: # пихаем в модем
+        if msg_up != None: # РїРёС…Р°РµРј РІ РјРѕРґРµРј
             xbee.send("tx",
                       frame_id='\x00',
                       dest_addr_long=device["PNS"],
@@ -78,7 +78,7 @@ def linkxbee(q_down, q_up, e_pause, e_kill, config):
 
 
 def linkrs232():
-    """ связь по проводу без заморочек с xbee """
+    """ СЃРІСЏР·СЊ РїРѕ РїСЂРѕРІРѕРґСѓ Р±РµР· Р·Р°РјРѕСЂРѕС‡РµРє СЃ xbee """
     return
 
 

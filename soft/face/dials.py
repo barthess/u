@@ -10,30 +10,30 @@ from math import *
 import pygame
 from pygame.locals import *
 
-# самопальные модули
+# СЃР°РјРѕРїР°Р»СЊРЅС‹Рµ РјРѕРґСѓР»Рё
 from localconfig import *
 import dsp
 
 
 def plc(surf, st, color, font, coord, background = None): #{{{
-    """ Помещает надпись на переданную поверхность так,
-    чтобы ее центр совпадал с переданными координатами.
-    Расшифровка -- place label centered
+    """ РџРѕРјРµС‰Р°РµС‚ РЅР°РґРїРёСЃСЊ РЅР° РїРµСЂРµРґР°РЅРЅСѓСЋ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ С‚Р°Рє,
+    С‡С‚РѕР±С‹ РµРµ С†РµРЅС‚СЂ СЃРѕРІРїР°РґР°Р» СЃ РїРµСЂРµРґР°РЅРЅС‹РјРё РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё.
+    Р Р°СЃС€РёС„СЂРѕРІРєР° -- place label centered
 
-    Принимает:
-        surf -- поверхность на которую надо поместить
-        st -- содержимое
-        color -- цвет надписи
-        font -- шрифт
-        coord -- координаты относительно переданной поверхности
+    РџСЂРёРЅРёРјР°РµС‚:
+        surf -- РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РЅР° РєРѕС‚РѕСЂСѓСЋ РЅР°РґРѕ РїРѕРјРµСЃС‚РёС‚СЊ
+        st -- СЃРѕРґРµСЂР¶РёРјРѕРµ
+        color -- С†РІРµС‚ РЅР°РґРїРёСЃРё
+        font -- С€СЂРёС„С‚
+        coord -- РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїРµСЂРµРґР°РЅРЅРѕР№ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё
 
     """
     if HIQUALITY:
         antialiased = True
-        # получим метрики всех букв строки, чтобы определить
-        # по ним суммарную высоту надписи.
-        # Font.size не очень годится, т.к. считает все буквы одинаковой
-        # (максимальной) высоты
+        # РїРѕР»СѓС‡РёРј РјРµС‚СЂРёРєРё РІСЃРµС… Р±СѓРєРІ СЃС‚СЂРѕРєРё, С‡С‚РѕР±С‹ РѕРїСЂРµРґРµР»РёС‚СЊ
+        # РїРѕ РЅРёРј СЃСѓРјРјР°СЂРЅСѓСЋ РІС‹СЃРѕС‚Сѓ РЅР°РґРїРёСЃРё.
+        # Font.size РЅРµ РѕС‡РµРЅСЊ РіРѕРґРёС‚СЃСЏ, С‚.Рє. СЃС‡РёС‚Р°РµС‚ РІСЃРµ Р±СѓРєРІС‹ РѕРґРёРЅР°РєРѕРІРѕР№
+        # (РјР°РєСЃРёРјР°Р»СЊРЅРѕР№) РІС‹СЃРѕС‚С‹
         metrics = font.metrics(st)
         minylist = []
         maxylist = []
@@ -65,10 +65,10 @@ def plc(surf, st, color, font, coord, background = None): #{{{
 #}}}
 def pol2ort(l, fi, center):#{{{
     """
-    перевод из полярной системы координат в прямоугольную
-    l -- длина
-    fi -- угол в РАДИАНАХ
-    center -- прямоугольные координаты центра полярной системы относительно поверхности
+    РїРµСЂРµРІРѕРґ РёР· РїРѕР»СЏСЂРЅРѕР№ СЃРёСЃС‚РµРјС‹ РєРѕРѕСЂРґРёРЅР°С‚ РІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅСѓСЋ
+    l -- РґР»РёРЅР°
+    fi -- СѓРіРѕР» РІ Р РђР”РРђРќРђРҐ
+    center -- РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ С†РµРЅС‚СЂР° РїРѕР»СЏСЂРЅРѕР№ СЃРёСЃС‚РµРјС‹ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё
     """
     x = l * cos(fi) + center[0]
     y = center[1] - l * sin(fi)
@@ -85,22 +85,22 @@ class GyroHorizon:#{{{
 
 
     def __init__(self, r):
-        # откроем файл с картинкой самолёта для авиагоризонта
+        # РѕС‚РєСЂРѕРµРј С„Р°Р№Р» СЃ РєР°СЂС‚РёРЅРєРѕР№ СЃР°РјРѕР»С‘С‚Р° РґР»СЏ Р°РІРёР°РіРѕСЂРёР·РѕРЅС‚Р°
         self.planepic = pygame.image.load("horizon_plane.png")
 
-        # сначала заготовим поверхность под наш прибор
+        # СЃРЅР°С‡Р°Р»Р° Р·Р°РіРѕС‚РѕРІРёРј РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РїРѕРґ РЅР°С€ РїСЂРёР±РѕСЂ
         ribbonsurf = pygame.Surface((2*r, 8*r))
-        #черный у нас будет прозрачным
+        #С‡РµСЂРЅС‹Р№ Сѓ РЅР°СЃ Р±СѓРґРµС‚ РїСЂРѕР·СЂР°С‡РЅС‹Рј
         ribbonsurf.set_colorkey(BLACK)
-        #заполним земляным цветом
+        #Р·Р°РїРѕР»РЅРёРј Р·РµРјР»СЏРЅС‹Рј С†РІРµС‚РѕРј
         ribbonsurf.fill(self.groundcolor)
 
-        #поверх нарисуем прямоугольник небесного цвета
+        #РїРѕРІРµСЂС… РЅР°СЂРёСЃСѓРµРј РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє РЅРµР±РµСЃРЅРѕРіРѕ С†РІРµС‚Р°
         plist = [(0,2*r), (0,4*r), (2*r,4*r), (2*r,2*r)]
         pygame.draw.polygon(ribbonsurf, self.skycolor, plist, 0)
 
-        #нарисуем риски тангажа
-        #мелкие риски
+        #РЅР°СЂРёСЃСѓРµРј СЂРёСЃРєРё С‚Р°РЅРіР°Р¶Р°
+        #РјРµР»РєРёРµ СЂРёСЃРєРё
         i = 0
         markcnt = 48
         marklen = r / 20.0
@@ -112,7 +112,7 @@ class GyroHorizon:#{{{
                 pygame.draw.line(ribbonsurf, self.markscolor, b, e, 2)
             i += 1
 
-        #большие риски с цифрой
+        #Р±РѕР»СЊС€РёРµ СЂРёСЃРєРё СЃ С†РёС„СЂРѕР№
         i = -24
         step = r / 3.0
         marklen = 40
@@ -125,22 +125,22 @@ class GyroHorizon:#{{{
                 plc(ribbonsurf, st, self.markscolor, mediumFont, (r, (i + 12)*step), BLACK)
             i += 1
 
-        # сделаем имитацию кругового движения, для этого продублируем
-        # размеченные куски
-        # земли
-        s = ribbonsurf.subsurface(0, 4*r, 2*r, 2*r) # земля
+        # СЃРґРµР»Р°РµРј РёРјРёС‚Р°С†РёСЋ РєСЂСѓРіРѕРІРѕРіРѕ РґРІРёР¶РµРЅРёСЏ, РґР»СЏ СЌС‚РѕРіРѕ РїСЂРѕРґСѓР±Р»РёСЂСѓРµРј
+        # СЂР°Р·РјРµС‡РµРЅРЅС‹Рµ РєСѓСЃРєРё
+        # Р·РµРјР»Рё
+        s = ribbonsurf.subsurface(0, 4*r, 2*r, 2*r) # Р·РµРјР»СЏ
         ribbonsurf.fill(BLACK, (0, 0, 2*r, 2*r))
         ribbonsurf.blit(s.copy(), (0,0))
 
-        # и неба
-        s = ribbonsurf.subsurface(0, 2*r, 2*r, 2*r) # небо
+        # Рё РЅРµР±Р°
+        s = ribbonsurf.subsurface(0, 2*r, 2*r, 2*r) # РЅРµР±Рѕ
         ribbonsurf.fill(BLACK, (0, 6*r, 2*r, 2*r))
         ribbonsurf.blit(s.copy(), (0, 6*r))
 
-        # разделительную линию
+        # СЂР°Р·РґРµР»РёС‚РµР»СЊРЅСѓСЋ Р»РёРЅРёСЋ
         pygame.draw.line(ribbonsurf, self.markscolor, (0,4*r), (2*r,4*r), 1)
 
-        #заготовим маску для обкусывания круговой области
+        #Р·Р°РіРѕС‚РѕРІРёРј РјР°СЃРєСѓ РґР»СЏ РѕР±РєСѓСЃС‹РІР°РЅРёСЏ РєСЂСѓРіРѕРІРѕР№ РѕР±Р»Р°СЃС‚Рё
         masksurf = pygame.Surface((2*r, 2*r))
         masksurf.set_colorkey(WHITE)
         masksurf.fill(BLACK)
@@ -154,7 +154,7 @@ class GyroHorizon:#{{{
     def get(self, roll, pitch):
         r = self.r
 
-        # откусим кусок "летны" соответствующий углу тангажа
+        # РѕС‚РєСѓСЃРёРј РєСѓСЃРѕРє "Р»РµС‚РЅС‹" СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ СѓРіР»Сѓ С‚Р°РЅРіР°Р¶Р°
         a = 2*r * degrees(pitch) / 180.0
         #print a,r, self.ribbonsurf.get_rect()
         s = self.ribbonsurf.subsurface(0, 3*r + a, 2*r, 2*r)
@@ -162,7 +162,7 @@ class GyroHorizon:#{{{
         #dialsurf = self.ribbonsurf.copy()
         #pygame.draw.line(dialsurf, RED, (0, 3*r+a), (2*r, 3*r+a), 2)
 
-        # схематичное изображение самолета
+        # СЃС…РµРјР°С‚РёС‡РЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃР°РјРѕР»РµС‚Р°
         w = self.planepic.get_width()
         scale = (2*r / float(w)) * 0.9
         planesurf = pygame.transform.rotozoom(self.planepic, -roll * (180/pi), scale)
@@ -170,12 +170,12 @@ class GyroHorizon:#{{{
         x = r - planerect.center[0]
         y = r - planerect.center[1]
         dialsurf.blit(planesurf, (x,y))
-        # накладываем круговую маску
+        # РЅР°РєР»Р°РґС‹РІР°РµРј РєСЂСѓРіРѕРІСѓСЋ РјР°СЃРєСѓ
         dialsurf.blit(self.masksurf, (0,0))
-        #прилепим на круг окаймляющее кольцо
+        #РїСЂРёР»РµРїРёРј РЅР° РєСЂСѓРі РѕРєР°Р№РјР»СЏСЋС‰РµРµ РєРѕР»СЊС†Рѕ
         pygame.draw.circle(dialsurf, WHITE, (r,r), r, 2)
 
-        # риски крена
+        # СЂРёСЃРєРё РєСЂРµРЅР°
         i = -6
         fi_0 = 3*pi/2
         while i <= 6:
@@ -185,7 +185,7 @@ class GyroHorizon:#{{{
             if i != 0:
                 pygame.draw.line(dialsurf, self.markscolor, b, e, 2)
             i += 1
-        #цифры крена
+        #С†РёС„СЂС‹ РєСЂРµРЅР°
         i = -2
         step = pi/6
         fi_0 = 3*pi/2
@@ -201,18 +201,18 @@ class GyroHorizon:#{{{
 #}}}
 class Colorist:#{{{
     def __init__(self, vallist, colorlist, step):
-        """ принимает
-        -- список точек перегиба
-        -- список цветов (их должно быть на один меньше, чем точек)
-        -- шаг"""
+        """ РїСЂРёРЅРёРјР°РµС‚
+        -- СЃРїРёСЃРѕРє С‚РѕС‡РµРє РїРµСЂРµРіРёР±Р°
+        -- СЃРїРёСЃРѕРє С†РІРµС‚РѕРІ (РёС… РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РЅР° РѕРґРёРЅ РјРµРЅСЊС€Рµ, С‡РµРј С‚РѕС‡РµРє)
+        -- С€Р°Рі"""
 
         self.vallist = vallist
         self.step = step
 
         def gencolorarray(color, l, step):
-            """ Вспомогательная функция
-            принимает цвет, длину, шаг
-            возвращает список """
+            """ Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ С„СѓРЅРєС†РёСЏ
+            РїСЂРёРЅРёРјР°РµС‚ С†РІРµС‚, РґР»РёРЅСѓ, С€Р°Рі
+            РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє """
             i = 0.0
             cl = []
             while i < l:
@@ -226,13 +226,13 @@ class Colorist:#{{{
             cl += (gencolorarray(i, vallist[n+1] - vallist[n], step))
             n += 1
 
-        self.cl = cl # сохраним в глобальную переменную класса
+        self.cl = cl # СЃРѕС…СЂР°РЅРёРј РІ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ РєР»Р°СЃСЃР°
 
 
     def get(self, currentvalue):
-        """ функция возвращает цвет индикатора. Если значение
-        вылезло за пределы (не важно, в какую сторону) -- возвращает
-        красный цвет"""
+        """ С„СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ С†РІРµС‚ РёРЅРґРёРєР°С‚РѕСЂР°. Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ
+        РІС‹Р»РµР·Р»Рѕ Р·Р° РїСЂРµРґРµР»С‹ (РЅРµ РІР°Р¶РЅРѕ, РІ РєР°РєСѓСЋ СЃС‚РѕСЂРѕРЅСѓ) -- РІРѕР·РІСЂР°С‰Р°РµС‚
+        РєСЂР°СЃРЅС‹Р№ С†РІРµС‚"""
 
         i = int(round(((currentvalue - self.vallist[0]) / self.step), 0))
         if i < 0:
@@ -243,48 +243,48 @@ class Colorist:#{{{
             return RED
 #}}}
 class Compass: #{{{
-    """ Класс для рисования компасов """
+    """ РљР»Р°СЃСЃ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РєРѕРјРїР°СЃРѕРІ """
 
     def __init__(self, radius, simbolsize):
         """
-        Принимает:
-            radius -- радиус пятака
-            simbolsize -- строка, обозначающая размер надписи
+        РџСЂРёРЅРёРјР°РµС‚:
+            radius -- СЂР°РґРёСѓСЃ РїСЏС‚Р°РєР°
+            simbolsize -- СЃС‚СЂРѕРєР°, РѕР±РѕР·РЅР°С‡Р°СЋС‰Р°СЏ СЂР°Р·РјРµСЂ РЅР°РґРїРёСЃРё
         """
         self.radius = radius
         self.simbolsize = simbolsize
 
-        # заготовим квадратную поверхность для пятака
+        # Р·Р°РіРѕС‚РѕРІРёРј РєРІР°РґСЂР°С‚РЅСѓСЋ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РґР»СЏ РїСЏС‚Р°РєР°
         dialsurf = pygame.Surface((2 * radius, 2 * radius))
-        # черный у нас будет прозрачным
+        # С‡РµСЂРЅС‹Р№ Сѓ РЅР°СЃ Р±СѓРґРµС‚ РїСЂРѕР·СЂР°С‡РЅС‹Рј
         dialsurf.set_colorkey(BLACK)
-        # круг
+        # РєСЂСѓРі
         self.center = (radius, radius)
         self.dialsurf = dialsurf
 
 
     def __coursedetector(self, surf, course, dest, center):
-        """ Курсоуказатель 
-        Принимает:
-            surf -- поверхность, на которую надо нарисовать
-            dest -- направление указателя
-            center-- центр вращения указателя
+        """ РљСѓСЂСЃРѕСѓРєР°Р·Р°С‚РµР»СЊ 
+        РџСЂРёРЅРёРјР°РµС‚:
+            surf -- РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РЅР° РєРѕС‚РѕСЂСѓСЋ РЅР°РґРѕ РЅР°СЂРёСЃРѕРІР°С‚СЊ
+            dest -- РЅР°РїСЂР°РІР»РµРЅРёРµ СѓРєР°Р·Р°С‚РµР»СЏ
+            center-- С†РµРЅС‚СЂ РІСЂР°С‰РµРЅРёСЏ СѓРєР°Р·Р°С‚РµР»СЏ
             """
         lr = self.radius - 22.0
-        # стрелка в форме самолёта
+        # СЃС‚СЂРµР»РєР° РІ С„РѕСЂРјРµ СЃР°РјРѕР»С‘С‚Р°
         fi = course + 0.5 * pi - dest
-        # фюзеляж
+        # С„СЋР·РµР»СЏР¶
         endcoord = pol2ort(0.8 * lr, fi, center)
         pygame.draw.line(surf, WHITE, center, endcoord,  3)
-        # хвостовая балка
+        # С…РІРѕСЃС‚РѕРІР°СЏ Р±Р°Р»РєР°
         endcoord = pol2ort(0.6 * lr, fi - pi, center)
         pygame.draw.line(surf, WHITE, center, endcoord,  3)
-        # хвостовое оперение
+        # С…РІРѕСЃС‚РѕРІРѕРµ РѕРїРµСЂРµРЅРёРµ
         tail = pol2ort(0.2 * lr, fi - 1.2*pi, endcoord)
         pygame.draw.line(surf, WHITE, endcoord, tail,  3)
         tail = pol2ort(0.2 * lr, fi - 0.8*pi, endcoord)
         pygame.draw.line(surf, WHITE, endcoord, tail,  3)
-        # крылы
+        # РєСЂС‹Р»С‹
         endcoord = pol2ort(0.6 * lr, fi - 1.3*pi, center)
         pygame.draw.line(surf, WHITE, center, endcoord,  3)
         endcoord = pol2ort(0.6 * lr, fi - 0.7*pi, center)
@@ -293,13 +293,13 @@ class Compass: #{{{
 
     def get(self, course, destination):
         """
-        Рисует круг компаса согласно заданным параметрам
+        Р РёСЃСѓРµС‚ РєСЂСѓРі РєРѕРјРїР°СЃР° СЃРѕРіР»Р°СЃРЅРѕ Р·Р°РґР°РЅРЅС‹Рј РїР°СЂР°РјРµС‚СЂР°Рј
 
-        Принимает:
-            course -- текущий курс
-            destination -- направление курсоуказателя
-        Возвращает:
-            поверхность с компасом
+        РџСЂРёРЅРёРјР°РµС‚:
+            course -- С‚РµРєСѓС‰РёР№ РєСѓСЂСЃ
+            destination -- РЅР°РїСЂР°РІР»РµРЅРёРµ РєСѓСЂСЃРѕСѓРєР°Р·Р°С‚РµР»СЏ
+        Р’РѕР·РІСЂР°С‰Р°РµС‚:
+            РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ СЃ РєРѕРјРїР°СЃРѕРј
         """
         self.dialsurf.fill(BLACK)
         pygame.draw.circle(self.dialsurf, WHITE, self.center, self.radius, 2)
@@ -309,7 +309,7 @@ class Compass: #{{{
         dest_d = destination
         dest = 2 * pi * float(destination) / 360
 
-        # буквы
+        # Р±СѓРєРІС‹
         if self.simbolsize == "big":
             lr = self.radius - 22.0 # letters r
             font = bigFont
@@ -325,14 +325,14 @@ class Compass: #{{{
         c = pol2ort(lr, course - pi, self.center)
         plc(self.dialsurf, "W", WHITE, font, c)
 
-        # курсоуказатель
+        # РєСѓСЂСЃРѕСѓРєР°Р·Р°С‚РµР»СЊ
         self.__coursedetector(self.dialsurf, course, dest, self.center)
 
-        # надпись для установленного курса
+        # РЅР°РґРїРёСЃСЊ РґР»СЏ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕРіРѕ РєСѓСЂСЃР°
         xy = (0, 1.9 * self.radius)
-        self.dialsurf.blit(smallFont.render(str(dest_d) + "°", 0, WHITE), xy)
+        self.dialsurf.blit(smallFont.render(str(dest_d) + "В°", 0, WHITE), xy)
 
-        # риски
+        # СЂРёСЃРєРё
         mr = self.radius - 9.0 # marks r
         r  = self.radius
         i = 0
@@ -346,61 +346,61 @@ class Compass: #{{{
                 pygame.draw.line(self.dialsurf, WHITE, (b_x, b_y), (e_x, e_y),  2)
             i += 15
 
-        #сделаем новую поверхность, на которую прилепим треугольник курса, а потом пятак
+        #СЃРґРµР»Р°РµРј РЅРѕРІСѓСЋ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РЅР° РєРѕС‚РѕСЂСѓСЋ РїСЂРёР»РµРїРёРј С‚СЂРµСѓРіРѕР»СЊРЅРёРє РєСѓСЂСЃР°, Р° РїРѕС‚РѕРј РїСЏС‚Р°Рє
         indicator_h = 30
         compass_surf = pygame.Surface((2 * self.radius, 2 * self.radius + indicator_h))
         compass_surf.set_colorkey(BLACK)
         compass_surf.fill(BLACK)
 
-        # треугольник курса 
+        # С‚СЂРµСѓРіРѕР»СЊРЅРёРє РєСѓСЂСЃР° 
         pointlist = [(r-10,indicator_h-10), (r+10,indicator_h-10), (r, indicator_h)]
         pygame.draw.polygon(compass_surf, RED, pointlist, 0)
-        # надпись с градусами
+        # РЅР°РґРїРёСЃСЊ СЃ РіСЂР°РґСѓСЃР°РјРё
         xy = (r, 11)
-        st = str(round(course_d, 1)) + "°"
+        st = str(round(course_d, 1)) + "В°"
         compass_surf.blit(mediumFont.render(st, HIQUALITY, (GREEN)), (r-25,0))
-        # отрендеренный пятак с курсоуказателем
+        # РѕС‚СЂРµРЅРґРµСЂРµРЅРЅС‹Р№ РїСЏС‚Р°Рє СЃ РєСѓСЂСЃРѕСѓРєР°Р·Р°С‚РµР»РµРј
         compass_surf.blit(self.dialsurf, (0, 0 + indicator_h))
 
         return compass_surf
 #}}}
 class Scale:#{{{
-    """ Линейная шкала с плавающим индикатором """
+    """ Р›РёРЅРµР№РЅР°СЏ С€РєР°Р»Р° СЃ РїР»Р°РІР°СЋС‰РёРј РёРЅРґРёРєР°С‚РѕСЂРѕРј """
     _scale_surf = None
     _grid_surf = None
     _grid_height = 0
     _indicator_surf = None
     _mirror = None
     _pixel_val = 0.0
-    _zero_h = 0 # вертикальные координаты начала шкалы
+    _zero_h = 0 # РІРµСЂС‚РёРєР°Р»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° С€РєР°Р»С‹
 
-    # ширина столбика цифр
+    # С€РёСЂРёРЅР° СЃС‚РѕР»Р±РёРєР° С†РёС„СЂ
     _label_width = 0
-    #ширина рисок
+    #С€РёСЂРёРЅР° СЂРёСЃРѕРє
     _marks_width = 0
 
 
     def __init__(self, height, step_count, color, font, mirror, b, e, colorist):
         """
-        height -- высота линейки. WARNING - результирующая
-            высота шкалы будет больше за счет букв
-        step_count -- количество делений
-        color -- цвет рисок и букв
-        font -- шрифт, которым надо сделать надписи
-        mirror -- надо ли отзеркалить шкалу по горизонтали
-        b -- начальное значение шкалы
-        colorist -- объект выбирающий цвет индикатора
+        height -- РІС‹СЃРѕС‚Р° Р»РёРЅРµР№РєРё. WARNING - СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰Р°СЏ
+            РІС‹СЃРѕС‚Р° С€РєР°Р»С‹ Р±СѓРґРµС‚ Р±РѕР»СЊС€Рµ Р·Р° СЃС‡РµС‚ Р±СѓРєРІ
+        step_count -- РєРѕР»РёС‡РµСЃС‚РІРѕ РґРµР»РµРЅРёР№
+        color -- С†РІРµС‚ СЂРёСЃРѕРє Рё Р±СѓРєРІ
+        font -- С€СЂРёС„С‚, РєРѕС‚РѕСЂС‹Рј РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ РЅР°РґРїРёСЃРё
+        mirror -- РЅР°РґРѕ Р»Рё РѕС‚Р·РµСЂРєР°Р»РёС‚СЊ С€РєР°Р»Сѓ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+        b -- РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ С€РєР°Р»С‹
+        colorist -- РѕР±СЉРµРєС‚ РІС‹Р±РёСЂР°СЋС‰РёР№ С†РІРµС‚ РёРЅРґРёРєР°С‚РѕСЂР°
         """
         self._mirror = mirror
-        # вес одного пикселя
+        # РІРµСЃ РѕРґРЅРѕРіРѕ РїРёРєСЃРµР»СЏ
         self._grid_height = height
         self._pixel_val = float(height) / (e - b)
 
-        # длину рисок сделаем равной ширине 4 символов
+        # РґР»РёРЅСѓ СЂРёСЃРѕРє СЃРґРµР»Р°РµРј СЂР°РІРЅРѕР№ С€РёСЂРёРЅРµ 4 СЃРёРјРІРѕР»РѕРІ
         self._grid_surf = self.__scalegrid(height, step_count, color, font, mirror, b, e)
 
         rect = self._grid_surf.get_rect()
-        # вертикальные координаты начала шкалы
+        # РІРµСЂС‚РёРєР°Р»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° С€РєР°Р»С‹
         self._zero_h = float(e) * height / (e - b) + (rect.height - height) / 2
 
         self._scale_surf = pygame.Surface((150, rect.height))
@@ -412,33 +412,33 @@ class Scale:#{{{
 
     def __scalegrid(self, height, step_count, color, font, mirror, b, e):
         """
-        Функция рисования вертикальных нумерованных шкал
+        Р¤СѓРЅРєС†РёСЏ СЂРёСЃРѕРІР°РЅРёСЏ РІРµСЂС‚РёРєР°Р»СЊРЅС‹С… РЅСѓРјРµСЂРѕРІР°РЅРЅС‹С… С€РєР°Р»
 
-        Принимает:
-            height -- ширина и высота линейки. WARNING - результирующая
-                высота шкалы будет больше за счет букв
-            step_count -- количество делений
-            color -- цвет рисок и букв
-            font -- шрифт, которым надо сделать надписи
-            mirror -- надо ли отзеркалить шкалу по горизонтали
-            b -- начальное значение шкалы
-            e -- конечное значение шкалы
-        Возвращает:
-            поверхность
+        РџСЂРёРЅРёРјР°РµС‚:
+            height -- С€РёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° Р»РёРЅРµР№РєРё. WARNING - СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰Р°СЏ
+                РІС‹СЃРѕС‚Р° С€РєР°Р»С‹ Р±СѓРґРµС‚ Р±РѕР»СЊС€Рµ Р·Р° СЃС‡РµС‚ Р±СѓРєРІ
+            step_count -- РєРѕР»РёС‡РµСЃС‚РІРѕ РґРµР»РµРЅРёР№
+            color -- С†РІРµС‚ СЂРёСЃРѕРє Рё Р±СѓРєРІ
+            font -- С€СЂРёС„С‚, РєРѕС‚РѕСЂС‹Рј РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ РЅР°РґРїРёСЃРё
+            mirror -- РЅР°РґРѕ Р»Рё РѕС‚Р·РµСЂРєР°Р»РёС‚СЊ С€РєР°Р»Сѓ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+            b -- РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ С€РєР°Р»С‹
+            e -- РєРѕРЅРµС‡РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ С€РєР°Р»С‹
+        Р’РѕР·РІСЂР°С‰Р°РµС‚:
+            РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ
         """
-        # цена деления
-        if (e - b) % step_count == 0:# делится на цело
+        # С†РµРЅР° РґРµР»РµРЅРёСЏ
+        if (e - b) % step_count == 0:# РґРµР»РёС‚СЃСЏ РЅР° С†РµР»Рѕ
             div_val = (e - b) / step_count
         else:
             div_val = (e - b) / float(step_count)
             div_val = round(div_val,1)
 
-        # количество пикселей на одно деление
+        # РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµР»РµР№ РЅР° РѕРґРЅРѕ РґРµР»РµРЅРёРµ
         pixel_step = height / float(step_count)
 
-        # расстояние между рисками и буквами
+        # СЂР°СЃСЃС‚РѕСЏРЅРёРµ РјРµР¶РґСѓ СЂРёСЃРєР°РјРё Рё Р±СѓРєРІР°РјРё
         kern = 5
-        # длина рисок
+        # РґР»РёРЅР° СЂРёСЃРѕРє
         if len(str(b)) - len(str(e)) > 0:
             label_width = font.size(str(b))[0] + kern
         else:
@@ -448,11 +448,11 @@ class Scale:#{{{
         self._marks_width = 20
         marks_width = self._marks_width
 
-        # сгенерим поверхность, добавим к высоте немного, чтобы влезли буквы
+        # СЃРіРµРЅРµСЂРёРј РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РґРѕР±Р°РІРёРј Рє РІС‹СЃРѕС‚Рµ РЅРµРјРЅРѕРіРѕ, С‡С‚РѕР±С‹ РІР»РµР·Р»Рё Р±СѓРєРІС‹
         scale_surf = pygame.Surface((label_width + marks_width, height + 2 * pixel_step))
-        #черный у нас будет прозрачным
+        #С‡РµСЂРЅС‹Р№ Сѓ РЅР°СЃ Р±СѓРґРµС‚ РїСЂРѕР·СЂР°С‡РЅС‹Рј
         scale_surf.set_colorkey(BLACK)
-        #заполним земляным цветом
+        #Р·Р°РїРѕР»РЅРёРј Р·РµРјР»СЏРЅС‹Рј С†РІРµС‚РѕРј
         scale_surf.fill(BLACK)
 
         r = scale_surf.get_rect()
@@ -485,17 +485,17 @@ class Scale:#{{{
 
     def __floater(self, surf, coord, l, h, color, st):
         """
-        подвижный индикатор
-        surf -- поверхность, на которой надо нарисовать
-        coord -- координаты "носика"
-        l -- ширину прямоугольной зоны (может быть отрицательной,
-            тогда индикатор отзеркален горизонтально)
-        h -- высоту прямоугольной зоны (желательно четную)
-        color -- цвет
-        st -- строку, отображаему в прямоугольной зоне
+        РїРѕРґРІРёР¶РЅС‹Р№ РёРЅРґРёРєР°С‚РѕСЂ
+        surf -- РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РЅР° РєРѕС‚РѕСЂРѕР№ РЅР°РґРѕ РЅР°СЂРёСЃРѕРІР°С‚СЊ
+        coord -- РєРѕРѕСЂРґРёРЅР°С‚С‹ "РЅРѕСЃРёРєР°"
+        l -- С€РёСЂРёРЅСѓ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ Р·РѕРЅС‹ (РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№,
+            С‚РѕРіРґР° РёРЅРґРёРєР°С‚РѕСЂ РѕС‚Р·РµСЂРєР°Р»РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕ)
+        h -- РІС‹СЃРѕС‚Сѓ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ Р·РѕРЅС‹ (Р¶РµР»Р°С‚РµР»СЊРЅРѕ С‡РµС‚РЅСѓСЋ)
+        color -- С†РІРµС‚
+        st -- СЃС‚СЂРѕРєСѓ, РѕС‚РѕР±СЂР°Р¶Р°РµРјСѓ РІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ Р·РѕРЅРµ
         """
 
-        if (l < 0):# для отлова ситуации с отрицательной длинной
+        if (l < 0):# РґР»СЏ РѕС‚Р»РѕРІР° СЃРёС‚СѓР°С†РёРё СЃ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№ РґР»РёРЅРЅРѕР№
             n = -1
             text_coord = (coord[0] - 6 + l, coord[1] - 10)
         else:
@@ -527,8 +527,8 @@ class Scale:#{{{
 
     def get(self, val):
         """
-        Принимаемы параметры:
-            val -- значение, которое надо отобразить на шкале
+        РџСЂРёРЅРёРјР°РµРјС‹ РїР°СЂР°РјРµС‚СЂС‹:
+            val -- Р·РЅР°С‡РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РЅР°РґРѕ РѕС‚РѕР±СЂР°Р·РёС‚СЊ РЅР° С€РєР°Р»Рµ
         """
         self._scale_surf.fill((BLACK))
 
@@ -563,37 +563,37 @@ class Scale:#{{{
 
 #}}}
 class Altimeter:#{{{
-    """Класс реализует круглый стрелочный альтиметр"""
-    _center = (0,0)# координаты центра
-    _br = 0.0 # длинна большой стрелки
-    _mr = 0.0 # длинна средней стрелки
-    _sr = 0.0 # длинна маленькой стрелки
+    """РљР»Р°СЃСЃ СЂРµР°Р»РёР·СѓРµС‚ РєСЂСѓРіР»С‹Р№ СЃС‚СЂРµР»РѕС‡РЅС‹Р№ Р°Р»СЊС‚РёРјРµС‚СЂ"""
+    _center = (0,0)# РєРѕРѕСЂРґРёРЅР°С‚С‹ С†РµРЅС‚СЂР°
+    _br = 0.0 # РґР»РёРЅРЅР° Р±РѕР»СЊС€РѕР№ СЃС‚СЂРµР»РєРё
+    _mr = 0.0 # РґР»РёРЅРЅР° СЃСЂРµРґРЅРµР№ СЃС‚СЂРµР»РєРё
+    _sr = 0.0 # РґР»РёРЅРЅР° РјР°Р»РµРЅСЊРєРѕР№ СЃС‚СЂРµР»РєРё
 
-    # переменные для установки нулей
+    # РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё РЅСѓР»РµР№
     _altbaroground = None
     _altbarocbuf = dsp.RingBuffer(32)
 
     def __init__(self, r):
         """
-        r -- радиус """
+        r -- СЂР°РґРёСѓСЃ """
 
         self._center = (r, r)
         self._br = 0.5 * r
         self._mr = 0.6 * r
         self._sr = 0.95 * r
 
-        # сначала заготовим поверхность под пятак
+        # СЃРЅР°С‡Р°Р»Р° Р·Р°РіРѕС‚РѕРІРёРј РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РїРѕРґ РїСЏС‚Р°Рє
         self.dial_surf = pygame.Surface((2*r, 2*r))
-        #под конечный прибор со стрелками
+        #РїРѕРґ РєРѕРЅРµС‡РЅС‹Р№ РїСЂРёР±РѕСЂ СЃРѕ СЃС‚СЂРµР»РєР°РјРё
         self.dial_surf.fill(BLACK)
-        #черный у нас будет прозрачным
+        #С‡РµСЂРЅС‹Р№ Сѓ РЅР°СЃ Р±СѓРґРµС‚ РїСЂРѕР·СЂР°С‡РЅС‹Рј
         self.dial_surf.set_colorkey(BLACK)
 
         _center = self._center
-        #Главный пятак, и центральный гвоздик
+        #Р“Р»Р°РІРЅС‹Р№ РїСЏС‚Р°Рє, Рё С†РµРЅС‚СЂР°Р»СЊРЅС‹Р№ РіРІРѕР·РґРёРє
         pygame.draw.circle(self.dial_surf, WHITE, _center, r, 2)
         pygame.draw.circle(self.dial_surf, WHITE, _center, 8, 4)
-        # мелкие риски
+        # РјРµР»РєРёРµ СЂРёСЃРєРё
         step = 2 * pi / 50
         i = 0
         while i <= 49:
@@ -601,11 +601,11 @@ class Altimeter:#{{{
             e = pol2ort(r, -step * i + pi/2, _center)
             pygame.draw.aaline(self.dial_surf, WHITE, b, e, 1)
             i += 1
-        # цифры
+        # С†РёС„СЂС‹
         step = 2 * pi / 10.0
         i = 0
         while i <= 9:
-            #крупные риски напротив цифр
+            #РєСЂСѓРїРЅС‹Рµ СЂРёСЃРєРё РЅР°РїСЂРѕС‚РёРІ С†РёС„СЂ
             b = pol2ort(0.9*r, -step * i + pi/2, _center)
             e = pol2ort(r, -step * i + pi/2, _center)
             pygame.draw.line(self.dial_surf, GREEN, b, e, 3)
@@ -615,25 +615,25 @@ class Altimeter:#{{{
             plc(self.dial_surf, st, WHITE, bigFont, c)
             i += 1
 
-        # скопируем в область видимости класса отрендеренную поверхность
+        # СЃРєРѕРїРёСЂСѓРµРј РІ РѕР±Р»Р°СЃС‚СЊ РІРёРґРёРјРѕСЃС‚Рё РєР»Р°СЃСЃР° РѕС‚СЂРµРЅРґРµСЂРµРЅРЅСѓСЋ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ
         #self.dial_surf = dial_surf
 
 
 
     def zero_adjust(self):
-        """Cбрасывает ранее полученные значения в нули"""
+        """CР±СЂР°СЃС‹РІР°РµС‚ СЂР°РЅРµРµ РїРѕР»СѓС‡РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІ РЅСѓР»Рё"""
         self._altbaroground = None
 
 
     def get(self, alt_baro, alt_sonar):
-        """Рисует стрелки и цикверки
-        Принимает:
-            alt_baro -- высота по барометру в метрах
-            alt_sonar -- высота по сонару в метрах
-        Возвращает:
-            поверхность с нарисованным прибором"""
+        """Р РёСЃСѓРµС‚ СЃС‚СЂРµР»РєРё Рё С†РёРєРІРµСЂРєРё
+        РџСЂРёРЅРёРјР°РµС‚:
+            alt_baro -- РІС‹СЃРѕС‚Р° РїРѕ Р±Р°СЂРѕРјРµС‚СЂСѓ РІ РјРµС‚СЂР°С…
+            alt_sonar -- РІС‹СЃРѕС‚Р° РїРѕ СЃРѕРЅР°СЂСѓ РІ РјРµС‚СЂР°С…
+        Р’РѕР·РІСЂР°С‰Р°РµС‚:
+            РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ СЃ РЅР°СЂРёСЃРѕРІР°РЅРЅС‹Рј РїСЂРёР±РѕСЂРѕРј"""
 
-        # Глобальные переменные класса
+        # Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ РєР»Р°СЃСЃР°
         _br = self._br
         _mr = self._mr
         _sr = self._sr
@@ -643,7 +643,7 @@ class Altimeter:#{{{
             self._altbaroground = self._altbarocbuf.get_avg()
         self._altbarocbuf.append(alt_baro)
 
-        # выберем, по какому прибору будем ориентироваться
+        # РІС‹Р±РµСЂРµРј, РїРѕ РєР°РєРѕРјСѓ РїСЂРёР±РѕСЂСѓ Р±СѓРґРµРј РѕСЂРёРµРЅС‚РёСЂРѕРІР°С‚СЊСЃСЏ
         if (alt_sonar > 6) or (alt_baro - self._altbaroground - alt_sonar) > 1.5:
             h = (alt_baro - self._altbaroground)
             letter = "B"
@@ -655,22 +655,22 @@ class Altimeter:#{{{
         else:
             color = RED
 
-        # переведем в угол поворота
-        hm = h # сохраним высоту в метрах
+        # РїРµСЂРµРІРµРґРµРј РІ СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р°
+        hm = h # СЃРѕС…СЂР°РЅРёРј РІС‹СЃРѕС‚Сѓ РІ РјРµС‚СЂР°С…
         h = h * 2 * pi / 10
 
-        # нарисуем на пятаке стрелки и цифры
+        # РЅР°СЂРёСЃСѓРµРј РЅР° РїСЏС‚Р°РєРµ СЃС‚СЂРµР»РєРё Рё С†РёС„СЂС‹
         alt_surf = pygame.Surface.copy(self.dial_surf)
 
-        # большая стрелка
+        # Р±РѕР»СЊС€Р°СЏ СЃС‚СЂРµР»РєР°
         bx = _center[0] + _br * cos(-h/1000 + pi/2)
         by = _center[1] - _br * sin(-h/1000 + pi/2)
         pygame.draw.line(alt_surf, WHITE, (bx, by), _center,  6)
-        # средняя стрелка
+        # СЃСЂРµРґРЅСЏСЏ СЃС‚СЂРµР»РєР°
         bx = _center[0] + _mr * cos(-h/100 + pi/2)
         by = _center[1] - _mr * sin(-h/100 + pi/2)
         pygame.draw.line(alt_surf, WHITE, (bx, by), _center,  3)
-        # маленькая стрелка
+        # РјР°Р»РµРЅСЊРєР°СЏ СЃС‚СЂРµР»РєР°
         bx = _center[0] + _sr * cos(-h/10 + pi/2)
         by = _center[1] - _sr * sin(-h/10 + pi/2)
         pygame.draw.aaline(alt_surf, color, (bx, by), _center,  1)
@@ -694,20 +694,20 @@ class Altimeter:#{{{
 class Variometer: #{{{
     def __init__(self, height, step_count, color, font, mirror, b, e):
         self.colorist = Colorist(VARIOVALUELIST, VARIOCOLORLIST, VARIOSTEP)
-        #кольцевой буфер
+        #РєРѕР»СЊС†РµРІРѕР№ Р±СѓС„РµСЂ
         self.rbuf = dsp.RingBuffer(128)
-        # объекта шкала
+        # РѕР±СЉРµРєС‚Р° С€РєР°Р»Р°
         self.variometerscale = Scale(height, step_count, color, font, mirror, b, e, self.colorist)
-        #временные интервалы
+        #РІСЂРµРјРµРЅРЅС‹Рµ РёРЅС‚РµСЂРІР°Р»С‹
         self.time_p = time.time()
         time.sleep(0.04)
         self.time_n = time.time()
-        #значения давления
+        #Р·РЅР°С‡РµРЅРёСЏ РґР°РІР»РµРЅРёСЏ
         self.alt_p = 0
         self.alt_n = 0.1
 
     def put(self, parent, coord, alt):
-        """ Принимает текущую высоту по барометру """
+        """ РџСЂРёРЅРёРјР°РµС‚ С‚РµРєСѓС‰СѓСЋ РІС‹СЃРѕС‚Сѓ РїРѕ Р±Р°СЂРѕРјРµС‚СЂСѓ """
 
         dt = self.time_n - self.time_p
         self.time_p = self.time_n
@@ -727,28 +727,28 @@ class Variometer: #{{{
     #}}}
 class Powermeter: #{{{
     def __init__(self, config):
-        """ Принимает конфиг, из которого берет константы """
+        """ РџСЂРёРЅРёРјР°РµС‚ РєРѕРЅС„РёРі, РёР· РєРѕС‚РѕСЂРѕРіРѕ Р±РµСЂРµС‚ РєРѕРЅСЃС‚Р°РЅС‚С‹ """
 
-         # для динамического переключения цветов
-        self.v_colorist = Colorist(VVALUELIST, VCOLORLIST, VSTEP) # напряга
-        self.c_colorist = Colorist(CVALUELIST, CCOLORLIST, CSTEP) # ток
-        self.f_colorist = Colorist(FVALUELIST, FCOLORLIST, FSTEP) # солярка в баке
+         # РґР»СЏ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ С†РІРµС‚РѕРІ
+        self.v_colorist = Colorist(VVALUELIST, VCOLORLIST, VSTEP) # РЅР°РїСЂСЏРіР°
+        self.c_colorist = Colorist(CVALUELIST, CCOLORLIST, CSTEP) # С‚РѕРє
+        self.f_colorist = Colorist(FVALUELIST, FCOLORLIST, FSTEP) # СЃРѕР»СЏСЂРєР° РІ Р±Р°РєРµ
 
-        self.capcitance = config.getfloat('Power', 'capacitance') # емкость батарейки
+        self.capcitance = config.getfloat('Power', 'capacitance') # РµРјРєРѕСЃС‚СЊ Р±Р°С‚Р°СЂРµР№РєРё
 
-        self.crbuf = dsp.RingBuffer(4) # для сглаживания тока
-        self.vrbuf = dsp.RingBuffer(4) # для сглаживания напряги
-        self.trbuf = dsp.RingBuffer(64) # для сглаживания оставшегося времени в воздухе
+        self.crbuf = dsp.RingBuffer(4) # РґР»СЏ СЃРіР»Р°Р¶РёРІР°РЅРёСЏ С‚РѕРєР°
+        self.vrbuf = dsp.RingBuffer(4) # РґР»СЏ СЃРіР»Р°Р¶РёРІР°РЅРёСЏ РЅР°РїСЂСЏРіРё
+        self.trbuf = dsp.RingBuffer(64) # РґР»СЏ СЃРіР»Р°Р¶РёРІР°РЅРёСЏ РѕСЃС‚Р°РІС€РµРіРѕСЃСЏ РІСЂРµРјРµРЅРё РІ РІРѕР·РґСѓС…Рµ
 
         self.font = mediumFont
-        #временные интервалы
+        #РІСЂРµРјРµРЅРЅС‹Рµ РёРЅС‚РµСЂРІР°Р»С‹
         self.time_p = time.time()
         time.sleep(0.04)
         self.time_n = time.time()
-        # флаг предназначен для для отлова ситуации, когда первая временнАя
-        # точка недостоверна
+        # С„Р»Р°Рі РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅ РґР»СЏ РґР»СЏ РѕС‚Р»РѕРІР° СЃРёС‚СѓР°С†РёРё, РєРѕРіРґР° РїРµСЂРІР°СЏ РІСЂРµРјРµРЅРЅРђСЏ
+        # С‚РѕС‡РєР° РЅРµРґРѕСЃС‚РѕРІРµСЂРЅР°
         self.time_good = False
-        #счетчик амперчасов
+        #СЃС‡РµС‚С‡РёРє Р°РјРїРµСЂС‡Р°СЃРѕРІ
         self.energy = 0.0
 
         self.surf = pygame.Surface((screenH / 4, 100))
@@ -756,7 +756,7 @@ class Powermeter: #{{{
 
 
     def put(self, parent, coord, voltage, current, pns_time):
-        rect = None # прямоугольник рендеринга
+        rect = None # РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЂРµРЅРґРµСЂРёРЅРіР°
 
         self.crbuf.append(current)
         self.vrbuf.append(voltage)
@@ -768,34 +768,34 @@ class Powermeter: #{{{
             return self.surf.get_rect()
 
 
-        # бортовое напряжение
-        v_color = self.v_colorist.get(self.vrbuf.get_avg()) # символизирующий цвет
+        # Р±РѕСЂС‚РѕРІРѕРµ РЅР°РїСЂСЏР¶РµРЅРёРµ
+        v_color = self.v_colorist.get(self.vrbuf.get_avg()) # СЃРёРјРІРѕР»РёР·РёСЂСѓСЋС‰РёР№ С†РІРµС‚
         st = "voltage = " + str(round(self.vrbuf.get_avg(), 1)) + " V"
         c = (coord[0], coord[1] + 0)
         rect = parent.blit(self.font.render(st, HIQUALITY, (v_color), BLACK), c)
 
-        # потребляемый ток
+        # РїРѕС‚СЂРµР±Р»СЏРµРјС‹Р№ С‚РѕРє
         c_color = self.c_colorist.get(self.crbuf.get_avg())
         st = "current = " + str(round(self.crbuf.get_avg(), 1)) + " A"
         c = (coord[0], coord[1] + 20)
         rect = rect.union(parent.blit(self.font.render(st, HIQUALITY, (c_color), BLACK), c))
 
-        # потребляемая мощность
+        # РїРѕС‚СЂРµР±Р»СЏРµРјР°СЏ РјРѕС‰РЅРѕСЃС‚СЊ
         st = "power   = " + str(round(self.crbuf.get_avg() * self.vrbuf.get_avg(), 1)) + " W"
         c = (coord[0], coord[1] + 40)
         rect = rect.union(parent.blit(self.font.render(st, HIQUALITY, (GREEN), BLACK), c))
 
-        # потребленная энергия с начала работы
+        # РїРѕС‚СЂРµР±Р»РµРЅРЅР°СЏ СЌРЅРµСЂРіРёСЏ СЃ РЅР°С‡Р°Р»Р° СЂР°Р±РѕС‚С‹
         f_color = self.f_colorist.get(self.energy)
         self.energy += (self.time_n - self.time_p) * current / 3600.0
         st = "fuel    = " + str(round(self.energy, 2)) + " Ah"
         c = (coord[0], coord[1] + 60)
         rect = rect.union(parent.blit(self.font.render(st, HIQUALITY, (f_color), BLACK), c))
 
-        ahspeed = current / 3600.0 # скорость потребления амперчасов в секунду
+        ahspeed = current / 3600.0 # СЃРєРѕСЂРѕСЃС‚СЊ РїРѕС‚СЂРµР±Р»РµРЅРёСЏ Р°РјРїРµСЂС‡Р°СЃРѕРІ РІ СЃРµРєСѓРЅРґСѓ
         self.trbuf.append(ahspeed)
         try:
-            t = int((self.capcitance - self.energy) / self.trbuf.get_avg()) # оставшееся время в секундах
+            t = int((self.capcitance - self.energy) / self.trbuf.get_avg()) # РѕСЃС‚Р°РІС€РµРµСЃСЏ РІСЂРµРјСЏ РІ СЃРµРєСѓРЅРґР°С…
         except ZeroDivisionError:
             t = 0
         if t < 0 :
@@ -846,17 +846,17 @@ class HelpScreen:#{{{
         return rect
 #}}}
 class Speedometer:#{{{
-    """ Класс реализует спидометр на основе класса Scale """
+    """ РљР»Р°СЃСЃ СЂРµР°Р»РёР·СѓРµС‚ СЃРїРёРґРѕРјРµС‚СЂ РЅР° РѕСЃРЅРѕРІРµ РєР»Р°СЃСЃР° Scale """
     def __init__(self, height, step_count, color, font, mirror, b, e):
         self.colorist = Colorist(ASVALUELIST, ASCOLORLIST, ASSTEP)
         self.speedometerscale = Scale(height, step_count, color, font, mirror, b, e, self.colorist)
 
     def put(self, parent, coord, speed):
-        """ Принимает:
-            speed -- скорость
-            parent -- поверхность для рисования
-            coord -- координаты
-        Возвращает прямоугольник
+        """ РџСЂРёРЅРёРјР°РµС‚:
+            speed -- СЃРєРѕСЂРѕСЃС‚СЊ
+            parent -- РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ
+            coord -- РєРѕРѕСЂРґРёРЅР°С‚С‹
+        Р’РѕР·РІСЂР°С‰Р°РµС‚ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє
         """
         rect = parent.blit(self.speedometerscale.get(speed), coord)
         scalewidth = 50

@@ -5,7 +5,7 @@
 #if ENABLE_IRQ_STORM
   void IRQStormInit(void);
 #else
-  /* заглушка на случай отключенного тестирования */
+  /* stub */
   #define IRQStormInit()
 #endif /* ENABLE_IRQ_STORM */
 

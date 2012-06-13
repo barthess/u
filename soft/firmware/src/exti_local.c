@@ -14,10 +14,10 @@
  ******************************************************************************
  */
 
-/* Периодичность подсчета оборотов. */
-#define TACHO_CHECK_T 500 /* 1000 / 2 = 500 (2 лопасти в датчике)*/
+/* РџРµСЂРёРѕРґРёС‡РЅРѕСЃС‚СЊ РїРѕРґСЃС‡РµС‚Р° РѕР±РѕСЂРѕС‚РѕРІ. */
+#define TACHO_CHECK_T 500 /* 1000 / 2 = 500 (2 Р»РѕРїР°СЃС‚Рё РІ РґР°С‚С‡РёРєРµ)*/
 
-/* строка для (пере)запуска тахометрового таймера*/
+/* СЃС‚СЂРѕРєР° РґР»СЏ (РїРµСЂРµ)Р·Р°РїСѓСЃРєР° С‚Р°С…РѕРјРµС‚СЂРѕРІРѕРіРѕ С‚Р°Р№РјРµСЂР°*/
 #define starttacho_vt() {chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);}
 
 /*
@@ -43,23 +43,23 @@ BinarySemaphore *bmp085_semp  = NULL;
 BinarySemaphore *itg3200_semp = NULL;
 
 /**
- * Глобальный счетчик оборотов.
- * Инкрементируется по внешнему прерыванию.
- * Сбрасывается по виртуальному таймеру.
+ * Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЃС‡РµС‚С‡РёРє РѕР±РѕСЂРѕС‚РѕРІ.
+ * РРЅРєСЂРµРјРµРЅС‚РёСЂСѓРµС‚СЃСЏ РїРѕ РІРЅРµС€РЅРµРјСѓ РїСЂРµСЂС‹РІР°РЅРёСЋ.
+ * РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РїРѕ РІРёСЂС‚СѓР°Р»СЊРЅРѕРјСѓ С‚Р°Р№РјРµСЂСѓ.
  */
 static uint32_t pulsecnt = 0;
 
-/* таймер для обновления значения RPM */
+/* С‚Р°Р№РјРµСЂ РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ RPM */
 static VirtualTimer tachocheck_vt;
 
-/* флаг, означающий надо ли измерять частоту получения сэмплов */
-static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
+/* С„Р»Р°Рі, РѕР·РЅР°С‡Р°СЋС‰РёР№ РЅР°РґРѕ Р»Рё РёР·РјРµСЂСЏС‚СЊ С‡Р°СЃС‚РѕС‚Сѓ РїРѕР»СѓС‡РµРЅРёСЏ СЃСЌРјРїР»РѕРІ */
+static int32_t itg3200_period_measured = -100; /* -100 РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ РЅР°РґРѕ РїСЂРѕРїСѓСЃС‚РёС‚СЊ 100 РїРµСЂРІС‹С… СЃСЌРјРїР»РѕРІ */
 
-/* для измерения периода получения сэмплов с гироскопа */
+/* РґР»СЏ РёР·РјРµСЂРµРЅРёСЏ РїРµСЂРёРѕРґР° РїРѕР»СѓС‡РµРЅРёСЏ СЃСЌРјРїР»РѕРІ СЃ РіРёСЂРѕСЃРєРѕРїР° */
 static TimeMeasurement itg3200_tmup;
 
 /**
- * Время последнего импульса со спидометра. Актуально только для машины.
+ * Р’СЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РёРјРїСѓР»СЊСЃР° СЃРѕ СЃРїРёРґРѕРјРµС‚СЂР°. РђРєС‚СѓР°Р»СЊРЅРѕ С‚РѕР»СЊРєРѕ РґР»СЏ РјР°С€РёРЅС‹.
  */
 static systime_t last_measure = 0;
 
@@ -81,7 +81,7 @@ static void vt_tachocheck_cb(void *par){
 }
 
 /**
- * Сброс флага прерывания и обработка
+ * РЎР±СЂРѕСЃ С„Р»Р°РіР° РїСЂРµСЂС‹РІР°РЅРёСЏ Рё РѕР±СЂР°Р±РѕС‚РєР°
  */
 static void rtcalarm_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
@@ -95,7 +95,7 @@ static void rtcalarm_cb(EXTDriver *extp, expchannel_t channel){
 }
 
 /**
- * Сброс флага прерывания и обработка
+ * РЎР±СЂРѕСЃ С„Р»Р°РіР° РїСЂРµСЂС‹РІР°РЅРёСЏ Рё РѕР±СЂР°Р±РѕС‚РєР°
  */
 static void rtcwakeup_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
@@ -112,7 +112,7 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   pulsecnt++;
   raw_data.odometer++;
 
-  /* для машинки посчитаем скорость в условных единицах */
+  /* РґР»СЏ РјР°С€РёРЅРєРё РїРѕСЃС‡РёС‚Р°РµРј СЃРєРѕСЂРѕСЃС‚СЊ РІ СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС†Р°С… */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     raw_data.groundspeed = GetTimeInterval(&last_measure);
 }
@@ -184,17 +184,17 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOE, gps_pps_cb},// секундная метка с GPS
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOB, tachometer_cb},// оптрон тахометра
+    {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOE, gps_pps_cb},// СЃРµРєСѓРЅРґРЅР°СЏ РјРµС‚РєР° СЃ GPS
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOB, tachometer_cb},// РѕРїС‚СЂРѕРЅ С‚Р°С…РѕРјРµС‚СЂР°
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, microsd_inset_cb}, // микросдшка
+    {EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, microsd_inset_cb}, // РјРёРєСЂРѕСЃРґС€РєР°
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},//5
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, bmp085_cb}, // датчик давления
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, bmp085_cb}, // РґР°С‚С‡РёРє РґР°РІР»РµРЅРёСЏ
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mag3110_cb}, // magnetometer
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int1_cb}, // первое прерывание с акселерометра
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int1_cb}, // РїРµСЂРІРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ СЃ Р°РєСЃРµР»РµСЂРѕРјРµС‚СЂР°
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, itg3200_cb}, // хероскоп
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, itg3200_cb}, // С…РµСЂРѕСЃРєРѕРї
     {EXT_CH_MODE_DISABLED, NULL},//11
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
@@ -219,13 +219,13 @@ EXT_MODE_GPIOE,// GPS_PPS
 EXT_MODE_GPIOE,// microSD detect
 0,
 0,//5
-EXT_MODE_GPIOE,// давленометр
-EXT_MODE_GPIOE,// магнитометр
+EXT_MODE_GPIOE,// РґР°РІР»РµРЅРѕРјРµС‚СЂ
+EXT_MODE_GPIOE,// РјР°РіРЅРёС‚РѕРјРµС‚СЂ
 EXT_MODE_GPIOE,// accelerometer int1
 0,
 EXT_MODE_GPIOE,// gyro
 0,
-EXT_MODE_GPIOE,//оптрон
+EXT_MODE_GPIOE,//РѕРїС‚СЂРѕРЅ
 0,
 0,//14
 EXT_MODE_GPIOE)// accelerometer int2
@@ -250,7 +250,7 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
 
   raw_data.odometer = 0;
   last_measure = chTimeNow();
-  /* виртуальный таймер счетчика RPM нужен только для самолета */
+  /* РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ С‚Р°Р№РјРµСЂ СЃС‡РµС‚С‡РёРєР° RPM РЅСѓР¶РµРЅ С‚РѕР»СЊРєРѕ РґР»СЏ СЃР°РјРѕР»РµС‚Р° */
   if (mavlink_system_struct.type == MAV_TYPE_FIXED_WING){
     chSysLock();
     starttacho_vt();

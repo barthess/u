@@ -17,27 +17,27 @@ import dials
 class Telemetry():
     def __init__(self, config):
         self._rectlist = []
-        ##### инициализация наших приборов приборной доски
-        # Альтиметр
+        ##### РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РЅР°С€РёС… РїСЂРёР±РѕСЂРѕРІ РїСЂРёР±РѕСЂРЅРѕР№ РґРѕСЃРєРё
+        # РђР»СЊС‚РёРјРµС‚СЂ
         self.altimeter = dials.Altimeter(100)
-        # вариометр
+        # РІР°СЂРёРѕРјРµС‚СЂ
         self.variometer = dials.Variometer(504, 12, WHITE, mediumFont, True, -6, 6)
-        #воздушный спидометр
+        #РІРѕР·РґСѓС€РЅС‹Р№ СЃРїРёРґРѕРјРµС‚СЂ
         self.speedometer = dials.Speedometer(280, 8, WHITE, mediumFont, False, 0, 40)
-        #энергомер
+        #СЌРЅРµСЂРіРѕРјРµСЂ
         self.pmeter = dials.Powermeter(config)
-        # авиагоризонт
+        # Р°РІРёР°РіРѕСЂРёР·РѕРЅС‚
         self.gyrohoryzonI = dials.GyroHorizon(int(0.25 * screenV))
         self.gyrohoryzonA = dials.GyroHorizon(int(0.20 * screenV))
         self.gyrohoryzonG = dials.GyroHorizon(int(0.20 * screenV))
         #self._gyro = Gyroscope()
-        # начальный угол компаса
+        # РЅР°С‡Р°Р»СЊРЅС‹Р№ СѓРіРѕР» РєРѕРјРїР°СЃР°
         self.compass_dest = 0.0
-        # сам компас
+        # СЃР°Рј РєРѕРјРїР°СЃ
         self.gps_compass = dials.Compass(100, "big")
-        # объект, отображающий маршрут
+        # РѕР±СЉРµРєС‚, РѕС‚РѕР±СЂР°Р¶Р°СЋС‰РёР№ РјР°СЂС€СЂСѓС‚
         self._polyline = Polyline()
-        # помощь по F1
+        # РїРѕРјРѕС‰СЊ РїРѕ F1
         self.helpscreen = dials.HelpScreen()
         self.i = 0
 
@@ -59,29 +59,29 @@ class Telemetry():
 
     def __blittlm(self, bgsurf, fgsurf, coord):
         """
-        Функция блитает одну поверхность на другую и добавляет
-        вёрнутый прямоугольник в список для обновления экрана
+        Р¤СѓРЅРєС†РёСЏ Р±Р»РёС‚Р°РµС‚ РѕРґРЅСѓ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РЅР° РґСЂСѓРіСѓСЋ Рё РґРѕР±Р°РІР»СЏРµС‚
+        РІС‘СЂРЅСѓС‚С‹Р№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє РІ СЃРїРёСЃРѕРє РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЌРєСЂР°РЅР°
 
-        bgsurf -- подложка, скорее всего экран
-        fgsurf -- поверхность, которую надо нарисовать на подложке
-        coord -- координаты
-        rectlist -- список прямоугольников для оптимизированного обновления экрана
+        bgsurf -- РїРѕРґР»РѕР¶РєР°, СЃРєРѕСЂРµРµ РІСЃРµРіРѕ СЌРєСЂР°РЅ
+        fgsurf -- РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РєРѕС‚РѕСЂСѓСЋ РЅР°РґРѕ РЅР°СЂРёСЃРѕРІР°С‚СЊ РЅР° РїРѕРґР»РѕР¶РєРµ
+        coord -- РєРѕРѕСЂРґРёРЅР°С‚С‹
+        rectlist -- СЃРїРёСЃРѕРє РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРѕРІ РґР»СЏ РѕРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅРѕРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ СЌРєСЂР°РЅР°
         """
         self._rectlist.append(bgsurf.blit(fgsurf, coord))
 
 
 
     def draw(self, tlm_data, screen, flags):
-        """Рисовалка телеметрии
+        """Р РёСЃРѕРІР°Р»РєР° С‚РµР»РµРјРµС‚СЂРёРё
 
-        Принимает список чисел и распихивает их в
-        объекты в качестве аргументов
+        РџСЂРёРЅРёРјР°РµС‚ СЃРїРёСЃРѕРє С‡РёСЃРµР» Рё СЂР°СЃРїРёС…РёРІР°РµС‚ РёС… РІ
+        РѕР±СЉРµРєС‚С‹ РІ РєР°С‡РµСЃС‚РІРµ Р°СЂРіСѓРјРµРЅС‚РѕРІ
 
         """
         __rectlist2 = []
 
-        s = None # переменная для временного хранения поверхности
-        """ описание структуры сырых данных """ #{{{
+        s = None # РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РІСЂРµРјРµРЅРЅРѕРіРѕ С…СЂР°РЅРµРЅРёСЏ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё
+        """ РѕРїРёСЃР°РЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЃС‹СЂС‹С… РґР°РЅРЅС‹С… """ #{{{
         i = 0
         tlm_gps_lat     = tlm_data[i]; i+=1
         tlm_gps_long    = tlm_data[i]; i+=1
@@ -126,8 +126,8 @@ class Telemetry():
 
         pns_time = float(tlm_rtcsec) + float(tlm_rtcmsec) / 1000
 
-        """ крен-тангаж"""#{{{
-        """ данные для калибровки акселерометра:
+        """ РєСЂРµРЅ-С‚Р°РЅРіР°Р¶"""#{{{
+        """ РґР°РЅРЅС‹Рµ РґР»СЏ РєР°Р»РёР±СЂРѕРІРєРё Р°РєСЃРµР»РµСЂРѕРјРµС‚СЂР°:
         762.6     16388.9  -313.2  -- x down
         -508.2    -16122.7 -281.1  -- x up
 
@@ -137,27 +137,27 @@ class Telemetry():
         -100      -20      -16805  -- y down
         234.9     458.9    16188.5 -- y up
 
-        Если смотреть на самолет сверху:
-        x -- направлена по ходу движения
-        y -- вверх
-        z -- в сторону правого крыла
-        вращение считается положительным, если происходит по часовой стрелке,
-        когда взгляд направлен в направлении оси (правило буравчика)"""
+        Р•СЃР»Рё СЃРјРѕС‚СЂРµС‚СЊ РЅР° СЃР°РјРѕР»РµС‚ СЃРІРµСЂС…Сѓ:
+        x -- РЅР°РїСЂР°РІР»РµРЅР° РїРѕ С…РѕРґСѓ РґРІРёР¶РµРЅРёСЏ
+        y -- РІРІРµСЂС…
+        z -- РІ СЃС‚РѕСЂРѕРЅСѓ РїСЂР°РІРѕРіРѕ РєСЂС‹Р»Р°
+        РІСЂР°С‰РµРЅРёРµ СЃС‡РёС‚Р°РµС‚СЃСЏ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј, РµСЃР»Рё РїСЂРѕРёСЃС…РѕРґРёС‚ РїРѕ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРµ,
+        РєРѕРіРґР° РІР·РіР»СЏРґ РЅР°РїСЂР°РІР»РµРЅ РІ РЅР°РїСЂР°РІР»РµРЅРёРё РѕСЃРё (РїСЂР°РІРёР»Рѕ Р±СѓСЂР°РІС‡РёРєР°)"""
 
-        #TODO: сделать компенсацию неортогональности (_cal_Accelerometer_AN3192.pdf)
+        #TODO: СЃРґРµР»Р°С‚СЊ РєРѕРјРїРµРЅСЃР°С†РёСЋ РЅРµРѕСЂС‚РѕРіРѕРЅР°Р»СЊРЅРѕСЃС‚Рё (_cal_Accelerometer_AN3192.pdf)
         Ax = tlm_accel_x / 1000.0
         Ay = tlm_accel_y / 1000.0
         Az = tlm_accel_z / 1000.0
 
-        # получим обороты
+        # РїРѕР»СѓС‡РёРј РѕР±РѕСЂРѕС‚С‹
         self.Gx = tlm_gyrofi_x / 65536.0
         self.Gy = tlm_gyrofi_y / 65536.0
         self.Gz = tlm_gyrofi_z / 65536.0
 
         #print self.Gy
-        # получим радианы
+        # РїРѕР»СѓС‡РёРј СЂР°РґРёР°РЅС‹
         self.Gx = 2 * pi * self.Gx
-        # 0.5 нужно для того, чтобы сделать диапазон (-pi,pi) вместо (0,2*pi)
+        # 0.5 РЅСѓР¶РЅРѕ РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ СЃРґРµР»Р°С‚СЊ РґРёР°РїР°Р·РѕРЅ (-pi,pi) РІРјРµСЃС‚Рѕ (0,2*pi)
         if self.Gy < 0.5:
             self.Gy = 2 * pi * self.Gy
         else:
@@ -192,9 +192,9 @@ class Telemetry():
 
         #print  "(Gx)\t", Gx, "(Gy)\t", Gy, "(Gz)\t", Gz, "(Ax)\t", Ax, "(Ay)\t", Ay, "(Az)\t", Az
 
-        # крен, тангаж в радианах
-        # пикирование - отрицательный тангаж, кабрирование - положительный
-        # крен в лево - отрицательный, крен в право - положительный
+        # РєСЂРµРЅ, С‚Р°РЅРіР°Р¶ РІ СЂР°РґРёР°РЅР°С…
+        # РїРёРєРёСЂРѕРІР°РЅРёРµ - РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ С‚Р°РЅРіР°Р¶, РєР°Р±СЂРёСЂРѕРІР°РЅРёРµ - РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Р№
+        # РєСЂРµРЅ РІ Р»РµРІРѕ - РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№, РєСЂРµРЅ РІ РїСЂР°РІРѕ - РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Р№
 
         roll  = atan2(Iy, Iz)
         pitch = atan2(Ix, Iz)
@@ -212,31 +212,31 @@ class Telemetry():
         self.__blittlm(screen, s, (0.85 * centerH, 0.85 * centerV))
 
         #}}}
-        """ высота """#{{{
-        # установка нуля
+        """ РІС‹СЃРѕС‚Р° """#{{{
+        # СѓСЃС‚Р°РЅРѕРІРєР° РЅСѓР»СЏ
         if flags["altimeter_zero_adj_flag"]:
             self.altimeter.zero_adjust()
             flags["altimeter_zero_adj_flag"] = False
 
-        # высота ультразвуковая
-        alt_sonar = float(tlm_sonar) / 100 # получим метры 
+        # РІС‹СЃРѕС‚Р° СѓР»СЊС‚СЂР°Р·РІСѓРєРѕРІР°СЏ
+        alt_sonar = float(tlm_sonar) / 100 # РїРѕР»СѓС‡РёРј РјРµС‚СЂС‹ 
 
-        # барометрическая высота
-        p0 = 101325.0 # давление на уровне моря (Па)
+        # Р±Р°СЂРѕРјРµС‚СЂРёС‡РµСЃРєР°СЏ РІС‹СЃРѕС‚Р°
+        p0 = 101325.0 # РґР°РІР»РµРЅРёРµ РЅР° СѓСЂРѕРІРЅРµ РјРѕСЂСЏ (РџР°)
         height = float(tlm_baro_height) / 10
         pressure = pow(((44330 - height) / 44330), 5.255) * p0
 
-        # высотомер на экран
+        # РІС‹СЃРѕС‚РѕРјРµСЂ РЅР° СЌРєСЂР°РЅ
         s = self.altimeter.get(height, alt_sonar)
         self.__blittlm(screen, s, (700,500))
 
-        # вариометр на экран
+        # РІР°СЂРёРѕРјРµС‚СЂ РЅР° СЌРєСЂР°РЅ
         c = (screenH - 150, 100)
         rect = self.variometer.put(screen, c, height)
         __rectlist2.append(rect)
 
 
-        #дебаговую инфу на экран
+        #РґРµР±Р°РіРѕРІСѓСЋ РёРЅС„Сѓ РЅР° СЌРєСЂР°РЅ
         st = "pressure  = " + str(floor(pressure)) + " Pa"
         s = smallFont.render(st, 0, (WHITE))
         self.__blittlm(screen, s, (centerV,screenV-20))
@@ -250,16 +250,16 @@ class Telemetry():
         s = smallFont.render(st, 0, (WHITE))
         self.__blittlm(screen, s, (centerV,screenV-40))
         #}}}
-        """ воздушная скорость """#{{{
+        """ РІРѕР·РґСѓС€РЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ """#{{{
         speed = (tlm_airspeed >> 3) + (tlm_airspeed % 8) / 8.0
-        # чтобы индикатор на низких скоростях не дрыгался - будем его там игнорировать
+        # С‡С‚РѕР±С‹ РёРЅРґРёРєР°С‚РѕСЂ РЅР° РЅРёР·РєРёС… СЃРєРѕСЂРѕСЃС‚СЏС… РЅРµ РґСЂС‹РіР°Р»СЃСЏ - Р±СѓРґРµРј РµРіРѕ С‚Р°Рј РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ
         if (speed < 4):
             speed = 0
 
         rect = self.speedometer.put(screen, (0, 70), speed)
         __rectlist2.append(rect)
         #}}}
-        """ Отображает положения рулей """ #{{{
+        """ РћС‚РѕР±СЂР°Р¶Р°РµС‚ РїРѕР»РѕР¶РµРЅРёСЏ СЂСѓР»РµР№ """ #{{{
         self.__blittlm(screen, smallFont.render("elevator = " + str(tlm_elevator), 0, (WHITE)), (0,screenV - 20))
         self.__blittlm(screen, smallFont.render("rudder   = " + str(tlm_rudder),   0, (WHITE)), (0,screenV - 30))
         self.__blittlm(screen, smallFont.render("aileron  = " + str(tlm_aileron),  0, (WHITE)), (0,screenV - 40))
@@ -280,41 +280,41 @@ class Telemetry():
         __rectlist2.append(rect)
         #print __rectlist2
         #}}}
-        """ Рисует температурные индикаторы """#{{{
+        """ Р РёСЃСѓРµС‚ С‚РµРјРїРµСЂР°С‚СѓСЂРЅС‹Рµ РёРЅРґРёРєР°С‚РѕСЂС‹ """#{{{
         t_tmp75 = float(tlm_tmp75)
-        st = "t. tmp75  = " + str(round(t_tmp75,1)) + " °C"
+        st = "t. tmp75  = " + str(round(t_tmp75,1)) + " В°C"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (1.6 * centerH,screenV-30))
         #}}}
         """ GPS """ #{{{
-        # широта
+        # С€РёСЂРѕС‚Р°
         gps_lat = float(tlm_gps_lat) / 100000
-        st = "GPS lat    = " + str(round(gps_lat,5)) + " °"
+        st = "GPS lat    = " + str(round(gps_lat,5)) + " В°"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,10))
-        # долгота
+        # РґРѕР»РіРѕС‚Р°
         gps_long = float(tlm_gps_long) / 100000
-        st = "GPS long   = " + str(round(gps_long,5)) + " °"
+        st = "GPS long   = " + str(round(gps_long,5)) + " В°"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,20))
-        # высота по GPS
+        # РІС‹СЃРѕС‚Р° РїРѕ GPS
         gps_alt = tlm_gps_alt
         st = "GPS height = " + str(round(gps_alt,1)) + " m"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,30))
-        # скорость по GPS
+        # СЃРєРѕСЂРѕСЃС‚СЊ РїРѕ GPS
         gps_speed = float(tlm_gps_speed)
         st = "GPS speed  = " + str(round(gps_speed, 1)) + " m/s"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,40))
-        # курс по GPS
-        gps_course = (float(tlm_gps_course) / 256) * 360 # перевод из условных единиц в градусы
-        st = "GPS course = " + str(round(gps_course,1)) + " °"
+        # РєСѓСЂСЃ РїРѕ GPS
+        gps_course = (float(tlm_gps_course) / 256) * 360 # РїРµСЂРµРІРѕРґ РёР· СѓСЃР»РѕРІРЅС‹С… РµРґРёРЅРёС† РІ РіСЂР°РґСѓСЃС‹
+        st = "GPS course = " + str(round(gps_course,1)) + " В°"
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,50))
-        # время по GPS
+        # РІСЂРµРјСЏ РїРѕ GPS
         gps_time = float(tlm_gps_time)
         st = "GPS time   = " + str(gps_time) + " "
         self.__blittlm(screen, smallFont.render(st, 0, (GREEN)), (10,60))
-        # компас
+        # РєРѕРјРїР°СЃ
         self.compass_dest += flags["compass_flag"]
         gps_compass_surf = self.gps_compass.get(gps_course, self.compass_dest)
         self.__blittlm(screen, gps_compass_surf, (10,470))
-        # сброс координат в рисовальщик маршрута
+        # СЃР±СЂРѕСЃ РєРѕРѕСЂРґРёРЅР°С‚ РІ СЂРёСЃРѕРІР°Р»СЊС‰РёРє РјР°СЂС€СЂСѓС‚Р°
         Polyline.addpoint(self._polyline, gps_lat, gps_long)
         #}}}
         """ Time """ #{{{
@@ -344,14 +344,14 @@ class Telemetry():
             cint_surf = bigFont.render("!!! CONNECTION INTERRUPTED !!!", HIQUALITY, color)
             self.__blittlm(screen, cint_surf, (150,10))
 
-        # всякий отладочный вывод
+        # РІСЃСЏРєРёР№ РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ РІС‹РІРѕРґ
         #print tlm_enginerpm * 60
         #print tlm_sattime
         #}}}
-        # мышиный курсор
+        # РјС‹С€РёРЅС‹Р№ РєСѓСЂСЃРѕСЂ
         pygame.draw.circle(screen, RED, (pygame.mouse.get_pos()), 15, 1)
 
-        # обновим дисплей
+        # РѕР±РЅРѕРІРёРј РґРёСЃРїР»РµР№
         #pygame.display.update(__rectlist2)
         #for i in __rectlist2:
         #    screen.fill(BLACK, i)

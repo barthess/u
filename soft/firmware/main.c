@@ -1,18 +1,18 @@
 /*                      WARNINGS!
  *
- * при компиляции без -fomit-frame-pointer срывает стэк .
+ * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: АЦП. По коллбэку тикать счетчиком. Как набежит 32 тика - провернуть всё через фильтр.
-// TODO: комплексирование магнитометра не с акселем а самой DCM
-// TODO: выставка нуля магнитометра и акселя
-// TODO: переписать нахуй этот пиздец с приемом-отправкой сообщений
-// TODO: обработчик прерывания по просадке питания (рассылка сообщения, возможно поток PwrHypervisor)
-// TODO: добвить событий на сбои разных подсистем (gyro_failed, gps_failed, etc.)
-
-// TODO: снять еще одну точку для датчика давления на 60 градусах цельсия и сделать табличную функцию термокомпенсации
-// TODO: переделать модемный поток на DMA
-// TODO: сторожевой таймер с использованием памяти с батарейным питанием для расследования пиздецов
+// TODO: RTC timezones.
+// TODO: ADC. In callback functions ticks counter. When got 32 samples - pass them to FIR.
+// TODO: Magnetometer fusion with DCM not accelerometer.
+// TODO: (semi)automated zeroing of magnetometer and accel.
+// TODO: Rewrite messaging holy crap.
+// TODO: Power brown out handler.
+// TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
+// TODO: One more point in pressure thermal compensation algorith (at 60 celsius)
+// TODO: Rewrite XBee code for use DMA.
+// TODO: WDT with backup domain for fuckups investigation.
 
 #include "ch.h"
 #include "hal.h"
@@ -32,6 +32,7 @@
 #include "eeprom.h"
 #include "exti_local.h"
 #include "microsd.h"
+#include "tlm_sender.h"
 
 #include "arm_math.h"
 
@@ -40,15 +41,19 @@
  * EXTERNS
  ******************************************************************************
  */
-BinarySemaphore rtc_sem;  /* для синхронизации часов по PPS */
-struct tm gps_timp;       /* структура для хранения времени, полученного из GPS */
+/* RTC-GPS sync */
+BinarySemaphore rtc_sem;
 
-uint32_t GlobalFlags = 0;             /* флаги на все случаи глобальной жизни */
+/* store here time from GPS */
+struct tm gps_timp;
 
-/* примонтированный файл EEPROM */
+/* some global flags (deprecated, use events) */
+uint32_t GlobalFlags = 0;
+
+/* EEPROM "file" */
 EepromFileStream EepromFile;
 
-/* heap for (link threads) OR (shell thread)*/
+/* heap for link threads OR shell thread */
 MemoryHeap LinkThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
@@ -97,13 +102,12 @@ int main(void) {
 
   chThdSleepMilliseconds(100);
 
-  /* раздача питалова нуждающимся */
+  /* give power to all needys */
   pwr5v_power_on();
   gps_power_on();
   xbee_reset_clear();
   xbee_sleep_clear();
 
-  /* инициализация кучи под потоки связи */
   chHeapInit(&LinkThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
 
   EepromOpen(&EepromFile);
@@ -113,13 +117,11 @@ int main(void) {
   SanityControlInit();
   TimekeepingInit();
   I2CInitLocal(); /* also starts EEPROM and load global parameters from it */
-
-  /** инициализация мавлинковых констант, в т.ч. выбор между самолетом и машиной
-   * Должно идти после I2C, т.к. читает оттуда настройки */
-  MavInit();
-  SensorsInit(); /* uses I2C */
+  MavInit();      /* mavlink constants initialization must be called after I2C init */
+  SensorsInit();  /* sensors use I2C */
+  TlmSenderInit();
   ServoInit();
-  AutopilotInit();  /* автопилот должен стартовать только после запуска серв */
+  AutopilotInit();  /* autopilot must be started only after servos */
   StorageInit();
 
   #if ENABLE_IRQ_STORM
@@ -129,7 +131,6 @@ int main(void) {
 
   while (TRUE){
     chThdSleepMilliseconds(666);
-    //chEvtBroadcastFlags(&pwrmgmt_event, EVENT_MASK(PWRMGMT_SIGHALT_EVID));
   }
 
   return 0;

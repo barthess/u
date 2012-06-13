@@ -9,6 +9,7 @@
 #include "i2c_local.h"
 #include "max1236.h"
 #include "link.h"
+#include "logger.h"
 #include "timekeeping.h"
 
 /*
@@ -18,9 +19,9 @@
  */
 #define max1236addr 0b0110100
 
-/**сонар выдает Vcc/1024 вольт на см
- * разрешающая способность АЦП Vcc/4096
- * Итого: для получения высоты в см надо полученный результат поделить на 4 */
+/**СЃРѕРЅР°СЂ РІС‹РґР°РµС‚ Vcc/1024 РІРѕР»СЊС‚ РЅР° СЃРј
+ * СЂР°Р·СЂРµС€Р°СЋС‰Р°СЏ СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЊ РђР¦Рџ Vcc/4096
+ * РС‚РѕРіРѕ: РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РІС‹СЃРѕС‚С‹ РІ СЃРј РЅР°РґРѕ РїРѕР»СѓС‡РµРЅРЅС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚ РїРѕРґРµР»РёС‚СЊ РЅР° 4 */
 #define SONAR_COEF 4
 
 /*
@@ -30,8 +31,12 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
 extern EventSource init_event;
+extern Mailbox logwriter_mb;
+
+extern mavlink_raw_pressure_t     mavlink_raw_pressure_struct;
+extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
+extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -49,12 +54,12 @@ static uint8_t txbuf[MAX1236_TX_DEPTH];
  *******************************************************************************
  */
 
-/** Опрос max1236
- * после настройки достаточно просто читать из него данные, по 2 байта на канал
- * после отправки запроса АЦП занимает линию примерно на 8.3uS, после чего
- * отдает результат. Как только мастер вычитал нужное количество байт - дает
- * в шину STOP.
- * При частоте 100кГц на вычитывание 4 значений уйдет примерно:
+/** РћРїСЂРѕСЃ max1236
+ * РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂРѕСЃС‚Рѕ С‡РёС‚Р°С‚СЊ РёР· РЅРµРіРѕ РґР°РЅРЅС‹Рµ, РїРѕ 2 Р±Р°Р№С‚Р° РЅР° РєР°РЅР°Р»
+ * РїРѕСЃР»Рµ РѕС‚РїСЂР°РІРєРё Р·Р°РїСЂРѕСЃР° РђР¦Рџ Р·Р°РЅРёРјР°РµС‚ Р»РёРЅРёСЋ РїСЂРёРјРµСЂРЅРѕ РЅР° 8.3uS, РїРѕСЃР»Рµ С‡РµРіРѕ
+ * РѕС‚РґР°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚. РљР°Рє С‚РѕР»СЊРєРѕ РјР°СЃС‚РµСЂ РІС‹С‡РёС‚Р°Р» РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°Р№С‚ - РґР°РµС‚
+ * РІ С€РёРЅСѓ STOP.
+ * РџСЂРё С‡Р°СЃС‚РѕС‚Рµ 100РєР“С† РЅР° РІС‹С‡РёС‚С‹РІР°РЅРёРµ 4 Р·РЅР°С‡РµРЅРёР№ СѓР№РґРµС‚ РїСЂРёРјРµСЂРЅРѕ:
  * 10 * (4 * 2 * 8) + 8.3 * 4 = 673.2 uS
  */
 static WORKING_AREA(PollMax1236ThreadWA, 256);
@@ -65,7 +70,7 @@ static msg_t PollMax1236Thread(void *arg) {
   int16_t sonar_raw = 0;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     chThdSleepMilliseconds(20);
@@ -74,17 +79,24 @@ static msg_t PollMax1236Thread(void *arg) {
       press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      /* рассчет воздушной скорости и сохранение для нужд автопилота */
-      comp_data.air_speed = (uint16_t)(1000 * calc_air_speed(press_diff_raw));
+      mavlink_vfr_hud_struct.airspeed = calc_air_speed(press_diff_raw);
 
+      mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
+      mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
+      mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
+
+      mavlink_scaled_pressure_struct.press_diff = 0;
+      mavlink_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
+
+      comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
       raw_data.altitude_sonar = sonar_raw;
+
+      if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID)){
+        log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
+        log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
+        log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
+      }
     }
-
-    mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
-    mavlink_raw_pressure_struct.press_diff2 = comp_data.air_speed;
-    mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
-    mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
-
     if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }

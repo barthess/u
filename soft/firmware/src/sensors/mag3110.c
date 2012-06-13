@@ -21,8 +21,8 @@
  */
 #define mag3110addr 0b0001110
 #define mag3110sens 0.1F /* uT/LSB */
-#define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
-#define ERR_VAL     -32700  /* это значение является символом ошибки чтения */
+#define OVERDOSE    ((uint16_t)25000) // РїСЂРµРґРµР», РїРѕСЃР»Рµ РєРѕС‚РѕСЂРѕРіРѕ РЅР°РґРѕ СЂРµСЃРµС‚РёС‚СЊ РґР°С‚С‡РёРє
+#define ERR_VAL     -32700  /* СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ СЏРІР»СЏРµС‚СЃСЏ СЃРёРјРІРѕР»РѕРј РѕС€РёР±РєРё С‡С‚РµРЅРёСЏ */
 
 /*
  ******************************************************************************
@@ -41,14 +41,14 @@ extern CompensatedData comp_data;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-// буфера под данные магнитометра
+// Р±СѓС„РµСЂР° РїРѕРґ РґР°РЅРЅС‹Рµ РјР°РіРЅРёС‚РѕРјРµС‚СЂР°
 static uint8_t rxbuf[MAG_RX_DEPTH];
 static uint8_t txbuf[MAG_TX_DEPTH];
 
-/* указатели в структуре с параметрами */
+/* СѓРєР°Р·Р°С‚РµР»Рё РІ СЃС‚СЂСѓРєС‚СѓСЂРµ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё */
 static float *xpol, *ypol, *zpol, *xoffset, *yoffset, *zoffset, *xsens, *ysens, *zsens;
 
-/* массив максимальных и минмальных показаний по осям для калибровки смещения */
+/* РјР°СЃСЃРёРІ РјР°РєСЃРёРјР°Р»СЊРЅС‹С… Рё РјРёРЅРјР°Р»СЊРЅС‹С… РїРѕРєР°Р·Р°РЅРёР№ РїРѕ РѕСЃСЏРј РґР»СЏ РєР°Р»РёР±СЂРѕРІРєРё СЃРјРµС‰РµРЅРёСЏ */
 static int16_t extremums[6]; //minx, maxx, miny, maxy, mixz, maxz
 
 /**
@@ -84,36 +84,36 @@ static void clear_statistics(RawData *raw_data, int16_t extremums[6]);
  */
 
 /**
- * Поток для опроса магнитометра
+ * РџРѕС‚РѕРє РґР»СЏ РѕРїСЂРѕСЃР° РјР°РіРЅРёС‚РѕРјРµС‚СЂР°
  */
-static WORKING_AREA(PollMagThreadWA, 512);
+static WORKING_AREA(PollMagThreadWA, 256);
 static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
 
   msg_t sem_status = RDY_OK;
 
   struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, SIGHALT_EVID);
+  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
-    /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
-     * прерываение прилетит на лапку раньше, чем подхватится EXTI.
-     * Кроме того, для того,
-     * чтобы прерывание работало, надо обязательно читать данные
-     * из как минимум первого регистра. */
+    /* РџРµСЂРІС‹Р№ СЂР°Р· СЌС‚РѕС‚ СЃРµРјР°С„РѕСЂ СЃРєРѕСЂРµРµ РІСЃРµРіРѕ СЃР±СЂРѕСЃРёС‚СЃСЏ РїРѕ С‚Р°Р№РјР°СѓС‚Сѓ, РїРѕСЃРєРѕР»СЊРєСѓ
+     * РїСЂРµСЂС‹РІР°РµРЅРёРµ РїСЂРёР»РµС‚РёС‚ РЅР° Р»Р°РїРєСѓ СЂР°РЅСЊС€Рµ, С‡РµРј РїРѕРґС…РІР°С‚РёС‚СЃСЏ EXTI.
+     * РљСЂРѕРјРµ С‚РѕРіРѕ, РґР»СЏ С‚РѕРіРѕ,
+     * С‡С‚РѕР±С‹ РїСЂРµСЂС‹РІР°РЅРёРµ СЂР°Р±РѕС‚Р°Р»Рѕ, РЅР°РґРѕ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ С‡РёС‚Р°С‚СЊ РґР°РЅРЅС‹Рµ
+     * РёР· РєР°Рє РјРёРЅРёРјСѓРј РїРµСЂРІРѕРіРѕ СЂРµРіРёСЃС‚СЂР°. */
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
 
-    /* посмотрим, чё там померялось */
+    /* РїРѕСЃРјРѕС‚СЂРёРј, С‡С‘ С‚Р°Рј РїРѕРјРµСЂСЏР»РѕСЃСЊ */
     txbuf[0] = MAG_OUT_DATA;
     if ((i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK) && (sem_status == RDY_OK))
       acquire_data(rxbuf);
     else
       raise_error_flags();
 
-    /* передоз? */
+    /* РїРµСЂРµРґРѕР·? */
     check_and_clean_overdose();
 
-    /* нам прилетел сигнал HALT? */
+    /* РЅР°Рј РїСЂРёР»РµС‚РµР» СЃРёРіРЅР°Р» HALT? */
     if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }
@@ -121,7 +121,7 @@ static msg_t PollMagThread(void *semp){
 }
 
 /**
- * Раскладывает полученные данные по структурам, при необходимости масштабирует.
+ * Р Р°СЃРєР»Р°РґС‹РІР°РµС‚ РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РїРѕ СЃС‚СЂСѓРєС‚СѓСЂР°Рј, РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё РјР°СЃС€С‚Р°Р±РёСЂСѓРµС‚.
  */
 void acquire_data(uint8_t *rxbuf){
 
@@ -146,7 +146,7 @@ void acquire_data(uint8_t *rxbuf){
 
   /* collect statistics for calibration purpose */
   if (GlobalFlags & MAG_CAL_FLAG){
-    /* запускаем сбор статистики */
+    /* Р·Р°РїСѓСЃРєР°РµРј СЃР±РѕСЂ СЃС‚Р°С‚РёСЃС‚РёРєРё */
     if (state == MAG_ACTIVE){
       clear_statistics(&raw_data, extremums);
       state = MAG_CAL;
@@ -155,7 +155,7 @@ void acquire_data(uint8_t *rxbuf){
   }
   else{
     if (state == MAG_CAL){
-      /* останавливаем сбор статистики */
+      /* РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃР±РѕСЂ СЃС‚Р°С‚РёСЃС‚РёРєРё */
       state = MAG_ACTIVE;
       calc_coefficients(extremums);
     }
@@ -163,7 +163,7 @@ void acquire_data(uint8_t *rxbuf){
 }
 
 /**
- * Посчитаем калибровочные коэффициенты исходя из накопленных данных
+ * РџРѕСЃС‡РёС‚Р°РµРј РєР°Р»РёР±СЂРѕРІРѕС‡РЅС‹Рµ РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ РёСЃС…РѕРґСЏ РёР· РЅР°РєРѕРїР»РµРЅРЅС‹С… РґР°РЅРЅС‹С…
  */
 void calc_coefficients(int16_t extremums[6]){
 
@@ -211,8 +211,8 @@ void stats_check(int16_t val, int16_t storage[2]){
 }
 
 /**
- * @brief  Собирает статистику по максимальным показаниям и минимальным
- * для автоматической калибровки.
+ * @brief  РЎРѕР±РёСЂР°РµС‚ СЃС‚Р°С‚РёСЃС‚РёРєСѓ РїРѕ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј РїРѕРєР°Р·Р°РЅРёСЏРј Рё РјРёРЅРёРјР°Р»СЊРЅС‹Рј
+ * РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ РєР°Р»РёР±СЂРѕРІРєРё.
  *
  * @param[in]  *raw_data    pointer to object with raw measurements
  * @param[in]  *extremums   array with maximus and minimums of raw magnetic
@@ -225,9 +225,9 @@ void collect_staticstics(RawData *raw_data, int16_t extremums[6]){
 }
 
 /**
- * если датчик передознулся - надо произвести сброс. В принципе, можно
- * в датчике настроить авторесет на каждое измерение, но
- * это как-то не элегантно.
+ * РµСЃР»Рё РґР°С‚С‡РёРє РїРµСЂРµРґРѕР·РЅСѓР»СЃСЏ - РЅР°РґРѕ РїСЂРѕРёР·РІРµСЃС‚Рё СЃР±СЂРѕСЃ. Р’ РїСЂРёРЅС†РёРїРµ, РјРѕР¶РЅРѕ
+ * РІ РґР°С‚С‡РёРєРµ РЅР°СЃС‚СЂРѕРёС‚СЊ Р°РІС‚РѕСЂРµСЃРµС‚ РЅР° РєР°Р¶РґРѕРµ РёР·РјРµСЂРµРЅРёРµ, РЅРѕ
+ * СЌС‚Рѕ РєР°Рє-С‚Рѕ РЅРµ СЌР»РµРіР°РЅС‚РЅРѕ.
  */
 void check_and_clean_overdose(void){
   if (abs(raw_data.xmag) > OVERDOSE ||
@@ -240,7 +240,7 @@ void check_and_clean_overdose(void){
 }
 
 /**
- * Функция выставляет значения, которые трактуются, как знамение ошибки
+ * Р¤СѓРЅРєС†РёСЏ РІС‹СЃС‚Р°РІР»СЏРµС‚ Р·РЅР°С‡РµРЅРёСЏ, РєРѕС‚РѕСЂС‹Рµ С‚СЂР°РєС‚СѓСЋС‚СЃСЏ, РєР°Рє Р·РЅР°РјРµРЅРёРµ РѕС€РёР±РєРё
  */
 void raise_error_flags(void){
   raw_data.xmag = ERR_VAL;
@@ -264,7 +264,7 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
 
   state = MAG_UNINIT;
 
-  /* Поиск индексов в массиве настроек */
+  /* РџРѕРёСЃРє РёРЅРґРµРєСЃРѕРІ РІ РјР°СЃСЃРёРІРµ РЅР°СЃС‚СЂРѕРµРє */
   xoffset = ValueSearch("MAG_xoffset");
   yoffset = ValueSearch("MAG_yoffset");
   zoffset = ValueSearch("MAG_zoffset");
@@ -275,8 +275,8 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   ysens   = ValueSearch("MAG_ysens");
   zsens   = ValueSearch("MAG_zsens");
 
-  // TODO: сначала вообще убедиться, что девайс отвечает путем запроса его WHOAMI
-  // TODO: запустить в нем самодиагностику
+  // TODO: СЃРЅР°С‡Р°Р»Р° РІРѕРѕР±С‰Рµ СѓР±РµРґРёС‚СЊСЃСЏ, С‡С‚Рѕ РґРµРІР°Р№СЃ РѕС‚РІРµС‡Р°РµС‚ РїСѓС‚РµРј Р·Р°РїСЂРѕСЃР° РµРіРѕ WHOAMI
+  // TODO: Р·Р°РїСѓСЃС‚РёС‚СЊ РІ РЅРµРј СЃР°РјРѕРґРёР°РіРЅРѕСЃС‚РёРєСѓ
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
@@ -288,13 +288,13 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   /* Except for STANDBY mode selection, the device must be in STANDBY mode
    to change any of the fields within CTRL_REG1 (0x10). */
   txbuf[0] = MAG_CTRL_REG1; // register address
-  /* выводим из спящего режима, настраиваем чувствительность */
+  /* РІС‹РІРѕРґРёРј РёР· СЃРїСЏС‰РµРіРѕ СЂРµР¶РёРјР°, РЅР°СЃС‚СЂР°РёРІР°РµРј С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ */
   //txbuf[1] = 0b11001;    // 10 Hz, 8 samples
   txbuf[1] = 0b1001;       // 40 Hz, 2 samples
   while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
     ;
 
-  /* произведём сервисный сброс датчика */
+  /* РїСЂРѕРёР·РІРµРґС‘Рј СЃРµСЂРІРёСЃРЅС‹Р№ СЃР±СЂРѕСЃ РґР°С‚С‡РёРєР° */
   chThdSleepMilliseconds(2);
   txbuf[0] = MAG_CTRL_REG2;
   txbuf[1] = MAG_RST;

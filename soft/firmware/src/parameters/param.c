@@ -43,79 +43,79 @@ GlobalParam_t global_data[] = {
   /*  key             min         val         max         type                    checker_fucntion   */
   /*--------------------------------------------------------------------------------------------------*/
   {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T,  default_setval},
-  /* пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ. MAV_TYPE enum)
-   * пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-   * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. */
+  /* тип автопилота (см. MAV_TYPE enum)
+   * для возможности переключения между машиной и самолетом. Изменения
+   * вступают в силу только после ребута. */
   {"SYS_mavtype",     0,          1,          16,         MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** всякие флаги для коммандной оболочки ****/
   {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /* IMU - inertial measurement unit */
   {"IMU_g1",          -1,         0.1,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_g2",          -1,         0.2,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
-  {"IMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"IMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** смещения нулей магнитометра ****/
   {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** чувствительность магнитометра ****/
   {"MAG_xsens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"MAG_ysens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"MAG_zsens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** полярности осей. Направление осей приведено к осям автопилота ****/
   {"MAG_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"MAG_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"MAG_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
-  /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+  /* магнитное склонение */
   {"MAG_inclinate",   -90,        7,          90,         MAVLINK_TYPE_INT32_T,   default_setval},
 
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** смещения нулей акселерометра ****/
   {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T,   default_setval},
   {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T,   default_setval},
   {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T,   default_setval},
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ LSB/g, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: 4096, 8192, 16384 ****/
+  /**** чувствительность акселерометра LSB/g, номинальные: 4096, 8192, 16384 ****/
   {"ACC_xsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
   {"ACC_ysens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
   {"ACC_zsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** полярности осей. Направление осей приведено к осям автопилота ****/
   {"ACC_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"ACC_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"ACC_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
 
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (LSB/(deg/s)). пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** чувствительности осей гироскопа (LSB/(deg/s)). Направление осей приведено к осям автопилота ****/
   {"GYRO_xsens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"GYRO_ysens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"GYRO_zsens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ****/
+  /**** полярности вращения осей. Направление осей приведено к осям автопилота ****/
   {"GYRO_xpol",       -1,         -1,         1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"GYRO_ypol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"GYRO_zpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
 
   /**** PMU - pressure measurement unit ****/
-  //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+  //Коэффициенты полинома для термокомпенсации нуля
   {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c4",          -2000000,   60011,      2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
-  {"PMU_send_ms",     SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
+  {"PMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** ADC coefficients ****/
-  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+  // смещение нуля датчика тока
   {"ADC_I_offset",    0,          16,         4096,       MAVLINK_TYPE_UINT32_T,  default_setval},
-  // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 1912, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 37
+  // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
   {"ADC_I_gain",      0,          1912,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // secondary voltage. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ nV
+  // secondary voltage. на столько надо умножить, чтобы получить nV
   {"ADC_SV_gain",     0,          8052,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // main voltage. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ nV
+  // main voltage. на столько надо умножить, чтобы получить nV
   {"ADC_MV_gain",     0,          8050,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** Bttery parameters ****/
-  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ mAh
+  // емкость батареи в mAh
   {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  // на столько процентов заряжена перед установкой в самолет
   {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** Servos coefficients ****/
@@ -143,11 +143,11 @@ GlobalParam_t global_data[] = {
   {"SERVO_8_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_8_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_8_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
-  /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+  /* машинко-специфичные настройки */
   {"SERVO_car_max",   1,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+  /* настройки инерциалки */
   {"IMU_accweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_magweight",   0.0,        0.01,       0.9,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_gpsweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
@@ -161,7 +161,7 @@ GlobalParam_t global_data[] = {
   /* sample count for zeroing */
   {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /* пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ mS */
+  /* время между посылками данных определенного типа в mS */
   {"T_raw_imu",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_raw_press",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_scal_imu",      SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
@@ -170,7 +170,7 @@ GlobalParam_t global_data[] = {
   {"T_vfr_hud",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_gps_int",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_sys_status",    SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
-  {"T_heartbeat",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
+  {"T_reserved0",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved1",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved2",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved3",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
@@ -330,17 +330,17 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
 }
 
 /**
- * пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * Поток принимающий сообщения с параметрами и отправляющий параметры по запросу.
  */
 static WORKING_AREA(ParametersThreadWA, 512);
 static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+  /* переменные для отправки установленных параметров */
   Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
 
-  /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+  /* переменные для приема параметров */
   msg_t tmp = 0;
   Mail *input_mail = NULL;
   mavlink_param_set_t *set = NULL;
@@ -354,8 +354,8 @@ static msg_t ParametersThread(void *arg){
 
     switch (input_mail->invoice){
     /*
-     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
-     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+     * согласно протоколу, при успешной установке параметра, мы должны
+     * вычитать и выслать в ответ этот параметр в качестве подтверждения
      */
     case MAVLINK_MSG_ID_PARAM_SET:
       set = (mavlink_param_set_t *)(input_mail->payload);
@@ -367,7 +367,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+     * запрос всех параметров
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
       list = (mavlink_param_request_list_t *)(input_mail->payload);
@@ -377,7 +377,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+     * запрос одного параметра
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
       read = (mavlink_param_request_read_t *)(input_mail->payload);
@@ -416,10 +416,10 @@ int32_t _key_index_search(char* key){
 }
 
 /**
- * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * Возвращает указатель прямо на значение.
  *
- * пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ
- * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * Данный функционал вынесен в отдельную функцию на тот случай, если
+ * приложению понадобится знать другие поля структуры
  */
 float *ValueSearch(char *str){
   int32_t i = -1;

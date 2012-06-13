@@ -46,7 +46,7 @@ static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
 
 
 /**
- * Загрузка значений параметров из EEPROM
+ * Р—Р°РіСЂСѓР·РєР° Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РёР· EEPROM
  */
 bool_t load_params_from_eeprom(void){
   uint32_t i = 0;
@@ -92,7 +92,7 @@ bool_t load_params_from_eeprom(void){
 
 
 /**
- * Сохранение значений параметров в EEPROM
+ * РЎРѕС…СЂР°РЅРµРЅРёРµ Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РІ EEPROM
  */
 bool_t save_params_to_eeprom(void){
   uint32_t i, j;
@@ -136,14 +136,14 @@ bool_t save_params_to_eeprom(void){
 }
 
 /**
- * Загрузка миссии из EEPROM
+ * Р—Р°РіСЂСѓР·РєР° РјРёСЃСЃРёРё РёР· EEPROM
  */
 bool_t load_mission_from_eeprom(void){
   return 0;
 }
 
 /**
- * Сохранение миссии в EEPROM
+ * РЎРѕС…СЂР°РЅРµРЅРёРµ РјРёСЃСЃРёРё РІ EEPROM
  */
 bool_t save_mission_to_eeprom(void){
   return 0;

@@ -14,15 +14,15 @@
 #include "exti_local.h"
 
 /**
- * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,
-отсчитываемый от 0 до 90° в обе стороны от экватора. Географическую широту
-точек, лежащих в северном полушарии, (северная широта) принято считать
-положительной, широту точек в южном полушарии — отрицательной.
- * Долгота — угол между плоскостью меридиана, проходящего через данную точку,
-и плоскостью начального нулевого меридиана, от которого ведётся отсчёт долготы.
-Долготы от 0° до 180° к востоку от нулевого меридиана называют восточными,
-к западу — западными. Восточные долготы принято считать положительными,
-западные — отрицательными.
+ * РЁРёСЂРѕС‚Р°  вЂ” СЌС‚Рѕ СѓРіРѕР» РјРµР¶РґСѓ РѕС‚РІРµСЃРЅРѕР№ Р»РёРЅРёРµР№ РІ РґР°РЅРЅРѕР№ С‚РѕС‡РєРµ Рё РїР»РѕСЃРєРѕСЃС‚СЊСЋ СЌРєРІР°С‚РѕСЂР°,
+РѕС‚СЃС‡РёС‚С‹РІР°РµРјС‹Р№ РѕС‚ 0 РґРѕ 90В° РІ РѕР±Рµ СЃС‚РѕСЂРѕРЅС‹ РѕС‚ СЌРєРІР°С‚РѕСЂР°. Р“РµРѕРіСЂР°С„РёС‡РµСЃРєСѓСЋ С€РёСЂРѕС‚Сѓ
+С‚РѕС‡РµРє, Р»РµР¶Р°С‰РёС… РІ СЃРµРІРµСЂРЅРѕРј РїРѕР»СѓС€Р°СЂРёРё, (СЃРµРІРµСЂРЅР°СЏ С€РёСЂРѕС‚Р°) РїСЂРёРЅСЏС‚Рѕ СЃС‡РёС‚Р°С‚СЊ
+РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕР№, С€РёСЂРѕС‚Сѓ С‚РѕС‡РµРє РІ СЋР¶РЅРѕРј РїРѕР»СѓС€Р°СЂРёРё вЂ” РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№.
+ * Р”РѕР»РіРѕС‚Р° вЂ” СѓРіРѕР» РјРµР¶РґСѓ РїР»РѕСЃРєРѕСЃС‚СЊСЋ РјРµСЂРёРґРёР°РЅР°, РїСЂРѕС…РѕРґСЏС‰РµРіРѕ С‡РµСЂРµР· РґР°РЅРЅСѓСЋ С‚РѕС‡РєСѓ,
+Рё РїР»РѕСЃРєРѕСЃС‚СЊСЋ РЅР°С‡Р°Р»СЊРЅРѕРіРѕ РЅСѓР»РµРІРѕРіРѕ РјРµСЂРёРґРёР°РЅР°, РѕС‚ РєРѕС‚РѕСЂРѕРіРѕ РІРµРґС‘С‚СЃСЏ РѕС‚СЃС‡С‘С‚ РґРѕР»РіРѕС‚С‹.
+Р”РѕР»РіРѕС‚С‹ РѕС‚ 0В° РґРѕ 180В° Рє РІРѕСЃС‚РѕРєСѓ РѕС‚ РЅСѓР»РµРІРѕРіРѕ РјРµСЂРёРґРёР°РЅР° РЅР°Р·С‹РІР°СЋС‚ РІРѕСЃС‚РѕС‡РЅС‹РјРё,
+Рє Р·Р°РїР°РґСѓ вЂ” Р·Р°РїР°РґРЅС‹РјРё. Р’РѕСЃС‚РѕС‡РЅС‹Рµ РґРѕР»РіРѕС‚С‹ РїСЂРёРЅСЏС‚Рѕ СЃС‡РёС‚Р°С‚СЊ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹РјРё,
+Р·Р°РїР°РґРЅС‹Рµ вЂ” РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹РјРё.
 */
 
 /**
@@ -39,10 +39,10 @@ including, the "$" and "*".
  * Integral values
  * Values returned by the core TinyGPS methods are integral. Angular
  * latitude and longitude measurements, for example, are provided in units
- * of 10^(-5) degrees, so instead of 90°30'00", get_position() returns a
+ * of 10^(-5) degrees, so instead of 90В°30'00", get_position() returns a
  * longitude value of 9050000, or 90.5 degrees.
  *
- * Высота по алгоритму получается в сантиметрах
+ * Р’С‹СЃРѕС‚Р° РїРѕ Р°Р»РіРѕСЂРёС‚РјСѓ РїРѕР»СѓС‡Р°РµС‚СЃСЏ РІ СЃР°РЅС‚РёРјРµС‚СЂР°С…
  */
 
 /*
@@ -59,6 +59,7 @@ including, the "$" and "*".
 extern RawData raw_data;
 extern Mailbox tolink_mb;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
+extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern struct tm gps_timp;
 
 /*
@@ -102,13 +103,13 @@ static msg_t gpsRxThread(void *arg){
   uint32_t tmp = 0;
   uint32_t n = 0;
 
-  // буфера под принятые сообщения
+  // Р±СѓС„РµСЂР° РїРѕРґ РїСЂРёРЅСЏС‚С‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
   static uint8_t ggabuf[GPS_MSG_LEN];
   static uint8_t rmcbuf[GPS_MSG_LEN];
-  // заготовки контрольных сумм
+  // Р·Р°РіРѕС‚РѕРІРєРё РєРѕРЅС‚СЂРѕР»СЊРЅС‹С… СЃСѓРјРј
   static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
   static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
-  /* сообщение для менеджера связи */
+  /* СЃРѕРѕР±С‰РµРЅРёРµ РґР»СЏ РјРµРЅРµРґР¶РµСЂР° СЃРІСЏР·Рё */
   Mail gps_mail;
   gps_mail.payload = NULL;
   gps_mail.invoice = MAVLINK_MSG_ID_GLOBAL_POSITION_INT;
@@ -124,7 +125,7 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.vz = 0;
   mavlink_global_position_int_struct.hdg = 65535;
 
-  /* отправим последние достоверные кординаты */
+  /* РѕС‚РїСЂР°РІРёРј РїРѕСЃР»РµРґРЅРёРµ РґРѕСЃС‚РѕРІРµСЂРЅС‹Рµ РєРѕСЂРґРёРЅР°С‚С‹ */
   mavlink_global_position_int_struct.lat = bkpLoadGpsLatitude();
   mavlink_global_position_int_struct.lon = bkpLoadGpsLongitude();
   mavlink_global_position_int_struct.alt = bkpLoadGpsAltitude();
@@ -132,7 +133,6 @@ static msg_t gpsRxThread(void *arg){
   while (TRUE) {
 
 EMPTY:
-
     if ((n >= 2) && (gps_mail.payload == NULL)){
       mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
       gps_mail.payload = &mavlink_global_position_int_struct;
@@ -142,14 +142,14 @@ EMPTY:
 
 		tmp = 0;
 		while(sdGet(&GPSSD) != '$')
-			; // читаем из буфера до тех пор, пока не найдем знак бакса
+			; // С‡РёС‚Р°РµРј РёР· Р±СѓС„РµСЂР° РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° РЅРµ РЅР°Р№РґРµРј Р·РЅР°Рє Р±Р°РєСЃР°
 
 		tmp = sdGet(&GPSSD) << 8;
 		tmp = tmp + sdGet(&GPSSD);
 		if (tmp != GP_TALKER)
 			goto EMPTY;
 
-		// определим тип сообщения
+		// РѕРїСЂРµРґРµР»РёРј С‚РёРї СЃРѕРѕР±С‰РµРЅРёСЏ
 		tmp = sdGet(&GPSSD) << 16;
 		tmp = tmp + (sdGet(&GPSSD) << 8);
 		tmp = tmp + sdGet(&GPSSD);
@@ -182,12 +182,12 @@ $GPRMC,115436.000,,,,,,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,,,,,,A*66
 */
 void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct){
-  // для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
+  // РґР»СЏ С€РёСЂРѕС‚С‹ Рё РґРѕР»РіРѕС‚С‹ РІС‹Р±СЂР°РЅ Р·РЅР°РєРѕРІС‹Р№ С„РѕСЂРјР°С‚ С‡С‚РѕР±С‹ РЅРµ С‚Р°СЃРєР°С‚СЊ N, S, W, E
   int32_t  gps_latitude = 0;
   int32_t  gps_longitude = 0;
   int32_t  gps_altitude = 0;
 
-  uint8_t i = 1; /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
+  uint8_t i = 1; /* РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 1, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РЅСѓР»РµРІС‹Рј СЃРёРјРІРѕР»РѕРј СЏРІР»СЏРµС‚СЃСЏ СЂСѓРґРёРјРµРЅС‚Р°СЂРЅР°СЏ Р·Р°РїСЏС‚Р°СЏ */
   uint8_t fix = 0, satellites_visible = 0;
 
   while(ggabuf[i] != ','){i++;}                 /* time */
@@ -232,7 +232,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
   while(ggabuf[i] != ','){i++;}                 /* geoidal separation */
     i++;
 
-	if (fix > 0){  /* если есть достоверные координаты */
+	if (fix > 0){  /* РµСЃР»Рё РµСЃС‚СЊ РґРѕСЃС‚РѕРІРµСЂРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ */
     raw_data.gps_latitude  = gps_latitude;
     raw_data.gps_longitude = gps_longitude;
     raw_data.gps_altitude  = gps_altitude;
@@ -242,7 +242,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     global_pos_struct->lon = gps_longitude * 100;
     global_pos_struct->alt = gps_altitude * 10;
 
-    /* сохраним координаты на будущее */
+    /* СЃРѕС…СЂР°РЅРёРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР° Р±СѓРґСѓС‰РµРµ */
     bkpSaveGpsLatitude(global_pos_struct->lat);
     bkpSaveGpsLongitude(global_pos_struct->lon);
     bkpSaveGpsAltitude(global_pos_struct->alt);
@@ -253,7 +253,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     raw_data.gps_altitude = 0;
     raw_data.gps_satellites = 0;
 
-    /* отправим последние достоверные кординаты */
+    /* РѕС‚РїСЂР°РІРёРј РїРѕСЃР»РµРґРЅРёРµ РґРѕСЃС‚РѕРІРµСЂРЅС‹Рµ РєРѕСЂРґРёРЅР°С‚С‹ */
     global_pos_struct->lat = bkpLoadGpsLatitude();
     global_pos_struct->lon = bkpLoadGpsLongitude();
     global_pos_struct->alt = bkpLoadGpsAltitude();
@@ -265,7 +265,7 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   int32_t  gps_course = 0;
 
   uint8_t *buft, *bufd;
-  uint8_t i = 1;  /* начинается с 1, потому что нулевым символом является рудиментарная запятая */
+  uint8_t i = 1;  /* РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 1, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РЅСѓР»РµРІС‹Рј СЃРёРјРІРѕР»РѕРј СЏРІР»СЏРµС‚СЃСЏ СЂСѓРґРёРјРµРЅС‚Р°СЂРЅР°СЏ Р·Р°РїСЏС‚Р°СЏ */
   uint8_t valid = 'V';
 
   buft = &(rmcbuf[i]);
@@ -300,12 +300,12 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   while(rmcbuf[i] != ','){i++;}                   /* Date (UTC) */
     i++;
 
-  if (valid == 'A'){                              /* если координаты достоверны */
+  if (valid == 'A'){                              /* РµСЃР»Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ РґРѕСЃС‚РѕРІРµСЂРЅС‹ */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
 
     global_pos_struct->hdg = 65535;
-    //global_pos_struct->vel = gps_speed_knots * 51; /* GPS ground speed (m/s * 100) */
+    mavlink_vfr_hud_struct.groundspeed = (float)(gps_speed_knots * 51) / 100.0;
     get_time(&gps_timp, buft, bufd);
   }
   else{
@@ -317,11 +317,11 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
 }
 
 /**
- * Выковыривает дату и время из RMC
+ * Р’С‹РєРѕРІС‹СЂРёРІР°РµС‚ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РёР· RMC
  *
- * timp - указатель на структуру с временем
- * buft - указатель на строку с временем
- * bufd - указатель на строку с датой
+ * timp - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂСѓРєС‚СѓСЂСѓ СЃ РІСЂРµРјРµРЅРµРј
+ * buft - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂРѕРєСѓ СЃ РІСЂРµРјРµРЅРµРј
+ * bufd - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂРѕРєСѓ СЃ РґР°С‚РѕР№
  *
 int tm_sec       seconds after minute [0-61] (61 allows for 2 leap-seconds)
 int tm_min       minutes after hour [0-59]
@@ -349,18 +349,18 @@ uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
 
   while TRUE{
     i++;
-    if (i >= GPS_MSG_LEN)   /* если данных больше, чем поместится в буфер длинной len */
+    if (i >= GPS_MSG_LEN)   /* РµСЃР»Рё РґР°РЅРЅС‹С… Р±РѕР»СЊС€Рµ, С‡РµРј РїРѕРјРµСЃС‚РёС‚СЃСЏ РІ Р±СѓС„РµСЂ РґР»РёРЅРЅРѕР№ len */
       return 1;
     byte = sdGet(&GPSSD);
-    if (byte == '*')        /* как только натыкаемся на * - выходим из цикла */
+    if (byte == '*')        /* РєР°Рє С‚РѕР»СЊРєРѕ РЅР°С‚С‹РєР°РµРјСЃСЏ РЅР° * - РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р° */
       break;
     checksum ^= byte;
     *buf++ = byte;
   }
-  checksum ^= from_hex(sdGet(&GPSSD)) * 16; /* читаем 2 байта контрольной суммы */
+  checksum ^= from_hex(sdGet(&GPSSD)) * 16; /* С‡РёС‚Р°РµРј 2 Р±Р°Р№С‚Р° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹ */
   checksum ^= from_hex(sdGet(&GPSSD));
 
-  if(checksum == 0)    /* сошлась */
+  if(checksum == 0)    /* СЃРѕС€Р»Р°СЃСЊ */
     return 0;
   else
     return 2;
@@ -376,16 +376,16 @@ uint8_t from_hex(uint8_t a){
 }
 
 /**
- * Возвращает значение с фиксированной точкой с точностью 2 знака после запятой
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕР№ С‚РѕС‡РєРѕР№ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 2 Р·РЅР°РєР° РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
  */
 int32_t parse_decimal(uint8_t *p){
-  bool_t isneg = (*p == '-'); /* обработаем наличие знака "-" */
+  bool_t isneg = (*p == '-'); /* РѕР±СЂР°Р±РѕС‚Р°РµРј РЅР°Р»РёС‡РёРµ Р·РЅР°РєР° "-" */
   if (isneg) ++p;
-  uint32_t ret = gpsatol(p);  /* сделаем заготовку для возвращаемого значения */
-  ret = ret * 100UL;          /* сделаем место для 2 знаков после запятой */
+  uint32_t ret = gpsatol(p);  /* СЃРґРµР»Р°РµРј Р·Р°РіРѕС‚РѕРІРєСѓ РґР»СЏ РІРѕР·РІСЂР°С‰Р°РµРјРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ */
+  ret = ret * 100UL;          /* СЃРґРµР»Р°РµРј РјРµСЃС‚Рѕ РґР»СЏ 2 Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№ */
 
-  while (gpsisdigit(*p)) ++p; /* пропустим все знаки до запятой - мы их уже обработали */
-  if (*p == '.'){             /* запишем 2 знака после запятой */
+  while (gpsisdigit(*p)) ++p; /* РїСЂРѕРїСѓСЃС‚РёРј РІСЃРµ Р·РЅР°РєРё РґРѕ Р·Р°РїСЏС‚РѕР№ - РјС‹ РёС… СѓР¶Рµ РѕР±СЂР°Р±РѕС‚Р°Р»Рё */
+  if (*p == '.'){             /* Р·Р°РїРёС€РµРј 2 Р·РЅР°РєР° РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№ */
     if (gpsisdigit(p[1])){
       ret += 10 * (p[1] - '0');
       if (gpsisdigit(p[2]))
@@ -396,12 +396,12 @@ int32_t parse_decimal(uint8_t *p){
 }
 
 int32_t parse_degrees(uint8_t *p){
-  uint32_t left = gpsatol(p);                       /* читаем первую часть (ddmm) */
-  uint32_t tenk_minutes = (left % 100UL) * 10000UL; /* отделяем целые части минут */
+  uint32_t left = gpsatol(p);                       /* С‡РёС‚Р°РµРј РїРµСЂРІСѓСЋ С‡Р°СЃС‚СЊ (ddmm) */
+  uint32_t tenk_minutes = (left % 100UL) * 10000UL; /* РѕС‚РґРµР»СЏРµРј С†РµР»С‹Рµ С‡Р°СЃС‚Рё РјРёРЅСѓС‚ */
 
   while (gpsisdigit(*p)) ++p;
   if (*p == '.'){
-    uint32_t mult = 1000; /* только 3 знака после запятой */
+    uint32_t mult = 1000; /* С‚РѕР»СЊРєРѕ 3 Р·РЅР°РєР° РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№ */
     while (gpsisdigit(*++p)){
       tenk_minutes += mult * (*p - '0');
       mult /= 10;
@@ -427,28 +427,28 @@ bool_t gpsisdigit(char c){
  *******************************************************************************
  */
 void GPSInit(void){
-  /* запуск на дефолтной частоте */
+  /* Р·Р°РїСѓСЃРє РЅР° РґРµС„РѕР»С‚РЅРѕР№ С‡Р°СЃС‚РѕС‚Рµ */
   gps_ser_cfg.sc_speed = GPS_DEFAULT_BAUDRATE;
   sdStart(&GPSSD, &gps_ser_cfg);
 
-  /* смена скорости ПРИЁМНИКА на повышенную */
+  /* СЃРјРµРЅР° СЃРєРѕСЂРѕСЃС‚Рё РџР РРЃРњРќРРљРђ РЅР° РїРѕРІС‹С€РµРЅРЅСѓСЋ */
   //  sdWrite(&SDGPS, GPS_HI_BAUDRATE_STR, GPS_HI_BAUDRATE_STR_LEN);
   //  chThdSleepMilliseconds(byte2msec(GPS_HI_BAUDRATE_STR_LEN, GPS_DEFAULT_BAUDRATE));
 
-  /* перезапуск порта контроллера на повышенной частоте */
+  /* РїРµСЂРµР·Р°РїСѓСЃРє РїРѕСЂС‚Р° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° РЅР° РїРѕРІС‹С€РµРЅРЅРѕР№ С‡Р°СЃС‚РѕС‚Рµ */
   //  sdStop(&SDGPS);
   //  gps_ser_cfg.sc_speed = GPS_HI_BAUDRATE;
   //  sdStart(&SDGPS, &gps_ser_cfg);
 
-  /* установка выдачи только GGA и RMC */
+  /* СѓСЃС‚Р°РЅРѕРІРєР° РІС‹РґР°С‡Рё С‚РѕР»СЊРєРѕ GGA Рё RMC */
   sdWrite(&GPSSD, GPS_MSG_STR, GPS_MSG_STR_LEN);
   chThdSleepMilliseconds(byte2msec(GPS_MSG_STR_LEN, GPS_DEFAULT_BAUDRATE));
 
-  /* установка частоты обновления 5 Гц */
+  /* СѓСЃС‚Р°РЅРѕРІРєР° С‡Р°СЃС‚РѕС‚С‹ РѕР±РЅРѕРІР»РµРЅРёСЏ 5 Р“С† */
   sdWrite(&GPSSD, GPS_FIX_PERIOD_STR, GPS_FIX_PERIOD_STR_LEN);
   chThdSleepMilliseconds(byte2msec(GPS_FIX_PERIOD_STR_LEN, GPS_DEFAULT_BAUDRATE));
 
-  /* зачистка входной очереди после всех манипуляций. На всякий случай */
+  /* Р·Р°С‡РёСЃС‚РєР° РІС…РѕРґРЅРѕР№ РѕС‡РµСЂРµРґРё РїРѕСЃР»Рµ РІСЃРµС… РјР°РЅРёРїСѓР»СЏС†РёР№. РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№ */
   chSysLock();
   chIQResetI( &(GPSSD.iqueue));
   chSysUnlock();

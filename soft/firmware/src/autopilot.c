@@ -79,7 +79,7 @@ void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
 #define command_denied() (confirmation(MAV_RESULT_DENIED, mavlink_command_long_struct->command))
 
 
-/* прием и обработка комманд с земли*/
+/* РїСЂРёРµРј Рё РѕР±СЂР°Р±РѕС‚РєР° РєРѕРјРјР°РЅРґ СЃ Р·РµРјР»Рё*/
 void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
   /* all this flags defined in MAV_CMD enum */
@@ -91,7 +91,7 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     break;
 
   /*
-   * (пере)запуск калибровки
+   * (РїРµСЂРµ)Р·Р°РїСѓСЃРє РєР°Р»РёР±СЂРѕРІРєРё
    */
   case MAV_CMD_PREFLIGHT_CALIBRATION:
      if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
@@ -116,7 +116,7 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     }
     break;
     /**
-     * Команды для загрузки/вычитки параметров из EEPROM
+     * РљРѕРјР°РЅРґС‹ РґР»СЏ Р·Р°РіСЂСѓР·РєРё/РІС‹С‡РёС‚РєРё РїР°СЂР°РјРµС‚СЂРѕРІ РёР· EEPROM
      */
     case MAV_CMD_PREFLIGHT_STORAGE:
       if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
@@ -143,8 +143,8 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
 
 /**
- * Предположительно:
- * крутит ПИД и на его основе выставляет значения в сервы
+ * РџСЂРµРґРїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕ:
+ * РєСЂСѓС‚РёС‚ РџРР” Рё РЅР° РµРіРѕ РѕСЃРЅРѕРІРµ РІС‹СЃС‚Р°РІР»СЏРµС‚ Р·РЅР°С‡РµРЅРёСЏ РІ СЃРµСЂРІС‹
  */
 static WORKING_AREA(AutopilotThreadWA, 512);
 Thread *autopilot_tp = NULL;
@@ -154,7 +154,7 @@ static msg_t AutopilotThread(void* arg){
 
   while (TRUE) {
     chThdSleepMilliseconds(10);
-    /* тестовые величины в ШИМ */
+    /* С‚РµСЃС‚РѕРІС‹Рµ РІРµР»РёС‡РёРЅС‹ РІ РЁРРњ */
     Servo0Set(0);
     Servo1Set(64);
     Servo2Set(128);
@@ -167,11 +167,11 @@ static msg_t AutopilotThread(void* arg){
 
 
 /**
- * Поток, принимающий и обрабатывающий команды с земли.
+ * РџРѕС‚РѕРє, РїСЂРёРЅРёРјР°СЋС‰РёР№ Рё РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‰РёР№ РєРѕРјР°РЅРґС‹ СЃ Р·РµРјР»Рё.
  */
 static WORKING_AREA(CmdThreadWA, 512);
 static msg_t CmdThread(void* arg){
-  chRegSetThreadName("MAV_command_excutor");
+  chRegSetThreadName("MAV_cmd_exec");
   (void)arg;
   msg_t tmp = 0;
   msg_t status = 0;

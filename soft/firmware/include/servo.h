@@ -18,10 +18,9 @@
 #define Servo7Set(angle) {ServoSetAngle(7, angle);}
 
 
-// персональная конфигурация для каждой сервы
 struct ServoConfig{
-  PWMDriver     *pwmp;      // ШИМ-таймер
-  pwmchannel_t  pwmchannel; // на каком из ШИМ-каналов таймера висит серва. НУМЕРАЦИЯ С НУЛЯ
+  PWMDriver     *pwmp;
+  pwmchannel_t  pwmchannel; // what channel use servo. Enumeration from 0
 };
 typedef struct ServoConfig ServoConfig;
 
