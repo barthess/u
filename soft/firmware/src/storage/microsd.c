@@ -123,7 +123,7 @@ static void remove_handler(void) {
     fs_ready = FALSE;
   }
 
-  if (sdcGetDriverState(&SDCD1) == SDC_ACTIVE){
+  if ((&SDCD1)->state == BLK_ACTIVE){
     sdcDisconnect(&SDCD1);
     sdcStop(&SDCD1);
   }

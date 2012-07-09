@@ -28,7 +28,7 @@ extern uint32_t GlobalFlags;
 static const I2CConfig i2cfg2 = {
     OPMODE_I2C,
     400000, //100000, //
-    FAST_DUTY_CYCLE_16_9, //STD_DUTY_CYCLE, //
+    FAST_DUTY_CYCLE_2, //STD_DUTY_CYCLE, //
 };
 
 /*
