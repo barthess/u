@@ -43,12 +43,12 @@ GlobalParam_t global_data[] = {
   /*  key             min         val         max         type                    checker_fucntion   */
   /*--------------------------------------------------------------------------------------------------*/
   {"SYS_ID",          1,          20,         255,        MAVLINK_TYPE_UINT32_T,  default_setval},
-  /* тип автопилота (см. MAV_TYPE enum)
-   * для возможности переключения между машиной и самолетом. Изменения
-   * вступают в силу только после ребута. */
+  /* С‚РёРї Р°РІС‚РѕРїРёР»РѕС‚Р° (СЃРј. MAV_TYPE enum)
+   * РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РјРµР¶РґСѓ РјР°С€РёРЅРѕР№ Рё СЃР°РјРѕР»РµС‚РѕРј. РР·РјРµРЅРµРЅРёСЏ
+   * РІСЃС‚СѓРїР°СЋС‚ РІ СЃРёР»Сѓ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ СЂРµР±СѓС‚Р°. */
   {"SYS_mavtype",     0,          1,          16,         MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /**** всякие флаги для коммандной оболочки ****/
+  /**** РІСЃСЏРєРёРµ С„Р»Р°РіРё РґР»СЏ РєРѕРјРјР°РЅРґРЅРѕР№ РѕР±РѕР»РѕС‡РєРё ****/
   {"SH_enable",       0,          0,          1,          MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /* IMU - inertial measurement unit */
@@ -57,45 +57,45 @@ GlobalParam_t global_data[] = {
   {"IMU_g3",          -1,         0.3,        1,          MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /**** смещения нулей магнитометра ****/
+  /**** СЃРјРµС‰РµРЅРёСЏ РЅСѓР»РµР№ РјР°РіРЅРёС‚РѕРјРµС‚СЂР° ****/
   {"MAG_xoffset",     -5000,      110,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   {"MAG_yoffset",     -5000,      -90,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
   {"MAG_zoffset",     -5000,      351,        5000,       MAVLINK_TYPE_INT32_T,   default_setval},
-  /**** чувствительность магнитометра ****/
+  /**** С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РјР°РіРЅРёС‚РѕРјРµС‚СЂР° ****/
   {"MAG_xsens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"MAG_ysens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"MAG_zsens",       0.001,      0.1,        1.0,        MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** полярности осей. Направление осей приведено к осям автопилота ****/
+  /**** РїРѕР»СЏСЂРЅРѕСЃС‚Рё РѕСЃРµР№. РќР°РїСЂР°РІР»РµРЅРёРµ РѕСЃРµР№ РїСЂРёРІРµРґРµРЅРѕ Рє РѕСЃСЏРј Р°РІС‚РѕРїРёР»РѕС‚Р° ****/
   {"MAG_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"MAG_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"MAG_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
-  /* магнитное склонение */
+  /* РјР°РіРЅРёС‚РЅРѕРµ СЃРєР»РѕРЅРµРЅРёРµ */
   {"MAG_inclinate",   -90,        7,          90,         MAVLINK_TYPE_INT32_T,   default_setval},
 
-  /**** смещения нулей акселерометра ****/
+  /**** СЃРјРµС‰РµРЅРёСЏ РЅСѓР»РµР№ Р°РєСЃРµР»РµСЂРѕРјРµС‚СЂР° ****/
   {"ACC_xoffset",     -100,       2,          100,        MAVLINK_TYPE_INT32_T,   default_setval},
   {"ACC_yoffset",     -100,       0,          100,        MAVLINK_TYPE_INT32_T,   default_setval},
   {"ACC_zoffset",     -100,       -3,         100,        MAVLINK_TYPE_INT32_T,   default_setval},
-  /**** чувствительность акселерометра LSB/g, номинальные: 4096, 8192, 16384 ****/
+  /**** С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ Р°РєСЃРµР»РµСЂРѕРјРµС‚СЂР° LSB/g, РЅРѕРјРёРЅР°Р»СЊРЅС‹Рµ: 4096, 8192, 16384 ****/
   {"ACC_xsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
   {"ACC_ysens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
   {"ACC_zsens",       3000,       8192,       17000,      MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** полярности осей. Направление осей приведено к осям автопилота ****/
+  /**** РїРѕР»СЏСЂРЅРѕСЃС‚Рё РѕСЃРµР№. РќР°РїСЂР°РІР»РµРЅРёРµ РѕСЃРµР№ РїСЂРёРІРµРґРµРЅРѕ Рє РѕСЃСЏРј Р°РІС‚РѕРїРёР»РѕС‚Р° ****/
   {"ACC_xpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"ACC_ypol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"ACC_zpol",        -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
 
-  /**** чувствительности осей гироскопа (LSB/(deg/s)). Направление осей приведено к осям автопилота ****/
+  /**** С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚Рё РѕСЃРµР№ РіРёСЂРѕСЃРєРѕРїР° (LSB/(deg/s)). РќР°РїСЂР°РІР»РµРЅРёРµ РѕСЃРµР№ РїСЂРёРІРµРґРµРЅРѕ Рє РѕСЃСЏРј Р°РІС‚РѕРїРёР»РѕС‚Р° ****/
   {"GYRO_xsens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"GYRO_ysens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
   {"GYRO_zsens",      7.0,        14.375,     30.0,       MAVLINK_TYPE_FLOAT,     default_setval},
-  /**** полярности вращения осей. Направление осей приведено к осям автопилота ****/
+  /**** РїРѕР»СЏСЂРЅРѕСЃС‚Рё РІСЂР°С‰РµРЅРёСЏ РѕСЃРµР№. РќР°РїСЂР°РІР»РµРЅРёРµ РѕСЃРµР№ РїСЂРёРІРµРґРµРЅРѕ Рє РѕСЃСЏРј Р°РІС‚РѕРїРёР»РѕС‚Р° ****/
   {"GYRO_xpol",       -1,         -1,         1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"GYRO_ypol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
   {"GYRO_zpol",       -1,         1,          1,          MAVLINK_TYPE_INT32_T,   polarity_setval},
 
   /**** PMU - pressure measurement unit ****/
-  //Коэффициенты полинома для термокомпенсации нуля
+  //РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ РїРѕР»РёРЅРѕРјР° РґР»СЏ С‚РµСЂРјРѕРєРѕРјРїРµРЅСЃР°С†РёРё РЅСѓР»СЏ
   {"PMU_c1",          -2000000,   -9,         2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c2",          -2000000,   408,        2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
   {"PMU_c3",          -2000000,   7587,       2000000,    MAVLINK_TYPE_INT32_T,   default_setval},
@@ -103,19 +103,19 @@ GlobalParam_t global_data[] = {
   {"PMU_reserved",    SEND_MIN,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** ADC coefficients ****/
-  // смещение нуля датчика тока
+  // СЃРјРµС‰РµРЅРёРµ РЅСѓР»СЏ РґР°С‚С‡РёРєР° С‚РѕРєР°
   {"ADC_I_offset",    0,          16,         4096,       MAVLINK_TYPE_UINT32_T,  default_setval},
-  // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
+  // РЅР° СЃС‚РѕР»СЊРєРѕ РЅР°РґРѕ РїРѕРґРµР»РёС‚СЊ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ Р°РјРїРµСЂС‹. Р”Р»СЏ РјР°С€РёРЅРєРё 1912, РґР»СЏ СЃР°РјРѕР»РµС‚Р° 37
   {"ADC_I_gain",      0,          1912,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // secondary voltage. на столько надо умножить, чтобы получить nV
+  // secondary voltage. РЅР° СЃС‚РѕР»СЊРєРѕ РЅР°РґРѕ СѓРјРЅРѕР¶РёС‚СЊ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ nV
   {"ADC_SV_gain",     0,          8052,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // main voltage. на столько надо умножить, чтобы получить nV
+  // main voltage. РЅР° СЃС‚РѕР»СЊРєРѕ РЅР°РґРѕ СѓРјРЅРѕР¶РёС‚СЊ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ nV
   {"ADC_MV_gain",     0,          8050,       12240,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** Bttery parameters ****/
-  // емкость батареи в mAh
+  // РµРјРєРѕСЃС‚СЊ Р±Р°С‚Р°СЂРµРё РІ mAh
   {"BAT_cap",         0,          2200,       11000,      MAVLINK_TYPE_UINT32_T,  default_setval},
-  // на столько процентов заряжена перед установкой в самолет
+  // РЅР° СЃС‚РѕР»СЊРєРѕ РїСЂРѕС†РµРЅС‚РѕРІ Р·Р°СЂСЏР¶РµРЅР° РїРµСЂРµРґ СѓСЃС‚Р°РЅРѕРІРєРѕР№ РІ СЃР°РјРѕР»РµС‚
   {"BAT_fill",        0,          98,         100,        MAVLINK_TYPE_UINT32_T,  default_setval},
 
   /**** Servos coefficients ****/
@@ -143,11 +143,11 @@ GlobalParam_t global_data[] = {
   {"SERVO_8_min",     SERVO_MIN,  1000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_8_max",     SERVO_MIN,  2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_8_neutra",  SERVO_MIN,  1500,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
-  /* машинко-специфичные настройки */
+  /* РјР°С€РёРЅРєРѕ-СЃРїРµС†РёС„РёС‡РЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё */
   {"SERVO_car_max",   1,          2000,       SERVO_MAX,  MAVLINK_TYPE_UINT32_T,  default_setval},
   {"SERVO_car_dz",    1,          32,         64,         MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /* настройки инерциалки */
+  /* РЅР°СЃС‚СЂРѕР№РєРё РёРЅРµСЂС†РёР°Р»РєРё */
   {"IMU_accweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_magweight",   0.0,        0.01,       0.9,        MAVLINK_TYPE_FLOAT,     default_setval},
   {"IMU_gpsweight",   0.0,        0.01,       0.1,        MAVLINK_TYPE_FLOAT,     default_setval},
@@ -161,7 +161,7 @@ GlobalParam_t global_data[] = {
   /* sample count for zeroing */
   {"GYRO_zeroconut",  256,        2048,       16384,      MAVLINK_TYPE_UINT32_T,  default_setval},
 
-  /* время между посылками данных определенного типа в mS */
+  /* РІСЂРµРјСЏ РјРµР¶РґСѓ РїРѕСЃС‹Р»РєР°РјРё РґР°РЅРЅС‹С… РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ С‚РёРїР° РІ mS */
   {"T_raw_imu",       SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_raw_press",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_scal_imu",      SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
@@ -330,17 +330,17 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
 }
 
 /**
- * Поток принимающий сообщения с параметрами и отправляющий параметры по запросу.
+ * РџРѕС‚РѕРє РїСЂРёРЅРёРјР°СЋС‰РёР№ СЃРѕРѕР±С‰РµРЅРёСЏ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё Рё РѕС‚РїСЂР°РІР»СЏСЋС‰РёР№ РїР°СЂР°РјРµС‚СЂС‹ РїРѕ Р·Р°РїСЂРѕСЃСѓ.
  */
 static WORKING_AREA(ParametersThreadWA, 512);
 static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  /* переменные для отправки установленных параметров */
+  /* РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РѕС‚РїСЂР°РІРєРё СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ */
   Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
 
-  /* переменные для приема параметров */
+  /* РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РїСЂРёРµРјР° РїР°СЂР°РјРµС‚СЂРѕРІ */
   msg_t tmp = 0;
   Mail *input_mail = NULL;
   mavlink_param_set_t *set = NULL;
@@ -354,8 +354,8 @@ static msg_t ParametersThread(void *arg){
 
     switch (input_mail->invoice){
     /*
-     * согласно протоколу, при успешной установке параметра, мы должны
-     * вычитать и выслать в ответ этот параметр в качестве подтверждения
+     * СЃРѕРіР»Р°СЃРЅРѕ РїСЂРѕС‚РѕРєРѕР»Сѓ, РїСЂРё СѓСЃРїРµС€РЅРѕР№ СѓСЃС‚Р°РЅРѕРІРєРµ РїР°СЂР°РјРµС‚СЂР°, РјС‹ РґРѕР»Р¶РЅС‹
+     * РІС‹С‡РёС‚Р°С‚СЊ Рё РІС‹СЃР»Р°С‚СЊ РІ РѕС‚РІРµС‚ СЌС‚РѕС‚ РїР°СЂР°РјРµС‚СЂ РІ РєР°С‡РµСЃС‚РІРµ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ
      */
     case MAVLINK_MSG_ID_PARAM_SET:
       set = (mavlink_param_set_t *)(input_mail->payload);
@@ -367,7 +367,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * запрос всех параметров
+     * Р·Р°РїСЂРѕСЃ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
       list = (mavlink_param_request_list_t *)(input_mail->payload);
@@ -377,7 +377,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * запрос одного параметра
+     * Р·Р°РїСЂРѕСЃ РѕРґРЅРѕРіРѕ РїР°СЂР°РјРµС‚СЂР°
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
       read = (mavlink_param_request_read_t *)(input_mail->payload);
@@ -416,10 +416,10 @@ int32_t _key_index_search(char* key){
 }
 
 /**
- * Возвращает указатель прямо на значение.
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РїСЂСЏРјРѕ РЅР° Р·РЅР°С‡РµРЅРёРµ.
  *
- * Данный функционал вынесен в отдельную функцию на тот случай, если
- * приложению понадобится знать другие поля структуры
+ * Р”Р°РЅРЅС‹Р№ С„СѓРЅРєС†РёРѕРЅР°Р» РІС‹РЅРµСЃРµРЅ РІ РѕС‚РґРµР»СЊРЅСѓСЋ С„СѓРЅРєС†РёСЋ РЅР° С‚РѕС‚ СЃР»СѓС‡Р°Р№, РµСЃР»Рё
+ * РїСЂРёР»РѕР¶РµРЅРёСЋ РїРѕРЅР°РґРѕР±РёС‚СЃСЏ Р·РЅР°С‚СЊ РґСЂСѓРіРёРµ РїРѕР»СЏ СЃС‚СЂСѓРєС‚СѓСЂС‹
  */
 float *ValueSearch(char *str){
   int32_t i = -1;
