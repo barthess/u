@@ -29,9 +29,11 @@ struct CompensatedData{
   float     zmag;
 
   /**/
-  int16_t   baro_altitude;  /* высота по барометру bmp085. Целое (dm)*/
-  uint16_t  air_speed;      /* воздушная скорость. Фиксированная точка. (mm/s)*/
-  int8_t    temp_onboard;   /* температура c tmp75. Целые градусы. */
+  int16_t   baro_altitude;      /* высота по барометру bmp085. Целое (dm)*/
+  int32_t   baro_filtered_fir;  /* */
+  int32_t   baro_filtered_awg;  /* */
+  uint16_t  air_speed;          /* воздушная скорость. Фиксированная точка. (mm/s)*/
+  int8_t    temp_onboard;       /* температура c tmp75. Целые градусы. */
   // напряжение и ток бортовой сети
   uint16_t  main_voltage;      // mV
   uint32_t  main_current;      // mA

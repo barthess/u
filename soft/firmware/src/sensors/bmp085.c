@@ -1,6 +1,8 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "arm_math.h"
+
 #include "i2c_local.h"
 #include "bmp085.h"
 #include "bmp085_table.h"
@@ -8,6 +10,7 @@
 #include "message.h"
 #include "main.h"
 #include "link.h"
+
 
 /*
  ******************************************************************************
@@ -25,6 +28,8 @@
 #define N_AWG      32 // Averaging values count
 #define FIX_FORMAT 5  // 32 == 2^5 to replace division by shift
 
+#define BLOCK_SIZE 1 /* FIR filtering block size */
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -33,6 +38,7 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource init_event;
+
 extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
 
@@ -52,8 +58,18 @@ static uint16_t ac4=0, ac5=0, ac6=0;
 // uncompensated temperature and pressure values
 static uint32_t up = 0, ut = 0;
 
-// aweraged value
+/* filtered value */
 static uint32_t pres_awg = 10UL << FIX_FORMAT;
+static int32_t  pres_fir = 100000;
+
+/* filtering coefficients */
+static q31_t firCoeffs[33] = {0, 398240, 1747010, 4372977, 8706233, 15216917, 24319920, 36264033, 51027126, 68240010, 87158146, 106692736, 125502354, 142135068, 155201100, 163549551, 166420810, 163549551, 155201100, 142135068, 125502354, 106692736, 87158146, 68240010, 51027126, 36264033, 24319920, 15216917, 8706233, 4372977, 1747010, 398240, 0};
+
+/* buffer for filter states */
+static q31_t firState[sizeof(firCoeffs)/sizeof(q31_t) + BLOCK_SIZE - 1];
+
+/* filter */
+static arm_fir_instance_q31 bmp_85_fir;
 
 /*
  *******************************************************************************
@@ -131,6 +147,12 @@ static void bmp085_calc(void){
 
   // refresh aweraged pressure value
   pres_awg = pres_awg - (pres_awg >> FIX_FORMAT) + pval;
+  comp_data.baro_filtered_awg = pres_awg;
+
+  /* refresh filtered value */
+  arm_fir_q31(&bmp_85_fir, (q31_t *)&pval, &pres_fir, BLOCK_SIZE);
+  comp_data.baro_filtered_fir = pres_fir;
+
   // calculate height
   comp_data.baro_altitude = pres_to_height(pres_awg >> FIX_FORMAT);
   mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
@@ -220,6 +242,10 @@ static msg_t PollBaroThread(void *semp){
  */
 void init_bmp085(BinarySemaphore *bmp085_semp){
 
+  /* initialize filter */
+  arm_fir_init_q31(&bmp_85_fir, sizeof(firCoeffs), firCoeffs, firState, BLOCK_SIZE);
+
+  /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;
   while(i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22) != RDY_OK)
     ;
@@ -235,6 +261,7 @@ void init_bmp085(BinarySemaphore *bmp085_semp){
   mc  = (rxbuf[18] << 8) + rxbuf[19];
   md  = (rxbuf[20] << 8) + rxbuf[21];
 
+  /**/
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollBaroThreadWA,
           sizeof(PollBaroThreadWA),

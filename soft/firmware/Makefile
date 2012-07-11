@@ -142,7 +142,7 @@ CSRC += $(DSPSRC)/arm_common_tables.c \
         $(DSPSRC)/arm_cos_f32.c \
         $(DSPSRC)/arm_cos_q31.c \
         $(DSPSRC)/FilteringFunctions/arm_fir_q31.c \
-        $(DSPSRC)/FilteringFunctions/arm_fir_fast_q31.c \
+        $(DSPSRC)/FilteringFunctions/arm_fir_init_q31.c \
         
         
 
