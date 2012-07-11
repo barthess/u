@@ -296,10 +296,12 @@ static bool_t send_value(Mail *param_value_mail,
 
   if ((index >= 0) && (index <= (int)ONBOARD_PARAM_COUNT)){
     /* fill all fields */
-    param_value_struct->param_value = global_data[index].value;
+    param_value_struct->param_value = (float)global_data[index].value;
+    param_value_struct->param_type  = MAVLINK_TYPE_FLOAT;
+    //param_value_struct->param_value = global_data[index].value;
+    //param_value_struct->param_type  = global_data[index].param_type;
     param_value_struct->param_count = ONBOARD_PARAM_COUNT;
     param_value_struct->param_index = index;
-    param_value_struct->param_type  = global_data[index].param_type;
     for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++)
       param_value_struct->param_id[j] = global_data[index].name[j];
 

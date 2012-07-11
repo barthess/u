@@ -85,7 +85,6 @@ static msg_t PollMax1236Thread(void *arg) {
       mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
       mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
 
-      mavlink_scaled_pressure_struct.press_diff = 0;
       mavlink_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
 
       comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
