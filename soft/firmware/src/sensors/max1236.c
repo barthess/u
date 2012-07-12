@@ -11,6 +11,7 @@
 #include "link.h"
 #include "logger.h"
 #include "timekeeping.h"
+#include "dsp.h"
 
 /*
  ******************************************************************************
@@ -46,6 +47,9 @@ extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 static uint8_t rxbuf[MAX1236_RX_DEPTH];
 static uint8_t txbuf[MAX1236_TX_DEPTH];
 
+/**/
+static alphabeta_instance_q31 press_diff_filter;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -66,8 +70,6 @@ static WORKING_AREA(PollMax1236ThreadWA, 256);
 static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
-  int16_t press_diff_raw = 0;
-  int16_t sonar_raw = 0;
 
   struct EventListener self_el;
   chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
@@ -76,19 +78,18 @@ static msg_t PollMax1236Thread(void *arg) {
     chThdSleepMilliseconds(20);
 
     if (i2c_receive(max1236addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
-      press_diff_raw = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
-      sonar_raw = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
+      raw_data.pressure_dynamic = alphabeta_q31(&press_diff_filter, ((rxbuf[0] & 0xF) << 8) + rxbuf[1]);
+      raw_data.altitude_sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      mavlink_vfr_hud_struct.airspeed = calc_air_speed(press_diff_raw);
+      mavlink_vfr_hud_struct.airspeed = calc_air_speed(raw_data.pressure_dynamic);
 
-      mavlink_raw_pressure_struct.press_diff1 = press_diff_raw;
+      mavlink_raw_pressure_struct.press_diff1 = raw_data.pressure_dynamic;
       mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
       mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
 
       mavlink_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
 
       comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
-      raw_data.altitude_sonar = sonar_raw;
 
       if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID)){
         log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
@@ -112,6 +113,9 @@ static msg_t PollMax1236Thread(void *arg) {
  * see datasheet on page 13 how to initialize ADC
  */
 void init_max1236(void){
+
+  if (alphabeta_init_q31(&press_diff_filter, 4, 0) != CH_SUCCESS)
+    chDbgPanic("Wrong len");
 
 #if CH_DBG_ENABLE_ASSERTS
   // clear bufers. Just to be safe.
