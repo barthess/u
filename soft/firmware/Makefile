@@ -131,8 +131,7 @@ CSRC = $(PORTSRC) \
        src/eeprom/eeprom_testsuit.c \
        src/autopilot.c \
        src/message.c \
-       #src/bkp.c
-       
+       src/dsp.c \
        
 
 DSPSRC = cortex_dsp
