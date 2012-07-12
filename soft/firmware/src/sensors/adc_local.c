@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "link.h"
 #include "param.h"
+#include "dsp.h"
 
 /*
  ******************************************************************************
@@ -44,8 +45,8 @@ extern GlobalParam_t global_data[];
 
 // где лежат текущие значения АЦП
 #define ADC_CURRENT_SENS_OFFSET   (ADC_CHANNEL_IN10 - 10)
-#define ADC_MAIN_SUPPLY_OFFSET    (ADC_CHANNEL_IN11 - 10)
-#define ADC_6V_SUPPLY_OFFSET      (ADC_CHANNEL_IN12 - 10)
+#define ADC_MAIN_VOLTAGE_OFFSET    (ADC_CHANNEL_IN11 - 10)
+#define ADC_6V_OFFSET      (ADC_CHANNEL_IN12 - 10)
 #define ADC_AN33_0_OFFSET         (ADC_CHANNEL_IN13 - 10)
 #define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
 #define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
@@ -62,6 +63,11 @@ static ADCConfig adccfg; // для STM32 -- должна быть пустышк
 
 static adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 
+/**/
+static alphabeta_instance_q31 main_current_filter;
+static alphabeta_instance_q31 main_voltage_filter;
+static alphabeta_instance_q31 secondary_voltage_filter;
+
 /*
  * ADC streaming callback.
  */
@@ -69,11 +75,14 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
   (void)adcp;
   (void)samples;
   (void)n;
-}
 
-static void adcerrorcallback(ADCDriver *adcp, adcerror_t err) {
-  (void)adcp;
-  (void)err;
+  raw_data.main_current = alphabeta_q31(&main_current_filter, samples[ADC_CURRENT_SENS_OFFSET]);
+  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter, samples[ADC_MAIN_VOLTAGE_OFFSET]);
+  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter, samples[ADC_6V_OFFSET]);
+
+//  raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
+//  raw_data.main_voltage = samples[ADC_MAIN_VOLTAGE_OFFSET];
+//  raw_data.secondary_voltage = samples[ADC_6V_OFFSET];
 }
 
 /*
@@ -83,7 +92,7 @@ static const ADCConversionGroup adccg = {
   TRUE,
   ADC_NUM_CHANNELS,
   adccallback,
-  adcerrorcallback,
+  NULL,
   0,                        /* CR1 */
   ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN10(ADC_SAMPLE_480) |
@@ -149,10 +158,6 @@ static msg_t PowerKeeperThread(void *arg){
   while (TRUE) {
     time += MS2ST(PWR_CHECK_PERIOD);              // Next deadline
 
-    raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
-    raw_data.main_voltage = samples[ADC_MAIN_SUPPLY_OFFSET];
-    raw_data.secondary_voltage = samples[ADC_6V_SUPPLY_OFFSET];
-
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
     comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
 
@@ -173,6 +178,13 @@ static msg_t PowerKeeperThread(void *arg){
  *******************************************************************************
  */
 void ADCInit_local(void){
+
+  if (alphabeta_init_q31(&main_current_filter, 5, 0) != CH_SUCCESS)
+    chDbgPanic("Wrong len");
+  if (alphabeta_init_q31(&secondary_voltage_filter, 5, 0) != CH_SUCCESS)
+    chDbgPanic("Wrong len");
+  if (alphabeta_init_q31(&main_voltage_filter, 5, 0) != CH_SUCCESS)
+    chDbgPanic("Wrong len");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);

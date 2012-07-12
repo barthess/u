@@ -27,8 +27,8 @@ struct alphabeta_instance_q31{
 };
 
 
-q31_t alhpabeta_q31(alphabeta_instance_q31 *S, q31_t val);
-bool_t alhpabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc);
-bool_t alhpabeta_change_len_q31(alphabeta_instance_q31 *S, uint16_t len);
+q31_t alphabeta_q31(alphabeta_instance_q31 *S, q31_t val);
+bool_t alphabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc);
+bool_t alphabeta_change_len_q31(alphabeta_instance_q31 *S, uint16_t len);
 
 #endif /* DSP_H_ */

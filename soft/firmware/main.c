@@ -4,7 +4,6 @@
  */
 
 // TODO: RTC timezones.
-// TODO: ADC. In callback functions ticks counter. When got 32 samples - pass them to FIR.
 // TODO: Magnetometer fusion with DCM not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.

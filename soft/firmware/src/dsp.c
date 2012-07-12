@@ -46,7 +46,7 @@
  * @note    There is no saturation mechanism! Accumulator will wrap over zero
  *          if overflows.
  */
-q31_t alhpabeta_q31(alphabeta_instance_q31 *S, q31_t val){
+q31_t alphabeta_q31(alphabeta_instance_q31 *S, q31_t val){
   S->acc -= S->acc >> S->len;
   S->acc += val;
   return S->acc >> S->len;
@@ -58,7 +58,7 @@ q31_t alhpabeta_q31(alphabeta_instance_q31 *S, q31_t val){
  * @param[in] len is length of filter.
  * @param[in] acc initial value of accumulator.
  */
-bool_t alhpabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc){
+bool_t alphabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc){
   S->acc = acc;
   if ((len < 31) && (len > 0)){
     S->len = len;
@@ -71,7 +71,7 @@ bool_t alhpabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc){
 /**
  *
  */
-bool_t alhpabeta_change_len_q31(alphabeta_instance_q31 *S, uint16_t len){
+bool_t alphabeta_change_len_q31(alphabeta_instance_q31 *S, uint16_t len){
   if ((len < 31) && (len > 0)){
     S->len = len;
     return CH_SUCCESS;
