@@ -21,7 +21,7 @@ struct alphabeta_instance_q31{
   q31_t acc;
   /**
    * @brief   Filter length.
-   * @details This is the power of 2.
+   * @details Actual lengh is 2^len.
    */
   uint8_t len;
 };

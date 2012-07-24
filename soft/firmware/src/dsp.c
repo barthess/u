@@ -54,9 +54,9 @@ q31_t alphabeta_q31(alphabeta_instance_q31 *S, q31_t val){
 
 /**
  * @brief   Perform init.
- * @param[in] *S points to an instance of the filter structure.
- * @param[in] len is length of filter.
- * @param[in] acc initial value of accumulator.
+ * @param[in] *S    points to an instance of the filter structure.
+ * @param[in] len   2^len == length of filter.
+ * @param[in] acc   initial value of accumulator.
  */
 bool_t alphabeta_init_q31(alphabeta_instance_q31 *S, uint16_t len, q31_t acc){
   S->acc = acc;
