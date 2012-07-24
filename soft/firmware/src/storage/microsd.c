@@ -27,6 +27,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern float *timezone;
 extern Mailbox logwriter_mb;
 extern EventSource init_event;
 
@@ -131,12 +132,17 @@ static void remove_handler(void) {
 }
 
 /**
- *
+ * Create human readable name for file.
  */
 static size_t name_from_time(char *buf){
-  struct tm timp;
-  rtcGetTimeTm(&RTCD1, &timp);
-  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.mavlink", &timp);
+
+  time_t t = 0;
+
+  t = rtcGetTimeUnixSec(&RTCD1);
+  if (timezone != NULL)
+    t += *timezone * 60 * 60;
+
+  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.mavlink", localtime(&t));
 }
 
 /**

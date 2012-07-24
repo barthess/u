@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: RTC timezones.
 // TODO: Magnetometer fusion with DCM not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.
@@ -43,6 +42,9 @@ BinarySemaphore rtc_sem;
 
 /* store here time from GPS */
 struct tm gps_timp;
+
+/* pointer to "timezone" value. Initialized in timekeeping.c */
+float *timezone = NULL;
 
 /* some global flags (deprecated, use events) */
 uint32_t GlobalFlags = 0;
