@@ -1,6 +1,8 @@
 #include "ch.h"
 #include "utils.h"
 
+#include "arm_math.h"
+
 /**
  *
  */
@@ -55,5 +57,47 @@ int16_t complement2signed(uint8_t msb, uint8_t lsb){
     return -1 * ((int16_t)((~word) + 1));
   }
   return (int16_t)word;
+}
+
+/**
+ * @brief   Crude polled delay. Suitable for delays shorter than OS time quantum.
+ *
+ * @param[in] uS    delay in uS.
+ */
+void polled_delay_us(uint32_t uS){
+  uint32_t t1, tmo;
+
+  tmo = 1 + (halGetCounterFrequency() * uS) / 1000000;
+  t1 = halGetCounterValue();
+  while ((halGetCounterValue() - t1) < tmo)
+    ;
+}
+
+/**
+ * Measure execution time of some function for dubug purpose.
+ */
+void time_test(void){
+  TimeMeasurement tmup;
+  volatile float x = 0;
+  volatile uint32_t y = 0;
+  volatile uint32_t n = 1000000;
+  volatile uint32_t imu_update_period = 0;
+
+  tmObjectInit(&tmup);
+  tmStartMeasurement(&tmup);
+  x = arm_cos_f32(PI/3.0);
+  tmStopMeasurement(&tmup);
+  imu_update_period = tmup.last;
+
+  imu_update_period = 0;
+  tmStartMeasurement(&tmup);
+  for (;n >0; n--)
+    y = arm_cos_q31(n);
+  tmStopMeasurement(&tmup);
+  imu_update_period = tmup.last;
+
+  (void)x;
+  (void)y;
+  (void)imu_update_period;
 }
 

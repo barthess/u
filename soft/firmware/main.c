@@ -33,8 +33,6 @@
 #include "microsd.h"
 #include "tlm_sender.h"
 
-#include "arm_math.h"
-
 /*
  ******************************************************************************
  * EXTERNS
@@ -72,28 +70,10 @@ EventSource init_event;
  *******************************************************************************
  *******************************************************************************
  */
-//static TimeMeasurement tmup;
-//static volatile float x = 0;
-//static volatile uint32_t y = 0;
-//static volatile uint32_t n = 1000000;
-//static volatile uint32_t imu_update_period = 0;
 
 int main(void) {
   halInit();
   chSysInit();
-
-//  tmObjectInit(&tmup);
-//  tmStartMeasurement(&tmup);
-//  x = arm_cos_f32(PI/3.0);
-//  tmStopMeasurement(&tmup);
-//  imu_update_period = tmup.last;
-//
-//  imu_update_period = 0;
-//  tmStartMeasurement(&tmup);
-//  for (;n >0; n--)
-//    y = arm_cos_q31(n);
-//  tmStopMeasurement(&tmup);
-//  imu_update_period = tmup.last;
 
   chBSemInit(&rtc_sem, TRUE);
 
