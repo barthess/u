@@ -100,7 +100,7 @@ GlobalParam_t global_data[] = {
   {"PMU_c2",          {.i32 = -2000000},   {.i32 = 408},        {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
   {"PMU_c3",          {.i32 = -2000000},   {.i32 = 7587},       {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
   {"PMU_c4",          {.i32 = -2000000},   {.i32 = 60011},      {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved",    {.u32 = SEND_MIN},   {.u32 = 100},        {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"PMU_reserved",    {.u32 = -2000000},   {.u32 = 100},        {.u32 = 2000000},    MAVLINK_TYPE_UINT32_T},
 
   /**** ADC coefficients ****/
   // смещение нуля датчика тока
@@ -179,7 +179,7 @@ GlobalParam_t global_data[] = {
   {"T_reserved6",     {.u32 = SEND_OFF},   {.u32 = 100},        {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
 
   /* Timezone. Just simple offset in hours. */
-  {"TIME_zone",       {.i32 = -24},        {.i32 = 2},          {.i32 = 24},         MAVLINK_TYPE_INT32_T},
+  {"TIME_zone",       {.i32 = -24},        {.i32 = 3},          {.i32 = 24},         MAVLINK_TYPE_INT32_T},
 
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
@@ -258,11 +258,7 @@ static bool_t _uint_setval(void *value,  GlobalParam_t *param){
 static bool_t set_parameter(mavlink_param_set_t *paramset){
 
   int32_t index = -1;
-  union{
-    float    f32;
-    uint32_t u32;
-    int32_t  i32;
-  }v;
+  floatint v;
 
   index = _key_index_search(paramset->param_id);
   v.f32 = paramset->param_value;
@@ -319,10 +315,8 @@ static bool_t send_value(Mail *param_value_mail,
 
   if ((index >= 0) && (index <= (int)ONBOARD_PARAM_COUNT)){
     /* fill all fields */
-    param_value_struct->param_value = (float)global_data[index].value.f32;
-    param_value_struct->param_type  = MAVLINK_TYPE_FLOAT;
-    //param_value_struct->param_value = global_data[index].value;
-    //param_value_struct->param_type  = global_data[index].param_type;
+    param_value_struct->param_value = global_data[index].value.f32;
+    param_value_struct->param_type  = global_data[index].param_type;
     param_value_struct->param_count = ONBOARD_PARAM_COUNT;
     param_value_struct->param_index = index;
     for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++)
@@ -371,24 +365,19 @@ static msg_t ParametersThread(void *arg){
   mavlink_param_set_t *set = NULL;
   mavlink_param_request_list_t *list = NULL;
   mavlink_param_request_read_t *read = NULL;
-  bool_t status = PARAM_FAILED;
 
   while (TRUE) {
     chMBFetch(&mavlink_param_set_mb, &tmp, TIME_INFINITE);
     input_mail = (Mail*)tmp;
 
     switch (input_mail->invoice){
-    /*
-     * согласно протоколу, при успешной установке параметра, мы должны
-     * вычитать и выслать в ответ этот параметр в качестве подтверждения
-     */
+    /* The MAV has to acknowledge the write operation by emitting a
+     * PARAM_VALUE value message with the newly written parameter value. */
     case MAVLINK_MSG_ID_PARAM_SET:
       set = (mavlink_param_set_t *)(input_mail->payload);
       input_mail->payload = NULL;
-      status = set_parameter(set);
-      if (status == PARAM_SUCCESS){
-        send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
-      }
+      set_parameter(set);
+      send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
       break;
 
     /*

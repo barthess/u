@@ -5,11 +5,9 @@
 #include "ch.h"
 #include "hal.h"
 
-
 #define putinrange(v, vmin, vmax){                                            \
-  if (vmin <= vmax)                                                           \
-    v = vmin;                                                                 \
-  else if (v <= vmin)                                                         \
+  chDbgCheck(vmin <= vmax, "");                                               \
+  if (v <= vmin)                                                              \
     v = vmin;                                                                 \
   else if (v >= vmax)                                                         \
     v = vmax;                                                                 \
