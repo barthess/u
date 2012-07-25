@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: RTC timezones.
 // TODO: Magnetometer fusion with DCM not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.
@@ -33,8 +32,6 @@
 #include "microsd.h"
 #include "tlm_sender.h"
 
-#include "arm_math.h"
-
 /*
  ******************************************************************************
  * EXTERNS
@@ -45,6 +42,9 @@ BinarySemaphore rtc_sem;
 
 /* store here time from GPS */
 struct tm gps_timp;
+
+/* pointer to "timezone" value. Initialized in timekeeping.c */
+float *timezone = NULL;
 
 /* some global flags (deprecated, use events) */
 uint32_t GlobalFlags = 0;
@@ -72,28 +72,10 @@ EventSource init_event;
  *******************************************************************************
  *******************************************************************************
  */
-//static TimeMeasurement tmup;
-//static volatile float x = 0;
-//static volatile uint32_t y = 0;
-//static volatile uint32_t n = 1000000;
-//static volatile uint32_t imu_update_period = 0;
 
 int main(void) {
   halInit();
   chSysInit();
-
-//  tmObjectInit(&tmup);
-//  tmStartMeasurement(&tmup);
-//  x = arm_cos_f32(PI/3.0);
-//  tmStopMeasurement(&tmup);
-//  imu_update_period = tmup.last;
-//
-//  imu_update_period = 0;
-//  tmStartMeasurement(&tmup);
-//  for (;n >0; n--)
-//    y = arm_cos_q31(n);
-//  tmStopMeasurement(&tmup);
-//  imu_update_period = tmup.last;
 
   chBSemInit(&rtc_sem, TRUE);
 

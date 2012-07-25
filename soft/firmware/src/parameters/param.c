@@ -178,6 +178,9 @@ GlobalParam_t global_data[] = {
   {"T_reserved5",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
   {"T_reserved6",     SEND_OFF,   100,        SEND_MAX,   MAVLINK_TYPE_UINT32_T,  int_setval},
 
+  /* Timezone. Just simple offset in hours. */
+  {"TIME_zone",       -24,        2,          24,         MAVLINK_TYPE_UINT32_T,  int_setval},
+
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  1,          1048,       1224,       MAVLINK_TYPE_UINT32_T,  default_setval},
 };

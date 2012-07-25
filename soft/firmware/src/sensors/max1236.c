@@ -71,6 +71,10 @@ static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;
 
+  q31_t press;
+  uint16_t sonar;
+  const uint16_t filter_comp = 10000; // constant for compesate filter flyback delay
+
   struct EventListener self_el;
   chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
@@ -78,8 +82,15 @@ static msg_t PollMax1236Thread(void *arg) {
     chThdSleepMilliseconds(20);
 
     if (i2c_receive(max1236addr, rxbuf, MAX1236_RX_DEPTH) == RDY_OK){
-      raw_data.pressure_dynamic = alphabeta_q31(&press_diff_filter, ((rxbuf[0] & 0xF) << 8) + rxbuf[1]);
-      raw_data.altitude_sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
+
+      press = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
+      sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
+
+      press = alphabeta_q31(&press_diff_filter, press + filter_comp);
+      press -= filter_comp;
+
+      raw_data.pressure_dynamic = press;
+      raw_data.altitude_sonar = sonar;
 
       mavlink_vfr_hud_struct.airspeed = calc_air_speed(raw_data.pressure_dynamic);
 
@@ -114,7 +125,7 @@ static msg_t PollMax1236Thread(void *arg) {
  */
 void init_max1236(void){
 
-  if (alphabeta_init_q31(&press_diff_filter, 4, 0) != CH_SUCCESS)
+  if (alphabeta_init_q31(&press_diff_filter, 3, 0) != CH_SUCCESS)
     chDbgPanic("Wrong len");
 
 #if CH_DBG_ENABLE_ASSERTS
