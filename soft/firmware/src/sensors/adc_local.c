@@ -94,13 +94,13 @@ static const ADCConversionGroup adccg = {
   adccallback,
   NULL,
   0,                        /* CR1 */
-  ADC_CR2_SWSTART,          /* CR2 */
+  0,                        /* CR2 */
   ADC_SMPR1_SMP_AN10(ADC_SAMPLE_480) |
-  ADC_SMPR1_SMP_AN11(ADC_SAMPLE_480) |
-  ADC_SMPR1_SMP_AN12(ADC_SAMPLE_480) |
-  ADC_SMPR1_SMP_AN13(ADC_SAMPLE_480) |
-  ADC_SMPR1_SMP_AN14(ADC_SAMPLE_480) |
-  ADC_SMPR1_SMP_AN15(ADC_SAMPLE_480),
+    ADC_SMPR1_SMP_AN11(ADC_SAMPLE_480) |
+    ADC_SMPR1_SMP_AN12(ADC_SAMPLE_480) |
+    ADC_SMPR1_SMP_AN13(ADC_SAMPLE_480) |
+    ADC_SMPR1_SMP_AN14(ADC_SAMPLE_480) |
+    ADC_SMPR1_SMP_AN15(ADC_SAMPLE_480),
   0,                        /* SMPR2 */
   ADC_SQR1_NUM_CH(ADC_NUM_CHANNELS),
   0,
@@ -144,14 +144,14 @@ static msg_t PowerKeeperThread(void *arg){
   if (i == -1)
     chDbgPanic("key not found");
   else
-    batcap = 3600 * ((uint32_t)floorf(global_data[i].value));
+    batcap = 3600 * global_data[i].value.u32;
 
   /* get battery fill in percents and calculate fill in A*mS*/
   i = _key_index_search("BAT_fill");
   if (i == -1)
     chDbgPanic("key not found");
   else
-    batfill = (batcap * (uint32_t)floorf(global_data[i].value)) / 100;
+    batfill = global_data[i].value.u32 / 100;
 
 
   systime_t time = chTimeNow();     // T0

@@ -56,7 +56,7 @@ static msg_t LinkMgrThread(void *arg){
   chThdSleepMilliseconds(4000);
 
   /* по значению флага определяем, что надо изначально запустить */
-  if (global_data[sh_enable_index].value == 0){
+  if (global_data[sh_enable_index].value.u32 == 0){
     SpawnMavlinkThreads((SerialDriver *)arg);
     shell_active = FALSE;
   }
@@ -72,14 +72,14 @@ static msg_t LinkMgrThread(void *arg){
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if(shell_active == TRUE){
-      if(global_data[sh_enable_index].value == 0){
+      if(global_data[sh_enable_index].value.u32 == 0){
         KillShellThreads();
         SpawnMavlinkThreads((SerialDriver *)arg);
         shell_active = FALSE;
       }
     }
     else{
-      if(global_data[sh_enable_index].value == 1){
+      if(global_data[sh_enable_index].value.u32 == 1){
         KillMavlinkThreads();
         SpawnShellThreads((SerialDriver *)arg);
         shell_active = TRUE;

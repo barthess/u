@@ -89,6 +89,6 @@ void MavInit(void){
   mavlink_system_struct.mode   = MAV_MODE_PREFLIGHT;
 
   //mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
-  mavlink_system_struct.type = (uint8_t)roundf(*(ValueSearch("SYS_mavtype")));
+  mavlink_system_struct.type = *(uint8_t *)ValueSearch("SYS_mavtype");
 }
 

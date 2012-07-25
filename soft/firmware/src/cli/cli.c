@@ -243,7 +243,7 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
   if (sh_enable_index == -1)
     chDbgPanic("not found");
   else
-    global_data[sh_enable_index].value = 0;
+    global_data[sh_enable_index].value.u32 = 0;
 
   return NULL;
 }

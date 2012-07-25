@@ -7,8 +7,9 @@
 
 
 #define putinrange(v, vmin, vmax){                                            \
-  chDbgCheck(vmin <= vmax, "");                                               \
-  if (v <= vmin)                                                              \
+  if (vmin <= vmax)                                                           \
+    v = vmin;                                                                 \
+  else if (v <= vmin)                                                         \
     v = vmin;                                                                 \
   else if (v >= vmax)                                                         \
     v = vmax;                                                                 \

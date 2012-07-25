@@ -97,7 +97,7 @@ static const ServoConfig servocfg_array[] = {
 static int32_t servoblock_index = -1;
 
 /* размер мертвой зоны, актуален только для ручного управления */
-static float *car_dz;
+static uint32_t *car_dz;
 
 /**/
 static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
@@ -124,9 +124,9 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
   uint16_t val = 0;
   uint16_t i = servoblock_index + (n) * 3;
 
-  min = global_data[i].value;
-  max = global_data[i+1].value;
-  neutral = global_data[i+2].value;
+  min = global_data[i].value.u32 & 0xFFFF;
+  max = global_data[i+1].value.u32 & 0xFFFF;
+  neutral = global_data[i+2].value.u32 & 0xFFFF;
 
   if (angle > 128){
     len = max - neutral;

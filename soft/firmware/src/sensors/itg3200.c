@@ -55,7 +55,8 @@ static uint32_t zero_cnt = 0;
 static uint32_t awg_samplescnt;
 
 /* указатели на коэффициенты */
-static float *xpol, *ypol, *zpol, *xsens, *ysens, *zsens;
+static float   *xsens, *ysens, *zsens;
+static int32_t *xpol,  *ypol,  *zpol;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
@@ -208,7 +209,7 @@ static void search_indexes(void){
   ypol = ValueSearch("GYRO_ypol");
   zpol = ValueSearch("GYRO_zpol");
 
-  awg_samplescnt = floorf(*(ValueSearch("GYRO_zeroconut")));
+  awg_samplescnt = *(uint32_t *)ValueSearch("GYRO_zeroconut");
 }
 
 /*

@@ -46,7 +46,9 @@ static uint8_t rxbuf[MAG_RX_DEPTH];
 static uint8_t txbuf[MAG_TX_DEPTH];
 
 /* указатели в структуре с параметрами */
-static float *xpol, *ypol, *zpol, *xoffset, *yoffset, *zoffset, *xsens, *ysens, *zsens;
+static float   *xsens,   *ysens,   *zsens;
+static int32_t *xoffset, *yoffset, *zoffset;
+static int32_t *xpol,    *ypol,    *zpol;
 
 /* массив максимальных и минмальных показаний по осям для калибровки смещения */
 static int16_t extremums[6]; //minx, maxx, miny, maxy, mixz, maxz
