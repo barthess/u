@@ -95,12 +95,12 @@ GlobalParam_t global_data[] = {
   {"GYRO_zpol",       {.i32 = -1},         {.i32 = 1},          {.i32 = 1},          MAVLINK_TYPE_INT32_T},
 
   /**** PMU - pressure measurement unit ****/
-  //Коэффициенты полинома для термокомпенсации нуля
+  // coefficients for thermal compensation
   {"PMU_c1",          {.i32 = -2000000},   {.i32 = -9},         {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
   {"PMU_c2",          {.i32 = -2000000},   {.i32 = 408},        {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
   {"PMU_c3",          {.i32 = -2000000},   {.i32 = 7587},       {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
   {"PMU_c4",          {.i32 = -2000000},   {.i32 = 60011},      {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved",    {.u32 = -2000000},   {.u32 = 100},        {.u32 = 2000000},    MAVLINK_TYPE_UINT32_T},
+  {"PMU_reserved",    {.i32 = -2000000},   {.i32 = 100},        {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
 
   /**** ADC coefficients ****/
   // смещение нуля датчика тока
@@ -113,9 +113,9 @@ GlobalParam_t global_data[] = {
   {"ADC_MV_gain",     {.u32 = 0},          {.u32 = 8050},       {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
 
   /**** Bttery parameters ****/
-  // емкость батареи в mAh
+  // battery capacity (mAh)
   {"BAT_cap",         {.u32 = 0},          {.u32 = 2200},       {.u32 = 11000},      MAVLINK_TYPE_UINT32_T},
-  // на столько процентов заряжена перед установкой в самолет
+  // battery filling in percents
   {"BAT_fill",        {.u32 = 0},          {.u32 = 98},         {.u32 = 100},        MAVLINK_TYPE_UINT32_T},
 
   /**** Servos coefficients ****/
@@ -143,11 +143,11 @@ GlobalParam_t global_data[] = {
   {"SERVO_8_min",     {.u32 = SERVO_MIN},  {.u32 = 1000},       {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
   {"SERVO_8_max",     {.u32 = SERVO_MIN},  {.u32 = 2000},       {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
   {"SERVO_8_neutra",  {.u32 = SERVO_MIN},  {.u32 = 1500},       {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  /* машинко-специфичные настройки */
+  /* car specific settings */
   {"SERVO_car_max",   {.u32 = 1},          {.u32 = 2000},       {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
   {"SERVO_car_dz",    {.u32 = 1},          {.u32 = 32},         {.u32 = 64},         MAVLINK_TYPE_UINT32_T},
 
-  /* настройки инерциалки */
+  /*  */
   {"IMU_accweight",   {.f32 = 0.0},        {.f32 = 0.01},       {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
   {"IMU_magweight",   {.f32 = 0.0},        {.f32 = 0.01},       {.f32 = 0.9},        MAVLINK_TYPE_FLOAT},
   {"IMU_gpsweight",   {.f32 = 0.0},        {.f32 = 0.01},       {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
@@ -161,7 +161,7 @@ GlobalParam_t global_data[] = {
   /* sample count for zeroing */
   {"GYRO_zeroconut",  {.u32 = 256},        {.u32 = 2048},       {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
 
-  /* время между посылками данных определенного типа в mS */
+  /* intervals between sending different data (mS) */
   {"T_raw_imu",       {.u32 = SEND_OFF},   {.u32 = 100},        {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
   {"T_raw_press",     {.u32 = SEND_OFF},   {.u32 = 100},        {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
   {"T_scal_imu",      {.u32 = SEND_OFF},   {.u32 = 100},        {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
@@ -264,25 +264,30 @@ static bool_t set_parameter(mavlink_param_set_t *paramset){
   v.f32 = paramset->param_value;
 
   if (index >= 0){
-    // Only write and emit changes if there is actually a difference
-    // AND only write if new value is NOT "not-a-number"
-    // AND is NOT infinity
-    if (paramset->param_type == MAVLINK_TYPE_FLOAT){
+    switch (paramset->param_type){
+    case MAVLINK_TYPE_FLOAT:
+      // Only write and emit changes if there is actually a difference
+      // AND only write if new value is NOT "not-a-number"
+      // AND is NOT infinity
       if (isnan(v.f32) || isinf(v.f32))
         return PARAM_FAILED;
       if (global_data[index].value.f32 == v.f32)
         return PARAM_FAILED;
-    }
-    else if (paramset->param_type == MAVLINK_TYPE_INT32_T){
+      break;
+
+    case MAVLINK_TYPE_INT32_T:
       if (global_data[index].value.i32 == v.i32)
         return PARAM_FAILED;
-    }
-    else if (paramset->param_type == MAVLINK_TYPE_UINT32_T){
+      break;
+
+    case MAVLINK_TYPE_UINT32_T:
       if (global_data[index].value.u32 == v.u32)
         return PARAM_FAILED;
-    }
-    else {
+      break;
+
+    default:
       chDbgPanic("Usupported variable type");
+      break;
     }
 
     /* If value fall out of min..max bound than just set nearest allowable value */
@@ -349,17 +354,15 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
 }
 
 /**
- * Поток принимающий сообщения с параметрами и отправляющий параметры по запросу.
+ * Receive messages with parameters and transmit parameters by requests.
  */
 static WORKING_AREA(ParametersThreadWA, 512);
 static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  /* переменные для отправки установленных параметров */
   Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
 
-  /* переменные для приема параметров */
   msg_t tmp = 0;
   Mail *input_mail = NULL;
   mavlink_param_set_t *set = NULL;
@@ -381,7 +384,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * запрос всех параметров
+     * request all
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
       list = (mavlink_param_request_list_t *)(input_mail->payload);
@@ -391,7 +394,7 @@ static msg_t ParametersThread(void *arg){
       break;
 
     /*
-     * запрос одного параметра
+     * request single
      */
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
       read = (mavlink_param_request_read_t *)(input_mail->payload);
@@ -430,10 +433,7 @@ int32_t _key_index_search(char* key){
 }
 
 /**
- * Возвращает указатель прямо на значение.
- *
- * Данный функционал вынесен в отдельную функцию на тот случай, если
- * приложению понадобится знать другие поля структуры
+ * Return pointer to value.
  */
 void *ValueSearch(char *str){
   int32_t i = -1;
@@ -456,20 +456,25 @@ void *ValueSearch(char *str){
  * @return            operation status.
  */
 bool_t set_global_param(void *value,  GlobalParam_t *param){
+
   switch(param->param_type){
   case MAVLINK_TYPE_FLOAT:
     return _float_setval(value, param);
     break;
+
   case MAVLINK_TYPE_UINT32_T:
     return _uint_setval(value, param);
     break;
+
   case MAVLINK_TYPE_INT32_T:
     return _int_setval(value, param);
     break;
+
   default:
     chDbgPanic("Unsupported variable type");
     break;
   }
+
   return PARAM_FAILED;
 }
 
