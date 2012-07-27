@@ -107,10 +107,10 @@ GlobalParam_t global_data[] = {
   {"ADC_I_offset",    {.u32 = 0},          {.u32 = 16},         {.u32 = 4096},       MAVLINK_TYPE_UINT32_T},
   // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
   {"ADC_I_gain",      {.u32 = 0},          {.u32 = 1912},       {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
-  // secondary voltage. на столько надо умножить, чтобы получить nV
-  {"ADC_SV_gain",     {.u32 = 0},          {.u32 = 8052},       {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
-  // main voltage. на столько надо умножить, чтобы получить nV
-  {"ADC_MV_gain",     {.u32 = 0},          {.u32 = 8050},       {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
+  // secondary voltage. на столько надо умножить, чтобы получить uV
+  {"ADC_SV_gain",     {.u32 = 0},          {.u32 = 8052},       {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
+  // main voltage. на столько надо умножить, чтобы получить uV
+  {"ADC_MV_gain",     {.u32 = 0},          {.u32 = 8050},       {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
 
   /**** Bttery parameters ****/
   // battery capacity (mAh)

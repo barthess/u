@@ -64,6 +64,8 @@ static uint32_t *bat_cap;       /* battery capacitance in A*mS */
 static uint32_t *bat_fill;      /* battery filling in A*mS */
 static uint32_t *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
 static uint32_t *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
+static uint32_t *adc_sv_gain;   /* secondary voltage gain */
+static uint32_t *adc_mv_gain;   /* main voltage gain */
 static uint32_t *flen_adc;      /* length of filter for ADC */
 
 static ADCConfig adccfg; // для STM32 -- должна быть пустышка
@@ -112,9 +114,12 @@ static const ADCConversionGroup adccg = {
 
 /* пересчет из условных единиц АЦП в mV */
 uint16_t get_comp_secondary_voltage(uint16_t raw){
-  uint32_t v = 6200; // такое количество милливольт
-  uint32_t adc = 770;// приходится на такое количество условных единиц
-  return (uint16_t)(((uint32_t)raw * v) / adc);
+  return (uint16_t)(((uint32_t)raw * *adc_sv_gain) / 1000);
+}
+
+/* STUB */
+uint16_t get_comp_main_voltage(uint16_t raw){
+  return (uint16_t)(((uint32_t)raw * *adc_mv_gain) / 1000);
 }
 
 /* пересчет из условных единиц в mA */
@@ -178,6 +183,8 @@ void ADCInit_local(void){
   adc_i_offset = ValueSearch("ADC_I_offset");
   adc_i_gain   = ValueSearch("ADC_I_gain");
   flen_adc     = ValueSearch("FLEN_adc");
+  adc_sv_gain  = ValueSearch("ADC_SV_gain");
+  adc_mv_gain  = ValueSearch("ADC_MV_gain");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);
