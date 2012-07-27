@@ -3,6 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: combine barometer and accelerometer.
 // TODO: Magnetometer fusion with DCM not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.

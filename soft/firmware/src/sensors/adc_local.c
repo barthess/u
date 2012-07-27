@@ -75,10 +75,11 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
   (void)adcp;
   (void)samples;
   (void)n;
+  uint32_t len = 4;
 
-  raw_data.main_current = alphabeta_q31(&main_current_filter, samples[ADC_CURRENT_SENS_OFFSET]);
-  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter, samples[ADC_MAIN_VOLTAGE_OFFSET]);
-  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter, samples[ADC_6V_OFFSET]);
+  raw_data.main_current = alphabeta_q31(&main_current_filter, samples[ADC_CURRENT_SENS_OFFSET], len);
+  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter, samples[ADC_MAIN_VOLTAGE_OFFSET], len);
+  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter, samples[ADC_6V_OFFSET], len);
 
 //  raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
 //  raw_data.main_voltage = samples[ADC_MAIN_VOLTAGE_OFFSET];
@@ -178,13 +179,6 @@ static msg_t PowerKeeperThread(void *arg){
  *******************************************************************************
  */
 void ADCInit_local(void){
-
-  if (alphabeta_init_q31(&main_current_filter, 5, 0) != CH_SUCCESS)
-    chDbgPanic("Wrong len");
-  if (alphabeta_init_q31(&secondary_voltage_filter, 5, 0) != CH_SUCCESS)
-    chDbgPanic("Wrong len");
-  if (alphabeta_init_q31(&main_voltage_filter, 5, 0) != CH_SUCCESS)
-    chDbgPanic("Wrong len");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);

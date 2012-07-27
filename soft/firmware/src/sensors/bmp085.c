@@ -128,7 +128,7 @@ static void bmp085_calc(void){
   raw_data.pressure_static = pval;
 
   // refresh aweraged pressure value
-  comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval);
+  comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval, 5);
 
   // calculate height
   comp_data.baro_altitude = pres_to_height(comp_data.baro_filtered);
@@ -218,9 +218,6 @@ static msg_t PollBaroThread(void *semp){
  *******************************************************************************
  */
 void init_bmp085(BinarySemaphore *bmp085_semp){
-
-  if (alphabeta_init_q31(&bmp085_filter, 5, 100000) != CH_SUCCESS)
-    chDbgPanic("Wrong len");
 
   /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;

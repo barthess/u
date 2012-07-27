@@ -73,7 +73,7 @@ static msg_t PollMax1236Thread(void *arg) {
 
   q31_t press;
   uint16_t sonar;
-  const uint16_t filter_comp = 10000; // constant for compesate filter flyback delay
+  const uint16_t rest = 10000; // constant for compesate filter flyback delay
 
   struct EventListener self_el;
   chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
@@ -86,8 +86,8 @@ static msg_t PollMax1236Thread(void *arg) {
       press = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      press = alphabeta_q31(&press_diff_filter, press + filter_comp);
-      press -= filter_comp;
+      press = alphabeta_q31(&press_diff_filter, press + rest, 3);
+      press -= rest;
 
       raw_data.pressure_dynamic = press;
       raw_data.altitude_sonar = sonar;
@@ -124,9 +124,6 @@ static msg_t PollMax1236Thread(void *arg) {
  * see datasheet on page 13 how to initialize ADC
  */
 void init_max1236(void){
-
-  if (alphabeta_init_q31(&press_diff_filter, 3, 0) != CH_SUCCESS)
-    chDbgPanic("Wrong len");
 
 #if CH_DBG_ENABLE_ASSERTS
   // clear bufers. Just to be safe.
