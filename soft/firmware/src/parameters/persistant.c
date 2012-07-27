@@ -92,6 +92,8 @@ bool_t save_params_to_eeprom(void){
 
   for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
 
+    palClearPad(GPIOB, GPIOB_LED_R);
+
     /* first copy parameter name in buffer */
     memcpy(eeprombuf, global_data[i].name, PARAM_ID_SIZE);
 
@@ -115,6 +117,8 @@ bool_t save_params_to_eeprom(void){
         chDbgPanic("veryfication failed");
     }
   }
+
+  palSetPad(GPIOB, GPIOB_LED_R);
   return 0;
 }
 

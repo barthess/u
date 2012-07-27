@@ -74,6 +74,7 @@ static BinarySemaphore *imusync_semp = NULL;
  */
 void gyrozeroing(void){
   if (zero_cnt > 0){
+    palClearPad(GPIOB, GPIOB_LED_R);
     raw_data.xgyro_zero += raw_data.xgyro;
     raw_data.ygyro_zero += raw_data.ygyro;
     raw_data.zgyro_zero += raw_data.zgyro;
@@ -82,6 +83,7 @@ void gyrozeroing(void){
   }
   else{
     clearGlobalFlag(GYRO_CAL_FLAG);
+    palSetPad(GPIOB, GPIOB_LED_R);
     mavlink_system_struct.state = MAV_STATE_STANDBY;
   }
 }

@@ -86,12 +86,6 @@ static msg_t SanityControlThread(void *arg) {
     chThdSleepMilliseconds(50);
     mavlink_sys_status_struct.load = get_cpu_load();
 
-    /* этим светодиодом будем обозначать процесс выставки гироскопов */
-    if (GlobalFlags & GYRO_CAL_FLAG)
-      palClearPad(GPIOB, GPIOB_LED_R);
-    else
-      palSetPad(GPIOB, GPIOB_LED_R);
-
     if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID)){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
