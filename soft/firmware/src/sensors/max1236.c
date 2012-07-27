@@ -12,6 +12,7 @@
 #include "logger.h"
 #include "timekeeping.h"
 #include "dsp.h"
+#include "param.h"
 
 /*
  ******************************************************************************
@@ -50,6 +51,8 @@ static uint8_t txbuf[MAX1236_TX_DEPTH];
 /**/
 static alphabeta_instance_q31 press_diff_filter;
 
+static uint32_t *flen_pres_dyn;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -86,7 +89,7 @@ static msg_t PollMax1236Thread(void *arg) {
       press = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      press = alphabeta_q31(&press_diff_filter, press + rest, 3) - rest;
+      press = alphabeta_q31(&press_diff_filter, press + rest, *flen_pres_dyn) - rest;
 
       raw_data.pressure_dynamic = press;
       raw_data.altitude_sonar = sonar;
@@ -123,6 +126,8 @@ static msg_t PollMax1236Thread(void *arg) {
  * see datasheet on page 13 how to initialize ADC
  */
 void init_max1236(void){
+
+  flen_pres_dyn = ValueSearch("FLEN_pres_dyn");
 
 #if CH_DBG_ENABLE_ASSERTS
   // clear bufers. Just to be safe.

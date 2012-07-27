@@ -103,7 +103,7 @@ GlobalParam_t global_data[] = {
   {"PMU_reserved",    {.i32 = -2000000},   {.i32 = 100},        {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
 
   /**** ADC coefficients ****/
-  // смещение нуля датчика тока
+  // смещение нуля датчика тока в условных единицах АЦП
   {"ADC_I_offset",    {.u32 = 0},          {.u32 = 16},         {.u32 = 4096},       MAVLINK_TYPE_UINT32_T},
   // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
   {"ADC_I_gain",      {.u32 = 0},          {.u32 = 1912},       {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
@@ -180,6 +180,16 @@ GlobalParam_t global_data[] = {
 
   /* Timezone. Just simple offset in hours. */
   {"TIME_zone",       {.i32 = -24},        {.i32 = 3},          {.i32 = 24},         MAVLINK_TYPE_INT32_T},
+
+  /* Length of filters for different systems. */
+  {"FLEN_adc",        {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_pres_dyn",   {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_pres_stat",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved0",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved1",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved2",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved3",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved4",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
 
   /* fake field with 14 symbols name */
   {"fake_14_bytes_",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},

@@ -21,17 +21,12 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
-extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define DEFAULT_CURRENT_COEFF     1912   // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-#define DEFAULT_CURRENT_OFFSET    16   // смещение нуля датчика тока в единицах АЦП
-#define DEFAULT_VOLTAGE_COEFF     1022 // коэффициент пересчета из условных единиц в децывольты
-
 #define ADC_NUM_CHANNELS          6
 #define ADC_BUF_DEPTH             1
 
@@ -45,8 +40,8 @@ extern GlobalParam_t global_data[];
 
 // где лежат текущие значения АЦП
 #define ADC_CURRENT_SENS_OFFSET   (ADC_CHANNEL_IN10 - 10)
-#define ADC_MAIN_VOLTAGE_OFFSET    (ADC_CHANNEL_IN11 - 10)
-#define ADC_6V_OFFSET      (ADC_CHANNEL_IN12 - 10)
+#define ADC_MAIN_VOLTAGE_OFFSET   (ADC_CHANNEL_IN11 - 10)
+#define ADC_6V_OFFSET             (ADC_CHANNEL_IN12 - 10)
 #define ADC_AN33_0_OFFSET         (ADC_CHANNEL_IN13 - 10)
 #define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
 #define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
@@ -55,9 +50,21 @@ extern GlobalParam_t global_data[];
 
 /*
  ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n);
+
+/*
+ ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static uint32_t *bat_cap;       /* battery capacitance in A*mS */
+static uint32_t *bat_fill;      /* battery filling in A*mS */
+static uint32_t *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
+static uint32_t *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
+static uint32_t *flen_adc;      /* length of filter for ADC */
 
 static ADCConfig adccfg; // для STM32 -- должна быть пустышка
 
@@ -67,24 +74,6 @@ static adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 static alphabeta_instance_q31 main_current_filter;
 static alphabeta_instance_q31 main_voltage_filter;
 static alphabeta_instance_q31 secondary_voltage_filter;
-
-/*
- * ADC streaming callback.
- */
-static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
-  (void)adcp;
-  (void)samples;
-  (void)n;
-  uint32_t len = 4;
-
-  raw_data.main_current = alphabeta_q31(&main_current_filter, samples[ADC_CURRENT_SENS_OFFSET], len);
-  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter, samples[ADC_MAIN_VOLTAGE_OFFSET], len);
-  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter, samples[ADC_6V_OFFSET], len);
-
-//  raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
-//  raw_data.main_voltage = samples[ADC_MAIN_VOLTAGE_OFFSET];
-//  raw_data.secondary_voltage = samples[ADC_6V_OFFSET];
-}
 
 /*
  * ADC conversion group.
@@ -105,9 +94,12 @@ static const ADCConversionGroup adccg = {
   0,                        /* SMPR2 */
   ADC_SQR1_NUM_CH(ADC_NUM_CHANNELS),
   0,
-  (ADC_SQR3_SQ6_N(ADC_AN33_2)         | ADC_SQR3_SQ5_N(ADC_AN33_1) |
-      ADC_SQR3_SQ4_N(ADC_AN33_0)      | ADC_SQR3_SQ3_N(ADC_6V_SUPPLY) |
-      ADC_SQR3_SQ2_N(ADC_MAIN_SUPPLY) | ADC_SQR3_SQ1_N(ADC_CURRENT_SENS))
+  ADC_SQR3_SQ6_N(ADC_AN33_2)          |
+    ADC_SQR3_SQ5_N(ADC_AN33_1)        |
+    ADC_SQR3_SQ4_N(ADC_AN33_0)        |
+    ADC_SQR3_SQ3_N(ADC_6V_SUPPLY)     |
+    ADC_SQR3_SQ2_N(ADC_MAIN_SUPPLY)   |
+    ADC_SQR3_SQ1_N(ADC_CURRENT_SENS)
 };
 
 /*
@@ -127,7 +119,27 @@ uint16_t get_comp_secondary_voltage(uint16_t raw){
 
 /* пересчет из условных единиц в mA */
 uint32_t get_comp_main_current(uint16_t raw){
-  return ((raw - DEFAULT_CURRENT_OFFSET) * 1000) / DEFAULT_CURRENT_COEFF;
+  return ((raw - *adc_i_offset) * 1000) / *adc_i_gain;
+}
+
+/*
+ * ADC streaming callback.
+ */
+static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
+  (void)adcp;
+  (void)samples;
+  (void)n;
+
+  raw_data.main_current = alphabeta_q31(&main_current_filter,
+      samples[ADC_CURRENT_SENS_OFFSET], *flen_adc);
+  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter,
+      samples[ADC_MAIN_VOLTAGE_OFFSET], *flen_adc);
+  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter,
+      samples[ADC_6V_OFFSET], *flen_adc);
+
+//  raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
+//  raw_data.main_voltage = samples[ADC_MAIN_VOLTAGE_OFFSET];
+//  raw_data.secondary_voltage = samples[ADC_6V_OFFSET];
 }
 
 /* Поток для запроса данных АЦП по таймеру */
@@ -136,25 +148,6 @@ static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
 
-  uint32_t batcap = 0;  /* battery capacitance in A*mS */
-  uint32_t batfill = 0; /* battery filling in A*mS */
-  int32_t i = -1;
-
-  /* get current battery capacitance from parameter structure */
-  i = _key_index_search("BAT_cap");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    batcap = 3600 * global_data[i].value.u32;
-
-  /* get battery fill in percents and calculate fill in A*mS*/
-  i = _key_index_search("BAT_fill");
-  if (i == -1)
-    chDbgPanic("key not found");
-  else
-    batfill = global_data[i].value.u32 / 100;
-
-
   systime_t time = chTimeNow();     // T0
   while (TRUE) {
     time += MS2ST(PWR_CHECK_PERIOD);              // Next deadline
@@ -162,9 +155,9 @@ static msg_t PowerKeeperThread(void *arg){
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
     comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
 
-    batfill -= (comp_data.main_current * PWR_CHECK_PERIOD) / 1000;
+    *bat_fill -= (comp_data.main_current * PWR_CHECK_PERIOD) / 1000;
 
-    mavlink_sys_status_struct.battery_remaining = (batfill * 100) / batcap;
+    mavlink_sys_status_struct.battery_remaining = (*bat_fill * 100) / *bat_cap;
     mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
 
@@ -179,6 +172,12 @@ static msg_t PowerKeeperThread(void *arg){
  *******************************************************************************
  */
 void ADCInit_local(void){
+  bat_cap = ValueSearch("BAT_cap");
+  bat_fill = ValueSearch("BAT_fill");
+
+  adc_i_offset = ValueSearch("ADC_I_offset");
+  adc_i_gain   = ValueSearch("ADC_I_gain");
+  flen_adc     = ValueSearch("FLEN_adc");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);

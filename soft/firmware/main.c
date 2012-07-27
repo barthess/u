@@ -3,8 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: combine barometer and accelerometer.
-// TODO: Magnetometer fusion with DCM not accelerometer.
+// TODO: remove hardconding from get_comp_secondary_voltage() in adc code.
+// TODO: combine barometer and accelerometer in one filter.
+// TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.
 // TODO: Power brown out handler.

@@ -9,6 +9,7 @@
 #include "main.h"
 #include "link.h"
 #include "dsp.h"
+#include "param.h"
 
 /*
  ******************************************************************************
@@ -52,6 +53,9 @@ static uint32_t up = 0, ut = 0;
 
 /**/
 static alphabeta_instance_q31 bmp085_filter;
+
+/* length of filter */
+static uint32_t *flen_pres_stat;
 
 /*
  *******************************************************************************
@@ -128,7 +132,7 @@ static void bmp085_calc(void){
   raw_data.pressure_static = pval;
 
   // refresh aweraged pressure value
-  comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval, 5);
+  comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval, *flen_pres_stat);
 
   // calculate height
   comp_data.baro_altitude = pres_to_height(comp_data.baro_filtered);
@@ -218,6 +222,8 @@ static msg_t PollBaroThread(void *semp){
  *******************************************************************************
  */
 void init_bmp085(BinarySemaphore *bmp085_semp){
+
+  flen_pres_stat = ValueSearch("FLEN_pres_stat");
 
   /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;
