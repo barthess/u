@@ -2,13 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "main.h"
-#include "cli.h"
-#include "cli_cmd.h"
-#include "sensors.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

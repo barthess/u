@@ -6,7 +6,7 @@
 #include "chrtclib.h"
 
 #include "timekeeping.h"
-#include "main.h"
+#include "uav.h"
 #include "param.h"
 
 /*

@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: create uav.h with all includes
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
@@ -14,25 +13,7 @@
 // TODO: Rewrite XBee code for use DMA.
 // TODO: WDT with backup domain for fuckups investigation.
 
-#include "ch.h"
-#include "hal.h"
-
-#include "main.h"
-#include "param.h"
-#include "sanity.h"
-#include "irq_storm.h"
-#include "i2c_local.h"
-#include "timekeeping.h"
-#include "linkmgr.h"
-#include "gps.h"
-#include "servo.h"
-#include "message.h"
-#include "sensors.h"
-#include "autopilot.h"
-#include "eeprom.h"
-#include "exti_local.h"
-#include "microsd.h"
-#include "tlm_sender.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

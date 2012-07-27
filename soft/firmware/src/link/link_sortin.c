@@ -1,10 +1,5 @@
-#include "ch.h"
-#include "hal.h"
-
-#include "link.h"
+#include "uav.h"
 #include "link_sortin.h"
-#include "message.h"
-#include "main.h"
 
 /*
  ******************************************************************************

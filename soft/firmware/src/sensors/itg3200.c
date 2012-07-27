@@ -1,20 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "i2c_local.h"
-#include "utils.h"
-#include "imu.h"
-#include "itg3200.h"
-#include "sensors.h"
-#include "message.h"
-#include "param.h"
-#include "main.h"
-#include "link.h"
-#include "logger.h"
-#include "timekeeping.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
@@ -22,7 +9,6 @@
  ******************************************************************************
  */
 #define itg3200addr   0b1101000
-#define PI            3.14159265f
 
 /*
  ******************************************************************************

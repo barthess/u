@@ -1,16 +1,7 @@
 #include <math.h>
 
-#include "ch.h"
-#include "hal.h"
+#include "uav.h"
 
-#include "sensors.h"
-#include "message.h"
-#include "main.h"
-#include "imu.h"
-#include "link.h"
-#include "logger.h"
-#include "param.h"
-#include "itg3200.h"
 #include "dcm.h"
 #include "vector3d.h"
 
@@ -19,7 +10,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define PI          3.14159265f
+//#define PI          3.14159265f
 
 /*
  ******************************************************************************

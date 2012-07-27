@@ -1,17 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ch.h"
-#include "hal.h"
-
 #include "../microrl/src/microrl.h"
-#include "chprintf.h"
 
-#include "main.h"
-#include "param.h"
-#include "cli.h"
-#include "cli_cmd.h"
-#include "timekeeping.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

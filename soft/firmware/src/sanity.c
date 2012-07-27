@@ -1,15 +1,4 @@
-
-/* Следит за состоянием здоровья органов.*/
-
-#include "ch.h"
-#include "hal.h"
-
-#include "message.h"
-#include "main.h"
-#include "link.h"
-#include "sanity.h"
-#include "timekeeping.h"
-#include "logger.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
@@ -18,7 +7,6 @@
  */
 extern Mailbox tolink_mb;
 extern Mailbox logwriter_mb;
-extern uint32_t GlobalFlags;
 extern EventSource init_event;
 extern mavlink_system_t       mavlink_system_struct;
 extern mavlink_heartbeat_t    mavlink_heartbeat_struct;

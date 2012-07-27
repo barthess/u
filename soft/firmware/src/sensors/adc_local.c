@@ -1,17 +1,6 @@
 #include <math.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "adc_local.h"
-#include "sensors.h"
-#include "message.h"
-#include "main.h"
-#include "imu.h"
-#include "utils.h"
-#include "link.h"
-#include "param.h"
-#include "dsp.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

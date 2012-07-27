@@ -1,10 +1,4 @@
-#include "ch.h"
-#include "hal.h"
-
-#include "i2c_local.h"
-#include "main.h"
-
-#include "param.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

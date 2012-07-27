@@ -1,15 +1,12 @@
 #include <string.h>
 
-#include "ch.h"
-#include "hal.h"
+#include "uav.h"
+
 #include "chprintf.h"
 #include "chrtclib.h"
 #include "ff.h"
 
-#include "microsd.h"
-#include "logger.h"
-#include "message.h"
-#include "main.h"
+
 
 /*
  ******************************************************************************

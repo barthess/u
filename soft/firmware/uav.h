@@ -1,6 +1,46 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+#include "ch.h"
+#include "hal.h"
+
+
+
+
+#include "airspeed.h"
+#include "autopilot.h"
+#include "bkp.h"
+#include "bmp085.h"
+#include "cli.h"
+#include "cli_cmd.h"
+#include "dsp.h"
+#include "eeprom.h"
+#include "exti_local.h"
+#include "gps.h"
+#include "i2c_local.h"
+#include "irq_storm.h"
+#include "itg3200.h"
+#include "linkmgr.h"
+#include "link.h"
+#include "logger.h"
+#include "mag3110.h"
+#include "max1236.h"
+#include "message.h"
+#include "microsd.h"
+#include "mma8451.h"
+#include "param.h"
+#include "persistant.h"
+#include "sanity.h"
+#include "sensors.h"
+#include "servo.h"
+#include "timekeeping.h"
+#include "tlm_sender.h"
+#include "tmp75.h"
+#include "utils.h"
+
+#include "mavlink.h"
+#include "common.h"
+
 /******************************************************************
  * humanreadable names of serial drivers */
 #define LINKSD  SD2

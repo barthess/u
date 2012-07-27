@@ -3,15 +3,7 @@
 #include <math.h>
 #include <time.h>
 
-#include "ch.h"
-#include "hal.h"
-#include "sensors.h"
-#include "message.h"
-#include "gps.h"
-#include "bkp.h"
-#include "main.h"
-#include "link.h"
-#include "exti_local.h"
+#include "uav.h"
 
 /**
  * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,

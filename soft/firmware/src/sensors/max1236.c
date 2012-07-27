@@ -1,18 +1,4 @@
-#include "ch.h"
-#include "hal.h"
-
-#include "sensors.h"
-#include "message.h"
-#include "utils.h"
-#include "airspeed.h"
-#include "main.h"
-#include "i2c_local.h"
-#include "max1236.h"
-#include "link.h"
-#include "logger.h"
-#include "timekeeping.h"
-#include "dsp.h"
-#include "param.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

@@ -4,15 +4,7 @@
 
 #include <string.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "message.h"
-#include "param.h"
-#include "main.h"
-#include "persistant.h"
-#include "eeprom.h"
-
+#include "uav.h"
 
 /*
  ******************************************************************************

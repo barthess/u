@@ -1,12 +1,4 @@
-#include "ch.h"
-#include "hal.h"
-
-#include "main.h"
-#include "link.h"
-#include "cli.h"
-#include "linkmgr.h"
-#include "param.h"
-
+#include "uav.h"
 
 /*
  ******************************************************************************

@@ -1,12 +1,4 @@
-#include "mavlink.h"
-#include "common.h"
-
-#include "main.h"
-#include "autopilot.h"
-#include "servo.h"
-#include "message.h"
-#include "eeprom.h"
-#include "persistant.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

@@ -1,14 +1,6 @@
 #include <limits.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "tlm_sender.h"
-#include "param.h"
-#include "message.h"
-#include "main.h"
-#include "sanity.h"
-#include "timekeeping.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

@@ -1,15 +1,6 @@
 #include <stdlib.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "sensors.h"
-#include "message.h"
-#include "main.h"
-#include "i2c_local.h"
-#include "tmp75.h"
-#include "link.h"
-#include "utils.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

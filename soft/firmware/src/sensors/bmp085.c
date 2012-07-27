@@ -1,15 +1,6 @@
-#include "ch.h"
-#include "hal.h"
+#include "uav.h"
 
-#include "i2c_local.h"
-#include "bmp085.h"
 #include "bmp085_table.h"
-#include "sensors.h"
-#include "message.h"
-#include "main.h"
-#include "link.h"
-#include "dsp.h"
-#include "param.h"
 
 /*
  ******************************************************************************

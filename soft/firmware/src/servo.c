@@ -4,10 +4,7 @@
  *      Период - 20 mS.
  */
 
-#include "servo.h"
-#include "message.h"
-#include "main.h"
-#include "param.h"
+#include "uav.h"
 
 /*
  ******************************************************************************

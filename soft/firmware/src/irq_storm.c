@@ -1,9 +1,6 @@
 #include <stdlib.h>
 
-#include "ch.h"
-#include "hal.h"
-#include "main.h"
-#include "message.h"
+#include "uav.h"
 
 #if ENABLE_IRQ_STORM
 

@@ -1,18 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "ch.h"
-#include "hal.h"
-
-#include "i2c_local.h"
-#include "utils.h"
-#include "mag3110.h"
-#include "sensors.h"
-#include "message.h"
-#include "param.h"
-#include "main.h"
-#include "link.h"
-#include "timekeeping.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
