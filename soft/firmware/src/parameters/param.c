@@ -492,12 +492,9 @@ void ParametersInit(void){
   }
 
   /* check allowed size in EEPROM */
-//  uint32_t len = PARAM_ID_SIZE;
-//  len += sizeof(global_data[0].value);
-//  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
-//    chDbgPanic("not enough space in EEPROM settings slice");
-
-  if (sizeof(global_data) > EEPROM_SETTINGS_SIZE)
+  uint32_t len = PARAM_ID_SIZE;
+  len += sizeof(global_data[0].value);
+  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
     chDbgPanic("not enough space in EEPROM settings slice");
 
   /* read data from eeprom to memory mapped structure */

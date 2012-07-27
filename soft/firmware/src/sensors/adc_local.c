@@ -141,6 +141,7 @@ static WORKING_AREA(PowerKeeperThreadWA, 128);
 static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
+  raw_data.battery_remaining = *bat_fill * 1000;
 
   systime_t time = chTimeNow();     // T0
   while (TRUE) {
@@ -166,7 +167,7 @@ static msg_t PowerKeeperThread(void *arg){
  *******************************************************************************
  */
 void ADCInit_local(void){
-  bat_cap = ValueSearch("BAT_cap");
+  bat_cap  = ValueSearch("BAT_cap");
   bat_fill = ValueSearch("BAT_fill");
 
   adc_i_offset = ValueSearch("ADC_I_offset");

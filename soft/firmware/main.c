@@ -3,13 +3,15 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: somethin too strange with BAT_fill parameter (PowerKeeperThread)
+// TODO: Table dynamic pressure thermal compensation algorithm
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.
 // TODO: Power brown out handler.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
-// TODO: One more point in pressure thermal compensation algorith (at 60 celsius)
+// TODO: One more point in dynamic pressure thermal compensation algorith (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
 // TODO: WDT with backup domain for fuckups investigation.
 
