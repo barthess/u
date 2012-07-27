@@ -86,8 +86,7 @@ static msg_t PollMax1236Thread(void *arg) {
       press = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
       sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-      press = alphabeta_q31(&press_diff_filter, press + rest, 3);
-      press -= rest;
+      press = alphabeta_q31(&press_diff_filter, press + rest, 3) - rest;
 
       raw_data.pressure_dynamic = press;
       raw_data.altitude_sonar = sonar;
