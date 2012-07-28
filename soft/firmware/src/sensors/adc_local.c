@@ -75,7 +75,7 @@ static const ADCConversionGroup adccg = {
   adccallback,
   NULL,
   0,                        /* CR1 */
-  0,                        /* CR2 */
+  ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN10(ADC_SAMPLE_480) |
     ADC_SMPR1_SMP_AN11(ADC_SAMPLE_480) |
     ADC_SMPR1_SMP_AN12(ADC_SAMPLE_480) |
@@ -136,23 +136,37 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
 //  raw_data.secondary_voltage = samples[ADC_6V_OFFSET];
 }
 
-/* Поток для запроса данных АЦП по таймеру */
+/*
+ * Process ADC data.
+ */
 static WORKING_AREA(PowerKeeperThreadWA, 128);
 static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
-  raw_data.battery_remaining = *bat_fill * 1000;
+
+  uint32_t start_capacity = 0; /* mAh */
+  uint32_t start_bat_fill = 0;
 
   systime_t time = chTimeNow();     // T0
   while (TRUE) {
     time += MS2ST(PWR_CHECK_PERIOD);              // Next deadline
 
+    if (start_bat_fill != *bat_fill){
+      start_bat_fill = *bat_fill;
+      raw_data.battery_consumed = 0;
+      start_capacity = (*bat_fill * *bat_cap) / 100;
+    }
+
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
     comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
 
-    *bat_fill -= (comp_data.main_current * PWR_CHECK_PERIOD) / 1000;
+    raw_data.battery_consumed += (comp_data.main_current * PWR_CHECK_PERIOD) / CH_FREQUENCY;
 
-    mavlink_sys_status_struct.battery_remaining = (*bat_fill * 100) / *bat_cap;
+    /* ((mAc) / 3600) * 100    mAc * 100        mAc
+     * -------------------- = ------------ = ----------
+     *      start             start * 3600   36 * start
+     */
+    mavlink_sys_status_struct.battery_remaining = start_bat_fill - raw_data.battery_consumed / (36 * start_capacity);
     mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
 

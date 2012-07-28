@@ -104,7 +104,7 @@ struct RawData{
   uint32_t groundspeed;       /* земляная скорость (количество миллисекунд между импульсами)*/
   uint16_t engine_rpm;        /* Тахометр (rpm)*/
 
-  uint8_t  battery_remaining; /**/
+  uint32_t battery_consumed;  /* mAc sourced from battery since startup */
 };
 
 

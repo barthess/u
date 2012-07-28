@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: somethin too strange with BAT_fill parameter (PowerKeeperThread)
 // TODO: Table dynamic pressure thermal compensation algorithm
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
