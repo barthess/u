@@ -38,9 +38,9 @@ extern CompensatedData comp_data;
  * Принимает сырое значение с датчика и температуру в градусах цельсия*/
 static uint16_t zerocomp(uint16_t raw, int8_t t){
 
-  putinrange(t, MIN_T, MAX_T);
+  putinrange(t, MIN_TEMP, MAX_TEMP);
 
-  uint16_t zero = zerocomp_table[t - MIN_T];
+  uint16_t zero = zerocomp_table[t - MIN_TEMP];
 
   if (zero >= raw)
     return 0;

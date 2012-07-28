@@ -1,8 +1,8 @@
 #ifndef AIRSPEED_TABLE_H_
 #define AIRSPEED_TABLE_H_
 
-#define MIN_T   -10
-#define MAX_T   40
+#define MIN_TEMP   -10
+#define MAX_TEMP   40
 
 static const uint16_t zerocomp_table[] = {
   33 , // -10 celsius
