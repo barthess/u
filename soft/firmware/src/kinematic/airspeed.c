@@ -3,11 +3,9 @@
  * Pressure measurement unit
  * Рассчитывает воздушную скорость по сырым данным с MPX5100
  */
-#include "ch.h"
-#include "hal.h"
 
-#include "sensors.h"
-#include "utils.h"
+#include "uav.h"
+#include "airspeed_table.h"
 
 /*
  ******************************************************************************
@@ -38,15 +36,11 @@ extern CompensatedData comp_data;
 
 /** термокомпенсация нуля
  * Принимает сырое значение с датчика и температуру в градусах цельсия*/
-static uint16_t zerocomp(uint16_t raw, int32_t t){
+static uint16_t zerocomp(uint16_t raw, int8_t t){
 
-  putinrange(t, -10, 40);
+  putinrange(t, MIN_T, MAX_T);
 
-  int32_t c1 = -9;
-  int32_t c2 = 408;
-  int32_t c3 = 7587;
-  int32_t c4 = 60011;
-  int32_t zero = (c1*t*t*t + c2*t*t + c3*t + c4) / 1000;
+  uint16_t zero = zerocomp_table[t - MIN_T];
 
   if (zero >= raw)
     return 0;
@@ -67,7 +61,7 @@ static uint16_t zerocomp(uint16_t raw, int32_t t){
 
 float calc_air_speed(uint16_t press_diff_raw){
   uint16_t p;
-  p = zerocomp(press_diff_raw, (int32_t)comp_data.temp_onboard);
+  p = zerocomp(press_diff_raw, comp_data.temp_onboard);
   p = ((p * Radc) / Smpx) / KU; /* давление в паскалях */
   return sqrtf((float)(2*p) / 1.2);
 }
