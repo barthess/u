@@ -8,7 +8,7 @@
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
 // TODO: Rewrite messaging holy crap.
-// TODO: Power brown out handler.
+// TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
 // TODO: One more point in dynamic pressure thermal compensation algorith (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.

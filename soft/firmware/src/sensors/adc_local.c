@@ -144,8 +144,7 @@ static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;
 
-  uint32_t start_capacity = 0; /* mAh */
-  uint32_t start_bat_fill = 0;
+  uint32_t start_bat_fill = 0; /* percents */
 
   systime_t time = chTimeNow();     // T0
   while (TRUE) {
@@ -154,7 +153,6 @@ static msg_t PowerKeeperThread(void *arg){
     if (start_bat_fill != *bat_fill){
       start_bat_fill = *bat_fill;
       raw_data.battery_consumed = 0;
-      start_capacity = (*bat_fill * *bat_cap) / 100;
     }
 
     comp_data.main_current = get_comp_main_current(raw_data.main_current);
@@ -166,7 +164,7 @@ static msg_t PowerKeeperThread(void *arg){
      * -------------------- = ------------ = ----------
      *      start             start * 3600   36 * start
      */
-    mavlink_sys_status_struct.battery_remaining = start_bat_fill - raw_data.battery_consumed / (36 * start_capacity);
+    mavlink_sys_status_struct.battery_remaining = start_bat_fill - raw_data.battery_consumed / (36 * *bat_cap);
     mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
 
