@@ -1,6 +1,7 @@
 #ifndef PARAM_H_
 #define PARAM_H_
 
+#include "cli_cmd.h"
 
 /* периодичность посылки данных в милисекундах */
 #define SEND_MIN                  20
@@ -31,9 +32,12 @@ struct GlobalParam_t
   const uint8_t param_type;
 };
 
+
+int32_t _key_index_search(const char* key);
+void *ValueSearch(const char *str);
 bool_t set_global_param(void *value,  GlobalParam_t *param);
 void ParametersInit(void);
-int32_t _key_index_search(char* key);
-void *ValueSearch(char *str);
+Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
+
 
 #endif /* PARAM_H_ */

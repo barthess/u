@@ -30,7 +30,7 @@ extern RawData raw_data;
  *******************************************************************************
  */
 
-Thread* clear_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* clear_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
   (void)argv;
@@ -39,7 +39,7 @@ Thread* clear_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
   return NULL;
 }
 
-Thread* list_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* list_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argc;
   (void)argv;
   int i = 0;
@@ -48,13 +48,13 @@ Thread* list_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
   while(cmdarray[i].name != NULL){
     cli_print("\t");
     cli_print(cmdarray[i].name);
-    cli_print("\n\r");
+    cli_print(ENDL);
     i++;
   }
   return NULL;
 }
 
-Thread* echo_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
 
   int i = 0;
@@ -62,11 +62,11 @@ Thread* echo_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
   while (i < argc)
     cli_print(argv[i++]);
 
-  cli_print("\n\r");
+  cli_print(ENDL);
   return NULL;
 }
 
-Thread* help_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
   (void)argv;
@@ -104,14 +104,7 @@ static msg_t LoopCmdThread(void *arg){
   return 0;
 }
 
-
-
-
-
-
-
-
-Thread* loop_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
   (void)argv;
@@ -125,7 +118,10 @@ Thread* loop_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
 }
 
 
-Thread* reboot_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+
+
+
+Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
   (void)cmdarray;
@@ -135,7 +131,7 @@ Thread* reboot_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
   return NULL;
 }
 
-Thread* sleep_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
   (void)cmdarray;
@@ -151,7 +147,7 @@ Thread* sleep_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
   return NULL;
 }
 
-Thread* selftest_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
   (void)cmdarray;
@@ -160,11 +156,12 @@ Thread* selftest_cmd(int argc, const char * const * argv, const ShellCmd_t *cmda
   return NULL;
 }
 
-Thread* sensor_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
   (void)cmdarray;
-  cli_print("temperature is ... \n\r");
+  cli_print("temperature is ...");
+  cli_print(ENDL);
   return NULL;
 }
 
@@ -173,13 +170,13 @@ Thread* sensor_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
 /**
  * helper function
  */
-void long_cli_print(const char * str, int n, int nres){
+void cli_print_long(const char * str, int n, int nres){
   cli_print(str);
   if (nres > n)
-    cli_print("\n\r");
+    cli_print(ENDL);
 }
 
-Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
   (void)argv;
@@ -189,40 +186,40 @@ Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
   char str[n];
 
   nres = snprintf(str, n, "Kernel:       %s\r\n", CH_KERNEL_VERSION);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 
 #ifdef CH_COMPILER_NAME
   nres = snprintf(str, n, "Compiler:     %s\r\n", CH_COMPILER_NAME);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 
   nres = snprintf(str, n, "Architecture: %s\r\n", CH_ARCHITECTURE_NAME);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 
 #ifdef CH_CORE_VARIANT_NAME
   nres = snprintf(str, n, "Core Variant: %s\r\n", CH_CORE_VARIANT_NAME);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 
 #ifdef CH_PORT_INFO
   nres = snprintf(str, n, "Port Info:    %s\r\n", CH_PORT_INFO);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 
 #ifdef PLATFORM_NAME
   nres = snprintf(str, n, "Platform:     %s\r\n", PLATFORM_NAME);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 
 #ifdef BOARD_NAME
   nres = snprintf(str, n, "Board:        %s\r\n", BOARD_NAME);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 
 #ifdef __DATE__
 #ifdef __TIME__
   nres = snprintf(str, n, "Build time:   %s%s%s\r\n", __DATE__, " - ", __TIME__);
-  long_cli_print(str, n, nres);
+  cli_print_long(str, n, nres);
 #endif
 #endif
 
@@ -233,7 +230,7 @@ Thread* uname_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
 
 
 
-Thread* ps_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
   (void)argv;

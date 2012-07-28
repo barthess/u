@@ -71,7 +71,9 @@ void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
 #define command_denied() (confirmation(MAV_RESULT_DENIED, mavlink_command_long_struct->command))
 
 
-/* прием и обработка комманд с земли*/
+/**
+ * прием и обработка комманд с земли
+ */
 void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
   /* all this flags defined in MAV_CMD enum */
@@ -133,7 +135,6 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 }
 
 
-
 /**
  * Предположительно:
  * крутит ПИД и на его основе выставляет значения в сервы
@@ -144,18 +145,20 @@ static msg_t AutopilotThread(void* arg){
   chRegSetThreadName("Autopilot");
   (void)arg;
 
+  uint32_t i = 0;
+
   while (TRUE) {
-    chThdSleepMilliseconds(10);
+    chThdSleepMilliseconds(20);
     /* тестовые величины в ШИМ */
-    Servo0Set(0);
-    Servo1Set(64);
-    Servo2Set(128);
-    Servo3Set(255);
-    ServoCarThrottleSet(255);
+    Servo4Set(0);
+    Servo5Set(64);
+    Servo6Set(128);
+    Servo7Set(255);
+    ServoCarThrottleSet((i >> 2) & 0xFF);
+    i++;
   }
   return 0;
 }
-
 
 
 /**

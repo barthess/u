@@ -1,5 +1,6 @@
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "uav.h"
 
@@ -181,7 +182,7 @@ GlobalParam_t global_data[] = {
   {"FLEN_reserved4",  {.u32 = 0},          {.u32 = 4},          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
 
   /* fake field with 14 symbols name */
-  {"fake_14_bytes_",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
+  {"param_end_mark",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
 };
 
 const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
@@ -254,7 +255,7 @@ static bool_t _uint_setval(void *value,  GlobalParam_t *param){
 /**
  * Checks parameter and writes it to global struct.
  */
-static bool_t set_parameter(mavlink_param_set_t *paramset){
+static bool_t verify_parameter(mavlink_param_set_t *paramset){
 
   int32_t index = -1;
   floatint v;
@@ -285,16 +286,13 @@ static bool_t set_parameter(mavlink_param_set_t *paramset){
       break;
 
     default:
-      chDbgPanic("Usupported variable type");
+      return PARAM_FAILED;
       break;
     }
-
-    /* If value fall out of min..max bound than just set nearest allowable value */
-    return set_global_param(&(paramset->param_value), &global_data[index]);
   }
 
   /* default returning value */
-  return PARAM_FAILED;
+  return PARAM_SUCCESS;
 }
 
 /**
@@ -378,8 +376,10 @@ static msg_t ParametersThread(void *arg){
     case MAVLINK_MSG_ID_PARAM_SET:
       set = (mavlink_param_set_t *)(input_mail->payload);
       input_mail->payload = NULL;
-      set_parameter(set);
-      send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
+      if (verify_parameter(set) == PARAM_SUCCESS){
+        set_global_param(&(set->param_value), &global_data[_key_index_search(set->param_id)]);
+        send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
+      }
       break;
 
     /*
@@ -421,7 +421,7 @@ static msg_t ParametersThread(void *arg){
  * @return      Index in dictionary.
  * @retval -1   key not found.
  */
-int32_t _key_index_search(char* key){
+int32_t _key_index_search(const char* key){
   int32_t i = 0;
 
   for (i = 0; i < (int)ONBOARD_PARAM_COUNT; i++){
@@ -434,7 +434,7 @@ int32_t _key_index_search(char* key){
 /**
  * Return pointer to value.
  */
-void *ValueSearch(char *str){
+void *ValueSearch(const char *str){
   int32_t i = -1;
 
   i = _key_index_search(str);
@@ -460,15 +460,12 @@ bool_t set_global_param(void *value,  GlobalParam_t *param){
   case MAVLINK_TYPE_FLOAT:
     return _float_setval(value, param);
     break;
-
   case MAVLINK_TYPE_UINT32_T:
     return _uint_setval(value, param);
     break;
-
   case MAVLINK_TYPE_INT32_T:
     return _int_setval(value, param);
     break;
-
   default:
     chDbgPanic("Unsupported variable type");
     break;
@@ -507,3 +504,111 @@ void ParametersInit(void){
           NULL);
 }
 
+/**
+ *
+ */
+void _param_cli_set(const char * val, uint32_t i){
+
+  switch(global_data[i].param_type){
+  case MAVLINK_TYPE_FLOAT:
+    sscanf(val, "%f", &global_data[i].value.f32);
+    break;
+  case MAVLINK_TYPE_INT32_T:
+    sscanf(val, "%i", (int *)&(global_data[i].value.i32));
+    break;
+  default: // uint32_t
+    sscanf(val, "%u", (unsigned int *)&global_data[i].value.u32);
+    break;
+  }
+}
+
+/**
+ *
+ */
+void _param_cli_print(uint32_t i){
+
+  int n = 32;
+  int nres = 0;
+  char str[n];
+
+  switch(global_data[i].param_type){
+  case MAVLINK_TYPE_FLOAT:
+    nres = snprintf(str, n, ": %f", global_data[i].value.f32);
+    break;
+  case MAVLINK_TYPE_INT32_T:
+    nres = snprintf(str, n, ": %d", (int)global_data[i].value.i32);
+    break;
+  default: // uint32_t
+    nres = snprintf(str, n, ": %u", (unsigned int)global_data[i].value.u32);
+    break;
+  }
+
+  cli_print(global_data[i].name);
+  cli_print_long(str, n, nres);
+  cli_print(ENDL);
+}
+
+/**
+ *
+ */
+void _param_print_all(void){
+  uint32_t i = 0;
+
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++)
+    _param_cli_print(i);
+}
+
+
+/**
+ * Working with parameters from CLI.
+ */
+Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)cmdarray;
+  int32_t i = -1;
+
+  /* no arguments */
+  if (argc == 0)
+    _param_print_all();
+
+  /* one argument */
+  else if (argc == 1){
+    if (strcmp(*argv, "help") == 0){
+      cli_print("This is help message");
+      cli_print(ENDL);
+    }
+    else if (strcmp(*argv, "save") == 0){
+      cli_print("Saving to EEPROM... ");
+      save_params_to_eeprom();
+      cli_print("Done.");
+      cli_print(ENDL);
+    }
+    else{
+      i = _key_index_search(*argv);
+      if (i != -1)
+        _param_cli_print(i);
+      else{
+        cli_print("ERROR: unknown parameter name");
+        cli_print(ENDL);
+      }
+    }
+  }
+  /* two arguments */
+  else if (argc == 2){
+    i = -1;
+    i = _key_index_search(*argv);
+    if (i != -1){
+      _param_cli_set(*argv+1 ,i);
+    }
+    else{
+      cli_print("ERROR: unknown parameter name");
+      cli_print(ENDL);
+    }
+  }
+  else{
+    cli_print("ERROR: bad arguments. Try \"param\" help");
+    cli_print(ENDL);
+  }
+
+
+  return NULL;
+}

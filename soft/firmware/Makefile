@@ -105,6 +105,7 @@ CSRC = $(PORTSRC) \
        src/kinematic/imu.c \
        src/kinematic/vector3d.c \
        src/kinematic/dcm.c \
+       src/kinematic/gnc.c \
        src/kinematic/airspeed.c \
        src/sanity.c \
        src/parameters/param.c \

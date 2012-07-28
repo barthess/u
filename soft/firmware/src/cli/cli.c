@@ -18,7 +18,6 @@
  ******************************************************************************
  */
 extern MemoryHeap LinkThdHeap;
-extern GlobalParam_t global_data[];
 
 /*
  *******************************************************************************
@@ -35,19 +34,20 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
  */
 
 static ShellCmd_t chibiutils[] = {
-    {"ps",        &ps_cmd,        NULL},
-    {"uname",     &uname_cmd,     NULL},
-    {"help",      &help_cmd,      NULL},
-    {"clear",     &clear_cmd,     NULL},
-    {"list",      &list_cmd,      NULL},
-    {"loop",      &loop_cmd,      NULL},
-    {"echo",      &echo_cmd,      NULL},
+    {"ps",        &ps_clicmd,        NULL},
+    {"uname",     &uname_clicmd,     NULL},
+    {"help",      &help_clicmd,      NULL},
+    {"clear",     &clear_clicmd,     NULL},
+    {"list",      &list_clicmd,      NULL},
+    {"loop",      &loop_clicmd,      NULL},
+    {"echo",      &echo_clicmd,      NULL},
     {"date",      &date_cmd,      NULL},
-    {"reboot",    &reboot_cmd,    NULL},
-    {"sleep",     &sleep_cmd,     NULL},
-    {"selftest",  &selftest_cmd,  NULL},
-    {"sensor",    &sensor_cmd,    NULL},
+    {"reboot",    &reboot_clicmd,    NULL},
+    {"sleep",     &sleep_clicmd,     NULL},
+    {"selftest",  &selftest_clicmd,  NULL},
+    {"sensor",    &sensor_clicmd,    NULL},
     {"logout",    &logout_cmd,    NULL},
+    {"param",     &param_clicmd,     NULL},
     //{"man",       &man_cmd,       NULL},
     //{"kill",    &kill_func,   NULL},
     {NULL,      NULL,         NULL}/* end marker */
@@ -229,13 +229,7 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
   (void)argv;
   (void)cmdarray;
 
-  int sh_enable_index = -1;
-
-  sh_enable_index = _key_index_search("SH_enable");
-  if (sh_enable_index == -1)
-    chDbgPanic("not found");
-  else
-    global_data[sh_enable_index].value.u32 = 0;
+  *(uint32_t*)ValueSearch("SH_enable") = 0;
 
   return NULL;
 }

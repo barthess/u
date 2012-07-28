@@ -16,6 +16,7 @@
 #include "dsp.h"
 #include "eeprom.h"
 #include "exti_local.h"
+#include "gnc.h"
 #include "gps.h"
 #include "i2c_local.h"
 #include "irq_storm.h"

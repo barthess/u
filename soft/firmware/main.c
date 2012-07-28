@@ -3,6 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: cli writes parameters without any checks.
+// TODO: more returnig param statuses.
+// TODO: write to EEPROM only actually changed parameters.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
@@ -83,6 +86,7 @@ int main(void) {
   I2CInitLocal(); /* also starts EEPROM and load global parameters from it */
   MavInit();      /* mavlink constants initialization must be called after I2C init */
   SensorsInit();  /* sensors use I2C */
+  GncInit();
   TlmSenderInit();
   ServoInit();
   AutopilotInit();  /* autopilot must be started only after servos */

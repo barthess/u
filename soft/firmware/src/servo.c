@@ -155,8 +155,13 @@ void ServoCarThrottleSet(uint8_t angle){
     break_   = (SERVO_MAX * angle) / (128 - dz/2);
     break_   = __USAT((SERVO_MAX - break_), 16);
 
-    Servo6Set((uint16_t)(throttle & 0xFFFF));
-    Servo7Set((uint16_t)(break_   & 0xFFFF));
+    pwmEnableChannel(servocfg_array[0].pwmp, servocfg_array[0].pwmchannel, 0);
+    pwmEnableChannel(servocfg_array[1].pwmp, servocfg_array[1].pwmchannel, 0);
+    pwmEnableChannel(servocfg_array[2].pwmp, servocfg_array[2].pwmchannel, (uint16_t)(throttle & 0xFFFF));
+    pwmEnableChannel(servocfg_array[3].pwmp, servocfg_array[3].pwmchannel, (uint16_t)(break_   & 0xFFFF));
+
+//    Servo6Set((uint16_t)(throttle & 0xFFFF));
+//    Servo7Set((uint16_t)(break_   & 0xFFFF));
   }
   else
     return;
