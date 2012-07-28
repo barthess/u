@@ -145,6 +145,7 @@ static msg_t PowerKeeperThread(void *arg){
   (void)arg;
 
   uint32_t start_bat_fill = 0; /* percents */
+  uint8_t tmp = 0;
 
   systime_t time = chTimeNow();     // T0
   while (TRUE) {
@@ -164,7 +165,11 @@ static msg_t PowerKeeperThread(void *arg){
      * -------------------- = ------------ = ----------
      *      start             start * 3600   36 * start
      */
-    mavlink_sys_status_struct.battery_remaining = start_bat_fill - raw_data.battery_consumed / (36 * *bat_cap);
+    tmp = raw_data.battery_consumed / (36 * *bat_cap);
+    if (tmp <= start_bat_fill)
+      mavlink_sys_status_struct.battery_remaining = start_bat_fill - tmp;
+    else
+      mavlink_sys_status_struct.battery_remaining = 0;
     mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
 
