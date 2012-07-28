@@ -11,7 +11,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalParam_t global_data[];
 extern EventSource init_event;
 
 /*
@@ -26,7 +25,7 @@ static SerialConfig xbee_ser_cfg = {
     USART_CR3_CTSE,
 };
 
-static int32_t sh_enable_index = -1;
+static uint32_t *sh_enable;
 
 /*
  *******************************************************************************
@@ -48,7 +47,7 @@ static msg_t LinkMgrThread(void *arg){
   chThdSleepMilliseconds(4000);
 
   /* по значению флага определяем, что надо изначально запустить */
-  if (global_data[sh_enable_index].value.u32 == 0){
+  if (*sh_enable == 0){
     SpawnMavlinkThreads((SerialDriver *)arg);
     shell_active = FALSE;
   }
@@ -64,14 +63,14 @@ static msg_t LinkMgrThread(void *arg){
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if(shell_active == TRUE){
-      if(global_data[sh_enable_index].value.u32 == 0){
+      if(*sh_enable == 0){
         KillShellThreads();
         SpawnMavlinkThreads((SerialDriver *)arg);
         shell_active = FALSE;
       }
     }
     else{
-      if(global_data[sh_enable_index].value.u32 == 1){
+      if(*sh_enable == 1){
         KillMavlinkThreads();
         SpawnShellThreads((SerialDriver *)arg);
         shell_active = TRUE;
@@ -89,11 +88,9 @@ static msg_t LinkMgrThread(void *arg){
  */
 void LinkMgrInit(void){
 
-  sdStart(&LINKSD, &xbee_ser_cfg);
+  sh_enable = ValueSearch("SH_enable");
 
-  sh_enable_index = _key_index_search("SH_enable");
-  if (sh_enable_index == -1)
-    chDbgPanic("not found");
+  sdStart(&LINKSD, &xbee_ser_cfg);
 
   chThdCreateStatic(LinkMgrThreadWA,
           sizeof(LinkMgrThreadWA),
