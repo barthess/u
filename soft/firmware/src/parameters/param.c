@@ -186,8 +186,6 @@ GlobalParam_t global_data[] = {
   {"param_end_mark",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
 };
 
-//const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES

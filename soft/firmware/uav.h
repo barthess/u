@@ -4,9 +4,6 @@
 #include "ch.h"
 #include "hal.h"
 
-
-
-
 #include "airspeed.h"
 #include "autopilot.h"
 #include "bkp.h"
