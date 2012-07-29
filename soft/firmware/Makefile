@@ -109,6 +109,7 @@ CSRC = $(PORTSRC) \
        src/kinematic/airspeed.c \
        src/sanity.c \
        src/parameters/param.c \
+       src/parameters/param_cli.c \
        src/parameters/persistant.c \
        src/timekeeping.c \
        src/sensors/gps.c \

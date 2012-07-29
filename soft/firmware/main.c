@@ -76,11 +76,11 @@ int main(void) {
 
   EepromOpen(&EepromFile);
 
-  LinkMgrInit();
   MsgInit();
   SanityControlInit();
-  TimekeepingInit();
   I2CInitLocal(); /* also starts EEPROM and load global parameters from it */
+  LinkMgrInit();
+  TimekeepingInit();
   MavInit();      /* mavlink constants initialization must be called after I2C init */
   SensorsInit();  /* sensors use I2C */
   GncInit();

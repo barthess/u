@@ -166,7 +166,6 @@ Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
 }
 
 
-
 /**
  * helper function
  */
@@ -176,6 +175,9 @@ void cli_print_long(const char * str, int n, int nres){
     cli_print(ENDL);
 }
 
+/**
+ *
+ */
 Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;

@@ -1,6 +1,5 @@
 #include <math.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "uav.h"
 
@@ -25,6 +24,8 @@ extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_param_value_t mavlink_param_value_struct;
+
+uint32_t OnboardParamCount = 0;
 
 /**
  *
@@ -185,7 +186,7 @@ GlobalParam_t global_data[] = {
   {"param_end_mark",  {.u32 = 1},          {.u32 = 1048},       {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
 };
 
-const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
+//const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t));
 
 /*
  ******************************************************************************
@@ -194,7 +195,6 @@ const uint32_t ONBOARD_PARAM_COUNT = (sizeof(global_data) / sizeof(GlobalParam_t
  */
 static Mailbox param_confirm_mb;
 static msg_t param_confirm_mb_buf[1];
-
 
 /*
  *******************************************************************************
@@ -288,11 +288,11 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
 
-  if ((index >= 0) && (index <= (int)ONBOARD_PARAM_COUNT)){
+  if ((index >= 0) && (index <= (int)OnboardParamCount)){
     /* fill all fields */
     param_value_struct->param_value = global_data[index].value.f32;
     param_value_struct->param_type  = global_data[index].param_type;
-    param_value_struct->param_count = ONBOARD_PARAM_COUNT;
+    param_value_struct->param_count = OnboardParamCount;
     param_value_struct->param_index = index;
     for (j = 0; j < ONBOARD_PARAM_NAME_LENGTH; j++)
       param_value_struct->param_id[j] = global_data[index].name[j];
@@ -318,7 +318,7 @@ static bool_t send_value(Mail *param_value_mail,
  */
 static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
   uint32_t i = 0;
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < OnboardParamCount; i++){
     send_value(mail, param_struct, NULL, i);
   }
 }
@@ -382,70 +382,6 @@ static msg_t ParametersThread(void *arg){
   return 0;
 }
 
-/**
- *
- */
-param_status_t _param_cli_set(const char * val, uint32_t i){
-
-  floatint v;
-  int sscanf_status;
-
-  switch(global_data[i].param_type){
-  case MAVLINK_TYPE_FLOAT:
-    sscanf_status = sscanf(val, "%f", &v.f32);
-    break;
-
-  case MAVLINK_TYPE_INT32_T:
-    sscanf_status = sscanf(val, "%i", (int*)&v.i32);
-    break;
-
-  default: // uint32_t
-    sscanf_status = sscanf(val, "%u", (unsigned int*)&v.u32);
-    break;
-  }
-
-  if (sscanf_status != 1)
-    return PARAM_INCONSISTENT;
-  else
-    return set_global_param(&v, &global_data[i]);
-}
-
-/**
- *
- */
-void _param_cli_print(uint32_t i){
-
-  int n = 32;
-  int nres = 0;
-  char str[n];
-
-  switch(global_data[i].param_type){
-  case MAVLINK_TYPE_FLOAT:
-    nres = snprintf(str, n, ": %f", global_data[i].value.f32);
-    break;
-  case MAVLINK_TYPE_INT32_T:
-    nres = snprintf(str, n, ": %d", (int)global_data[i].value.i32);
-    break;
-  default: // uint32_t
-    nres = snprintf(str, n, ": %u", (unsigned int)global_data[i].value.u32);
-    break;
-  }
-
-  cli_print(global_data[i].name);
-  cli_print_long(str, n, nres);
-  cli_print(ENDL);
-}
-
-/**
- *
- */
-void _param_print_all(void){
-  uint32_t i = 0;
-
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++)
-    _param_cli_print(i);
-}
-
 
 /*
  *******************************************************************************
@@ -462,7 +398,7 @@ void _param_print_all(void){
 int32_t key_index_search(const char* key){
   int32_t i = 0;
 
-  for (i = 0; i < (int)ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < (int)OnboardParamCount; i++){
     if (strcmp(key, global_data[i].name) == 0)
       return i;
   }
@@ -513,11 +449,13 @@ param_status_t set_global_param(void *value,  GlobalParam_t *param){
  */
 void ParametersInit(void){
 
+  OnboardParamCount = (sizeof(global_data) / sizeof(GlobalParam_t));
+
   chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
 
   /* check hardcoded values */
   uint32_t i = 0;
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < OnboardParamCount; i++){
     if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
       chDbgPanic("name too long");
   }
@@ -525,7 +463,7 @@ void ParametersInit(void){
   /* check allowed size in EEPROM */
   uint32_t len = PARAM_ID_SIZE;
   len += sizeof(global_data[0].value);
-  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
+  if (OnboardParamCount * len > EEPROM_SETTINGS_SIZE)
     chDbgPanic("not enough space in EEPROM settings slice");
 
   /* read data from eeprom to memory mapped structure */
@@ -536,73 +474,4 @@ void ParametersInit(void){
           LINK_THREADS_PRIO + 1,
           ParametersThread,
           NULL);
-}
-
-/*
- * confirmation of changes
- */
-void _param_cli_confirm(param_status_t status){
-  if (status == PARAM_OK)
-    cli_println("Success");
-  else if (status == PARAM_CLAMPED)
-    cli_println("Value clamed to safety limits");
-  else if (status == PARAM_NOT_CHANGED)
-    cli_println("Value not changed");
-  else if (status == PARAM_INCONSISTENT)
-    cli_println("Value inconsistent");
-  else
-    cli_println("Unknown error");
-}
-
-/**
- * Working with parameters from CLI.
- */
-Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-
-  (void)cmdarray;
-  int32_t i = -1;
-  param_status_t status;
-
-  /* no arguments */
-  if (argc == 0)
-    _param_print_all();
-
-  /* one argument */
-  else if (argc == 1){
-    if (strcmp(*argv, "help") == 0){
-      cli_println("This is help message");
-    }
-    else if (strcmp(*argv, "save") == 0){
-      cli_print("Please wait. Saving to EEPROM... ");
-      save_params_to_eeprom();
-      cli_println("Done.");
-    }
-    else{
-      i = key_index_search(*argv);
-      if (i != -1)
-        _param_cli_print(i);
-      else{
-        cli_println("ERROR: unknown parameter name");
-      }
-    }
-  }
-
-  /* two arguments */
-  else if (argc == 2){
-    i = -1;
-    i = key_index_search(argv[0]);
-    if (i != -1){
-      status = _param_cli_set(argv[1], i);
-      _param_cli_confirm(status);
-    }
-    else{
-      cli_println("ERROR: unknown parameter name");
-    }
-  }
-  else{
-    cli_println("ERROR: bad arguments. Try \"param\" help");
-  }
-
-  /* cli stub */
-  return NULL;
 }

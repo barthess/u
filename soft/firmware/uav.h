@@ -30,6 +30,7 @@
 #include "microsd.h"
 #include "mma8451.h"
 #include "param.h"
+#include "param_cli.h"
 #include "persistant.h"
 #include "sanity.h"
 #include "sensors.h"

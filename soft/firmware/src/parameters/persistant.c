@@ -19,7 +19,7 @@
  */
 extern EepromFileStream EepromFile;
 extern GlobalParam_t global_data[];
-extern const uint32_t ONBOARD_PARAM_COUNT;
+extern const uint32_t OnboardParamCount;
 
 /*
  ******************************************************************************
@@ -48,7 +48,7 @@ bool_t load_params_from_eeprom(void){
 
   chFileStreamSeek(&EepromFile, EEPROM_SETTINGS_START);
 
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < OnboardParamCount; i++){
 
     /* reade field from EEPROM and check number of read bytes */
     status = chFileStreamRead(&EepromFile, eeprombuf, sizeof(eeprombuf));
@@ -82,7 +82,7 @@ bool_t save_params_to_eeprom(void){
   if (chFileStreamGetPosition(&EepromFile) != EEPROM_SETTINGS_START)
     chDbgPanic("seek failed");
 
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+  for (i = 0; i < OnboardParamCount; i++){
 
     palClearPad(GPIOB, GPIOB_LED_R);
 

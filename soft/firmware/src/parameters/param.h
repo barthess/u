@@ -8,11 +8,12 @@
 #define SEND_MAX                  5000
 #define SEND_OFF                  SEND_MIN - 1
 
-
 #define ONBOARD_PARAM_NAME_LENGTH 15
 #define PARAM_ID_SIZE             16
 
-
+/**
+ *
+ */
 typedef struct GlobalParam_t GlobalParam_t;
 
 /**
@@ -48,7 +49,6 @@ int32_t key_index_search(const char* key);
 void *ValueSearch(const char *str);
 param_status_t set_global_param(void *value,  GlobalParam_t *param);
 void ParametersInit(void);
-Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 
 
 #endif /* PARAM_H_ */
