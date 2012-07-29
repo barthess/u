@@ -179,7 +179,7 @@ void ServoNeutral(void){
 
 void ServoInit(void){
 
-  servoblock_index = _key_index_search("SERVO_1_min");
+  servoblock_index = key_index_search("SERVO_1_min");
   if (servoblock_index == -1)
     chDbgPanic("key not found");
 
