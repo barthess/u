@@ -1,9 +1,6 @@
-#include "ch.h"
-#include "hal.h"
+#include <math.h>
 
-#include "message.h"
-#include "param.h"
-#include "math.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
