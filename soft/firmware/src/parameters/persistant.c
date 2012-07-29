@@ -56,7 +56,7 @@ bool_t load_params_from_eeprom(void){
       return PARAM_FAILED;
 
     /* search value by key and set it if found */
-    index = _key_index_search((char *)eeprombuf);
+    index = key_index_search((char *)eeprombuf);
       if (index != -1){
         v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
             eeprombuf[PARAM_ID_SIZE + 1] << 16 |

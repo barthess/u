@@ -27,7 +27,9 @@ struct ShellCmd_t{
   const ShellCmd_t *subcmd;
 };
 
+
 void cli_print(const char *str);
+void cli_println(const char *str);
 char get_char (void);
 
 void CliInit(void);

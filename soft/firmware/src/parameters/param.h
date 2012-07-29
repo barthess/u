@@ -32,10 +32,21 @@ struct GlobalParam_t
   const uint8_t param_type;
 };
 
+/**
+ * @brief   Supported modes for the I2C bus.
+ */
+typedef enum {
+  PARAM_OK = 1,
+  PARAM_NOT_CHANGED = 2,  /* parameter allready contain this value */
+  PARAM_CLAMPED = 3,      /* value claped to limits */
+  PARAM_INCONSISTENT = 4, /* NaN or INF */
+  PARAM_WRONG_TYPE = 5,   /* unsuppoerted parameter type */
+} param_status_t;
 
-int32_t _key_index_search(const char* key);
+
+int32_t key_index_search(const char* key);
 void *ValueSearch(const char *str);
-bool_t set_global_param(void *value,  GlobalParam_t *param);
+param_status_t set_global_param(void *value,  GlobalParam_t *param);
 void ParametersInit(void);
 Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 

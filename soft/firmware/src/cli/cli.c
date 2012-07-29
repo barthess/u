@@ -85,7 +85,7 @@ int32_t cmd_search(const char* key, const ShellCmd_t *cmdarray){
 }
 
 /**
- * Print routine
+ * Print routine for microrl.
  */
 void cli_print(const char *str){
   int i = 0;
@@ -93,6 +93,14 @@ void cli_print(const char *str){
     sdPut(shell_sdp, str[i]);
     i++;
   }
+}
+
+/**
+ * Convenience function
+ */
+void cli_println(const char *str){
+  cli_print(str);
+  cli_print(ENDL);
 }
 
 /**

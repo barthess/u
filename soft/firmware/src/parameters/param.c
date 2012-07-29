@@ -206,93 +206,66 @@ static msg_t param_confirm_mb_buf[1];
 
 /**
  * Float boundary checker.
+ * Only write and emit changes if there is actually a difference
  */
-static bool_t _float_setval(void *value,  GlobalParam_t *param){
+static param_status_t _float_setval(void *value,  GlobalParam_t *param){
   float initial_value = *(float*)value;
   float v = initial_value;
+
+  // AND only write if new value is NOT "not-a-number" AND is NOT infinity
+  if (isnan(v) || isinf(v))
+    return PARAM_INCONSISTENT;
+
+  if (param->value.f32 == v)
+    return PARAM_NOT_CHANGED;
 
   putinrange(v, param->min.f32, param->max.f32);
   param->value.f32 = v;
 
   if (v == initial_value)
-    return PARAM_SUCCESS;
+    return PARAM_OK;
   else
-    return PARAM_FAILED;
+    return PARAM_CLAMPED;
 }
 
 /**
  * Int32 boundary checker.
+ * Only write and emit changes if there is actually a difference
  */
-static bool_t _int_setval(void *value,  GlobalParam_t *param){
+static param_status_t _int_setval(void *value,  GlobalParam_t *param){
   int32_t initial_value = *(int32_t*)value;
   int32_t v = initial_value;
+
+  if (param->value.i32 == v)
+    return PARAM_NOT_CHANGED;
 
   putinrange(v, param->min.i32, param->max.i32);
   param->value.i32 = v;
 
   if (v == initial_value)
-    return PARAM_SUCCESS;
+    return PARAM_OK;
   else
-    return PARAM_FAILED;
+    return PARAM_CLAMPED;
 }
 
 /**
  * Uint32 boundary checker.
+ * Only write and emit changes if there is actually a difference
  */
-static bool_t _uint_setval(void *value,  GlobalParam_t *param){
+static param_status_t _uint_setval(void *value,  GlobalParam_t *param){
   uint32_t initial_value = *(uint32_t*)value;
   uint32_t v = initial_value;
+
+  if (param->value.u32 == v)
+    return PARAM_NOT_CHANGED;
 
   putinrange(v, param->min.u32, param->max.u32);
   param->value.u32 = v;
 
   if (v == initial_value)
-    return PARAM_SUCCESS;
+    return PARAM_OK;
   else
-    return PARAM_FAILED;
-}
-
-/**
- * Checks parameter and writes it to global struct.
- */
-static bool_t verify_parameter(mavlink_param_set_t *paramset){
-
-  int32_t index = -1;
-  floatint v;
-
-  index = _key_index_search(paramset->param_id);
-  v.f32 = paramset->param_value;
-
-  if (index >= 0){
-    switch (paramset->param_type){
-    case MAVLINK_TYPE_FLOAT:
-      // Only write and emit changes if there is actually a difference
-      // AND only write if new value is NOT "not-a-number"
-      // AND is NOT infinity
-      if (isnan(v.f32) || isinf(v.f32))
-        return PARAM_FAILED;
-      if (global_data[index].value.f32 == v.f32)
-        return PARAM_FAILED;
-      break;
-
-    case MAVLINK_TYPE_INT32_T:
-      if (global_data[index].value.i32 == v.i32)
-        return PARAM_FAILED;
-      break;
-
-    case MAVLINK_TYPE_UINT32_T:
-      if (global_data[index].value.u32 == v.u32)
-        return PARAM_FAILED;
-      break;
-
-    default:
-      return PARAM_FAILED;
-      break;
-    }
-  }
-
-  /* default returning value */
-  return PARAM_SUCCESS;
+    return PARAM_CLAMPED;
 }
 
 /**
@@ -311,7 +284,7 @@ static bool_t send_value(Mail *param_value_mail,
   uint32_t j = 0;
 
   if (key != NULL)
-    index = _key_index_search(key);
+    index = key_index_search(key);
   else
     index = n;
 
@@ -365,6 +338,7 @@ static msg_t ParametersThread(void *arg){
   mavlink_param_set_t *set = NULL;
   mavlink_param_request_list_t *list = NULL;
   mavlink_param_request_read_t *read = NULL;
+  param_status_t status;
 
   while (TRUE) {
     chMBFetch(&mavlink_param_set_mb, &tmp, TIME_INFINITE);
@@ -376,10 +350,10 @@ static msg_t ParametersThread(void *arg){
     case MAVLINK_MSG_ID_PARAM_SET:
       set = (mavlink_param_set_t *)(input_mail->payload);
       input_mail->payload = NULL;
-      if (verify_parameter(set) == PARAM_SUCCESS){
-        set_global_param(&(set->param_value), &global_data[_key_index_search(set->param_id)]);
+
+      status = set_global_param(&(set->param_value), &global_data[key_index_search(set->param_id)]);
+      if ((status == PARAM_OK) && (status == PARAM_CLAMPED))
         send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
-      }
       break;
 
     /*
@@ -408,118 +382,32 @@ static msg_t ParametersThread(void *arg){
   return 0;
 }
 
-
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-
-/**
- * @brief   Performs key-value search. Low level function
- *
- * @return      Index in dictionary.
- * @retval -1   key not found.
- */
-int32_t _key_index_search(const char* key){
-  int32_t i = 0;
-
-  for (i = 0; i < (int)ONBOARD_PARAM_COUNT; i++){
-    if (strcmp(key, global_data[i].name) == 0)
-      return i;
-  }
-  return -1;
-}
-
-/**
- * Return pointer to value.
- */
-void *ValueSearch(const char *str){
-  int32_t i = -1;
-
-  i = _key_index_search(str);
-  if (i == -1){
-    chDbgPanic("key not found");
-    return NULL;
-  }
-  else
-    return &(global_data[i].value);
-}
-
-/**
- * @brief   Global boundary checker.
- *
- * @param[in] value   input value that must be checked and saved in
- * @param[in] param   appropriate parameter in array
- *
- * @return            operation status.
- */
-bool_t set_global_param(void *value,  GlobalParam_t *param){
-
-  switch(param->param_type){
-  case MAVLINK_TYPE_FLOAT:
-    return _float_setval(value, param);
-    break;
-  case MAVLINK_TYPE_UINT32_T:
-    return _uint_setval(value, param);
-    break;
-  case MAVLINK_TYPE_INT32_T:
-    return _int_setval(value, param);
-    break;
-  default:
-    chDbgPanic("Unsupported variable type");
-    break;
-  }
-
-  return PARAM_FAILED;
-}
-
 /**
  *
  */
-void ParametersInit(void){
+param_status_t _param_cli_set(const char * val, uint32_t i){
 
-  chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
-
-  /* check hardcoded values */
-  uint32_t i = 0;
-  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
-    if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
-      chDbgPanic("name too long");
-  }
-
-  /* check allowed size in EEPROM */
-  uint32_t len = PARAM_ID_SIZE;
-  len += sizeof(global_data[0].value);
-  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
-    chDbgPanic("not enough space in EEPROM settings slice");
-
-  /* read data from eeprom to memory mapped structure */
-  load_params_from_eeprom();
-
-  chThdCreateStatic(ParametersThreadWA,
-          sizeof(ParametersThreadWA),
-          LINK_THREADS_PRIO + 1,
-          ParametersThread,
-          NULL);
-}
-
-/**
- *
- */
-void _param_cli_set(const char * val, uint32_t i){
+  floatint v;
+  int sscanf_status;
 
   switch(global_data[i].param_type){
   case MAVLINK_TYPE_FLOAT:
-    sscanf(val, "%f", &global_data[i].value.f32);
+    sscanf_status = sscanf(val, "%f", &v.f32);
     break;
+
   case MAVLINK_TYPE_INT32_T:
-    sscanf(val, "%i", (int *)&(global_data[i].value.i32));
+    sscanf_status = sscanf(val, "%i", (int*)&v.i32);
     break;
+
   default: // uint32_t
-    sscanf(val, "%u", (unsigned int *)&global_data[i].value.u32);
+    sscanf_status = sscanf(val, "%u", (unsigned int*)&v.u32);
     break;
   }
+
+  if (sscanf_status != 1)
+    return PARAM_INCONSISTENT;
+  else
+    return set_global_param(&v, &global_data[i]);
 }
 
 /**
@@ -559,12 +447,121 @@ void _param_print_all(void){
 }
 
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
+/**
+ * @brief   Performs key-value search. Low level function
+ *
+ * @return      Index in dictionary.
+ * @retval -1   key not found.
+ */
+int32_t key_index_search(const char* key){
+  int32_t i = 0;
+
+  for (i = 0; i < (int)ONBOARD_PARAM_COUNT; i++){
+    if (strcmp(key, global_data[i].name) == 0)
+      return i;
+  }
+  return -1;
+}
+
+/**
+ * Return pointer to value.
+ */
+void *ValueSearch(const char *str){
+  int32_t i = -1;
+
+  i = key_index_search(str);
+  if (i == -1){
+    chDbgPanic("key not found");
+    return NULL;
+  }
+  else
+    return &(global_data[i].value);
+}
+
+/**
+ * @brief   Global boundary checker.
+ *
+ * @param[in] value   input value that must be checked and saved in
+ * @param[in] param   appropriate parameter in array
+ *
+ * @return            operation status.
+ */
+param_status_t set_global_param(void *value,  GlobalParam_t *param){
+
+  switch(param->param_type){
+  case MAVLINK_TYPE_FLOAT:
+    return _float_setval(value, param);
+    break;
+  case MAVLINK_TYPE_UINT32_T:
+    return _uint_setval(value, param);
+    break;
+  case MAVLINK_TYPE_INT32_T:
+    return _int_setval(value, param);
+    break;
+  }
+  return PARAM_WRONG_TYPE;
+}
+
+/**
+ *
+ */
+void ParametersInit(void){
+
+  chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
+
+  /* check hardcoded values */
+  uint32_t i = 0;
+  for (i = 0; i < ONBOARD_PARAM_COUNT; i++){
+    if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
+      chDbgPanic("name too long");
+  }
+
+  /* check allowed size in EEPROM */
+  uint32_t len = PARAM_ID_SIZE;
+  len += sizeof(global_data[0].value);
+  if (ONBOARD_PARAM_COUNT * len > EEPROM_SETTINGS_SIZE)
+    chDbgPanic("not enough space in EEPROM settings slice");
+
+  /* read data from eeprom to memory mapped structure */
+  load_params_from_eeprom();
+
+  chThdCreateStatic(ParametersThreadWA,
+          sizeof(ParametersThreadWA),
+          LINK_THREADS_PRIO + 1,
+          ParametersThread,
+          NULL);
+}
+
+/*
+ * confirmation of changes
+ */
+void _param_cli_confirm(param_status_t status){
+  if (status == PARAM_OK)
+    cli_println("Success");
+  else if (status == PARAM_CLAMPED)
+    cli_println("Value clamed to safety limits");
+  else if (status == PARAM_NOT_CHANGED)
+    cli_println("Value not changed");
+  else if (status == PARAM_INCONSISTENT)
+    cli_println("Value inconsistent");
+  else
+    cli_println("Unknown error");
+}
+
 /**
  * Working with parameters from CLI.
  */
 Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+
   (void)cmdarray;
   int32_t i = -1;
+  param_status_t status;
 
   /* no arguments */
   if (argc == 0)
@@ -573,42 +570,39 @@ Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
   /* one argument */
   else if (argc == 1){
     if (strcmp(*argv, "help") == 0){
-      cli_print("This is help message");
-      cli_print(ENDL);
+      cli_println("This is help message");
     }
     else if (strcmp(*argv, "save") == 0){
-      cli_print("Saving to EEPROM... ");
+      cli_print("Please wait. Saving to EEPROM... ");
       save_params_to_eeprom();
-      cli_print("Done.");
-      cli_print(ENDL);
+      cli_println("Done.");
     }
     else{
-      i = _key_index_search(*argv);
+      i = key_index_search(*argv);
       if (i != -1)
         _param_cli_print(i);
       else{
-        cli_print("ERROR: unknown parameter name");
-        cli_print(ENDL);
+        cli_println("ERROR: unknown parameter name");
       }
     }
   }
+
   /* two arguments */
   else if (argc == 2){
     i = -1;
-    i = _key_index_search(*argv);
+    i = key_index_search(argv[0]);
     if (i != -1){
-      _param_cli_set(*argv+1 ,i);
+      status = _param_cli_set(argv[1], i);
+      _param_cli_confirm(status);
     }
     else{
-      cli_print("ERROR: unknown parameter name");
-      cli_print(ENDL);
+      cli_println("ERROR: unknown parameter name");
     }
   }
   else{
-    cli_print("ERROR: bad arguments. Try \"param\" help");
-    cli_print(ENDL);
+    cli_println("ERROR: bad arguments. Try \"param\" help");
   }
 
-
+  /* cli stub */
   return NULL;
 }
