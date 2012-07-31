@@ -64,7 +64,7 @@ int main(void) {
 
   chEvtInit(&init_event);
 
-  chThdSleepMilliseconds(100);
+  chThdSleepMilliseconds(200);
 
   /* give power to all needys */
   pwr5v_power_on();
