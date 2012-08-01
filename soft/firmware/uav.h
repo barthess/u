@@ -143,13 +143,9 @@
 
 
 /******************************************************************
-* функции включения питания в 5-вольтовом домене */
+* powering of 5 volt domain */
 #define pwr5v_power_on()  {palSetPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
 #define pwr5v_power_off() {palClearPad(GPIOA, GPIOA_5V_DOMAIN_EN);}
-
-
-/* включить стрессовое тестирование */
-#define ENABLE_IRQ_STORM    FALSE
 
 /* stop watchdog timer in debugging mode */
 /*unlock PR register*/

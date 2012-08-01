@@ -40,7 +40,8 @@ extern uint32_t OnboardParamCount;
  */
 void _param_cli_confirm(param_status_t status){
   if (status == PARAM_OK)
-    cli_println("Success");
+    return;
+    //cli_println("Success");
   else if (status == PARAM_CLAMPED)
     cli_println("Value clamed to safety limits");
   else if (status == PARAM_NOT_CHANGED)

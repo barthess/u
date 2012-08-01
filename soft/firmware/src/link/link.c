@@ -22,7 +22,7 @@
  ******************************************************************************
  */
 extern Mailbox tolink_mb;
-extern MemoryHeap LinkThdHeap;
+extern MemoryHeap ThdHeap;
 extern mavlink_status_t mavlink_status_struct;
 
 /*
@@ -76,7 +76,7 @@ static msg_t LinkOutThread(void *sdp){
 
 
 /**
- * Поток разбора входящих данных.
+ * Parse input data.
  */
 static WORKING_AREA(LinkInThreadWA, 512);
 static msg_t LinkInThread(void *sdp){
@@ -93,7 +93,7 @@ static msg_t LinkInThread(void *sdp){
     c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
     if (c != Q_TIMEOUT){
       if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &mavlink_status_struct)) {
-        if (msg.sysid == GROUND_STATION_ID){ /* нас запрашивает наземная станция */
+        if (msg.sysid == GROUND_STATION_ID){ /* message from our ground station */
           sort_input_messages(&msg);
         }
       }
@@ -120,7 +120,7 @@ void KillMavlinkThreads(void){
 }
 
 /**
- * порождает потоки сортировки\парсинга сообщений
+ * Create telemetry link threads
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
 
@@ -131,13 +131,13 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
 //  chMBReset(&param_mb);
 //  chMBReset(&mavlinkcmd_mb);
 
-  linkout_tp = chThdCreateFromHeap(&LinkThdHeap,
+  linkout_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(LinkOutThreadWA),
                             LINK_THREADS_PRIO,
                             LinkOutThread,
                             sdp);
 
-  linkin_tp = chThdCreateFromHeap(&LinkThdHeap,
+  linkin_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(LinkInThreadWA),
                             LINK_THREADS_PRIO,
                             LinkInThread,

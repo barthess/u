@@ -15,7 +15,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern MemoryHeap LinkThdHeap;
+extern MemoryHeap ThdHeap;
 extern RawData raw_data;
 
 /*
@@ -70,13 +70,14 @@ Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   (void)cmdarray;
   (void)argc;
   (void)argv;
-  cli_print ("Use TAB key for completion\n\rCommand:\n\r");
-  cli_print ("\tversion {microrl | demo} - print version of microrl lib or version of this demo src\n\r");
-  cli_print ("\thelp  - this message\n\r");
-  cli_print ("\tclear - clear screen\n\r");
-  cli_print ("\tlist  - list all commands in tree\n\r");
-  cli_print ("\tloop  - command to test ^C fucntionallity\n\r");
-  cli_print ("\t        and for demonstation auto-completion, while inputed 'l+<TAB>'\n\r");
+  cli_println("Use TAB key for completion");
+  cli_println("Commands:");
+  cli_println("\tversion {microrl | demo} - print version of microrl lib or version of this demo src");
+  cli_println("\thelp  - this message");
+  cli_println("\tclear - clear screen");
+  cli_println("\tlist  - list all commands in tree");
+  cli_println("\tloop  - command to test ^C fucntionallity");
+  cli_println("\t        and for demonstation auto-completion, while inputed 'l+<TAB>'");
   return NULL;
 }
 
@@ -109,7 +110,7 @@ Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   (void)argc;
   (void)argv;
 
-  Thread *tp = chThdCreateFromHeap(&LinkThdHeap,
+  Thread *tp = chThdCreateFromHeap(&ThdHeap,
                                   sizeof(LoopCmdThreadWA),
                                   CMD_THREADS_PRIO - 1,
                                   LoopCmdThread,
@@ -117,8 +118,13 @@ Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   return tp;
 }
 
-
-
+Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+  (void)argv;
+  (void)argc;
+  (void)cmdarray;
+  IRQStormStart();
+  return NULL;
+}
 
 
 Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){

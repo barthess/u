@@ -34,8 +34,9 @@ static uint32_t *sh_enable;
  *******************************************************************************
  *******************************************************************************
  */
+
 /**
- * Поток следящий за потоками связи и переключающий их по мере надобности
+ * Track changes of sh_enable flag and fork appropriate threads
  */
 static WORKING_AREA(LinkMgrThreadWA, 128);
 static msg_t LinkMgrThread(void *arg){
@@ -43,10 +44,10 @@ static msg_t LinkMgrThread(void *arg){
 
   bool_t shell_active = FALSE;
 
-  /* ждем, пока модемы встанут в ружьё */
+  /* wait slowpoke modems */
   chThdSleepMilliseconds(4000);
 
-  /* по значению флага определяем, что надо изначально запустить */
+  /* define what we need to run based on flag */
   if (*sh_enable == 0){
     SpawnMavlinkThreads((SerialDriver *)arg);
     shell_active = FALSE;
@@ -59,7 +60,7 @@ static msg_t LinkMgrThread(void *arg){
   /* say to all that modem is ready */
   chEvtBroadcastFlags(&init_event, EVENT_MASK(MODEM_READY_EVID));
 
-  /* а теперь в цикле следим за изменениями и запускаем нужные потоки */
+  /* now track changes of flag and fork appropriate threads */
   while (TRUE) {
     chThdSleepMilliseconds(100);
     if(shell_active == TRUE){

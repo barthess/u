@@ -29,6 +29,7 @@ struct ShellCmd_t{
 
 
 void cli_print(const char *str);
+void cli_put(char chr);
 void cli_println(const char *str);
 char get_char (void);
 

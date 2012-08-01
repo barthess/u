@@ -3,6 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+/* TODO: IRQ storm integration:
+     - abiliti to run from shell and in background mode*/
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
@@ -36,7 +38,7 @@ uint32_t GlobalFlags = 0;
 EepromFileStream EepromFile;
 
 /* heap for link threads OR shell thread */
-MemoryHeap LinkThdHeap;
+MemoryHeap ThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
 /* primitive "init system" */
@@ -72,7 +74,7 @@ int main(void) {
   xbee_reset_clear();
   xbee_sleep_clear();
 
-  chHeapInit(&LinkThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
+  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
 
   EepromOpen(&EepromFile);
 

@@ -17,7 +17,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern MemoryHeap LinkThdHeap;
+extern MemoryHeap ThdHeap;
 
 /*
  *******************************************************************************
@@ -41,13 +41,14 @@ static ShellCmd_t chibiutils[] = {
     {"list",      &list_clicmd,      NULL},
     {"loop",      &loop_clicmd,      NULL},
     {"echo",      &echo_clicmd,      NULL},
-    {"date",      &date_cmd,      NULL},
+    {"date",      &date_cmd,         NULL},
     {"reboot",    &reboot_clicmd,    NULL},
     {"sleep",     &sleep_clicmd,     NULL},
     {"selftest",  &selftest_clicmd,  NULL},
     {"sensor",    &sensor_clicmd,    NULL},
-    {"logout",    &logout_cmd,    NULL},
+    {"logout",    &logout_cmd,       NULL},
     {"param",     &param_clicmd,     NULL},
+    {"irqstorm",  &irqstorm_clicmd,  NULL},
     //{"man",       &man_cmd,       NULL},
     //{"kill",    &kill_func,   NULL},
     {NULL,      NULL,         NULL}/* end marker */
@@ -93,6 +94,13 @@ void cli_print(const char *str){
     sdPut(shell_sdp, str[i]);
     i++;
   }
+}
+
+/**
+ *
+ */
+void cli_put(char chr){
+  sdPut(shell_sdp, chr);
 }
 
 /**
@@ -261,7 +269,7 @@ void KillShellThreads(void){
  */
 void SpawnShellThreads(SerialDriver *arg){
 
-  shell_tp = chThdCreateFromHeap(&LinkThdHeap,
+  shell_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(ShellThreadWA),
                             LINK_THREADS_PRIO,
                             ShellThread,

@@ -1,17 +1,17 @@
-#include <stdlib.h>
+#include <stdio.h>
 
 #include "uav.h"
 
-#if ENABLE_IRQ_STORM
+#include "../microrl/src/microrl.h"
 
 #define IRQSTROM_GPTD1 GPTD3
 #define IRQSTROM_GPTD2 GPTD2
-#define IRQSTORM_SD    SD2
+//#define IRQSTORM_SD    SD2
 
 /*===========================================================================*/
 /* Extern vars.                                                              */
 /*===========================================================================*/
-
+extern MemoryHeap ThdHeap;
 
 /*===========================================================================*/
 /* Configurable settings.                                                    */
@@ -22,11 +22,11 @@
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS      1
+#define ITERATIONS      2
 #endif
 
 #ifndef NUM_THREADS
-#define NUM_THREADS     4
+#define NUM_THREADS     16
 #endif
 
 #ifndef MAILBOX_SIZE
@@ -51,8 +51,9 @@ static msg_t b[NUM_THREADS][MAILBOX_SIZE];
 /*
  * Test worker threads.
  */
-static WORKING_AREA(waWorkerThread[NUM_THREADS], 256);
+static WORKING_AREA(waWorkerThread[NUM_THREADS], 144);
 static msg_t WorkerThread(void *arg) {
+  chRegSetThreadName("IRQ_Worker");
   static volatile unsigned x = 0;
   static unsigned cnt = 0;
   unsigned me = (unsigned)arg;
@@ -100,7 +101,7 @@ static msg_t WorkerThread(void *arg) {
       /* Provides a visual feedback about the system.*/
       if (++cnt >= 500) {
         cnt = 0;
-        palTogglePad(GPIOB, GPIOB_LED_B);
+        palToggleIrqStormLed();
       }
     }
   }
@@ -157,44 +158,51 @@ static const GPTConfig gpt2cfg = {
 /*===========================================================================*/
 
 static void print(char *p) {
-
-  while (*p) {
-    chIOPut(&IRQSTORM_SD, *p++);
-  }
+  cli_print(p);
 }
 
 static void println(char *p) {
-
-  while (*p) {
-    chIOPut(&IRQSTORM_SD, *p++);
-  }
-  chIOWriteTimeout(&IRQSTORM_SD, (uint8_t *)"\r\n", 2, TIME_INFINITE);
+  cli_println(p);
 }
+
+//static void printn(uint32_t n) {
+//  char buf[16], *p;
+//
+//  if (!n)
+//    chIOPut(&IRQSTORM_SD, '0');
+//  else {
+//    p = buf;
+//    while (n)
+//      *p++ = (n % 10) + '0', n /= 10;
+//    while (p > buf)
+//      chIOPut(&IRQSTORM_SD, *--p);
+//  }
+//}
+
+//static void printn(uint32_t n) {
+//  char buf[16];
+//  sprintf(buf, "%u", (unsigned int)n);
+//  cli_print(buf);
+//}
 
 static void printn(uint32_t n) {
   char buf[16], *p;
 
-  if (!n)
-    chIOPut(&IRQSTORM_SD, '0');
+  if (n == 0)
+    cli_put('0');
   else {
     p = buf;
     while (n)
       *p++ = (n % 10) + '0', n /= 10;
     while (p > buf)
-      chIOPut(&IRQSTORM_SD, *--p);
+      cli_put(*--p);
   }
 }
 
-static const SerialConfig sercfg = {
-    115200,
-    0,
-    0,
-    0,
-};
-
 /* Главный тред. ПОМНИ, что ему 128 байт не хватает для помещения всего стэка */
-static WORKING_AREA(StormTreadWA, 256);
+static WORKING_AREA(StormTreadWA, 196);
 static msg_t StormTread(void *arg){
+  chRegSetThreadName("IRQ_Storm");
   (void)arg;
   unsigned i;
   gptcnt_t interval, threshold, worst;
@@ -298,6 +306,7 @@ static msg_t StormTread(void *arg){
   println(" uS");
   println("");
   println("Test Complete");
+  palOffIrqStormLed();
 
   /*
    * Normal main() thread activity, nothing in this test.
@@ -309,9 +318,7 @@ static msg_t StormTread(void *arg){
 }
 
 
-void IRQStormInit(void){
-  sdStart(&IRQSTORM_SD, &sercfg);
-
+void IRQStormStart(void){
   gptStart(&IRQSTROM_GPTD1, &gpt1cfg);
   gptStart(&IRQSTROM_GPTD2, &gpt2cfg);
 
@@ -321,6 +328,6 @@ void IRQStormInit(void){
           StormTread,
           NULL);
 }
-#endif /* ENABLE_IRQ_STORM */
+
 
 

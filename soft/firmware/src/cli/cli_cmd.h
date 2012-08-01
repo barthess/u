@@ -17,6 +17,7 @@ Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
 Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
+Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 
 
 #endif /* CLI_CMD_H_ */
