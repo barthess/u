@@ -13,7 +13,7 @@ struct tlm_registry_t
   /* how much to sleep */
   uint16_t next_dealine;
   /* pointer to period value in global parameters structure */
-  uint32_t *sleepperiod; /* handle here negative values in case of changes from ground */
+  uint32_t *sleepperiod;
   /* sending function */
   const send_t sender;
 };

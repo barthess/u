@@ -58,12 +58,14 @@
 
 /******************************************************************
  * глобальные битовые флаги */
-#define GYRO_CAL_FLAG        (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
-#define ACCEL_CAL_FLAG       (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
-#define MAG_CAL_FLAG         (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
-#define EEPROM_FAILED_FLAG   (1UL << 3)  /* единица означает сбой в EEPROM */
-#define POSTAGE_FAILED_FLAG  (1UL << 4)  /* Сбой в системе отправки сообщений */
-#define I2C_RESTARTED_FLAG   (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
+#define GYRO_CAL_FLAG         (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
+#define ACCEL_CAL_FLAG        (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
+#define MAG_CAL_FLAG          (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
+#define EEPROM_FAILED_FLAG    (1UL << 3)  /* единица означает сбой в EEPROM */
+#define POSTAGE_FAILED_FLAG   (1UL << 4)  /* Сбой в системе отправки сообщений */
+#define I2C_RESTARTED_FLAG    (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
+#define TLM_LINK_FLAG         (1UL << 6)  /* 1 - telemetry link is up, 0 - link is down */
+#define MODEM_FLAG            (1UL << 7)  /* 1 - modem ready, 0 - modem down */
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
@@ -76,13 +78,18 @@
 #define I2C_READY_EVID      3
 #define EEPROM_MOUNTED_EVID 4
 #define PARAMETERS_GOT_EVID 5
-/* при наступлении данного события все подсистемы должны себя корректно остановить */
-#define SIGHALT_EVID        6
-/* означает критическую просадку напряжения */
-#define POWERFAILE_EVID     7
+#define SIGHALT_EVID        6   /* при наступлении данного события все подсистемы должны себя корректно остановить */
+#define POWERFAILE_EVID     7   /* означает критическую просадку напряжения */
 #define MODEM_FAILED        8
 #define LOGGER_FAILED       9
+#define TLM_LINK_UP_EVID    10
+#define TLM_LINK_DOWN_EVID  11
 #define INIT_FAKE_EVID      31
+
+/* macros for checks */
+#define MODEM_READY_EVENT   (((chThdSelf())->p_epending) & (EVENT_MASK(MODEM_READY_EVID)))
+#define TLM_LINK_UP_EVENT   (((chThdSelf())->p_epending) & (EVENT_MASK(TLM_LINK_UP_EVID)))
+#define TLM_LINK_DOWN_EVENT (((chThdSelf())->p_epending) & (EVENT_MASK(TLM_LINK_DOWN_EVID)))
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */

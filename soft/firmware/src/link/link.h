@@ -7,6 +7,7 @@
 
 
 void SpawnMavlinkThreads(SerialDriver *sdp);
+void PurgeUavMailbox(Mailbox *mbp);
 void KillMavlinkThreads(void);
 
 

@@ -101,11 +101,13 @@ static msg_t gpsRxThread(void *arg){
   // заготовки контрольных сумм
   static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
   static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
+
+  /* to sync with tlm sender */
+  BinarySemaphore gps_sem;
+  chBSemInit(&gps_sem, FALSE);
+
   /* сообщение для менеджера связи */
-  Mail gps_mail;
-  gps_mail.payload = NULL;
-  gps_mail.invoice = MAVLINK_MSG_ID_GLOBAL_POSITION_INT;
-  gps_mail.confirmbox = NULL;
+  Mail gps_mail = {NULL, MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL};
 
   mavlink_global_position_int_struct.time_boot_ms = 0;
   mavlink_global_position_int_struct.lat = 0;
@@ -125,10 +127,12 @@ static msg_t gpsRxThread(void *arg){
   while (TRUE) {
 
 EMPTY:
-    if ((n >= 2) && (gps_mail.payload == NULL)){
+    if (n >= 2){
+      chBSemWaitTimeout(&gps_sem, MS2ST(1));
       mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
       gps_mail.payload = &mavlink_global_position_int_struct;
       chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
+      chBSemSignal(&gps_sem);
       n = 0;
     }
 

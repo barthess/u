@@ -114,24 +114,23 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
  * Возвращает длинну сообщения получившегося сообщения.
  */
 uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
-  uint16_t len;
+  uint16_t len = 0;
+  msg_t status = RDY_OK;
 
-  len = mavencoder(mailp->invoice,
-                    mavlink_system_struct.sysid,
-                    mavlink_msgbuf);
+  if (mailp->sem != NULL)
+    status = chBSemWaitTimeout(mailp->sem, MS2ST(1));
 
-  if (len != 0){
+  if (status != RDY_OK)
+    len = 0;
+  else{
+    len = mavencoder(mailp->invoice, mavlink_system_struct.sysid, mavlink_msgbuf);
     mailp->payload = NULL;
-    if (mailp->confirmbox != NULL){
-      chMBPost(mailp->confirmbox, len, TIME_IMMEDIATE);
-    }
   }
 
+  if (mailp->sem != NULL)
+    chBSemSignal(mailp->sem);
   return len;
 }
-
-
-
 
 /*
  *******************************************************************************

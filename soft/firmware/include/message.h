@@ -21,10 +21,10 @@ struct Mail{
    */
   msg_t invoice;
   /**
-   * Confirmation box pointer. Suitable for sending thread sychronization.
-   * Can be NULL.
+   * Protection semaphore.
+   * Set to NULL if unused.
    */
-  Mailbox *confirmbox;
+  BinarySemaphore *sem;
 };
 
 

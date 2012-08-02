@@ -191,8 +191,7 @@ GlobalParam_t global_data[] = {
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Mailbox param_confirm_mb;
-static msg_t param_confirm_mb_buf[1];
+static BinarySemaphore param_confirm_sem;     /* to sync with tlm sender */
 
 /*
  *******************************************************************************
@@ -278,7 +277,6 @@ static bool_t send_value(Mail *param_value_mail,
                          uint32_t n){
   int32_t index = -1;
   msg_t status = RDY_TIMEOUT;
-  msg_t tmp = 0;
   uint32_t j = 0;
 
   if (key != NULL)
@@ -303,7 +301,7 @@ static bool_t send_value(Mail *param_value_mail,
       return PARAM_FAILED;
 
     /* wait until message processed */
-    chMBFetch(&param_confirm_mb, &tmp, TIME_INFINITE);
+    chBSemWaitTimeout(&param_confirm_sem, TIME_INFINITE);
   }
   else
     return PARAM_FAILED;
@@ -329,7 +327,7 @@ static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
+  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_sem};
 
   msg_t tmp = 0;
   Mail *input_mail = NULL;
@@ -449,7 +447,7 @@ void ParametersInit(void){
 
   OnboardParamCount = (sizeof(global_data) / sizeof(GlobalParam_t));
 
-  chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
+  chBSemInit(&param_confirm_sem, FALSE); /* semaphore is not taken */
 
   /* check hardcoded values */
   uint32_t i = 0;
