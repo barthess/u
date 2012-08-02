@@ -122,8 +122,8 @@ Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *c
   (void)argv;
   (void)argc;
   (void)cmdarray;
-  IRQStormStart();
-  return NULL;
+
+  return IRQStormStart();
 }
 
 

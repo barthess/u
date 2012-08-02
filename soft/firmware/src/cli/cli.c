@@ -201,7 +201,7 @@ void sigint (void){
 /**
  * Thread function
  */
-static WORKING_AREA(ShellThreadWA, 2048);
+static WORKING_AREA(ShellThreadWA, 1536);
 static msg_t ShellThread(void *arg){
   chRegSetThreadName("Shell");
 
@@ -228,10 +228,18 @@ static msg_t ShellThread(void *arg){
     if (c != Q_TIMEOUT)
       microrl_insert_char(&microrl_shell, (char)c);
 
+    /* if fork finished than collect allocated for it memory */
+    if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state == THD_STATE_FINAL)){
+      chThdWait(current_cmd_tp);
+      current_cmd_tp = NULL;
+    }
+
     /* умираем по всем правилам, не забываем убить потомков */
     if (chThdShouldTerminate()){
-      if ((current_cmd_tp != NULL) && (current_cmd_tp->p_state != THD_STATE_FINAL)){
-        chThdTerminate(current_cmd_tp);
+      if (current_cmd_tp != NULL){
+        if (current_cmd_tp->p_state != THD_STATE_FINAL){
+          chThdTerminate(current_cmd_tp);
+        }
         chThdWait(current_cmd_tp);
       }
       chThdExit(0);

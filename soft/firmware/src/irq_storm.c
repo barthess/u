@@ -22,7 +22,7 @@ extern MemoryHeap ThdHeap;
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS      10
+#define ITERATIONS      1
 #endif
 
 #ifndef NUM_THREADS
@@ -43,10 +43,10 @@ extern MemoryHeap ThdHeap;
 static bool_t saturated;
 
 /*
- * Mailboxes and buffers.
+ * Mailboxes. Them buffers will be allocated at thread context.
  */
-static Mailbox mb[NUM_THREADS];
-static msg_t b[NUM_THREADS][MAILBOX_SIZE];
+static Mailbox *mb = NULL;
+//static Mailbox mb[NUM_THREADS];
 
 /*
  * Test worker threads.
@@ -104,6 +104,9 @@ static msg_t WorkerThread(void *arg) {
         palToggleIrqStormLed();
       }
     }
+    /* exit correctly */
+    if (chThdShouldTerminate())
+      chThdExit(0);
   }
   return 0;
 }
@@ -179,27 +182,48 @@ static void printn(uint32_t n) {
   }
 }
 
+/* terminates correctly */
+void _storm_abort(Thread* th_pull[]){
+  unsigned i;
+  chThdSleepMilliseconds(20);
+  for (i = 0; i < NUM_THREADS; i++) {
+    chThdTerminate(th_pull[i]);
+    chMBPost(&mb[i], 0, TIME_INFINITE); /* gives worker thread a chace to run to chThdShouldTerminate()*/
+    chThdWait(th_pull[i]);
+  }
+  palOffIrqStormLed();
+}
+
 /* Главный тред. */
-static WORKING_AREA(StormTreadWA, 196);
+static WORKING_AREA(StormTreadWA, 512);
 static msg_t StormTread(void *arg){
   chRegSetThreadName("IRQ_Storm");
   (void)arg;
   unsigned i;
   gptcnt_t interval, threshold, worst;
+  Mailbox _mb[NUM_THREADS];
+  msg_t b[NUM_THREADS][MAILBOX_SIZE];
 
   /*
    * Initializes the mailboxes and creates the worker threads.
    */
+  mb = _mb; /* init static variable */
+  Thread* th_pull[NUM_THREADS];
   for (i = 0; i < NUM_THREADS; i++) {
     chMBInit(&mb[i], b[i], MAILBOX_SIZE);
-    chThdCreateStatic(waWorkerThread[i], sizeof waWorkerThread[i],
-                      NORMALPRIO - 20, WorkerThread, (void *)i);
+    th_pull[i] = chThdCreateFromHeap(&ThdHeap,
+                                     sizeof(waWorkerThread[i]),
+                                     NORMALPRIO - 20,
+                                     WorkerThread,
+                                     (void *)i);
+    if (th_pull[i] == NULL)
+      chDbgPanic("can not allocate memory for thread");
   }
 
   /*
    * Test procedure.
    */
-  //println("");
+  println("");
   println("*** ChibiOS/RT IRQ-STORM long duration test");
   println("***");
   print("*** Kernel:       ");
@@ -207,6 +231,7 @@ static msg_t StormTread(void *arg){
 #ifdef __GNUC__
   print("*** GCC Version:  ");
   println(__VERSION__);
+  println("*** ChibiOS/RT IRQ-STORM long duration test");
 #endif
   print("*** Architecture: ");
   println(CH_ARCHITECTURE_NAME);
@@ -266,6 +291,10 @@ static msg_t StormTread(void *arg){
         if (threshold == 0)
           threshold = interval;
       }
+      if (chThdShouldTerminate()){
+        _storm_abort(th_pull);
+        chThdExit(0);
+      }
     }
     /* Gives the worker threads a chance to empty the mailboxes before next
        cycle.*/
@@ -286,27 +315,25 @@ static msg_t StormTread(void *arg){
   println(" uS");
   println("");
   println("Test Complete");
-  palOffIrqStormLed();
 
-  /*
-   * Normal main() thread activity, nothing in this test.
-   */
-  while (TRUE) {
-    chThdSleepMilliseconds(5000);
-  }
+  gptStop(&IRQSTROM_GPTD1);
+  gptStop(&IRQSTROM_GPTD2);
+  _storm_abort(th_pull);
+  chThdExit(0);
+
   return 0;
 }
 
 
-void IRQStormStart(void){
+Thread* IRQStormStart(void){
   gptStart(&IRQSTROM_GPTD1, &gpt1cfg);
   gptStart(&IRQSTROM_GPTD2, &gpt2cfg);
 
-  chThdCreateStatic(StormTreadWA,
-          sizeof(StormTreadWA),
-          NORMALPRIO,
-          StormTread,
-          NULL);
+  return chThdCreateFromHeap(&ThdHeap,
+                             sizeof(StormTreadWA),
+                             NORMALPRIO,
+                             StormTread,
+                             NULL);
 }
 
 
