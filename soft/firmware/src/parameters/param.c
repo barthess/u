@@ -25,7 +25,7 @@ extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_param_value_t mavlink_param_value_struct;
 
-uint32_t OnboardParamCount = 0;
+int32_t OnboardParamCount = 0;
 
 /**
  *
@@ -284,7 +284,11 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
 
-  if ((index >= 0) && (index <= (int)OnboardParamCount)){
+  if ((index >= 0) && (index <= OnboardParamCount)){
+    status = chBSemWaitTimeout(param_value_mail->sem, MS2ST(100));
+    if (status != RDY_OK)
+      return PARAM_FAILED;
+
     /* fill all fields */
     param_value_struct->param_value = global_data[index].value.f32;
     param_value_struct->param_type  = global_data[index].param_type;
@@ -295,13 +299,10 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    //status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
-    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
+    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(50));
+
     if (status != RDY_OK)
       return PARAM_FAILED;
-
-    /* wait until message processed */
-    chBSemWaitTimeout(&param_confirm_sem, TIME_INFINITE);
   }
   else
     return PARAM_FAILED;
@@ -394,7 +395,7 @@ static msg_t ParametersThread(void *arg){
 int32_t key_index_search(const char* key){
   int32_t i = 0;
 
-  for (i = 0; i < (int)OnboardParamCount; i++){
+  for (i = 0; i < OnboardParamCount; i++){
     if (strcmp(key, global_data[i].name) == 0)
       return i;
   }
