@@ -43,7 +43,7 @@ static BinarySemaphore itg3200_sem;
 
 /* sem for sync IMU with gyro */
 static BinarySemaphore imu_sem;
-
+BinarySemaphore imu_sem__;
 /*
  ******************************************************************************
  * PROTOTYPES

@@ -24,6 +24,8 @@
 extern Mailbox tolink_mb;
 extern MemoryHeap ThdHeap;
 extern mavlink_status_t mavlink_status_struct;
+extern EventSource init_event;
+extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -60,8 +62,13 @@ static msg_t LinkOutThread(void *sdp){
   msg_t tmp = 0;
 
   while (TRUE) {
-    if (chThdShouldTerminate())
+    if (chThdShouldTerminate()){
+      /* try correctly stop thread */
+      chThdSleepMilliseconds(200);
+      PurgeUavMailbox(&tolink_mb);
       chThdExit(0);
+      return 0;
+    }
 
     if (chMBFetch(&tolink_mb, &tmp, MS2ST(200)) == RDY_OK){
       mailp = (Mail*)tmp;
@@ -109,9 +116,32 @@ static msg_t LinkInThread(void *sdp){
  */
 
 /**
+ * Purge message queue correctly notifying writer threads.
+ * @note  Do not use it often because it can
+ *        lock system during log period of time.
+ */
+void PurgeUavMailbox(Mailbox *mbp){
+  msg_t tmp;
+  Mail *mail;
+
+  chSysLock();
+  while (chMBGetUsedCountI(mbp) != 0){
+    chMBFetch(mbp, &tmp, TIME_IMMEDIATE);
+    mail = (Mail *)tmp;
+    mail->payload = NULL;
+    if (mail->sem != NULL)
+      chBSemSignalI(mail->sem);
+  }
+  chSysUnlock();
+}
+
+/**
  * Kills previously spawned threads
  */
 void KillMavlinkThreads(void){
+  chEvtBroadcastFlags(&init_event, EVENT_MASK(TLM_LINK_DOWN_EVID));
+  clearGlobalFlag(TLM_LINK_FLAG);
+
   chThdTerminate(linkout_tp);
   chThdTerminate(linkin_tp);
 
@@ -124,12 +154,12 @@ void KillMavlinkThreads(void){
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
 
-//  chMBReset(&manual_control_mb);
-//  chMBReset(&autopilot_mb);
-//  chMBReset(&tolink_mb);
-//  chMBReset(&toservo_mb);
-//  chMBReset(&param_mb);
-//  chMBReset(&mavlinkcmd_mb);
+//  PurgeUavMailbox(&manual_control_mb);
+//  PurgeUavMailbox(&autopilot_mb);
+//  PurgeUavMailbox(&tolink_mb);
+//  PurgeUavMailbox(&toservo_mb);
+//  PurgeUavMailbox(&param_mb);
+//  PurgeUavMailbox(&mavlinkcmd_mb);
 
   linkout_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(LinkOutThreadWA),
@@ -142,6 +172,9 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
                             LINK_THREADS_PRIO,
                             LinkInThread,
                             sdp);
+
+  chEvtBroadcastFlags(&init_event, EVENT_MASK(TLM_LINK_UP_EVID));
+  setGlobalFlag(TLM_LINK_FLAG);
 }
 
 

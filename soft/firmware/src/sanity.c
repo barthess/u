@@ -5,9 +5,10 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 extern Mailbox tolink_mb;
 extern Mailbox logwriter_mb;
-extern EventSource init_event;
+
 extern mavlink_system_t       mavlink_system_struct;
 extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
 extern mavlink_sys_status_t   mavlink_sys_status_struct;
@@ -46,10 +47,10 @@ static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
 
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
+  BinarySemaphore sanity_sem;     /* to sync with tlm sender */
+  chBSemInit(&sanity_sem, FALSE); /* semaphore is not taken */
 
-  Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, NULL};
+  Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, &sanity_sem};
 
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
   mavlink_heartbeat_struct.custom_mode = 0;
@@ -58,14 +59,16 @@ static msg_t SanityControlThread(void *arg) {
     palSetPad(GPIOB, GPIOB_LED_B);
     chThdSleepMilliseconds(950);
 
-    if ((chThdSelf()->p_epending & EVENT_MASK(MODEM_READY_EVID)) &&
-        (heartbeat_mail.payload == NULL)){
+    /* fill data fields and send struct to message box */
+    chBSemWaitTimeout(&sanity_sem, MS2ST(1));
+    if (GlobalFlags & TLM_LINK_FLAG){
       mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
     }
+    chBSemSignal(&sanity_sem);
 
     if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))
       log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);

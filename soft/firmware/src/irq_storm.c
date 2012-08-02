@@ -22,11 +22,11 @@ extern MemoryHeap ThdHeap;
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS      2
+#define ITERATIONS      10
 #endif
 
 #ifndef NUM_THREADS
-#define NUM_THREADS     16
+#define NUM_THREADS     4
 #endif
 
 #ifndef MAILBOX_SIZE
@@ -165,26 +165,6 @@ static void println(char *p) {
   cli_println(p);
 }
 
-//static void printn(uint32_t n) {
-//  char buf[16], *p;
-//
-//  if (!n)
-//    chIOPut(&IRQSTORM_SD, '0');
-//  else {
-//    p = buf;
-//    while (n)
-//      *p++ = (n % 10) + '0', n /= 10;
-//    while (p > buf)
-//      chIOPut(&IRQSTORM_SD, *--p);
-//  }
-//}
-
-//static void printn(uint32_t n) {
-//  char buf[16];
-//  sprintf(buf, "%u", (unsigned int)n);
-//  cli_print(buf);
-//}
-
 static void printn(uint32_t n) {
   char buf[16], *p;
 
@@ -199,7 +179,7 @@ static void printn(uint32_t n) {
   }
 }
 
-/* Главный тред. ПОМНИ, что ему 128 байт не хватает для помещения всего стэка */
+/* Главный тред. */
 static WORKING_AREA(StormTreadWA, 196);
 static msg_t StormTread(void *arg){
   chRegSetThreadName("IRQ_Storm");
@@ -219,7 +199,7 @@ static msg_t StormTread(void *arg){
   /*
    * Test procedure.
    */
-  println("");
+  //println("");
   println("*** ChibiOS/RT IRQ-STORM long duration test");
   println("***");
   print("*** Kernel:       ");

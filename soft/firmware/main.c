@@ -3,8 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-/* TODO: IRQ storm integration:
-     - abiliti to run from shell and in background mode*/
+// TODO: Messaging improvements: param.c send_value() needs more robust waiting with timeouts
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
@@ -90,11 +89,6 @@ int main(void) {
   ServoInit();
   AutopilotInit();  /* autopilot must be started only after servos */
   StorageInit();
-
-  #if ENABLE_IRQ_STORM
-    chThdSleepMilliseconds(5000);
-    IRQStormInit();
-  #endif /* ENABLE_IRQ_STORM */
 
   while (TRUE){
     chThdSleepMilliseconds(666);

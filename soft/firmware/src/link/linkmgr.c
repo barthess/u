@@ -11,6 +11,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 extern EventSource init_event;
 
 /*
@@ -59,6 +60,7 @@ static msg_t LinkMgrThread(void *arg){
 
   /* say to all that modem is ready */
   chEvtBroadcastFlags(&init_event, EVENT_MASK(MODEM_READY_EVID));
+  setGlobalFlag(MODEM_FLAG);
 
   /* now track changes of flag and fork appropriate threads */
   while (TRUE) {

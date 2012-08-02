@@ -25,14 +25,14 @@ extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_param_value_t mavlink_param_value_struct;
 
-uint32_t OnboardParamCount = 0;
+int32_t OnboardParamCount = 0;
 
 /**
  *
  */
 GlobalParam_t global_data[] = {
-  /*  key             min                  val                  max                  type              */
-  /*---------------------------------------------------------------------------------------------------*/
+  /*  key             min                  val                  max                  type                  */
+  /*-------------------------------------------------------------------------------------------------------*/
   {"SYS_ID",          {.u32 = 1},          {.u32 = 20},         {.u32 = 255},        MAVLINK_TYPE_UINT32_T},
   /* тип автопилота (см. MAV_TYPE enum)
    * для возможности переключения между машиной и самолетом. Эти изменения
@@ -191,8 +191,7 @@ GlobalParam_t global_data[] = {
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Mailbox param_confirm_mb;
-static msg_t param_confirm_mb_buf[1];
+static BinarySemaphore param_confirm_sem;     /* to sync with tlm sender */
 
 /*
  *******************************************************************************
@@ -278,7 +277,6 @@ static bool_t send_value(Mail *param_value_mail,
                          uint32_t n){
   int32_t index = -1;
   msg_t status = RDY_TIMEOUT;
-  msg_t tmp = 0;
   uint32_t j = 0;
 
   if (key != NULL)
@@ -286,7 +284,11 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
 
-  if ((index >= 0) && (index <= (int)OnboardParamCount)){
+  if ((index >= 0) && (index <= OnboardParamCount)){
+    status = chBSemWaitTimeout(param_value_mail->sem, MS2ST(100));
+    if (status != RDY_OK)
+      return PARAM_FAILED;
+
     /* fill all fields */
     param_value_struct->param_value = global_data[index].value.f32;
     param_value_struct->param_type  = global_data[index].param_type;
@@ -297,13 +299,10 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    //status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
-    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(5));
+    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(50));
+
     if (status != RDY_OK)
       return PARAM_FAILED;
-
-    /* wait until message processed */
-    chMBFetch(&param_confirm_mb, &tmp, TIME_INFINITE);
   }
   else
     return PARAM_FAILED;
@@ -315,7 +314,7 @@ static bool_t send_value(Mail *param_value_mail,
  * Send all values one by one.
  */
 static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
-  uint32_t i = 0;
+  int32_t i = 0;
   for (i = 0; i < OnboardParamCount; i++){
     send_value(mail, param_struct, NULL, i);
   }
@@ -329,7 +328,7 @@ static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_mb};
+  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_sem};
 
   msg_t tmp = 0;
   Mail *input_mail = NULL;
@@ -396,7 +395,7 @@ static msg_t ParametersThread(void *arg){
 int32_t key_index_search(const char* key){
   int32_t i = 0;
 
-  for (i = 0; i < (int)OnboardParamCount; i++){
+  for (i = 0; i < OnboardParamCount; i++){
     if (strcmp(key, global_data[i].name) == 0)
       return i;
   }
@@ -449,10 +448,10 @@ void ParametersInit(void){
 
   OnboardParamCount = (sizeof(global_data) / sizeof(GlobalParam_t));
 
-  chMBInit(&param_confirm_mb, param_confirm_mb_buf, (sizeof(param_confirm_mb_buf)/sizeof(msg_t)));
+  chBSemInit(&param_confirm_sem, FALSE); /* semaphore is not taken */
 
   /* check hardcoded values */
-  uint32_t i = 0;
+  int32_t i = 0;
   for (i = 0; i < OnboardParamCount; i++){
     if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
       chDbgPanic("name too long");
