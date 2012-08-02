@@ -38,7 +38,7 @@ extern uint32_t OnboardParamCount;
 /*
  * confirmation of changes
  */
-void _param_cli_confirm(param_status_t status){
+static void _param_cli_confirm(param_status_t status){
   if (status == PARAM_OK)
     cli_println("Success");
   else if (status == PARAM_CLAMPED)
@@ -54,7 +54,7 @@ void _param_cli_confirm(param_status_t status){
 /**
  *
  */
-void _param_cli_print(uint32_t i){
+static void _param_cli_print(uint32_t i){
 
   int n = 80;
   int nres = 0;
@@ -89,7 +89,7 @@ void _param_cli_print(uint32_t i){
 /**
  *
  */
-void _param_print_all(void){
+static void _param_print_all(void){
   uint32_t i = 0;
 
   for (i = 0; i < OnboardParamCount; i++)
@@ -99,7 +99,7 @@ void _param_print_all(void){
 /**
  *
  */
-param_status_t _param_cli_set(const char * val, uint32_t i){
+static param_status_t _param_cli_set(const char * val, uint32_t i){
 
   floatint v;
   int sscanf_status;
@@ -127,7 +127,7 @@ param_status_t _param_cli_set(const char * val, uint32_t i){
 /**
  *
  */
-void _param_cli_help(void){
+static void _param_cli_help(void){
   cli_println("Run without parameters to get full parameters list");
   cli_println("\"param save\" to save parameters to EEPROM");
   cli_println("\"param help\" to get this message");
