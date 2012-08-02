@@ -3,6 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: IRQ storm move to dynamic threads.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accel.
