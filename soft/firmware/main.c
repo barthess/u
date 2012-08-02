@@ -90,11 +90,6 @@ int main(void) {
   AutopilotInit();  /* autopilot must be started only after servos */
   StorageInit();
 
-  #if ENABLE_IRQ_STORM
-    chThdSleepMilliseconds(5000);
-    IRQStormInit();
-  #endif /* ENABLE_IRQ_STORM */
-
   while (TRUE){
     chThdSleepMilliseconds(666);
   }
