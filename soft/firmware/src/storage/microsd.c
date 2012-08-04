@@ -24,7 +24,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern float *timezone;
+extern int32_t *timezone;
 extern Mailbox logwriter_mb;
 extern EventSource init_event;
 

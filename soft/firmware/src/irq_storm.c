@@ -225,13 +225,13 @@ static msg_t StormTread(void *arg){
    */
   println("");
   println("*** ChibiOS/RT IRQ-STORM long duration test");
+  println("*** Press ^C to interrupt it");
   println("***");
   print("*** Kernel:       ");
   println(CH_KERNEL_VERSION);
 #ifdef __GNUC__
   print("*** GCC Version:  ");
   println(__VERSION__);
-  println("*** ChibiOS/RT IRQ-STORM long duration test");
 #endif
   print("*** Architecture: ");
   println(CH_ARCHITECTURE_NAME);

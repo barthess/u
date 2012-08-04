@@ -3,10 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: IRQ storm add some cli parameters.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
-// TODO: (semi)automated zeroing of magnetometer and accel.
+// TODO: (semi)automated zeroing of magnetometer and accelerometer.
 // TODO: Rewrite messaging holy crap.
 // TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
@@ -28,9 +27,9 @@ BinarySemaphore rtc_sem;
 struct tm gps_timp;
 
 /* pointer to "timezone" value. Initialized in timekeeping.c */
-float *timezone = NULL;
+int32_t *timezone = NULL;
 
-/* some global flags (deprecated, use events) */
+/* some global flags */
 uint32_t GlobalFlags = 0;
 
 /* EEPROM "file" */
