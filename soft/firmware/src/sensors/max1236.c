@@ -21,6 +21,7 @@ extern RawData raw_data;
 extern CompensatedData comp_data;
 extern EventSource init_event;
 extern Mailbox logwriter_mb;
+extern uint32_t GlobalFlags;
 
 extern mavlink_raw_pressure_t     mavlink_raw_pressure_struct;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
@@ -90,7 +91,7 @@ static msg_t PollMax1236Thread(void *arg) {
 
       comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
 
-      if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID)){
+      if (GlobalFlags & LOGGER_READY_FLAG){
         log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
         log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
         log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);

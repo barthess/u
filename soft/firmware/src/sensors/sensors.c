@@ -71,17 +71,17 @@ void SensorsInit(void){
   chBSemInit(&itg3200_sem,  TRUE);
   chBSemInit(&imu_sem,      TRUE);
 
-  /* EXTI start. REMEMBER! I2C and RTC needs it.*/
+  /* EXTI start. REMEMBER! I2C slaves and RTC need it.*/
   ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem);
   ADCInit_local();
 
   /* start different I2C sensors */
-  init_itg3200(&itg3200_sem, &imu_sem);
   init_mma8451(&mma8451_sem);
   init_tmp75();
   init_max1236();
   init_mag3110(&mag3110_sem);
   init_bmp085(&bmp085_sem);
+  init_itg3200(&itg3200_sem, &imu_sem);
 
   ImuInit(&imu_sem);
   GPSInit();

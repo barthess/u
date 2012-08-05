@@ -30,7 +30,7 @@ struct CompensatedData{
 
   /**/
   int16_t   baro_altitude;      /* высота по барометру bmp085. Целое (dm)*/
-  int32_t   baro_filtered;      /* */
+  uint32_t  baro_filtered;      /* прошедшие через фильтр значение. Паскали */
   uint16_t  air_speed;          /* воздушная скорость. Фиксированная точка. (mm/s)*/
   int8_t    temp_onboard;       /* температура c tmp75. Целые градусы. */
   // напряжение и ток бортовой сети

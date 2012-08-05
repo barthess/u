@@ -50,10 +50,12 @@ bool_t load_params_from_eeprom(void){
 
   for (i = 0; i < OnboardParamCount; i++){
 
-    /* reade field from EEPROM and check number of read bytes */
+    /* reade field from EEPROM and check number of red bytes */
     status = chFileStreamRead(&EepromFile, eeprombuf, sizeof(eeprombuf));
-    if (status < sizeof(eeprombuf))
+    if (status < sizeof(eeprombuf)){
+      chDbgPanic("");
       return PARAM_FAILED;
+    }
 
     /* search value by key and set it if found */
     index = key_index_search((char *)eeprombuf);
@@ -108,6 +110,7 @@ bool_t save_params_to_eeprom(void){
       if (tmpbuf[j] != eeprombuf[j])
         chDbgPanic("veryfication failed");
     }
+    chThdSleepMilliseconds(10);
   }
 
   palSetPad(GPIOB, GPIOB_LED_R);

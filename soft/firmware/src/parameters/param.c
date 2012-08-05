@@ -353,7 +353,7 @@ static msg_t ParametersThread(void *arg){
       input_mail->payload = NULL;
 
       status = set_global_param(&(set->param_value), &global_data[key_index_search(set->param_id)]);
-      if ((status == PARAM_OK) && (status == PARAM_CLAMPED))
+      if ((status == PARAM_OK) && (status == PARAM_CLAMPED) && (status == PARAM_NOT_CHANGED))
         send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
       break;
 

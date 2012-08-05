@@ -24,7 +24,7 @@ extern mavlink_system_t mavlink_system_struct;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
-uint32_t imu_update_period;
+uint32_t imu_update_period = 10000;
 
 /*
  ******************************************************************************
@@ -94,91 +94,99 @@ static float get_degrees(float raw){
 }
 
 /**
+ *
+ */
+void process_gyro_data(void){
+  int32_t gyroX, gyroY, gyroZ;
+
+  /* correct placement (we need to swap just x and y axis) and advance to zero offset */
+  gyroX = ((int32_t)raw_data.ygyro) * awg_samplescnt - raw_data.ygyro_zero;
+  gyroY = ((int32_t)raw_data.xgyro) * awg_samplescnt - raw_data.xgyro_zero;
+  gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
+
+  /* adjust rotation direction */
+  gyroX *= *xpol;
+  gyroY *= *ypol;
+  gyroZ *= *zpol;
+
+  /* fill debug struct */
+  mavlink_raw_imu_struct.xgyro = gyroX;
+  mavlink_raw_imu_struct.ygyro = gyroY;
+  mavlink_raw_imu_struct.zgyro = gyroZ;
+  mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+
+  /* now get angular velocity in rad/sec */
+  comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
+  comp_data.ygyro = calc_gyro_rate(gyroY, *ysens);
+  comp_data.zgyro = calc_gyro_rate(gyroZ, *zsens);
+
+  /* calc summary angle for debug purpose */
+  comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
+  comp_data.ygyro_angle += get_degrees(comp_data.ygyro);
+  comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
+
+  /* fill scaled debug struct */
+//        mavlink_scaled_imu_struct.xgyro = (int16_t)(1000 * comp_data.xgyro);
+//        mavlink_scaled_imu_struct.ygyro = (int16_t)(1000 * comp_data.ygyro);
+//        mavlink_scaled_imu_struct.zgyro = (int16_t)(1000 * comp_data.zgyro);
+  mavlink_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
+  mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
+  mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
+  mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
+}
+
+/**
+ *
+ */
+void itg3200_write_log(uint32_t *i){
+  const uint32_t decimator = 0b11;
+  if (((*i & decimator) == decimator) && (GlobalFlags & LOGGER_READY_FLAG)){
+    log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
+    log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
+  }
+  (*i)++;
+}
+
+/**
+ *
+ */
+void sort_rxbuff(uint8_t *rxbuf){
+  raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
+  raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
+  raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
+  raw_data.zgyro      = complement2signed(rxbuf[6], rxbuf[7]);
+}
+
+/**
  * Поток для опроса хероскопа
  */
 static WORKING_AREA(PollGyroThreadWA, 256);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 
-  /* variables for regulate log writing frequency */
-  uint32_t i = 0;
-  const uint32_t decimator = 0b11;
+  uint32_t i = 0;/* variable for regulate log writing frequency */
 
-  int32_t gyroX, gyroY, gyroZ;
   msg_t sem_status = RDY_OK;
 
   EventListener self_el;
   chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
 
-    txbuf[0] = GYRO_OUT_DATA;     // register address
-    if ((i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK) && (sem_status == RDY_OK)){
-      raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
-      raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
-      raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
-      raw_data.zgyro      = complement2signed(rxbuf[6], rxbuf[7]);
-
-      if (GlobalFlags & GYRO_CAL_FLAG)
-        gyrozeroing();
-      else{
-        /* correct placement (we need to swap just x and y axis) and advance to zero offset */
-        gyroX = ((int32_t)raw_data.ygyro) * awg_samplescnt - raw_data.ygyro_zero;
-        gyroY = ((int32_t)raw_data.xgyro) * awg_samplescnt - raw_data.xgyro_zero;
-        gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
-
-        /* adjust rotation direction */
-        gyroX *= *xpol;
-        gyroY *= *ypol;
-        gyroZ *= *zpol;
-
-        /* fill debug struct */
-        mavlink_raw_imu_struct.xgyro = gyroX;
-        mavlink_raw_imu_struct.ygyro = gyroY;
-        mavlink_raw_imu_struct.zgyro = gyroZ;
-        mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-
-        /* now get angular velocity in rad/sec */
-        comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
-        comp_data.ygyro = calc_gyro_rate(gyroY, *ysens);
-        comp_data.zgyro = calc_gyro_rate(gyroZ, *zsens);
-
-        /* calc summary angle for debug purpose */
-        comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
-        comp_data.ygyro_angle += get_degrees(comp_data.ygyro);
-        comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
-
-        /* fill scaled debug struct */
-//        mavlink_scaled_imu_struct.xgyro = (int16_t)(1000 * comp_data.xgyro);
-//        mavlink_scaled_imu_struct.ygyro = (int16_t)(1000 * comp_data.ygyro);
-//        mavlink_scaled_imu_struct.zgyro = (int16_t)(1000 * comp_data.zgyro);
-        mavlink_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
-        mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
-        mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-        mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
-
-        /* say to IMU "we have fresh data "*/
-        chBSemSignal(imusync_semp);
-
-        /* save data to logfile */
-        if (((i & decimator) == decimator) &&
-                (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))){
-          log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
-          log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
+    if (sem_status == RDY_OK){
+      txbuf[0] = GYRO_OUT_DATA;     // register address
+      if (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK){
+        sort_rxbuff(rxbuf);
+        if (GlobalFlags & GYRO_CAL_FLAG)
+          gyrozeroing();
+        else{
+          process_gyro_data();
+          chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
+          itg3200_write_log(&i);/* save data to logfile */
         }
-        i++;
       }
     }
-    else{
-      //TODO: event GyroFail
-      /* this values denote failed */
-      raw_data.gyro_temp = -32768;
-      raw_data.xgyro = -32768;
-      raw_data.ygyro = -32768;
-      raw_data.zgyro = -32768;
-    }
-
     if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
       chThdExit(RDY_OK);
   }
@@ -242,7 +250,8 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   txbuf[0] = GYRO_SMPLRT_DIV;
   txbuf[1] = 9; /* sample rate. Approximatelly (1000 / (9 + 1)) = 100Hz*/
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота среза внутреннего фильтра */
-  txbuf[3] = 0b110001; /* configure and enable interrupts */
+  //txbuf[3] = 0b00110001; /* configure and enable interrupts */
+  txbuf[3] = 0b00010001; /* configure and enable interrupts */
   while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
     ;
 

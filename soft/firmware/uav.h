@@ -66,6 +66,7 @@
 #define I2C_RESTARTED_FLAG    (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
 #define TLM_LINK_FLAG         (1UL << 6)  /* 1 - telemetry link is up, 0 - link is down */
 #define MODEM_FLAG            (1UL << 7)  /* 1 - modem ready, 0 - modem down */
+#define LOGGER_READY_FLAG     (1UL << 7)  /* ready logger thred */
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
@@ -74,7 +75,7 @@
 /******************************************************************/
 /* "init daemon" events */
 #define MODEM_READY_EVID    1
-#define LOGGER_READY_EVID   2
+//#define LOGGER_READY_EVID   2
 #define I2C_READY_EVID      3
 #define EEPROM_MOUNTED_EVID 4
 #define PARAMETERS_GOT_EVID 5

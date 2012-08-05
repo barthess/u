@@ -57,6 +57,7 @@ static uint32_t *flen_pres_stat;
  */
 /**
  * calculation height from pressure using precalculated table and linear interpolation
+ * return height in decimeters.
  */
 static int16_t pres_to_height(uint32_t pres){
   uint16_t i = 0;
@@ -82,11 +83,11 @@ static void bmp085_calc(void){
   uint32_t pval = 0;
   int32_t  tval = 0;
 
-  if (ut == TEMPERATURE_ERROR)
-    goto ERROR;
-
-  if (up == PRESSURE_ERROR)
-    goto ERROR;
+  if ((ut == TEMPERATURE_ERROR) || (up == PRESSURE_ERROR)){
+    raw_data.pressure_static = 0;
+    comp_data.baro_altitude = -32768;
+    return;
+  }
 
   /* Calculate pressure using black magic from datasheet */
   int32_t  x1, x2, x3, b3, b5, b6, p;
@@ -129,11 +130,6 @@ static void bmp085_calc(void){
   comp_data.baro_altitude = pres_to_height(comp_data.baro_filtered);
   mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
   mavlink_scaled_pressure_struct.press_abs = (float)comp_data.baro_filtered / 100;
-  return;
-
-ERROR:
-  raw_data.pressure_static = 0;
-  comp_data.baro_altitude = -32768;
   return;
 }
 

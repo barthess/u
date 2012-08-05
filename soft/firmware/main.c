@@ -3,6 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: SIGHALT_EVID transform to bit flag
+
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accelerometer.

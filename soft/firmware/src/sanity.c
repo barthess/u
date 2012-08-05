@@ -70,7 +70,7 @@ static msg_t SanityControlThread(void *arg) {
     }
     chBSemSignal(&sanity_sem);
 
-    if (chThdSelf()->p_epending & EVENT_MASK(LOGGER_READY_EVID))
+    if (GlobalFlags & LOGGER_READY_FLAG)
       log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
