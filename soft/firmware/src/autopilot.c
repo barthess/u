@@ -6,12 +6,10 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
 
 extern mavlink_system_t mavlink_system_struct;
-extern EventSource init_event;
 
 /*
  ******************************************************************************
@@ -105,7 +103,7 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
       return;
     }
     else{
-      chEvtBroadcastFlags(&init_event, EVENT_MASK(SIGHALT_EVID));
+      setGlobalFlag(SIGHALT_FLAG);
       command_accepted();
     }
     break;

@@ -66,7 +66,8 @@
 #define I2C_RESTARTED_FLAG    (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
 #define TLM_LINK_FLAG         (1UL << 6)  /* 1 - telemetry link is up, 0 - link is down */
 #define MODEM_FLAG            (1UL << 7)  /* 1 - modem ready, 0 - modem down */
-#define LOGGER_READY_FLAG     (1UL << 7)  /* ready logger thred */
+#define LOGGER_READY_FLAG     (1UL << 8)  /* ready logger thred */
+#define SIGHALT_FLAG          (1UL << 9)  /* ready logger thred */
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}
@@ -74,23 +75,19 @@
 
 /******************************************************************/
 /* "init daemon" events */
-#define MODEM_READY_EVID    1
+//#define MODEM_READY_EVID    1
 //#define LOGGER_READY_EVID   2
-#define I2C_READY_EVID      3
-#define EEPROM_MOUNTED_EVID 4
-#define PARAMETERS_GOT_EVID 5
-#define SIGHALT_EVID        6   /* при наступлении данного события все подсистемы должны себя корректно остановить */
-#define POWERFAILE_EVID     7   /* означает критическую просадку напряжения */
-#define MODEM_FAILED        8
-#define LOGGER_FAILED       9
-#define TLM_LINK_UP_EVID    10
-#define TLM_LINK_DOWN_EVID  11
-#define INIT_FAKE_EVID      31
+//#define I2C_READY_EVID      3
+//#define EEPROM_MOUNTED_EVID 4
+//#define PARAMETERS_GOT_EVID 5
+//#define SIGHALT_EVID        6   /* при наступлении данного события все подсистемы должны себя корректно остановить */
+//#define POWERFAILE_EVID     7   /* означает критическую просадку напряжения */
+//#define MODEM_FAILED        8
+//#define LOGGER_FAILED       9
+//#define TLM_LINK_UP_EVID    10
+//#define TLM_LINK_DOWN_EVID  11
+//#define INIT_FAKE_EVID      31
 
-/* macros for checks */
-#define MODEM_READY_EVENT   (((chThdSelf())->p_epending) & (EVENT_MASK(MODEM_READY_EVID)))
-#define TLM_LINK_UP_EVENT   (((chThdSelf())->p_epending) & (EVENT_MASK(TLM_LINK_UP_EVID)))
-#define TLM_LINK_DOWN_EVENT (((chThdSelf())->p_epending) & (EVENT_MASK(TLM_LINK_DOWN_EVID)))
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */

@@ -22,7 +22,6 @@ extern uint32_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
-extern EventSource init_event;
 extern CompensatedData comp_data;
 
 /*
@@ -83,9 +82,6 @@ static msg_t PollMagThread(void *semp){
 
   msg_t sem_status = RDY_OK;
 
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
-
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
      * прерываение прилетит на лапку раньше, чем подхватится EXTI.
@@ -105,7 +101,7 @@ static msg_t PollMagThread(void *semp){
     check_and_clean_overdose();
 
     /* нам прилетел сигнал HALT? */
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;

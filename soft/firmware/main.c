@@ -3,8 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: SIGHALT_EVID transform to bit flag
-
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accelerometer.
@@ -41,9 +39,6 @@ EepromFileStream EepromFile;
 MemoryHeap ThdHeap;
 static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
 
-/* primitive "init system" */
-EventSource init_event;
-
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -63,8 +58,6 @@ int main(void) {
   chSysInit();
 
   chBSemInit(&rtc_sem, TRUE);
-
-  chEvtInit(&init_event);
 
   chThdSleepMilliseconds(200);
 

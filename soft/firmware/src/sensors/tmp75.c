@@ -17,6 +17,7 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
+extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -25,7 +26,6 @@ extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
  */
 static uint8_t rxbuf[TMP75_RX_DEPTH] = {0x55, 0x55};
 static uint8_t txbuf[TMP75_TX_DEPTH] = {0,0};
-extern EventSource init_event;
 
 /*
  *******************************************************************************
@@ -38,9 +38,6 @@ static WORKING_AREA(PollTmp75ThreadWA, 256);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
-
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     txbuf[0] = 0b00000001; // point to Configuration Register
@@ -58,7 +55,7 @@ static msg_t PollTmp75Thread(void *arg){
     }
     chThdSleepMilliseconds(1000);
 
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;

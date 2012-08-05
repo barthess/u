@@ -77,7 +77,7 @@ static msg_t SanityControlThread(void *arg) {
     chThdSleepMilliseconds(50);
     mavlink_sys_status_struct.load = get_cpu_load();
 
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID)){
+    if (GlobalFlags & SIGHALT_FLAG){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
       xbee_reset_assert();

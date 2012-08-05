@@ -21,7 +21,7 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource init_event;
+extern uint32_t GlobalFlags;
 
 extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
@@ -184,9 +184,6 @@ static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
   uint32_t t = 0;
 
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
-
   while (TRUE) {
     /* we get temperature every 0x1F cycle */
     if ((t & 0x1F) == 0x1F)
@@ -197,7 +194,7 @@ static msg_t PollBaroThread(void *semp){
 
     t++;
 
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;

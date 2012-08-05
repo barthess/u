@@ -19,7 +19,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource init_event;
 extern Mailbox logwriter_mb;
 extern uint32_t GlobalFlags;
 
@@ -65,9 +64,6 @@ static msg_t PollMax1236Thread(void *arg) {
   uint16_t sonar;
   const uint16_t rest = 10000; // constant for compesate filter flyback delay
 
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
-
   while (TRUE) {
     chThdSleepMilliseconds(20);
 
@@ -97,7 +93,7 @@ static msg_t PollMax1236Thread(void *arg) {
         log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
       }
     }
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;

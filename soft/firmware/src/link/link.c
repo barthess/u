@@ -24,7 +24,6 @@
 extern Mailbox tolink_mb;
 extern MemoryHeap ThdHeap;
 extern mavlink_status_t mavlink_status_struct;
-extern EventSource init_event;
 extern uint32_t GlobalFlags;
 
 /*
@@ -139,7 +138,6 @@ void PurgeUavMailbox(Mailbox *mbp){
  * Kills previously spawned threads
  */
 void KillMavlinkThreads(void){
-  chEvtBroadcastFlags(&init_event, EVENT_MASK(TLM_LINK_DOWN_EVID));
   clearGlobalFlag(TLM_LINK_FLAG);
 
   chThdTerminate(linkout_tp);
@@ -173,7 +171,6 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
                             LinkInThread,
                             sdp);
 
-  chEvtBroadcastFlags(&init_event, EVENT_MASK(TLM_LINK_UP_EVID));
   setGlobalFlag(TLM_LINK_FLAG);
 }
 

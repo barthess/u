@@ -19,7 +19,6 @@ extern uint32_t GlobalFlags;
 extern Mailbox logwriter_mb;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource init_event;
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
@@ -168,9 +167,6 @@ static msg_t PollGyroThread(void *semp){
 
   msg_t sem_status = RDY_OK;
 
-  EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
-
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
 
@@ -187,7 +183,7 @@ static msg_t PollGyroThread(void *semp){
         }
       }
     }
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;

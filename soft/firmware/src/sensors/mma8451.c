@@ -18,7 +18,7 @@ extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern EventSource init_event;
+extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -46,9 +46,6 @@ static msg_t PollAccelThread(void *semp){
   chRegSetThreadName("PollAccel");
 
   msg_t sem_status = RDY_OK;
-
-  struct EventListener self_el;
-  chEvtRegister(&init_event, &self_el, INIT_FAKE_EVID);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(20));
@@ -84,7 +81,7 @@ static msg_t PollAccelThread(void *semp){
       mavlink_scaled_imu_struct.zacc = -32768;
     }
 
-    if (chThdSelf()->p_epending & EVENT_MASK(SIGHALT_EVID))
+    if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
   return 0;
