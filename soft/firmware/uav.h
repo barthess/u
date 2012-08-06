@@ -30,6 +30,7 @@
 #include "param.h"
 #include "param_cli.h"
 #include "param_persistant.h"
+#include "pwr_mgmt.h"
 #include "sanity.h"
 #include "sensors.h"
 #include "servo.h"

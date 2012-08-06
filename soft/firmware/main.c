@@ -86,6 +86,7 @@ int main(void) {
   TimekeepingInit();
   MavInit();      /* mavlink constants initialization must be called after I2C init */
   SensorsInit();  /* sensors use I2C */
+  PwrMgmtInit();
   GncInit();
   TlmSenderInit();
   ServoInit();

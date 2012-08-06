@@ -8,8 +8,6 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern CompensatedData comp_data;
-extern mavlink_sys_status_t mavlink_sys_status_struct;
 
 /*
  ******************************************************************************
@@ -19,7 +17,7 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
 #define ADC_NUM_CHANNELS          6
 #define ADC_BUF_DEPTH             1
 
-/* человекочитабельные названия каналов */
+/* human readable names */
 #define ADC_CURRENT_SENS          ADC_CHANNEL_IN10
 #define ADC_MAIN_SUPPLY           ADC_CHANNEL_IN11
 #define ADC_6V_SUPPLY             ADC_CHANNEL_IN12
@@ -27,15 +25,12 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
 #define ADC_AN33_1                ADC_CHANNEL_IN14
 #define ADC_AN33_2                ADC_CHANNEL_IN15
 
-// где лежат текущие значения АЦП
 #define ADC_CURRENT_SENS_OFFSET   (ADC_CHANNEL_IN10 - 10)
 #define ADC_MAIN_VOLTAGE_OFFSET   (ADC_CHANNEL_IN11 - 10)
 #define ADC_6V_OFFSET             (ADC_CHANNEL_IN12 - 10)
 #define ADC_AN33_0_OFFSET         (ADC_CHANNEL_IN13 - 10)
 #define ADC_AN33_1_OFFSET         (ADC_CHANNEL_IN14 - 10)
 #define ADC_AN33_2_OFFSET         (ADC_CHANNEL_IN15 - 10)
-
-#define PWR_CHECK_PERIOD          20 /* mS */
 
 /*
  ******************************************************************************
@@ -49,15 +44,9 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n);
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t *bat_cap;       /* battery capacitance in A*mS */
-static uint32_t *bat_fill;      /* battery filling in A*mS */
-static uint32_t *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-static uint32_t *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
-static uint32_t *adc_sv_gain;   /* secondary voltage gain */
-static uint32_t *adc_mv_gain;   /* main voltage gain */
 static uint32_t *flen_adc;      /* length of filter for ADC */
 
-static ADCConfig adccfg; // для STM32 -- должна быть пустышка
+static ADCConfig adccfg; // dummy for STM32
 
 static adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 
@@ -101,21 +90,6 @@ static const ADCConversionGroup adccg = {
  *******************************************************************************
  */
 
-/* пересчет из условных единиц АЦП в mV */
-uint16_t get_comp_secondary_voltage(uint16_t raw){
-  return (uint16_t)(((uint32_t)raw * *adc_sv_gain) / 1000);
-}
-
-/* STUB */
-uint16_t get_comp_main_voltage(uint16_t raw){
-  return (uint16_t)(((uint32_t)raw * *adc_mv_gain) / 1000);
-}
-
-/* пересчет из условных единиц в mA */
-uint32_t get_comp_main_current(uint16_t raw){
-  return ((raw - *adc_i_offset) * 1000) / *adc_i_gain;
-}
-
 /*
  * ADC streaming callback.
  */
@@ -137,70 +111,15 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
 }
 
 /*
- * Process ADC data.
- */
-static WORKING_AREA(PowerKeeperThreadWA, 128);
-static msg_t PowerKeeperThread(void *arg){
-  chRegSetThreadName("PowerKeeper");
-  (void)arg;
-
-  uint32_t start_bat_fill = 0; /* percents */
-  uint32_t tmp = 0;
-
-  systime_t time = chTimeNow();     // T0
-  while (TRUE) {
-    time += MS2ST(PWR_CHECK_PERIOD);              // Next deadline
-
-    if (start_bat_fill != *bat_fill){
-      start_bat_fill = *bat_fill;
-      raw_data.battery_consumed = 0;
-    }
-
-    comp_data.main_current = get_comp_main_current(raw_data.main_current);
-    comp_data.secondary_voltage = get_comp_secondary_voltage(raw_data.secondary_voltage);
-
-    raw_data.battery_consumed += (comp_data.main_current * PWR_CHECK_PERIOD) / CH_FREQUENCY;
-
-    /* ((mAc) / 3600) * 100    mAc * 100        mAc
-     * -------------------- = ------------ = ----------
-     *      start             start * 3600   36 * start
-     */
-    tmp = raw_data.battery_consumed / (36 * *bat_cap);
-    if (tmp < start_bat_fill)
-      mavlink_sys_status_struct.battery_remaining = start_bat_fill - tmp;
-    else
-      mavlink_sys_status_struct.battery_remaining = 0;
-    mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
-    mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
-
-    chThdSleepUntil(time);
-  }
-  return 0;
-}
-
-/*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
 void ADCInit_local(void){
-  bat_cap  = ValueSearch("BAT_cap");
-  bat_fill = ValueSearch("BAT_fill");
-
-  adc_i_offset = ValueSearch("ADC_I_offset");
-  adc_i_gain   = ValueSearch("ADC_I_gain");
   flen_adc     = ValueSearch("FLEN_adc");
-  adc_sv_gain  = ValueSearch("ADC_SV_gain");
-  adc_mv_gain  = ValueSearch("ADC_MV_gain");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);
-
-  chThdCreateStatic(PowerKeeperThreadWA,
-          sizeof(PowerKeeperThreadWA),
-          NORMALPRIO,
-          PowerKeeperThread,
-          NULL);
 }
 
 

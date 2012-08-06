@@ -135,6 +135,7 @@ CSRC = $(PORTSRC) \
        src/controller.c \
        src/message.c \
        src/dsp.c \
+       src/pwr_mgmt.c \
        
 
 DSPSRC = cortex_dsp
