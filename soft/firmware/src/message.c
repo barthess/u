@@ -68,7 +68,6 @@ static msg_t logwriter_mb_buf[10];
  */
 
 void MsgInit(void){
-  /* инициализация почтовых ящиков */
   chMBInit(&autopilot_mb,             autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
   chMBInit(&tolink_mb,                tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlink_param_set_mb,     param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));

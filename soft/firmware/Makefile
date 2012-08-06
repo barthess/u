@@ -108,9 +108,9 @@ CSRC = $(PORTSRC) \
        src/kinematic/gnc.c \
        src/kinematic/airspeed.c \
        src/sanity.c \
-       src/parameters/param.c \
-       src/parameters/param_cli.c \
-       src/parameters/persistant.c \
+       src/mavlink_local/param.c \
+       src/mavlink_local/param_cli.c \
+       src/mavlink_local/param_persistant.c \
        src/timekeeping.c \
        src/sensors/gps.c \
        src/sensors/adc_local.c \
@@ -187,7 +187,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/sensors \
          src/storage \
          src/kinematic \
-         src/parameters \
+         src/mavlink_local \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart

@@ -28,7 +28,7 @@
 #include "mma8451.h"
 #include "param.h"
 #include "param_cli.h"
-#include "persistant.h"
+#include "param_persistant.h"
 #include "sanity.h"
 #include "sensors.h"
 #include "servo.h"
