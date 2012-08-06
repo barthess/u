@@ -8,8 +8,8 @@
  * DEFINES
  ******************************************************************************
  */
-#define PARAM_CONFIRM_TMO   1000
-#define PARAM_POST_TMO      50
+#define PARAM_CONFIRM_TMO   MS2ST(1000)
+#define PARAM_POST_TMO      MS2ST(50)
 
 /*
  ******************************************************************************
@@ -290,7 +290,7 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
   if ((index >= 0) && (index <= OnboardParamCount)){
-    status = chBSemWaitTimeout(param_value_mail->sem, MS2ST(PARAM_CONFIRM_TMO));
+    status = chBSemWaitTimeout(param_value_mail->sem, PARAM_CONFIRM_TMO);
     if (status != RDY_OK)
       return PARAM_FAILED;
 
@@ -304,7 +304,7 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(PARAM_POST_TMO));
+    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, PARAM_POST_TMO);
 
     if (status != RDY_OK)
       return PARAM_FAILED;

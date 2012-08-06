@@ -34,7 +34,7 @@ static uint8_t txbuf[TMP75_TX_DEPTH] = {0,0};
  *******************************************************************************
  *******************************************************************************
  */
-static WORKING_AREA(PollTmp75ThreadWA, 144);
+static WORKING_AREA(PollTmp75ThreadWA, 256);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
