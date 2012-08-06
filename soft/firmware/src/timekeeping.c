@@ -1,13 +1,8 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "ch.h"
-#include "hal.h"
-#include "chrtclib.h"
-
-#include "timekeeping.h"
 #include "uav.h"
-#include "param.h"
+#include "chrtclib.h"
 
 /*
  ******************************************************************************

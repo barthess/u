@@ -89,7 +89,8 @@ int main(void) {
   GncInit();
   TlmSenderInit();
   ServoInit();
-  AutopilotInit();  /* autopilot must be started only after servos */
+  MavCmdInit_local();
+  ControllerInit();  /* autopilot must be started only after servos */
   StorageInit();
 
   while (TRUE){

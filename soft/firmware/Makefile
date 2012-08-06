@@ -108,6 +108,7 @@ CSRC = $(PORTSRC) \
        src/kinematic/gnc.c \
        src/kinematic/airspeed.c \
        src/sanity.c \
+       src/mavlink_local/mavcmd_local.c \
        src/mavlink_local/param.c \
        src/mavlink_local/param_cli.c \
        src/mavlink_local/param_persistant.c \
@@ -131,7 +132,7 @@ CSRC = $(PORTSRC) \
        src/eeprom/24aa.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
-       src/autopilot.c \
+       src/controller.c \
        src/message.c \
        src/dsp.c \
        

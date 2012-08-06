@@ -198,33 +198,6 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
   }
 }
 
-
-/**
- * Предположительно:
- * крутит ПИД и на его основе выставляет значения в сервы
- */
-static WORKING_AREA(AutopilotThreadWA, 512);
-Thread *autopilot_tp = NULL;
-static msg_t AutopilotThread(void* arg){
-  chRegSetThreadName("Autopilot");
-  (void)arg;
-
-  uint32_t i = 0;
-
-  while (TRUE) {
-    chThdSleepMilliseconds(20);
-    /* тестовые величины в ШИМ */
-    Servo4Set(0);
-    Servo5Set(64);
-    Servo6Set(128);
-    Servo7Set(255);
-    ServoCarThrottleSet((i >> 2) & 0xFF);
-    i++;
-  }
-  return 0;
-}
-
-
 /**
  * Поток, принимающий и обрабатывающий команды с земли.
  */
@@ -255,17 +228,11 @@ static msg_t CmdThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void AutopilotInit(void){
+void MavCmdInit_local(void){
 
   chThdCreateStatic(CmdThreadWA,
         sizeof(CmdThreadWA),
         NORMALPRIO,
         CmdThread,
-        NULL);
-
-  chThdCreateStatic(AutopilotThreadWA,
-        sizeof(AutopilotThreadWA),
-        NORMALPRIO,
-        AutopilotThread,
         NULL);
 }
