@@ -66,7 +66,6 @@ static msg_t LinkOutThread(void *sdp){
       chThdSleepMilliseconds(200);
       PurgeUavMailbox(&tolink_mb);
       chThdExit(0);
-      return 0;
     }
 
     if (chMBFetch(&tolink_mb, &tmp, MS2ST(200)) == RDY_OK){

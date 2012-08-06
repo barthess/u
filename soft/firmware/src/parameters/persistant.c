@@ -76,7 +76,7 @@ bool_t load_params_from_eeprom(void){
  *
  */
 bool_t save_params_to_eeprom(void){
-  uint32_t i, j;
+  uint32_t i;
   uint32_t status = 0;
   uint32_t v = 0;
 
@@ -106,10 +106,9 @@ bool_t save_params_to_eeprom(void){
     chFileStreamSeek(&EepromFile, chFileStreamGetPosition(&EepromFile) - sizeof(eeprombuf));
     uint8_t tmpbuf[sizeof(eeprombuf)];
     status = chFileStreamRead(&EepromFile, tmpbuf, sizeof(tmpbuf));
-    for (j = 0; j < (PARAM_ID_SIZE + sizeof(v)); j++){
-      if (tmpbuf[j] != eeprombuf[j])
-        chDbgPanic("veryfication failed");
-    }
+    if (memcmp(tmpbuf, eeprombuf, (PARAM_ID_SIZE + sizeof(v))) != 0)
+      chDbgPanic("veryfication failed");
+
     chThdSleepMilliseconds(10);
   }
 

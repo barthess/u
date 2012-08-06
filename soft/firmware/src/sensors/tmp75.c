@@ -34,7 +34,7 @@ static uint8_t txbuf[TMP75_TX_DEPTH] = {0,0};
  *******************************************************************************
  *******************************************************************************
  */
-static WORKING_AREA(PollTmp75ThreadWA, 256);
+static WORKING_AREA(PollTmp75ThreadWA, 144);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
@@ -50,7 +50,7 @@ static msg_t PollTmp75Thread(void *arg){
 
     if (i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2) == RDY_OK){
       raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
-      comp_data.temp_onboard = raw_data.temp_tmp75 / 256;
+      comp_data.temp_onboard = raw_data.temp_tmp75 >> 8;
       mavlink_scaled_pressure_struct.temperature = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
     }
     chThdSleepMilliseconds(1000);

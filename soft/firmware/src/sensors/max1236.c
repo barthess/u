@@ -55,7 +55,7 @@ static uint32_t *flen_pres_dyn;
  * При частоте 100кГц на вычитывание 4 значений уйдет примерно:
  * 10 * (4 * 2 * 8) + 8.3 * 4 = 673.2 uS
  */
-static WORKING_AREA(PollMax1236ThreadWA, 256);
+static WORKING_AREA(PollMax1236ThreadWA, 144);
 static msg_t PollMax1236Thread(void *arg) {
   chRegSetThreadName("PollMax1236");
   (void)arg;

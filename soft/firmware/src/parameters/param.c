@@ -335,7 +335,7 @@ static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
 /**
  * Receive messages with parameters and transmit parameters by requests.
  */
-static WORKING_AREA(ParametersThreadWA, 512);
+static WORKING_AREA(ParametersThreadWA, 256);
 static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;

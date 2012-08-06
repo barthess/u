@@ -3,7 +3,10 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: PID
+// TODO: PID on throttle
+//      - switching uav to different modes(manual, armed, stabilized etc.)
+//      - connecting RC to servo thread.
+
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accelerometer.
