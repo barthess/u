@@ -92,20 +92,20 @@
 /*
  * EXT driver system settings.
  */
-#define STM32_EXT_EXTI0_IRQ_PRIORITY        15
-#define STM32_EXT_EXTI1_IRQ_PRIORITY        15 // tachometer
-#define STM32_EXT_EXTI2_IRQ_PRIORITY        15
-#define STM32_EXT_EXTI3_IRQ_PRIORITY        15
-#define STM32_EXT_EXTI4_IRQ_PRIORITY        15
-#define STM32_EXT_EXTI5_9_IRQ_PRIORITY      15
-#define STM32_EXT_EXTI10_15_IRQ_PRIORITY    7  // gyroscope
-#define STM32_EXT_EXTI16_IRQ_PRIORITY       15
-#define STM32_EXT_EXTI17_IRQ_PRIORITY       15 // RTC alarm
-#define STM32_EXT_EXTI18_IRQ_PRIORITY       15
-#define STM32_EXT_EXTI19_IRQ_PRIORITY       15
-#define STM32_EXT_EXTI20_IRQ_PRIORITY       15
-#define STM32_EXT_EXTI21_IRQ_PRIORITY       15 // RTC tamper-timestamp
-#define STM32_EXT_EXTI22_IRQ_PRIORITY       15 // RTC wakeup
+#define STM32_EXT_EXTI0_IRQ_PRIORITY        8
+#define STM32_EXT_EXTI1_IRQ_PRIORITY        8 // tachometer
+#define STM32_EXT_EXTI2_IRQ_PRIORITY        8
+#define STM32_EXT_EXTI3_IRQ_PRIORITY        8
+#define STM32_EXT_EXTI4_IRQ_PRIORITY        8
+#define STM32_EXT_EXTI5_9_IRQ_PRIORITY      8
+#define STM32_EXT_EXTI10_15_IRQ_PRIORITY    8 // gyroscope
+#define STM32_EXT_EXTI16_IRQ_PRIORITY       8
+#define STM32_EXT_EXTI17_IRQ_PRIORITY       8 // RTC alarm
+#define STM32_EXT_EXTI18_IRQ_PRIORITY       8
+#define STM32_EXT_EXTI19_IRQ_PRIORITY       8
+#define STM32_EXT_EXTI20_IRQ_PRIORITY       8
+#define STM32_EXT_EXTI21_IRQ_PRIORITY       8 // RTC tamper-timestamp
+#define STM32_EXT_EXTI22_IRQ_PRIORITY       8 // RTC wakeup
 
 /*
  * GPT driver system settings.
@@ -127,10 +127,10 @@
 
 #define STM32_GPT_TIM1_IRQ_PRIORITY         10
 #define STM32_GPT_TIM2_IRQ_PRIORITY         10
-#define STM32_GPT_TIM3_IRQ_PRIORITY         7
-#define STM32_GPT_TIM4_IRQ_PRIORITY         7
-#define STM32_GPT_TIM5_IRQ_PRIORITY         7
-#define STM32_GPT_TIM8_IRQ_PRIORITY         7
+#define STM32_GPT_TIM3_IRQ_PRIORITY         10
+#define STM32_GPT_TIM4_IRQ_PRIORITY         10
+#define STM32_GPT_TIM5_IRQ_PRIORITY         10
+#define STM32_GPT_TIM8_IRQ_PRIORITY         10
 
 /*
  * ICU driver system settings.

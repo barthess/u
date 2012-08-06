@@ -8,6 +8,8 @@
  * DEFINES
  ******************************************************************************
  */
+#define PARAM_CONFIRM_TMO   1000
+#define PARAM_POST_TMO      50
 
 /*
  ******************************************************************************
@@ -287,9 +289,8 @@ static bool_t send_value(Mail *param_value_mail,
     index = key_index_search(key);
   else
     index = n;
-
   if ((index >= 0) && (index <= OnboardParamCount)){
-    status = chBSemWaitTimeout(param_value_mail->sem, MS2ST(100));
+    status = chBSemWaitTimeout(param_value_mail->sem, MS2ST(PARAM_CONFIRM_TMO));
     if (status != RDY_OK)
       return PARAM_FAILED;
 
@@ -303,7 +304,7 @@ static bool_t send_value(Mail *param_value_mail,
 
     /* send */
     param_value_mail->payload = param_value_struct;
-    status = chMBPost(&tolink_mb, (msg_t)param_value_mail, MS2ST(50));
+    status = chMBPostAhead(&tolink_mb, (msg_t)param_value_mail, MS2ST(PARAM_POST_TMO));
 
     if (status != RDY_OK)
       return PARAM_FAILED;
@@ -319,8 +320,15 @@ static bool_t send_value(Mail *param_value_mail,
  */
 static void send_all_values(Mail *mail, mavlink_param_value_t *param_struct){
   int32_t i = 0;
-  for (i = 0; i < OnboardParamCount; i++){
-    send_value(mail, param_struct, NULL, i);
+  int32_t retry = 20;
+
+  msg_t status = RDY_RESET;
+  while ((i < OnboardParamCount) && (retry > 0)){
+    status = send_value(mail, param_struct, NULL, i);
+    if (status == PARAM_SUCCESS)
+      i++;
+    else
+      retry--;
   }
 }
 
@@ -353,7 +361,7 @@ static msg_t ParametersThread(void *arg){
       input_mail->payload = NULL;
 
       status = set_global_param(&(set->param_value), &global_data[key_index_search(set->param_id)]);
-      if ((status == PARAM_OK) && (status == PARAM_CLAMPED) && (status == PARAM_NOT_CHANGED))
+      if ((status == PARAM_OK) || (status == PARAM_CLAMPED) || (status == PARAM_NOT_CHANGED))
         send_value(&param_value_mail, &mavlink_param_value_struct, set->param_id, 0);
       break;
 

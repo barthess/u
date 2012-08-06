@@ -164,7 +164,7 @@ void ServoCarThrottleSet(uint8_t angle){
 //    Servo7Set((uint16_t)(break_   & 0xFFFF));
   }
   else
-    return;
+    return; //stub
 }
 
 /**
@@ -188,7 +188,7 @@ void ServoInit(void){
   /* this channel allways run in plane mode */
   pwmStart(&PWMD4, &pwm4plane_cfg);
 
-  /* this in different modes */
+  /* this one in different modes */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     pwmStart(&PWMD1, &pwm1car_cfg);
   else
