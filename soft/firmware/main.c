@@ -3,9 +3,13 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: PID on throttle
-//      - switching uav to different modes(manual, armed, stabilized etc.)
-//      - connecting RC to servo thread.
+// TODO: create sighalt_hadler() macro for convenience
+
+/* TODO: PID on throttle
+ *    - look at handle_storage_cmd() how to differentiate waypoint command from normal storage command
+      - switching uav to different modes(manual, armed, stabilized etc.)
+      - connecting RC to servo thread.
+*/
 
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.

@@ -91,12 +91,14 @@
 
 /******************************************************************
 * статусы возвращаемые разными подсистемами */
-#define PARAM_SUCCESS  CH_SUCCESS
-#define PARAM_FAILED   CH_FAILED
-#define LINK_SUCCESS   CH_SUCCESS
-#define LINK_FAILED    CH_FAILED
-#define TLM_SUCCESS    CH_SUCCESS
-#define TLM_FAILED     CH_FAILED
+#define PARAM_SUCCESS     CH_SUCCESS
+#define PARAM_FAILED      CH_FAILED
+#define MISSION_SUCCESS   CH_SUCCESS
+#define MISSION_FAILED    CH_FAILED
+#define LINK_SUCCESS      CH_SUCCESS
+#define LINK_FAILED       CH_FAILED
+#define TLM_SUCCESS       CH_SUCCESS
+#define TLM_FAILED        CH_FAILED
 
 /******************************************************************
 * константы для мавлинка */

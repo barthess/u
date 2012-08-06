@@ -2,6 +2,23 @@
 
 /*
  ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
+#define CONFIRM_TMO           MS2ST(500)
+
+/* helper macros */
+#define command_accepted()    (_confirm(MAV_RESULT_ACCEPTED, \
+                                mavlink_command_long_struct->command))
+#define command_denied()      (_confirm(MAV_RESULT_DENIED, \
+                                mavlink_command_long_struct->command))
+#define command_unsupported() (_confirm(MAV_RESULT_UNSUPPORTED, \
+                                mavlink_command_long_struct->command))
+#define command_failed()      (_confirm(MAV_RESULT_FAILED, \
+                                mavlink_command_long_struct->command))
+
+/*
+ ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
@@ -27,7 +44,20 @@ Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
  *******************************************************************************
  */
 
-void handle_calibration_cmd(mavlink_command_long_t *mavlink_command_long_struct){
+/**
+ * helper funcion
+ */
+void _confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
+  mavlink_command_ack_struct.result = result;
+  mavlink_command_ack_struct.command = cmd;
+  command_ack_mail.payload = &mavlink_command_ack_struct;
+  chMBPostAhead(&tolink_mb, (msg_t)&command_ack_mail, CONFIRM_TMO);
+}
+
+/**
+ *
+ */
+void handle_cmd_calibration(mavlink_command_long_t *mavlink_command_long_struct){
   /* Trigger calibration. This command will be only accepted if in pre-flight mode.
   * | Gyro calibration: 0: no, 1: yes
   * | Magnetometer calibration: 0: no, 1: yes
@@ -54,20 +84,73 @@ void handle_calibration_cmd(mavlink_command_long_t *mavlink_command_long_struct)
     clearGlobalFlag(MAG_CAL_FLAG);
     mavlink_system_struct.state = MAV_STATE_STANDBY;
   }
+
+  command_accepted();
 }
 
+/**
+ *
+ */
+void handle_cmd_reboot_shutdown(mavlink_command_long_t *mavlink_command_long_struct){
+ /* Request the reboot or shutdown of system components.|
+  * 0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.|
+  * 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
+  * | Reserved| Reserved| Empty| Empty| Empty|
+  */
+  /**/
+  if (mavlink_command_long_struct->param1 == 0.0)
+    __NOP();//stub
+  else if (mavlink_command_long_struct->param1 == 1.0){
+    command_unsupported();
+    return;
+  }
+  else if (mavlink_command_long_struct->param1 == 2.0){
+    command_accepted();
+    setGlobalFlag(SIGHALT_FLAG);
+    return;
+  }
+  else {
+    command_unsupported();
+    return;
+  }
 
-/* helper funcion */
-void confirmation(enum MAV_RESULT result, enum MAV_CMD cmd){
-  mavlink_command_ack_struct.result = result;
-  mavlink_command_ack_struct.command = cmd;
-  command_ack_mail.payload = &mavlink_command_ack_struct;
-  chMBPostAhead(&tolink_mb, (msg_t)&command_ack_mail, TIME_IMMEDIATE);
+  /**/
+  if (mavlink_command_long_struct->param2 != 0.0)
+    command_unsupported();
 }
-/* helper macros */
-#define command_accepted() (confirmation(MAV_RESULT_ACCEPTED, mavlink_command_long_struct->command))
-#define command_denied() (confirmation(MAV_RESULT_DENIED, mavlink_command_long_struct->command))
 
+/**
+ *
+ */
+void handle_cmd_preflight_storage(mavlink_command_long_t *mavlink_command_long_struct){
+
+  bool_t status = CH_FAILED;
+
+  if (mavlink_command_long_struct->param1 == 0)
+    status = load_params_from_eeprom();
+  else if (mavlink_command_long_struct->param1 == 1)
+    status = save_params_to_eeprom();
+
+  if (mavlink_command_long_struct->param2 == 0)
+    status = load_mission_from_eeprom();
+  else if (mavlink_command_long_struct->param2 == 1)
+    status = save_mission_to_eeprom();
+
+  if (status != CH_SUCCESS)
+    command_failed();
+  else
+    command_accepted();
+}
+
+/**
+ *
+ */
+void handle_cmd_do_set_mode(mavlink_command_long_t *mavlink_command_long_struct){
+  /* all modes defined in MAV_MODE */
+  //TODO: check them before set
+  mavlink_system_struct.mode = mavlink_command_long_struct->param1;
+  command_accepted();
+}
 
 /**
  * прием и обработка комманд с земли
@@ -76,58 +159,41 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
   /* all this flags defined in MAV_CMD enum */
   switch(mavlink_command_long_struct->command){
+
+  /* */
   case MAV_CMD_DO_SET_MODE:
     /* Set system mode. |Mode, as defined by ENUM MAV_MODE| Empty| Empty| Empty| Empty| Empty| Empty|  */
-    mavlink_system_struct.mode = mavlink_command_long_struct->param1;
-    command_accepted();
+    handle_cmd_do_set_mode(mavlink_command_long_struct);
+    break;
+
+  /* (re)calibrate */
+  case MAV_CMD_PREFLIGHT_CALIBRATION:
+    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+      command_denied();
+    else
+      handle_cmd_calibration(mavlink_command_long_struct);
+    break;
+
+  /* */
+  case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
+    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+      command_denied();
+    else
+      handle_cmd_reboot_shutdown(mavlink_command_long_struct);
+    break;
+
+  /* Data (storing to)/(loding from) EEPROM */
+  case MAV_CMD_PREFLIGHT_STORAGE:
+    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+      command_denied();
+    else
+      handle_cmd_preflight_storage(mavlink_command_long_struct);
     break;
 
   /*
-   * (пере)запуск калибровки
+   *
    */
-  case MAV_CMD_PREFLIGHT_CALIBRATION:
-     if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
-      command_denied();
-      return;
-    }
-    else{
-      handle_calibration_cmd(mavlink_command_long_struct);
-    }
-    break;
-
-
-  case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
-    /* Request the reboot or shutdown of system components. |0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.| 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.| Reserved| Reserved| Empty| Empty| Empty|  */
-    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT){
-      command_denied();
-      return;
-    }
-    else{
-      setGlobalFlag(SIGHALT_FLAG);
-      command_accepted();
-    }
-    break;
-    /**
-     * Команды для загрузки/вычитки параметров из EEPROM
-     */
-    case MAV_CMD_PREFLIGHT_STORAGE:
-      if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
-        return;
-
-      if (mavlink_command_long_struct->param1 == 0)
-        load_params_from_eeprom();
-      else if (mavlink_command_long_struct->param1 == 1)
-        save_params_to_eeprom();
-
-      if (mavlink_command_long_struct->param2 == 0)
-        load_mission_from_eeprom();
-      else if (mavlink_command_long_struct->param2 == 1)
-        save_mission_to_eeprom();
-
-      break;
-
   default:
-    return;
     break;
   }
 }
@@ -176,6 +242,7 @@ static msg_t CmdThread(void* arg){
     input_mail = (Mail*)tmp;
     process_cmd((mavlink_command_long_t *)input_mail->payload);
     input_mail->payload = NULL;
+    chBSemSignal(input_mail->sem);
   }
 
   return 0;
