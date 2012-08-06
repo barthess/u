@@ -97,14 +97,9 @@ void handle_cmd_reboot_shutdown(mavlink_command_long_t *mavlink_command_long_str
   * 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
   * | Reserved| Reserved| Empty| Empty| Empty|
   */
-  /**/
-  if (mavlink_command_long_struct->param1 == 0.0)
-    __NOP();//stub
-  else if (mavlink_command_long_struct->param1 == 1.0){
-    command_unsupported();
-    return;
-  }
-  else if (mavlink_command_long_struct->param1 == 2.0){
+
+  /* currently only reboot supported */
+  if (mavlink_command_long_struct->param1 == 1.0){
     command_accepted();
     setGlobalFlag(SIGHALT_FLAG);
     return;
@@ -113,10 +108,6 @@ void handle_cmd_reboot_shutdown(mavlink_command_long_t *mavlink_command_long_str
     command_unsupported();
     return;
   }
-
-  /**/
-  if (mavlink_command_long_struct->param2 != 0.0)
-    command_unsupported();
 }
 
 /**
@@ -228,7 +219,7 @@ static msg_t CmdThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void MavCmdInit_local(void){
+void MavCmdInitLocal(void){
 
   chThdCreateStatic(CmdThreadWA,
         sizeof(CmdThreadWA),
