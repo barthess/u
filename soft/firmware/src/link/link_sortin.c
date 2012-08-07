@@ -14,10 +14,12 @@
  */
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox mavlink_command_long_mb;
+extern Mailbox mavlink_manual_control_mb;
 
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_command_long_t mavlink_command_long_struct;
 extern mavlink_set_mode_t mavlink_set_mode_struct;
+extern mavlink_manual_control_t mavlink_manual_control_struct;
 
 /*
  ******************************************************************************
@@ -30,6 +32,7 @@ static mavlink_param_request_read_t mavlink_param_request_read_struct;
 
 static Mail param_set_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
 static Mail command_long_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
+static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_MANUAL_CONTROL, NULL};
 
 /*
  *******************************************************************************
@@ -42,18 +45,16 @@ bool_t sort_input_messages(mavlink_message_t *msg){
   msg_t status = RDY_OK;
 
   switch(msg->msgid){
-  /* automatically generated handler */
+   /* automatically generated handler */
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     mavlink_msg_param_request_list_decode(msg, &mavlink_param_request_list_struct);
     if (mavlink_param_request_list_struct.target_system != mavlink_system_struct.sysid)
       return LINK_SUCCESS; /* silently ignore messages not for this system */
-    if (param_set_mail.payload == NULL){
-      param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_LIST;
-      param_set_mail.payload = &mavlink_param_request_list_struct;
-      status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
-      if (status != RDY_OK)
-        return LINK_FAILED;
-    }
+    param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_LIST;
+    param_set_mail.payload = &mavlink_param_request_list_struct;
+    status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
     else
       return LINK_SUCCESS;
     break;
@@ -63,13 +64,11 @@ bool_t sort_input_messages(mavlink_message_t *msg){
     mavlink_msg_param_request_read_decode(msg, &mavlink_param_request_read_struct);
     if (mavlink_param_request_read_struct.target_system != mavlink_system_struct.sysid)
       return LINK_SUCCESS; /* silently ignore messages not for this system */
-    if (param_set_mail.payload == NULL){
-      param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_READ;
-      param_set_mail.payload = &mavlink_param_request_read_struct;
-      status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
-      if (status != RDY_OK)
-        return LINK_FAILED;
-    }
+    param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_REQUEST_READ;
+    param_set_mail.payload = &mavlink_param_request_read_struct;
+    status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
     else
       return LINK_SUCCESS;
     break;
@@ -79,13 +78,11 @@ bool_t sort_input_messages(mavlink_message_t *msg){
     mavlink_msg_param_set_decode(msg, &mavlink_param_set_struct);
     if (mavlink_param_set_struct.target_system != mavlink_system_struct.sysid)
       return LINK_SUCCESS; /* silently ignore messages not for this system */
-    if (param_set_mail.payload == NULL){
-      param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_SET;
-      param_set_mail.payload = &mavlink_param_set_struct;
-      status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
-      if (status != RDY_OK)
-        return LINK_FAILED;
-    }
+    param_set_mail.invoice = MAVLINK_MSG_ID_PARAM_SET;
+    param_set_mail.payload = &mavlink_param_set_struct;
+    status = chMBPost(&mavlink_param_set_mb, (msg_t)&param_set_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
     else
       return LINK_SUCCESS;
     break;
@@ -95,17 +92,28 @@ bool_t sort_input_messages(mavlink_message_t *msg){
     mavlink_msg_command_long_decode(msg, &mavlink_command_long_struct);
     if (mavlink_command_long_struct.target_system != mavlink_system_struct.sysid)
       return LINK_SUCCESS; /* silently ignore messages not for this system */
-    if (command_long_mail.payload == NULL){
-      command_long_mail.invoice = MAVLINK_MSG_ID_COMMAND_LONG;
-      command_long_mail.payload = &mavlink_command_long_struct;
-      status = chMBPost(&mavlink_command_long_mb, (msg_t)&command_long_mail, TIME_IMMEDIATE);
-      if (status != RDY_OK)
-        return LINK_FAILED;
-    }
+    command_long_mail.invoice = MAVLINK_MSG_ID_COMMAND_LONG;
+    command_long_mail.payload = &mavlink_command_long_struct;
+    status = chMBPost(&mavlink_command_long_mb, (msg_t)&command_long_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
     else
       return LINK_SUCCESS;
     break;
 
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MANUAL_CONTROL:
+    mavlink_msg_manual_control_decode(msg, &mavlink_manual_control_struct);
+    if (mavlink_manual_control_struct.target != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    manual_control_mail.invoice = MAVLINK_MSG_ID_MANUAL_CONTROL;
+    manual_control_mail.payload = &mavlink_manual_control_struct;
+    status = chMBPost(&mavlink_manual_control_mb, (msg_t)&manual_control_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
 
   case MAVLINK_MSG_ID_SET_MODE:
     mavlink_msg_set_mode_decode(msg, &mavlink_set_mode_struct);
@@ -115,6 +123,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
 
   case MAVLINK_MSG_ID_HEARTBEAT:
     break;
+
   default:
     //Do nothing
     break;
@@ -122,8 +131,6 @@ bool_t sort_input_messages(mavlink_message_t *msg){
 
   return LINK_SUCCESS;
 }
-
-
 
 
 /*

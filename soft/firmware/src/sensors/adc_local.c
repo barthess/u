@@ -116,7 +116,7 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
  *******************************************************************************
  */
 void ADCInit_local(void){
-  flen_adc     = ValueSearch("FLEN_adc");
+  flen_adc = ValueSearch("FLEN_adc");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);

@@ -16,6 +16,7 @@ Mailbox autopilot_mb;             /* сообщения для автопило�
 Mailbox tolink_mb;                /* сообщения для отправки через модем */
 Mailbox mavlink_param_set_mb;     /* сообщения с параметрами */
 Mailbox mavlink_command_long_mb;  /* сообщения с командами */
+Mailbox mavlink_manual_control_mb;
 Mailbox logwriter_mb;             /* сообщения для писалки логов */
 
 /* mavlink messages */
@@ -27,6 +28,7 @@ mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
 mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
 mavlink_sys_status_t          mavlink_sys_status_struct;
 mavlink_command_long_t        mavlink_command_long_struct;
+mavlink_manual_control_t      mavlink_manual_control_struct;
 mavlink_vfr_hud_t             mavlink_vfr_hud_struct;
 mavlink_set_mode_t            mavlink_set_mode_struct;
 mavlink_global_position_int_t mavlink_global_position_int_struct;
@@ -44,6 +46,7 @@ mavlink_gps_raw_int_t         mavlink_gps_raw_int_struct;
 static msg_t autopilot_mb_buf[4];
 static msg_t tolink_mb_buf[8];
 static msg_t param_mb_buf[2];
+static msg_t manual_control_mb_buf[1];
 static msg_t mavlinkcmd_mb_buf[2];
 static msg_t logwriter_mb_buf[10];
 
@@ -72,6 +75,7 @@ void MsgInit(void){
   chMBInit(&tolink_mb,                tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlink_param_set_mb,     param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
   chMBInit(&mavlink_command_long_mb,  mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
   chMBInit(&logwriter_mb,             logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 }
 
