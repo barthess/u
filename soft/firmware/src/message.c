@@ -45,9 +45,9 @@ mavlink_gps_raw_int_t         mavlink_gps_raw_int_struct;
 /* mailbox buffers */
 static msg_t autopilot_mb_buf[4];
 static msg_t tolink_mb_buf[8];
-static msg_t param_mb_buf[2];
-static msg_t manual_control_mb_buf[1];
-static msg_t mavlinkcmd_mb_buf[2];
+static msg_t mavlink_param_set_mb_buf[2];
+static msg_t mavlink_manual_control_mb_buf[1];
+static msg_t mavlink_command_long_mb_buf[4];
 static msg_t logwriter_mb_buf[10];
 
 /*
@@ -71,12 +71,24 @@ static msg_t logwriter_mb_buf[10];
  */
 
 void MsgInit(void){
-  chMBInit(&autopilot_mb,             autopilot_mb_buf,       (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
-  chMBInit(&tolink_mb,                tolink_mb_buf,          (sizeof(tolink_mb_buf)/sizeof(msg_t)));
-  chMBInit(&mavlink_param_set_mb,     param_mb_buf,           (sizeof(param_mb_buf)/sizeof(msg_t)));
-  chMBInit(&mavlink_command_long_mb,  mavlinkcmd_mb_buf,      (sizeof(mavlinkcmd_mb_buf)/sizeof(msg_t)));
-  chMBInit(&mavlink_manual_control_mb,manual_control_mb_buf,  (sizeof(manual_control_mb_buf)/sizeof(msg_t)));
-  chMBInit(&logwriter_mb,             logwriter_mb_buf,       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
+  chMBInit(&autopilot_mb,
+      autopilot_mb_buf,
+      (sizeof(autopilot_mb_buf)/sizeof(msg_t)));
+  chMBInit(&tolink_mb,
+      tolink_mb_buf,
+      (sizeof(tolink_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_param_set_mb,
+      mavlink_param_set_mb_buf,
+      (sizeof(mavlink_param_set_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_command_long_mb,
+      mavlink_command_long_mb_buf,
+      (sizeof(mavlink_command_long_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mavlink_manual_control_mb,
+      mavlink_manual_control_mb_buf,
+      (sizeof(mavlink_manual_control_mb_buf)/sizeof(msg_t)));
+  chMBInit(&logwriter_mb,
+      logwriter_mb_buf,
+      (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 }
 
 void MavInit(void){

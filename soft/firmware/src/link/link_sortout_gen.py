@@ -6,6 +6,7 @@ names = [
         ("heartbeat",           "ALL"),
         ("vfr_hud",             "ALL"),
         ("param_value",         "ALL"),
+        ("command_ack",         "ALL"),
         ("set_mode",            "IMU"),
         ("attitude",            "IMU"),
         ("raw_pressure",        "IMU"),
