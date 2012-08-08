@@ -8,8 +8,6 @@
  ******************************************************************************
  */
 #define bmp085addr          0b1110111
-#define TEMPERATURE_ERROR   0
-#define PRESSURE_ERROR      0
 
 // sensor precision (see datasheet)
 #define OSS 3 // 3 -- max
@@ -83,12 +81,6 @@ static void bmp085_calc(void){
   uint32_t pval = 0;
   int32_t  tval = 0;
 
-  if ((ut == TEMPERATURE_ERROR) || (up == PRESSURE_ERROR)){
-    raw_data.pressure_static = 0;
-    comp_data.baro_altitude = -32768;
-    return;
-  }
-
   /* Calculate pressure using black magic from datasheet */
   int32_t  x1, x2, x3, b3, b5, b6, p;
   uint32_t  b4, b7;
@@ -136,43 +128,40 @@ static void bmp085_calc(void){
 /**
  *
  */
-static uint32_t get_temperature(BinarySemaphore *semp){
+static uint32_t get_temperature(BinarySemaphore *semp, int32_t *retry){
+
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
-  if (i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    return TEMPERATURE_ERROR;
+  i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0);
 
   /* wait temperature results (datasheet says 4.5 ms) */
-  if (chBSemWaitTimeout(semp, MS2ST(5)) != RDY_OK)
-    return TEMPERATURE_ERROR;
+  if (chBSemWaitTimeout(semp, MS2ST(10)) != RDY_OK)
+    (*retry)--;
 
   /* read measured value */
   txbuf[0] = BOSCH_ADC_MSB;
-  if (i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 2) != RDY_OK)
-    return TEMPERATURE_ERROR;
-
+  i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 2);
   return (rxbuf[0] << 8) + rxbuf[1];
 }
 
 /**
  *
  */
-static uint32_t get_pressure(BinarySemaphore *semp){
+static uint32_t get_pressure(BinarySemaphore *semp, int32_t *retry){
+
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = (0x34 + (OSS<<6));
-  if (i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    return PRESSURE_ERROR;
+  i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0);
+
 
   /* wait pressure results (datasheet says 25.5 ms) */
-  if (chBSemWaitTimeout(semp, MS2ST(26)) != RDY_OK)
-    return PRESSURE_ERROR;
+  if (chBSemWaitTimeout(semp, MS2ST(50)) != RDY_OK)
+    (*retry)--;
 
   /* acqure pressure */
   txbuf[0] = BOSCH_ADC_MSB;
-  if (i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 3) != RDY_OK)
-    return PRESSURE_ERROR;
-
+  i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 3);
   return ((rxbuf[0] << 16) + (rxbuf[1] << 8) + rxbuf[2]) >> (8 - OSS);
 }
 
@@ -183,13 +172,17 @@ static WORKING_AREA(PollBaroThreadWA, 256);
 static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
   uint32_t t = 0;
+  int32_t retry = 20;
 
   while (TRUE) {
+    chDbgAssert(retry > 0, "PollAccelThread(), #1",
+          "probably no interrupts from pressure sensor");
+
     /* we get temperature every 0x1F cycle */
     if ((t & 0x1F) == 0x1F)
-      ut = get_temperature((BinarySemaphore*)semp);
+      ut = get_temperature((BinarySemaphore*)semp, &retry);
 
-    up = get_pressure((BinarySemaphore*)semp);
+    up = get_pressure((BinarySemaphore*)semp, &retry);
     bmp085_calc();
 
     t++;
@@ -211,8 +204,8 @@ void init_bmp085(BinarySemaphore *bmp085_semp){
 
   /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;
-  while(i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22) != RDY_OK)
-    ;
+  i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22);
+
   ac1 = (rxbuf[0]  << 8) + rxbuf[1];
   ac2 = (rxbuf[2]  << 8) + rxbuf[3];
   ac3 = (rxbuf[4]  << 8) + rxbuf[5];

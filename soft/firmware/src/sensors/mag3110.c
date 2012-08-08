@@ -58,9 +58,9 @@ static magnetometerstate_t state;
  * PROTOTYPES
  ******************************************************************************
  */
-static void raise_error_flags(void);
+//static void raise_error_flags(void);
 static void check_and_clean_overdose(void);
-static void acquire_data(uint8_t *rxbuf);
+static void process_magentometer_data(uint8_t *rxbuf);
 static void collect_staticstics(RawData *raw_data, int16_t extremums[6]);
 static void calc_coefficients(int16_t extremums[6]);
 static void clear_statistics(RawData *raw_data, int16_t extremums[6]);
@@ -81,6 +81,7 @@ static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
 
   msg_t sem_status = RDY_OK;
+  int32_t retry = 10;
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
@@ -89,18 +90,19 @@ static msg_t PollMagThread(void *semp){
      * чтобы прерывание работало, надо обязательно читать данные
      * из как минимум первого регистра. */
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollMagThread(), #1",
+          "probably no interrupts from magnetometer");
+    }
 
-    /* посмотрим, чё там померялось */
     txbuf[0] = MAG_OUT_DATA;
-    if ((i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6) == RDY_OK) && (sem_status == RDY_OK))
-      acquire_data(rxbuf);
-    else
-      raise_error_flags();
+    i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
+    process_magentometer_data(rxbuf);
 
-    /* передоз? */
+    /* overdose? */
     check_and_clean_overdose();
 
-    /* нам прилетел сигнал HALT? */
     if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
@@ -110,7 +112,7 @@ static msg_t PollMagThread(void *semp){
 /**
  * Раскладывает полученные данные по структурам, при необходимости масштабирует.
  */
-void acquire_data(uint8_t *rxbuf){
+void process_magentometer_data(uint8_t *rxbuf){
 
   /**/
   raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
@@ -229,17 +231,17 @@ void check_and_clean_overdose(void){
 /**
  * Функция выставляет значения, которые трактуются, как знамение ошибки
  */
-void raise_error_flags(void){
-  raw_data.xmag = ERR_VAL;
-  raw_data.ymag = ERR_VAL;
-  raw_data.zmag = ERR_VAL;
-  mavlink_raw_imu_struct.xmag = raw_data.xmag;
-  mavlink_raw_imu_struct.ymag = raw_data.ymag;
-  mavlink_raw_imu_struct.zmag = raw_data.zmag;
-  mavlink_scaled_imu_struct.xmag = raw_data.xmag;
-  mavlink_scaled_imu_struct.ymag = raw_data.ymag;
-  mavlink_scaled_imu_struct.zmag = raw_data.zmag;
-}
+//void raise_error_flags(void){
+//  raw_data.xmag = ERR_VAL;
+//  raw_data.ymag = ERR_VAL;
+//  raw_data.zmag = ERR_VAL;
+//  mavlink_raw_imu_struct.xmag = raw_data.xmag;
+//  mavlink_raw_imu_struct.ymag = raw_data.ymag;
+//  mavlink_raw_imu_struct.zmag = raw_data.zmag;
+//  mavlink_scaled_imu_struct.xmag = raw_data.xmag;
+//  mavlink_scaled_imu_struct.ymag = raw_data.ymag;
+//  mavlink_scaled_imu_struct.zmag = raw_data.zmag;
+//}
 
 
 /*

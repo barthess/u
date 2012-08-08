@@ -166,23 +166,27 @@ static msg_t PollGyroThread(void *semp){
   uint32_t i = 0;/* variable for regulate log writing frequency */
 
   msg_t sem_status = RDY_OK;
+  int32_t retry = 10;
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
-
-    if (sem_status == RDY_OK){
-      txbuf[0] = GYRO_OUT_DATA;     // register address
-      if (i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8) == RDY_OK){
-        sort_rxbuff(rxbuf);
-        if (GlobalFlags & GYRO_CAL_FLAG)
-          gyrozeroing();
-        else{
-          process_gyro_data();
-          chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
-          itg3200_write_log(&i);/* save data to logfile */
-        }
-      }
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollGyroThread(), #1",
+          "probably no interrupts from gyro");
     }
+
+    txbuf[0] = GYRO_OUT_DATA;     // register address
+    i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
+    sort_rxbuff(rxbuf);
+    if (GlobalFlags & GYRO_CAL_FLAG)
+      gyrozeroing();
+    else{
+      process_gyro_data();
+      chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
+      itg3200_write_log(&i);/* save data to logfile */
+    }
+
     if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }

@@ -34,26 +34,35 @@ static uint8_t txbuf[TMP75_TX_DEPTH] = {0,0};
  *******************************************************************************
  *******************************************************************************
  */
+
+/**
+ *
+ */
 static WORKING_AREA(PollTmp75ThreadWA, 256);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
 
   while (TRUE) {
-    txbuf[0] = 0b00000001; // point to Configuration Register
+    txbuf[0] = 1; // point to Configuration Register
     /* single measurement start */
-    txbuf[1] = 0b10000001; // OS R1 R0 F1 F0 POL TM SD
-    i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
-    chThdSleepMilliseconds(40); /* wait until measured (datasheet says 37.5ms)*/
-
+    if (comp_data.temp_onboard < 1000){
+      txbuf[1] = 0b10000001; /* OS R1 R0 F1 F0 POL TM SD */
+      i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+      chThdSleepMilliseconds(40);
+    }
+    else{
+      txbuf[1] = 0b11000001;  /* OS R1 R0 F1 F0 POL TM SD */
+      i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+      chThdSleepMilliseconds(150);
+    }
     txbuf[0] = 0; // point to temperature register
 
     i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2);
     raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
-    comp_data.temp_onboard = raw_data.temp_tmp75 >> 8;
-    mavlink_scaled_pressure_struct.temperature = (int16_t)
-                                ((100 * (int32_t)raw_data.temp_tmp75) / 256);
-    chThdSleepMilliseconds(1000);
+    comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
+    mavlink_scaled_pressure_struct.temperature = comp_data.temp_onboard;
+    chThdSleepMilliseconds(2000);
 
     if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
@@ -87,8 +96,7 @@ void init_tmp75(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
   /* enable autoshutdown, to reduce auto warmup of sensor */
   txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
-  while(i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
+  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
 
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),
