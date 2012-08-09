@@ -44,17 +44,17 @@ static Thread *linkin_tp = NULL;
  */
 
 /**
- * Поток отправки сообещиний через канал связи на землю.
+ *
  */
 static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
 
-  /* Переменная для формирования сообщения. Одна на всех,
-     поскольку сообещиня обрабатываются по одному. */
+  /* Variable for storing message. One for all because messages processed
+   * one by one. */
   mavlink_message_t mavlink_msgbuf;
 
-  /* выходной буфер для отправки данных */
+  /* output buffer for sending data */
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
   Mail *mailp;
