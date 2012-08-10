@@ -95,7 +95,6 @@ CSRC = $(PORTSRC) \
        src/stubs.c \
        src/utils.c \
        src/bkp.c \
-       src/i2c_local.c \
        src/exti_local.c \
        src/microrl/src/microrl.c \
        src/irq_storm.c \
@@ -122,6 +121,7 @@ CSRC = $(PORTSRC) \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
+       src/sensors/i2c_local.c \
        src/cli/cli.c \
        src/cli/cli_cmd.c \
        src/link/linkmgr.c \
