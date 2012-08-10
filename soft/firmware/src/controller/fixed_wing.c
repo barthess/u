@@ -2,6 +2,8 @@
 
 #include "uav.h"
 
+#include "fixed_wing.h"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -34,28 +36,20 @@ extern Mailbox mavlink_manual_control_mb;
  *
  */
 static WORKING_AREA(ControllerThreadWA, 512);
-Thread *autopilot_tp = NULL;
 static msg_t ControllerThread(void* arg){
-  chRegSetThreadName("Controller");
+  chRegSetThreadName("Fixed_wing");
   (void)arg;
 
-  uint32_t i = 0;
-  Mail* mailp = NULL;
-  mavlink_manual_control_t *mavlink_manual_control_struct = NULL;
   msg_t tmp = 0;
   msg_t status = 0;
-  uint32_t trust = 0;
+  Mail* mailp = NULL;
+  mavlink_manual_control_t *mavlink_manual_control_struct = NULL;
 
   while (TRUE) {
     status = chMBFetch(&mavlink_manual_control_mb, &tmp, CONTROLLER_TMO);
     if (status == RDY_OK){
       mailp = (Mail*)tmp;
       mavlink_manual_control_struct = mailp->payload;
-
-      if (mavlink_manual_control_struct->thrust_manual == 1)
-        trust = __SSAT((roundf(128 * mavlink_manual_control_struct->thrust) + 128), 7);
-      ServoCarThrottleSet(trust);
-
       chBSemSignal(mailp->sem);
     }
     else{
@@ -64,10 +58,9 @@ static msg_t ControllerThread(void* arg){
       Servo5Set(64);
       Servo6Set(128);
       Servo7Set(255);
-      ServoCarThrottleSet((i >> 2) & 0xFF);
-      i++;
     }
   }
+  (void)mavlink_manual_control_struct;
   return 0;
 }
 
@@ -77,7 +70,7 @@ static msg_t ControllerThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ControllerInit(void){
+void ControllerFixedWingInit(void){
 
   chThdCreateStatic(ControllerThreadWA,
         sizeof(ControllerThreadWA),

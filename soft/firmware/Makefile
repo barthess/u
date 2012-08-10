@@ -6,7 +6,7 @@
 # Compiler options here.
 ifeq ($(USE_OPT),)
   #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  USE_OPT = -O0 -ggdb3 -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
   #USE_OPT = -O0 -ggdb -fomit-frame-pointer -std=gnu99
   #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
   #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
@@ -132,7 +132,9 @@ CSRC = $(PORTSRC) \
        src/eeprom/24aa.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
-       src/controller.c \
+       src/controller/controller.c \
+       src/controller/ground_rover.c \
+       src/controller/fixed_wing.c \
        src/message.c \
        src/dsp.c \
        src/pwr_mgmt.c \
@@ -189,6 +191,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/sensors \
          src/storage \
          src/kinematic \
+         src/controller \
          src/mavlink_local \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
@@ -298,7 +301,8 @@ include $(CHIBIOS)/os/ports/GCC/ARMCMx/rules.mk
 # User difined rules here
 MAKE_ALL_RULE_HOOK: res_usage
 
-res_usage: $(BUILDDIR)/$(PROJECT).map $(BUILDDIR)/$(PROJECT).bin
+res_usage: $(BUILDDIR)/$(PROJECT).bin $(BUILDDIR)/$(PROJECT).elf \
+			$(BUILDDIR)/$(PROJECT).hex $(BUILDDIR)/$(PROJECT).dmp
 	./res_usage.sh	
 
 
