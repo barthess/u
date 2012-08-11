@@ -56,7 +56,7 @@ BinarySemaphore *itg3200_semp = NULL;
  * Incrementes on every exti pulse.
  * Zeroes in virtual timer callback.
  */
-static uint32_t pulsecnt = 0;
+//static uint32_t pulsecnt = 0;
 static uint32_t tacho_period = 0;
 
 /* timer for RPM counting */

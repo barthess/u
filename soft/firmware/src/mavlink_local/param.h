@@ -26,11 +26,11 @@ typedef union{float f32; int32_t i32; uint32_t u32;} floatint;
  */
 struct GlobalParam_t
 {
-  const char *name;
-  const floatint min;
-  floatint value;
-  const floatint max;
-  const uint8_t  param_type;
+  char *name;
+  floatint min;
+  floatint *valuep;
+  floatint max;
+  uint8_t  param_type;
 };
 
 /**
@@ -47,7 +47,7 @@ typedef enum {
 
 int32_t key_index_search(const char* key);
 void *ValueSearch(const char *str);
-param_status_t set_global_param(void *value,  GlobalParam_t *param);
+param_status_t set_global_param(void *value, const GlobalParam_t *param);
 void ParametersInit(void);
 
 

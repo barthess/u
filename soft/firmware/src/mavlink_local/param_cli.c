@@ -64,19 +64,19 @@ static void _param_cli_print(uint32_t i){
   switch(global_data[i].param_type){
   case MAVLINK_TYPE_FLOAT:
     nres = snprintf(str, n, " = %f, (min = %f, max = %f)",
-        global_data[i].value.f32,
+        global_data[i].valuep->f32,
         global_data[i].min.f32,
         global_data[i].max.f32);
     break;
   case MAVLINK_TYPE_INT32_T:
     nres = snprintf(str, n, " = %d, (min = %d, max = %d)",
-        (int)global_data[i].value.i32,
+        (int)global_data[i].valuep->i32,
         (int)global_data[i].min.i32,
         (int)global_data[i].max.i32);
     break;
   default: // uint32_t
     nres = snprintf(str, n, " = %u, (min = %u, max = %u)",
-        (unsigned int)global_data[i].value.u32,
+        (unsigned int)global_data[i].valuep->u32,
         (unsigned int)global_data[i].min.u32,
         (unsigned int)global_data[i].max.u32);
     break;

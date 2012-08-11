@@ -26,7 +26,7 @@ extern const uint32_t OnboardParamCount;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(global_data[0].value)];
+static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(*(global_data[0].valuep))];
 
 /*
  *******************************************************************************
@@ -92,7 +92,7 @@ bool_t save_params_to_eeprom(void){
     memcpy(eeprombuf, global_data[i].name, PARAM_ID_SIZE);
 
     /* now write data */
-    v = global_data[i].value.u32;
+    v = global_data[i].valuep->u32;
     eeprombuf[PARAM_ID_SIZE + 0] = (v >> 24) & 0xFF;
     eeprombuf[PARAM_ID_SIZE + 1] = (v >> 16) & 0xFF;
     eeprombuf[PARAM_ID_SIZE + 2] = (v >> 8)  & 0xFF;

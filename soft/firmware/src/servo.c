@@ -121,9 +121,9 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
   uint16_t val = 0;
   uint16_t i = servoblock_index + (n) * 3;
 
-  min = global_data[i].value.u32 & 0xFFFF;
-  max = global_data[i+1].value.u32 & 0xFFFF;
-  neutral = global_data[i+2].value.u32 & 0xFFFF;
+  min = global_data[i].valuep->u32 & 0xFFFF;
+  max = global_data[i+1].valuep->u32 & 0xFFFF;
+  neutral = global_data[i+2].valuep->u32 & 0xFFFF;
 
   if (angle > 128){
     len = max - neutral;
