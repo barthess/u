@@ -30,7 +30,7 @@ struct GlobalParam_t
   const floatint min;
   floatint value;
   const floatint max;
-  const uint8_t param_type;
+  const uint8_t  param_type;
 };
 
 /**

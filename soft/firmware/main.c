@@ -3,6 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 /* TODO: PID on throttle
       - connecting RC to servo thread.
 */
