@@ -19,7 +19,7 @@
  */
 extern EepromFileStream EepromFile;
 extern GlobalParam_t global_data[];
-extern const uint32_t OnboardParamCount;
+extern int32_t OnboardParamCount;
 
 /*
  ******************************************************************************
@@ -41,7 +41,7 @@ static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(*(global_data[0].valuep))];
  *
  */
 bool_t load_params_from_eeprom(void){
-  uint32_t i = 0;
+  int32_t i = 0;
   int32_t  index = -1;
   uint32_t status = 0;
   uint32_t v = 0;
@@ -76,7 +76,7 @@ bool_t load_params_from_eeprom(void){
  *
  */
 bool_t save_params_to_eeprom(void){
-  uint32_t i;
+  int32_t i;
   uint32_t status = 0;
   uint32_t v = 0;
 
