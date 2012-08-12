@@ -1,9 +1,15 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+/* chibios includes */
 #include "ch.h"
 #include "hal.h"
 
+/* mavlink includes */
+#include "mavlink.h"
+#include "common.h"
+
+/* uav includes */
 #include "airspeed.h"
 #include "bkp.h"
 #include "bmp085.h"
@@ -38,9 +44,6 @@
 #include "tlm_sender.h"
 #include "tmp75.h"
 #include "utils.h"
-
-#include "mavlink.h"
-#include "common.h"
 
 /******************************************************************
  * humanreadable names of serial drivers */

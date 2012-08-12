@@ -7,13 +7,11 @@ names = [
         ("vfr_hud",             "ALL"),
         ("param_value",         "ALL"),
         ("command_ack",         "ALL"),
-        ("set_mode",            "IMU"),
         ("attitude",            "IMU"),
         ("raw_pressure",        "IMU"),
         ("raw_imu",             "IMU"),
         ("scaled_imu",          "IMU"),
         ("scaled_pressure",     "IMU"),
-        ("command_long",        "IMU"),
         ("global_position_int", "GPS"),
         ("gps_raw_int",         "GPS")
         ]

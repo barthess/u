@@ -127,8 +127,8 @@ void PurgeUavMailbox(Mailbox *mbp){
     chMBFetch(mbp, &tmp, TIME_IMMEDIATE);
     mail = (Mail *)tmp;
     mail->payload = NULL;
-    if (mail->sem != NULL)
-      chBSemSignalI(mail->sem);
+    if (mail->semp != NULL)
+      chBSemSignalI(mail->semp);
   }
   chSysUnlock();
 }

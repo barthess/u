@@ -24,7 +24,7 @@ struct Mail{
    * Protection semaphore.
    * Set to NULL if unused.
    */
-  BinarySemaphore *sem;
+  BinarySemaphore *semp;
 };
 
 

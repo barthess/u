@@ -200,7 +200,6 @@ const GlobalParam_t global_data[] = {
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static BinarySemaphore param_confirm_sem;     /* to sync with tlm sender */
 
 /*
  *******************************************************************************
@@ -296,7 +295,7 @@ static bool_t send_value(Mail *param_value_mail,
   else
     index = n;
   if ((index >= 0) && (index <= OnboardParamCount)){
-    status = chBSemWaitTimeout(param_value_mail->sem, PARAM_CONFIRM_TMO);
+    status = chBSemWaitTimeout(param_value_mail->semp, PARAM_CONFIRM_TMO);
     if (status != RDY_OK)
       return PARAM_FAILED;
 
@@ -346,7 +345,9 @@ static msg_t ParametersThread(void *arg){
   chRegSetThreadName("Parameters");
   (void)arg;
 
-  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &param_confirm_sem};
+  BinarySemaphore confirm_sem;        /* to sync with tlm sender */
+  chBSemInit(&confirm_sem, FALSE);    /* semaphore is not taken */
+  Mail param_value_mail = {NULL, MAVLINK_MSG_ID_PARAM_VALUE, &confirm_sem};
 
   msg_t tmp = 0;
   Mail *input_mail = NULL;
@@ -466,8 +467,6 @@ void ParametersInit(void){
 
   OnboardParamCount = (sizeof(global_data) / sizeof(GlobalParam_t));
 
-  chBSemInit(&param_confirm_sem, FALSE); /* semaphore is not taken */
-
   /* check hardcoded name lengths */
   int32_t i = 0;
   for (i = 0; i < OnboardParamCount; i++){
@@ -476,7 +475,7 @@ void ParametersInit(void){
   }
 
   /* check available length of variable array */
-  if (OnboardParamCount > (int32_t)sizeof(gd_val))
+  if (OnboardParamCount > (int32_t)(sizeof(gd_val) / sizeof(gd_val[0])))
     chDbgPanic("not enough space in RAM to store parameters");
 
   /* check uniqueness of pointers to variable parameters */

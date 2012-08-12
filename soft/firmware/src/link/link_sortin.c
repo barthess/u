@@ -12,27 +12,28 @@
  * EXTERNS
  ******************************************************************************
  */
+extern mavlink_system_t mavlink_system_struct;
+
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox mavlink_command_long_mb;
-extern Mailbox mavlink_manual_control_mb;
-
-extern mavlink_system_t mavlink_system_struct;
-extern mavlink_command_long_t mavlink_command_long_struct;
-extern mavlink_set_mode_t mavlink_set_mode_struct;
-extern mavlink_manual_control_t mavlink_manual_control_struct;
+extern Mailbox controller_mb;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static mavlink_param_set_t mavlink_param_set_struct;
+static mavlink_param_set_t          mavlink_param_set_struct;
 static mavlink_param_request_list_t mavlink_param_request_list_struct;
 static mavlink_param_request_read_t mavlink_param_request_read_struct;
+static mavlink_command_long_t       mavlink_command_long_struct;
+static mavlink_manual_control_t     mavlink_manual_control_struct;
+static mavlink_set_mode_t           mavlink_set_mode_struct;
 
-static Mail param_set_mail = {NULL, MAVLINK_MSG_ID_PARAM_SET, NULL};
-static Mail command_long_mail = {NULL, MAVLINK_MSG_ID_COMMAND_LONG, NULL};
+static Mail param_set_mail      = {NULL, MAVLINK_MSG_ID_PARAM_SET,      NULL};
+static Mail command_long_mail   = {NULL, MAVLINK_MSG_ID_COMMAND_LONG,   NULL};
 static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_MANUAL_CONTROL, NULL};
+static Mail set_mode_mail       = {NULL, MAVLINK_MSG_ID_SET_MODE,       NULL};
 
 /*
  *******************************************************************************
@@ -45,7 +46,8 @@ bool_t sort_input_messages(mavlink_message_t *msg){
   msg_t status = RDY_OK;
 
   switch(msg->msgid){
-   /* automatically generated handler */
+
+  /* automatically generated handler */
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     mavlink_msg_param_request_list_decode(msg, &mavlink_param_request_list_struct);
     if (mavlink_param_request_list_struct.target_system != mavlink_system_struct.sysid)
@@ -108,18 +110,27 @@ bool_t sort_input_messages(mavlink_message_t *msg){
       return LINK_SUCCESS; /* silently ignore messages not for this system */
     manual_control_mail.invoice = MAVLINK_MSG_ID_MANUAL_CONTROL;
     manual_control_mail.payload = &mavlink_manual_control_struct;
-    status = chMBPost(&mavlink_manual_control_mb, (msg_t)&manual_control_mail, TIME_IMMEDIATE);
+    status = chMBPost(&controller_mb, (msg_t)&manual_control_mail, TIME_IMMEDIATE);
     if (status != RDY_OK)
       return LINK_FAILED;
     else
       return LINK_SUCCESS;
     break;
 
+  /* automatically generated handler */
   case MAVLINK_MSG_ID_SET_MODE:
     mavlink_msg_set_mode_decode(msg, &mavlink_set_mode_struct);
-    if (mavlink_set_mode_struct.target_system == mavlink_system_struct.sysid)
-      mavlink_system_struct.mode = mavlink_set_mode_struct.custom_mode | mavlink_set_mode_struct.base_mode;
+    if (mavlink_set_mode_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    set_mode_mail.invoice = MAVLINK_MSG_ID_SET_MODE;
+    set_mode_mail.payload = &mavlink_set_mode_struct;
+    status = chMBPost(&controller_mb, (msg_t)&set_mode_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
     break;
+
 
   case MAVLINK_MSG_ID_HEARTBEAT:
     break;
@@ -135,7 +146,7 @@ bool_t sort_input_messages(mavlink_message_t *msg){
 
 /*
  *******************************************************************************
- * OLD JUNK
+ * Old junk for hystorical purpose
  *******************************************************************************
  */
 #define SORTINCASE(lowercase, UPPERCASE, m){                                          \

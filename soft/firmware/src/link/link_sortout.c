@@ -24,10 +24,8 @@ extern mavlink_raw_imu_t             mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
 extern mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
 extern mavlink_sys_status_t          mavlink_sys_status_struct;
-extern mavlink_command_long_t        mavlink_command_long_struct;
 extern mavlink_command_ack_t         mavlink_command_ack_struct;
 extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* air and ground speed values */
-extern mavlink_set_mode_t            mavlink_set_mode_struct;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_attitude_t            mavlink_attitude_struct;
 extern mavlink_heartbeat_t           mavlink_heartbeat_struct;
@@ -72,9 +70,6 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
   case MAVLINK_MSG_ID_PARAM_VALUE:
     len = mavlink_msg_param_value_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_param_value_struct);
     break;
-  case MAVLINK_MSG_ID_SET_MODE:
-    len = mavlink_msg_set_mode_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_set_mode_struct);
-    break;
   case MAVLINK_MSG_ID_ATTITUDE:
     len = mavlink_msg_attitude_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_attitude_struct);
     break;
@@ -89,9 +84,6 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
     break;
   case MAVLINK_MSG_ID_SCALED_PRESSURE:
     len = mavlink_msg_scaled_pressure_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_scaled_pressure_struct);
-    break;
-  case MAVLINK_MSG_ID_COMMAND_LONG:
-    len = mavlink_msg_command_long_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_command_long_struct);
     break;
   case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
     len = mavlink_msg_global_position_int_encode(system_id, MAV_COMP_ID_GPS, msg, &mavlink_global_position_int_struct);
@@ -123,8 +115,8 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   len = mavencoder(mailp->invoice, mavlink_system_struct.sysid, mavlink_msgbuf);
   mailp->payload = NULL;
 
-  if (mailp->sem != NULL)
-    chBSemSignal(mailp->sem);
+  if (mailp->semp != NULL)
+    chBSemSignal(mailp->semp);
   return len;
 }
 

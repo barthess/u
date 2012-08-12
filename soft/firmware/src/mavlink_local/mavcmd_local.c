@@ -134,13 +134,13 @@ void handle_cmd_preflight_storage(mavlink_command_long_t *mavlink_command_long_s
 }
 
 /**
- *
+ * Looks like duplicated functionality of SET_MODE message
  */
 void handle_cmd_do_set_mode(mavlink_command_long_t *mavlink_command_long_struct){
   /* all modes defined in MAV_MODE */
-  //TODO: check them before set
-  mavlink_system_struct.mode = mavlink_command_long_struct->param1;
-  command_accepted();
+//  mavlink_system_struct.mode = mavlink_command_long_struct->param1;
+//  command_accepted();
+  command_denied();
 }
 
 /**
@@ -206,7 +206,7 @@ static msg_t CmdThread(void* arg){
     input_mail = (Mail*)tmp;
     process_cmd((mavlink_command_long_t *)input_mail->payload);
     input_mail->payload = NULL;
-    chBSemSignal(input_mail->sem);
+    chBSemSignal(input_mail->semp);
   }
 
   return 0;

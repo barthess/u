@@ -16,7 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox mavlink_manual_control_mb;
+extern Mailbox controller_mb;
 
 /*
  ******************************************************************************
@@ -35,31 +35,43 @@ extern Mailbox mavlink_manual_control_mb;
 /**
  *
  */
+void manual_control_handler(mavlink_manual_control_t *mavlink_manual_control_struct){
+  uint32_t thrust = 0;
+
+  if (mavlink_manual_control_struct->thrust_manual == 1){
+    thrust = float2thrust(mavlink_manual_control_struct->thrust);
+    ServoCarThrottleSet(thrust);
+  }
+}
+
+/**
+ *
+ */
 static WORKING_AREA(ControllerThreadWA, 512);
 static msg_t ControllerThread(void* arg){
   chRegSetThreadName("Ground_rover");
   (void)arg;
 
   Mail* mailp = NULL;
-  mavlink_manual_control_t *mavlink_manual_control_struct = NULL;
   msg_t tmp = 0;
   msg_t status = 0;
-  uint32_t thrust = 0;
 
   while (TRUE) {
-    status = chMBFetch(&mavlink_manual_control_mb, &tmp, CONTROLLER_TMO);
+    status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
     if (status == RDY_OK){
       mailp = (Mail*)tmp;
-      mavlink_manual_control_struct = mailp->payload;
 
-      if (mavlink_manual_control_struct->thrust_manual == 1){
-        thrust = float2thrust(mavlink_manual_control_struct->thrust);
-        ServoCarThrottleSet(thrust);
+      switch(mailp->invoice){
+      case MAVLINK_MSG_ID_MANUAL_CONTROL:
+        manual_control_handler(mailp->payload);
+        break;
+
+      case MAVLINK_MSG_ID_SET_MODE:
+        set_mode_handler(mailp->payload);
+        break;
       }
 
-      chBSemSignal(mailp->sem);
-    }
-    else{
+      chBSemSignal(mailp->semp);
     }
   }
   return 0;

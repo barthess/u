@@ -4,6 +4,7 @@
  */
 
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
+// TODO: heartbeat handler (return to home for example)
 /* TODO: PID on throttle
       - connecting RC to servo thread.
 */

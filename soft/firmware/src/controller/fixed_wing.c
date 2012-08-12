@@ -16,7 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox mavlink_manual_control_mb;
+extern Mailbox controller_mb;
 
 /*
  ******************************************************************************
@@ -46,11 +46,11 @@ static msg_t ControllerThread(void* arg){
   mavlink_manual_control_t *mavlink_manual_control_struct = NULL;
 
   while (TRUE) {
-    status = chMBFetch(&mavlink_manual_control_mb, &tmp, CONTROLLER_TMO);
+    status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
     if (status == RDY_OK){
       mailp = (Mail*)tmp;
       mavlink_manual_control_struct = mailp->payload;
-      chBSemSignal(mailp->sem);
+      chBSemSignal(mailp->semp);
     }
     else{
       /* testing values */
