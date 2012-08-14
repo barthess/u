@@ -100,7 +100,8 @@ CSRC = $(PORTSRC) \
        src/irq_storm.c \
        src/storage/microsd.c \
        src/storage/logger.c \
-       src/servo.c \
+       src/servo/servo.c \
+       src/servo/servo_cli.c \
        src/kinematic/imu.c \
        src/kinematic/vector3d.c \
        src/kinematic/dcm.c \
@@ -193,6 +194,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/kinematic \
          src/controller \
          src/mavlink_local \
+         src/servo \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart
