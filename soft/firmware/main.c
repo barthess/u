@@ -3,12 +3,10 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: CLI for servo manual driving
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
-// TODO: heartbeat handler (return to home for example)
-/* TODO: PID on throttle
-      - connecting RC to servo thread.
-*/
-
+// TODO: heartbeat missing handler (return to home for example)
+// TODO: PID
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accelerometer.

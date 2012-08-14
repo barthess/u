@@ -33,7 +33,7 @@ int32_t OnboardParamCount = 0;
 /*
  * variable array of parameters in RAM
  */
-static floatint gd_val[115];
+static floatint gd_val[108];
 
 /**
  *
@@ -80,7 +80,7 @@ const GlobalParam_t global_data[] = {
   {"ACC_ysens",       {.u32 = 3000},       &gd_val[21],       {.u32 = 17000},      MAVLINK_TYPE_UINT32_T},
   {"ACC_zsens",       {.u32 = 3000},       &gd_val[22],       {.u32 = 17000},      MAVLINK_TYPE_UINT32_T},
   /**** полярности осей. Направление осей приведено к осям автопилота ****/
-  {"ACC_xpol",        {.i32 = -1},         &gd_val[115],          {.i32 = 1},          MAVLINK_TYPE_INT32_T},
+  {"ACC_xpol",        {.i32 = -1},         &gd_val[105],          {.i32 = 1},          MAVLINK_TYPE_INT32_T},
   {"ACC_ypol",        {.i32 = -1},         &gd_val[23],          {.i32 = 1},          MAVLINK_TYPE_INT32_T},
   {"ACC_zpol",        {.i32 = -1},         &gd_val[24],          {.i32 = 1},          MAVLINK_TYPE_INT32_T},
 
@@ -148,50 +148,50 @@ const GlobalParam_t global_data[] = {
 
   /*  */
   {"IMU_accweight",   {.f32 = 0.0},        &gd_val[70],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_magweight",   {.f32 = 0.0},        &gd_val[80],          {.f32 = 0.9},        MAVLINK_TYPE_FLOAT},
-  {"IMU_gpsweight",   {.f32 = 0.0},        &gd_val[81],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved1",   {.f32 = 0.0},        &gd_val[82],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved2",   {.f32 = 0.0},        &gd_val[83],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved3",   {.f32 = 0.0},        &gd_val[84],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved4",   {.f32 = 0.0},        &gd_val[85],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved5",   {.f32 = 0.0},        &gd_val[86],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved6",   {.f32 = 0.0},        &gd_val[87],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_magweight",   {.f32 = 0.0},        &gd_val[71],          {.f32 = 0.9},        MAVLINK_TYPE_FLOAT},
+  {"IMU_gpsweight",   {.f32 = 0.0},        &gd_val[72],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved1",   {.f32 = 0.0},        &gd_val[73],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved2",   {.f32 = 0.0},        &gd_val[74],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved3",   {.f32 = 0.0},        &gd_val[75],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved4",   {.f32 = 0.0},        &gd_val[76],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved5",   {.f32 = 0.0},        &gd_val[77],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved6",   {.f32 = 0.0},        &gd_val[78],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
 
   /* sample count for zeroing */
-  {"GYRO_zeroconut",  {.u32 = 256},        &gd_val[88],          {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
+  {"GYRO_zeroconut",  {.u32 = 256},        &gd_val[79],          {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
 
   /* intervals between sending different data (mS) */
-  {"T_raw_imu",       {.u32 = SEND_OFF},   &gd_val[89],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_raw_press",     {.u32 = SEND_OFF},   &gd_val[90],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_scal_imu",      {.u32 = SEND_OFF},   &gd_val[91],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_scal_press",    {.u32 = SEND_OFF},   &gd_val[92],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_attitude",      {.u32 = SEND_OFF},   &gd_val[93],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_vfr_hud",       {.u32 = SEND_OFF},   &gd_val[94],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_gps_int",       {.u32 = SEND_OFF},   &gd_val[95],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_sys_status",    {.u32 = SEND_OFF},   &gd_val[96],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved0",     {.u32 = SEND_OFF},   &gd_val[97],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved1",     {.u32 = SEND_OFF},   &gd_val[98],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved2",     {.u32 = SEND_OFF},   &gd_val[99],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved3",     {.u32 = SEND_OFF},   &gd_val[101],         {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved4",     {.u32 = SEND_OFF},   &gd_val[102],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved5",     {.u32 = SEND_OFF},   &gd_val[103],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved6",     {.u32 = SEND_OFF},   &gd_val[104],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_raw_imu",       {.u32 = SEND_OFF},   &gd_val[80],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_raw_press",     {.u32 = SEND_OFF},   &gd_val[81],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_scal_imu",      {.u32 = SEND_OFF},   &gd_val[82],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_scal_press",    {.u32 = SEND_OFF},   &gd_val[83],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_attitude",      {.u32 = SEND_OFF},   &gd_val[84],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_vfr_hud",       {.u32 = SEND_OFF},   &gd_val[85],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_gps_int",       {.u32 = SEND_OFF},   &gd_val[86],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_sys_status",    {.u32 = SEND_OFF},   &gd_val[87],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved0",     {.u32 = SEND_OFF},   &gd_val[88],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved1",     {.u32 = SEND_OFF},   &gd_val[89],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved2",     {.u32 = SEND_OFF},   &gd_val[90],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved3",     {.u32 = SEND_OFF},   &gd_val[91],         {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved4",     {.u32 = SEND_OFF},   &gd_val[92],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved5",     {.u32 = SEND_OFF},   &gd_val[93],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_reserved6",     {.u32 = SEND_OFF},   &gd_val[94],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
 
   /* Timezone. Just simple offset in hours. */
-  {"TIME_zone",       {.i32 = -24},        &gd_val[105],          {.i32 = 24},         MAVLINK_TYPE_INT32_T},
+  {"TIME_zone",       {.i32 = -24},        &gd_val[95],          {.i32 = 24},         MAVLINK_TYPE_INT32_T},
 
   /* Length of filters for different systems. */
-  {"FLEN_adc",        {.u32 = 0},          &gd_val[106],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_pres_dyn",   {.u32 = 0},          &gd_val[107],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_pres_stat",  {.u32 = 0},          &gd_val[108],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved0",  {.u32 = 0},          &gd_val[109],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved1",  {.u32 = 0},          &gd_val[110],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved2",  {.u32 = 0},          &gd_val[111],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved3",  {.u32 = 0},          &gd_val[112],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved4",  {.u32 = 0},          &gd_val[113],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_adc",        {.u32 = 0},          &gd_val[96],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_pres_dyn",   {.u32 = 0},          &gd_val[97],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_pres_stat",  {.u32 = 0},          &gd_val[98],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved0",  {.u32 = 0},          &gd_val[99],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved1",  {.u32 = 0},          &gd_val[100],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved2",  {.u32 = 0},          &gd_val[101],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved3",  {.u32 = 0},          &gd_val[102],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_reserved4",  {.u32 = 0},          &gd_val[103],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
 
   /* fake field with 14 symbols name */
-  {"param_end_mark",  {.u32 = 1},          &gd_val[114],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
+  {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
 };
 
 
@@ -465,27 +465,51 @@ param_status_t set_global_param(void *value, const GlobalParam_t *param){
  */
 void ParametersInit(void){
 
+  int32_t i = 0;
+  int32_t n = 0;
+  int32_t gd_val_cnt = sizeof(gd_val) / sizeof(gd_val[0]);
+
   OnboardParamCount = (sizeof(global_data) / sizeof(GlobalParam_t));
 
+  /* initialise variable array with zeroes to be safe */
+  floatint v;
+  v.u32 = 0;
+  for (i = 0; i < gd_val_cnt; i++){
+    gd_val[i] = v;
+  }
+
   /* check hardcoded name lengths */
-  int32_t i = 0;
   for (i = 0; i < OnboardParamCount; i++){
     if (sizeof (*(global_data[i].name)) > ONBOARD_PARAM_NAME_LENGTH)
       chDbgPanic("name too long");
   }
 
   /* check available length of variable array */
-  if (OnboardParamCount > (int32_t)(sizeof(gd_val) / sizeof(gd_val[0])))
+  if (OnboardParamCount > gd_val_cnt)
     chDbgPanic("not enough space in RAM to store parameters");
 
   /* check uniqueness of pointers to variable parameters */
-  int32_t n = 0;
   for (i = 0; i < OnboardParamCount; i++){
     void *vp = global_data[i].valuep;
     for (n = i+1; n < OnboardParamCount; n++){
       if (vp == global_data[n].valuep)
         chDbgPanic("detected two pointers pointing to single parameter");
     }
+  }
+
+  /* check boundaries */
+  bool_t got = FALSE;
+  for (i = 0; i < OnboardParamCount; i++){
+    void *vp = global_data[i].valuep;
+
+    for (n = 0; n < gd_val_cnt; n++){
+      if (vp == &gd_val[n])
+        got = TRUE;
+    }
+    if (got == FALSE)
+      chDbgPanic("probably pointer points out of arrya bounds");
+
+    got = FALSE; /* go to next cycle */
   }
 
   /* check allowed size in EEPROM */
