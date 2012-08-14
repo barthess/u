@@ -33,22 +33,23 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
  ******************************************************************************
  */
 
-static ShellCmd_t chibiutils[] = {
-    {"ps",        &ps_clicmd,        NULL},
-    {"uname",     &uname_clicmd,     NULL},
-    {"help",      &help_clicmd,      NULL},
+static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,     NULL},
-    {"list",      &list_clicmd,      NULL},
-    {"loop",      &loop_clicmd,      NULL},
-    {"echo",      &echo_clicmd,      NULL},
     {"date",      &date_cmd,         NULL},
-    {"reboot",    &reboot_clicmd,    NULL},
-    {"sleep",     &sleep_clicmd,     NULL},
+    {"echo",      &echo_clicmd,      NULL},
+    {"help",      &help_clicmd,      NULL},
+    {"info",      &uname_clicmd,     NULL},
+    {"irqstorm",  &irqstorm_clicmd,  NULL},
+    {"list",      &list_clicmd,      NULL},
+    {"logout",    &logout_cmd,       NULL},
+    {"loop",      &loop_clicmd,      NULL},
+    {"param",     &param_clicmd,     NULL},
+    {"ps",        &ps_clicmd,        NULL},
     {"selftest",  &selftest_clicmd,  NULL},
     {"sensor",    &sensor_clicmd,    NULL},
-    {"logout",    &logout_cmd,       NULL},
-    {"param",     &param_clicmd,     NULL},
-    {"irqstorm",  &irqstorm_clicmd,  NULL},
+    {"sleep",     &sleep_clicmd,     NULL},
+    {"reboot",    &reboot_clicmd,    NULL},
+    {"uname",     &uname_clicmd,     NULL}, /* "info" sinonimus */
     //{"man",       &man_cmd,       NULL},
     //{"kill",    &kill_func,   NULL},
     {NULL,      NULL,         NULL}/* end marker */
@@ -97,18 +98,18 @@ void cli_print(const char *str){
 }
 
 /**
- *
- */
-void cli_put(char chr){
-  sdPut(shell_sdp, chr);
-}
-
-/**
  * Convenience function
  */
 void cli_println(const char *str){
   cli_print(str);
   cli_print(ENDL);
+}
+
+/**
+ * Convenience function
+ */
+void cli_put(char chr){
+  sdPut(shell_sdp, chr);
 }
 
 /**

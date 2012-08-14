@@ -118,15 +118,6 @@ Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   return tp;
 }
 
-Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)argv;
-  (void)argc;
-  (void)cmdarray;
-
-  return IRQStormStart();
-}
-
-
 Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
