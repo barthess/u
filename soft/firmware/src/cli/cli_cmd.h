@@ -4,8 +4,6 @@
 #include "cli.h"
 #include "../microrl/src/config.h"
 
-void cli_print_long(const char * str, int n, int nres);
-
 Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);

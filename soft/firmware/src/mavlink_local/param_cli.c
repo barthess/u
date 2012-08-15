@@ -130,10 +130,10 @@ static param_status_t _param_cli_set(const char * val, uint32_t i){
  */
 static void _param_cli_help(void){
   cli_println("Run without parameters to get full parameters list.");
-  cli_println("\"param save\" to save parameters to EEPROM.");
-  cli_println("\"param help\" to get this message.");
-  cli_println("\"param PARAM_name\" to get value of parameter.");
-  cli_println("\"param PARAM_name N\" to set value of parameter to N.");
+  cli_println("'param save' to save parameters to EEPROM.");
+  cli_println("'param help' to get this message.");
+  cli_println("'param PARAM_name' to get value of parameter.");
+  cli_println("'param PARAM_name N' to set value of parameter to N.");
 }
 
 /*
@@ -191,7 +191,7 @@ Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
     }
   }
   else{
-    cli_println("ERROR: bad arguments. Try \"param help\".");
+    cli_println("ERROR: bad arguments. Try 'param help'.");
   }
 
   /* stub */

@@ -28,6 +28,10 @@ struct ShellCmd_t{
    * Pointer to structure with subcommands. May be NULL.
    */
   const ShellCmd_t *subcmd;
+  /**
+   * Short command description for help message.
+   */
+  char *help;
 };
 
 
@@ -35,6 +39,7 @@ void cli_print(const char *str);
 void cli_put(char chr);
 void cli_println(const char *str);
 char get_char (void);
+void cli_print_long(const char * str, int n, int nres);
 
 void CliInit(void);
 void SpawnShellThreads(SerialDriver *sdp);

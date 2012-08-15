@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: short help msg for every command in shell struct.
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: heartbeat missing handler (return to home for example)
 // TODO: PID

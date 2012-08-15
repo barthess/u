@@ -38,7 +38,7 @@ extern mavlink_system_t       mavlink_system_struct;
  *
  */
 #define _servo_cli_err() (cli_println(\
-    "ERROR: command can not be recognised. Try \"servo help\"."))
+    "ERROR: command can not be recognised. Try 'servo help'."))
 
 /**
  *
@@ -50,7 +50,7 @@ static void _servo_default_cmd(void){
   else{
     cli_println("Atopilot is running in fixed wing mode.");
   }
-  cli_println("Try \"servo help\" to get list of allowable subcommands.");
+  cli_println("Try 'servo help' to get list of allowable subcommands.");
 }
 
 /**
@@ -144,7 +144,7 @@ Thread* servo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
     if (strcmp(*argv, "help") == 0)
       _servo_cli_help();
     else
-      cli_println("ERROR: not enough arguments. Try \"servo help\".");
+      cli_println("ERROR: not enough arguments. Try 'servo help'.");
   }
 
   /* two arguments */
@@ -157,7 +157,7 @@ Thread* servo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
 
   /* error handler */
   else
-    cli_println("ERROR: too many arguments. Try \"servo help\".");
+    cli_println("ERROR: too many arguments. Try 'servo help'.");
 
   /* stub */
   return NULL;

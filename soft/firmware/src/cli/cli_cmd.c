@@ -30,6 +30,9 @@ extern RawData raw_data;
  *******************************************************************************
  */
 
+/**
+ *
+ */
 Thread* clear_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
@@ -39,21 +42,9 @@ Thread* clear_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
   return NULL;
 }
 
-Thread* list_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)argc;
-  (void)argv;
-  int i = 0;
-
-  cli_print("available commands:\n\r");
-  while(cmdarray[i].name != NULL){
-    cli_print("\t");
-    cli_print(cmdarray[i].name);
-    cli_print(ENDL);
-    i++;
-  }
-  return NULL;
-}
-
+/**
+ *
+ */
 Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
 
@@ -66,25 +57,32 @@ Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   return NULL;
 }
 
+/**
+ *
+ */
 Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
   (void)argc;
   (void)argv;
-  cli_println("Use TAB key for completion");
-  cli_println("Commands:");
-  cli_println("\tversion {microrl | demo} - print version of microrl lib or version of this demo src");
-  cli_println("\thelp  - this message");
-  cli_println("\tclear - clear screen");
-  cli_println("\tlist  - list all commands in tree");
-  cli_println("\tloop  - command to test ^C fucntionallity");
-  cli_println("\t        and for demonstation auto-completion, while inputed 'l+<TAB>'");
+
+  int32_t i = 0;
+
+  cli_println("Use TAB key for completion, UpArrow for previous command.");
+  cli_println("Available commands:");
+
+  while(cmdarray[i].name != NULL){
+    cli_print("    ");
+    cli_print(cmdarray[i].name);
+    cli_print(" - ");
+    cli_println(cmdarray[i].help);
+    i++;
+  }
+
   return NULL;
 }
 
-
-
-
-
+/**
+ *
+ */
 static WORKING_AREA(LoopCmdThreadWA, 1024);
 static msg_t LoopCmdThread(void *arg){
   chRegSetThreadName("LoopCmd");
@@ -105,6 +103,9 @@ static msg_t LoopCmdThread(void *arg){
   return 0;
 }
 
+/**
+ *
+ */
 Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;
@@ -118,6 +119,9 @@ Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   return tp;
 }
 
+/**
+ *
+ */
 Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
@@ -128,6 +132,9 @@ Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
   return NULL;
 }
 
+/**
+ *
+ */
 Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
@@ -144,6 +151,9 @@ Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
   return NULL;
 }
 
+/**
+ *
+ */
 Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
@@ -153,6 +163,9 @@ Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *c
   return NULL;
 }
 
+/**
+ *
+ */
 Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;
@@ -160,18 +173,6 @@ Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
   cli_print("temperature is ...");
   cli_print(ENDL);
   return NULL;
-}
-
-
-/**
- * helper function
- * Inserts new line symbol if passed string does not contain NULL termination.
- * Must be used in combination with snprintf() function.
- */
-void cli_print_long(const char * str, int n, int nres){
-  cli_print(str);
-  if (nres > n)
-    cli_print(ENDL);
 }
 
 /**
@@ -227,10 +228,9 @@ Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
   return NULL;
 }
 
-
-
-
-
+/**
+ *
+ */
 Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;

@@ -34,26 +34,23 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
  */
 
 static const ShellCmd_t chibiutils[] = {
-    {"clear",     &clear_clicmd,     NULL},
-    {"date",      &date_cmd,         NULL},
-    {"echo",      &echo_clicmd,      NULL},
-    {"help",      &help_clicmd,      NULL},
-    {"info",      &uname_clicmd,     NULL},
-    {"irqstorm",  &irqstorm_clicmd,  NULL},
-    {"list",      &list_clicmd,      NULL},
-    {"logout",    &logout_cmd,       NULL},
-    {"loop",      &loop_clicmd,      NULL},
-    {"param",     &param_clicmd,     NULL},
-    {"ps",        &ps_clicmd,        NULL},
-    {"selftest",  &selftest_clicmd,  NULL},
-    {"sensor",    &sensor_clicmd,    NULL},
-    {"servo",     &servo_clicmd,     NULL},
-    {"sleep",     &sleep_clicmd,     NULL},
-    {"reboot",    &reboot_clicmd,    NULL},
-    {"uname",     &uname_clicmd,     NULL}, /* "info" sinonimus */
-    //{"man",       &man_cmd,       NULL},
-    //{"kill",    &kill_func,   NULL},
-    {NULL,      NULL,         NULL}/* end marker */
+    {"clear",     &clear_clicmd,     NULL,  "clear screen"},
+    {"date",      &date_cmd,         NULL,  "print and set current date"},
+    {"echo",      &echo_clicmd,      NULL,  "echo it's input to terminal"},
+    {"help",      &help_clicmd,      NULL,  "this message"},
+    {"info",      &uname_clicmd,     NULL,  "system information"},
+    {"irqstorm",  &irqstorm_clicmd,  NULL,  "run longterm stability load test"},
+    {"logout",    &logout_cmd,       NULL,  "close shell threads and fork telemtry threads"},
+    {"loop",      &loop_clicmd,      NULL,  "command to test ^C fucntionallity"},
+    {"param",     &param_clicmd,     NULL,  "manage onboard system paramters"},
+    {"ps",        &ps_clicmd,        NULL,  "info about running threads"},
+    {"selftest",  &selftest_clicmd,  NULL,  "exectute selftests (stub)"},
+    {"sensor",    &sensor_clicmd,    NULL,  "get human readable data from onboard sensors (stub)"},
+    {"servo",     &servo_clicmd,     NULL,  "change actuators' state"},
+    {"sleep",     &sleep_clicmd,     NULL,  "put autopilot board in sleep state (do not use it)"},
+    {"reboot",    &reboot_clicmd,    NULL,  "reboot system. Use with caution"},
+    {"uname",     &uname_clicmd,     NULL,  "'info' alias"},
+    {NULL, NULL, NULL, NULL}/* end marker */
 };
 
 static SerialDriver *shell_sdp;
@@ -120,6 +117,16 @@ char get_char (void){
   return sdGet(shell_sdp);
 }
 
+/**
+ * helper function
+ * Inserts new line symbol if passed string does not contain NULL termination.
+ * Must be used in combination with snprintf() function.
+ */
+void cli_print_long(const char * str, int n, int nres){
+  cli_print(str);
+  if (nres > n)
+    cli_print(ENDL);
+}
 
 //*****************************************************************************
 // execute callback for microrl library
@@ -212,7 +219,11 @@ static msg_t ShellThread(void *arg){
 
   // create and init microrl object
   microrl_t microrl_shell;
-  cli_print("@@*** Super cool device, version 1.2.3, for help type help... ***@@\r\n");
+  chThdSleepMilliseconds(5);
+  cli_print("Mobile Operational System Kamize (MOSK) welcomes you.");
+  cli_print(ENDL);
+  chThdSleepMilliseconds(5);
+  cli_print("Press enter to get command prompt.");
   microrl_init(&microrl_shell, cli_print);
 
   // set callback for execute
