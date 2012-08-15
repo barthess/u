@@ -40,7 +40,7 @@ void manual_control_handler(mavlink_manual_control_t *mavlink_manual_control_str
 
   if (mavlink_manual_control_struct->thrust_manual == 1){
     thrust = float2thrust(mavlink_manual_control_struct->thrust);
-    ServoCarThrottleSet(thrust);
+    ServoCarThrustSet(thrust);
   }
 }
 
@@ -85,11 +85,13 @@ static msg_t ControllerThread(void* arg){
  */
 void ControllerGroundRoverInit(void){
 
+  ServoInit();
+
   Servo4Set(128);
   Servo5Set(128);
   Servo6Set(128);
   Servo7Set(128);
-  ServoCarThrottleSet(128);
+  ServoCarThrustSet(128);
 
   chThdCreateStatic(ControllerThreadWA,
         sizeof(ControllerThreadWA),

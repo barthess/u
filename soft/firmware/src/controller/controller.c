@@ -64,5 +64,19 @@ void set_mode_handler(mavlink_set_mode_t *mavlink_set_mode_struct){
  *
  */
 void ControllerInit(void){
-  ControllerGroundRoverInit();
+  switch (mavlink_system_struct.type){
+
+  case MAV_TYPE_GROUND_ROVER:
+    ControllerGroundRoverInit();
+    break;
+
+  case MAV_TYPE_FIXED_WING:
+    ControllerFixedWingInit();
+    break;
+
+  default:
+    chDbgPanic("This mode is unsupported");
+    break;
+  }
 }
+

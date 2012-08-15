@@ -165,6 +165,8 @@ Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
 
 /**
  * helper function
+ * Inserts new line symbol if passed string does not contain NULL termination.
+ * Must be used in combination with snprintf() function.
  */
 void cli_print_long(const char * str, int n, int nres){
   cli_print(str);

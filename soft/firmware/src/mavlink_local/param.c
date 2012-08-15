@@ -42,9 +42,9 @@ const GlobalParam_t global_data[] = {
   /*  key             min                  val                  max                  type                  */
   /*-------------------------------------------------------------------------------------------------------*/
   {"SYS_ID",          {.u32 = 1},          &gd_val[0],         {.u32 = 255},        MAVLINK_TYPE_UINT32_T},
-  /* тип автопилота (см. MAV_TYPE enum)
-   * для возможности переключения между машиной и самолетом. Эти изменения
-   * вступают в силу только после ребута. */
+
+  /* Atopilot type (MAV_TYPE enum) to be able to switch between car and plane.
+   * You need to reboot after changing it. */
   {"SYS_mavtype",     {.u32 = 0},          &gd_val[1],          {.u32 = 16},         MAVLINK_TYPE_UINT32_T},
 
   /**** всякие флаги для коммандной оболочки ****/

@@ -31,6 +31,9 @@ extern mavlink_system_t mavlink_system_struct;
 /* Значение регистра автоперезагрузки (период повторения импульсов) для машинки */
 #define RELOAD_CAR    SERVO_MAX
 
+/**/
+#define SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -96,9 +99,6 @@ static int32_t servoblock_index = -1;
 /* размер мертвой зоны, актуален только для ручного управления */
 static uint32_t *car_dz;
 
-/**/
-static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
-
 /*
  *******************************************************************************
  *******************************************************************************
@@ -113,7 +113,7 @@ static uint16_t SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
  * @param[in]   n     номер сервы, нумерация с 0.
  * @param[in]   angle отклонение сервы в условных единицах 0..255
  */
-void ServoSetAngle(uint16_t n, uint8_t angle){
+void _servo_set_angle(uint16_t n, uint8_t angle){
   uint16_t len = 0;
   uint16_t min = 0;
   uint16_t max = 0;
@@ -142,8 +142,52 @@ void ServoSetAngle(uint16_t n, uint8_t angle){
  *******************************************************************************
  */
 
+void Servo0Set(uint8_t angle) {
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+    chDbgPanic("This fucntion can not be called in ground rover mode");
+  else
+    _servo_set_angle(0, angle);
+}
+
+void Servo1Set(uint8_t angle) {
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+    chDbgPanic("This fucntion can not be called in ground rover mode");
+  else
+  _servo_set_angle(1, angle);
+}
+
+void Servo2Set(uint8_t angle) {
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+    chDbgPanic("This fucntion can not be called in ground rover mode");
+  else
+  _servo_set_angle(2, angle);
+}
+
+void Servo3Set(uint8_t angle) {
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+    chDbgPanic("This fucntion can not be called in ground rover mode");
+  else
+  _servo_set_angle(3, angle);
+}
+
+void Servo4Set(uint8_t angle) {
+  _servo_set_angle(4, angle);
+}
+
+void Servo5Set(uint8_t angle) {
+  _servo_set_angle(5, angle);
+}
+
+void Servo6Set(uint8_t angle) {
+  _servo_set_angle(6, angle);
+}
+
+void Servo7Set(uint8_t angle) {
+  _servo_set_angle(7, angle);
+}
+
 /* car throttle/break spreaded on 2 channels */
-void ServoCarThrottleSet(uint8_t angle){
+void ServoCarThrustSet(uint8_t angle){
   uint32_t throttle = 0;
   uint32_t break_   = 0;
   uint8_t dz = 0;
@@ -164,19 +208,12 @@ void ServoCarThrottleSet(uint8_t angle){
 //    Servo7Set((uint16_t)(break_   & 0xFFFF));
   }
   else
-    return; //stub
+    chDbgPanic("This fucntion can not be called in fixed wing mode");
 }
 
 /**
  *
  */
-void ServoNeutral(void){
-  uint32_t i = 0;
-  for (i = 0; i < SERVO_COUNT; i++)
-    ServoSetAngle(i, 128);
-}
-
-
 void ServoInit(void){
 
   servoblock_index = key_index_search("SERVO_1_min");
@@ -188,13 +225,11 @@ void ServoInit(void){
   /* this channel allways run in plane mode */
   pwmStart(&PWMD4, &pwm4plane_cfg);
 
-  /* this one in different modes */
+  /* this one in can be run in different modes */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     pwmStart(&PWMD1, &pwm1car_cfg);
   else
     pwmStart(&PWMD1, &pwm1plane_cfg);
-
-	ServoNeutral();
 }
 
 

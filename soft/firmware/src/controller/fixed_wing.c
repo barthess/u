@@ -72,6 +72,17 @@ static msg_t ControllerThread(void* arg){
  */
 void ControllerFixedWingInit(void){
 
+  ServoInit();
+
+  Servo0Set(128);
+  Servo1Set(128);
+  Servo2Set(128);
+  Servo3Set(128);
+  Servo4Set(128);
+  Servo5Set(128);
+  Servo6Set(128);
+  Servo7Set(128);
+
   chThdCreateStatic(ControllerThreadWA,
         sizeof(ControllerThreadWA),
         NORMALPRIO,

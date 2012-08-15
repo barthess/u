@@ -47,6 +47,7 @@ static const ShellCmd_t chibiutils[] = {
     {"ps",        &ps_clicmd,        NULL},
     {"selftest",  &selftest_clicmd,  NULL},
     {"sensor",    &sensor_clicmd,    NULL},
+    {"servo",     &servo_clicmd,     NULL},
     {"sleep",     &sleep_clicmd,     NULL},
     {"reboot",    &reboot_clicmd,    NULL},
     {"uname",     &uname_clicmd,     NULL}, /* "info" sinonimus */

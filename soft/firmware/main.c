@@ -3,7 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: CLI for servo manual driving
+// TODO: autopilot threads must be started dynamically from heap to save some RAM.
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: heartbeat missing handler (return to home for example)
 // TODO: PID
@@ -85,7 +85,6 @@ int main(void) {
   PwrMgmtInit();
   GncInit();
   TlmSenderInit();
-  ServoInit();
   MavCmdInitLocal();
   ControllerInit();  /* autopilot must be started only after servos */
   StorageInit();

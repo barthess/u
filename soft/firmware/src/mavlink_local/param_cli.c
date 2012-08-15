@@ -43,13 +43,13 @@ static void _param_cli_confirm(param_status_t status){
     return;
     //cli_println("Success");
   else if (status == PARAM_CLAMPED)
-    cli_println("Value clamed to safety limits");
+    cli_println("WARNING: value clamped to safety limits.");
   else if (status == PARAM_NOT_CHANGED)
-    cli_println("Value not changed");
+    cli_println("WARNING: value not changed.");
   else if (status == PARAM_INCONSISTENT)
-    cli_println("Value inconsistent");
+    cli_println("ERROR: value inconsistent.");
   else
-    cli_println("Unknown error");
+    cli_println("ERROR: Unhandled error.");
 }
 
 /**
@@ -129,11 +129,11 @@ static param_status_t _param_cli_set(const char * val, uint32_t i){
  *
  */
 static void _param_cli_help(void){
-  cli_println("Run without parameters to get full parameters list");
-  cli_println("\"param save\" to save parameters to EEPROM");
-  cli_println("\"param help\" to get this message");
-  cli_println("\"param PARAM_name\" to get value of parameter");
-  cli_println("\"param PARAM_name N\" to set value of parameter to N");
+  cli_println("Run without parameters to get full parameters list.");
+  cli_println("\"param save\" to save parameters to EEPROM.");
+  cli_println("\"param help\" to get this message.");
+  cli_println("\"param PARAM_name\" to get value of parameter.");
+  cli_println("\"param PARAM_name N\" to set value of parameter to N.");
 }
 
 /*
@@ -173,7 +173,7 @@ Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
       if (i != -1)
         _param_cli_print(i);
       else{
-        cli_println("ERROR: unknown parameter name");
+        cli_println("ERROR: unknown parameter name.");
       }
     }
   }
@@ -187,11 +187,11 @@ Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
       _param_cli_confirm(status);
     }
     else{
-      cli_println("ERROR: unknown parameter name");
+      cli_println("ERROR: unknown parameter name.");
     }
   }
   else{
-    cli_println("ERROR: bad arguments. Try \"param\" help");
+    cli_println("ERROR: bad arguments. Try \"param help\".");
   }
 
   /* stub */
