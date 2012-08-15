@@ -17,6 +17,7 @@
  ******************************************************************************
  */
 extern Mailbox controller_mb;
+extern MemoryHeap ThdHeap;
 
 /*
  ******************************************************************************
@@ -83,7 +84,9 @@ static msg_t ControllerThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ControllerGroundRoverInit(void){
+Thread *ControllerGroundRoverInit(void){
+
+  Thread *tp = NULL;
 
   ServoInit();
 
@@ -93,9 +96,14 @@ void ControllerGroundRoverInit(void){
   Servo7Set(128);
   ServoCarThrustSet(128);
 
-  chThdCreateStatic(ControllerThreadWA,
-        sizeof(ControllerThreadWA),
-        NORMALPRIO,
-        ControllerThread,
-        NULL);
+  tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
+                            CONTROLLER_THREADS_PRIO,
+                            ControllerThread,
+                            NULL);
+  return tp;
 }
+
+
+
+
+

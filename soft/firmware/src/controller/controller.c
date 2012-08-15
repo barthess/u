@@ -67,11 +67,13 @@ void ControllerInit(void){
   switch (mavlink_system_struct.type){
 
   case MAV_TYPE_GROUND_ROVER:
-    ControllerGroundRoverInit();
+    if (ControllerGroundRoverInit() == NULL)
+      chDbgPanic("Can not allocate memory");
     break;
 
   case MAV_TYPE_FIXED_WING:
-    ControllerFixedWingInit();
+    if (ControllerFixedWingInit() == NULL)
+      chDbgPanic("Can not allocate memory");
     break;
 
   default:

@@ -46,6 +46,9 @@
 #include "tmp75.h"
 #include "utils.h"
 
+/* Heap size for dynamic thread creation */
+#define THREAD_HEAP_SIZE    (1024 * 5)
+
 /******************************************************************
  * humanreadable names of serial drivers */
 #define LINKSD  SD2
@@ -58,6 +61,7 @@
 #define I2C_THREADS_PRIO          (NORMALPRIO + 5)
 #define TIMEKEEPER_THREAD_PRIO    (I2C_THREADS_PRIO - 1)
 #define LINK_THREADS_PRIO         (NORMALPRIO - 5)
+#define CONTROLLER_THREADS_PRIO   (NORMALPRIO)
 #define CMD_THREADS_PRIO          (LINK_THREADS_PRIO - 2)
 #define GPS_THREAD_PRIO           (NORMALPRIO - 2)
 

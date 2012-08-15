@@ -3,7 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: autopilot threads must be started dynamically from heap to save some RAM.
+// TODO: short help msg for every command in shell struct.
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: heartbeat missing handler (return to home for example)
 // TODO: PID
@@ -41,7 +41,7 @@ EepromFileStream EepromFile;
 
 /* heap for link threads OR shell thread */
 MemoryHeap ThdHeap;
-static uint8_t link_thd_buf[LINK_THD_HEAP_SIZE + sizeof(stkalign_t)];
+static uint8_t link_thd_buf[THREAD_HEAP_SIZE + sizeof(stkalign_t)];
 
 /*
  ******************************************************************************
@@ -71,22 +71,22 @@ int main(void) {
   xbee_reset_clear();
   xbee_sleep_clear();
 
-  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), LINK_THD_HEAP_SIZE);
+  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
   EepromOpen(&EepromFile);
 
   MsgInit();
   SanityControlInit();
-  I2CInitLocal(); /* also starts EEPROM and load global parameters from it */
-  LinkMgrInit();
+  I2CInitLocal();     /* also starts EEPROM and load global parameters from it */
+  MavInit();          /* mavlink constants initialization must be called after I2C init */
+  ControllerInit();   /* must be started only after loading of parameters */
+  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
-  MavInit();      /* mavlink constants initialization must be called after I2C init */
-  SensorsInit();  /* sensors use I2C */
+  SensorsInit();      /* sensors use I2C */
   PwrMgmtInit();
   GncInit();
   TlmSenderInit();
   MavCmdInitLocal();
-  ControllerInit();  /* autopilot must be started only after servos */
   StorageInit();
 
   while (TRUE){

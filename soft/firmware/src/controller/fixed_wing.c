@@ -17,6 +17,7 @@
  ******************************************************************************
  */
 extern Mailbox controller_mb;
+extern MemoryHeap ThdHeap;
 
 /*
  ******************************************************************************
@@ -70,7 +71,9 @@ static msg_t ControllerThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ControllerFixedWingInit(void){
+Thread *ControllerFixedWingInit(void){
+
+  Thread *tp = NULL;
 
   ServoInit();
 
@@ -83,9 +86,9 @@ void ControllerFixedWingInit(void){
   Servo6Set(128);
   Servo7Set(128);
 
-  chThdCreateStatic(ControllerThreadWA,
-        sizeof(ControllerThreadWA),
-        NORMALPRIO,
-        ControllerThread,
-        NULL);
+  tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
+                            CONTROLLER_THREADS_PRIO,
+                            ControllerThread,
+                            NULL);
+  return tp;
 }

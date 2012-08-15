@@ -33,7 +33,7 @@ extern uint32_t GlobalFlags;
  */
 /* pointers to spawned threads */
 static Thread *linkout_tp = NULL;
-static Thread *linkin_tp = NULL;
+static Thread *linkin_tp  = NULL;
 
 /*
  *******************************************************************************
@@ -163,12 +163,16 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
                             LINK_THREADS_PRIO,
                             LinkOutThread,
                             sdp);
+  if (linkout_tp == NULL)
+    chDbgPanic("Can not allocate memory");
 
   linkin_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(LinkInThreadWA),
                             LINK_THREADS_PRIO,
                             LinkInThread,
                             sdp);
+  if (linkin_tp == NULL)
+    chDbgPanic("Can not allocate memory");
 
   setGlobalFlag(TLM_LINK_FLAG);
 }

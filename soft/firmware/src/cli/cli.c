@@ -284,6 +284,8 @@ void SpawnShellThreads(SerialDriver *arg){
                             LINK_THREADS_PRIO,
                             ShellThread,
                             arg);
+  if (shell_tp == NULL)
+    chDbgPanic("Can not allocate memory");
 }
 
 
