@@ -100,3 +100,41 @@ void time_test(void){
   (void)imu_update_period;
 }
 
+/**
+ * Median filter on 5 points
+ * *buf[in]     pointer to fifo buffer
+ * sample[in]   new sample
+ *
+ * return       median value
+ */
+int32_t median_filter_5(int32_t *buf, int32_t sample){
+  const uint32_t N_samples = 5;
+  uint32_t j = 0, i = 0;
+  int32_t sorted[5];
+  int32_t tmp;
+
+  /* place new sample in fifo */
+  for(j=1; j<N_samples; j++){
+    buf[j-1] = buf[j];
+  }
+  buf[j-1] = sample;
+
+  /* place data in temporal buffer */
+  for(j=0; j<N_samples; j++){
+    sorted[j] = buf[j];
+  }
+
+  /* booble sort */
+  for(i=0; i<=N_samples-1; i++){
+    for(j=i+1; j<N_samples;j++){
+      if(sorted[i] > sorted[j]){
+        tmp = sorted[i];
+        sorted[i] = sorted[j];
+        sorted[j] = tmp;
+      }
+    }
+  }
+
+  return sorted[3];
+}
+

@@ -1,12 +1,4 @@
-#include <stdlib.h>
-
-#include "ch.h"
-#include "hal.h"
-#include "sensors.h"
-#include "exti_local.h"
-#include "rtc.h"
-#include "message.h"
-#include "timekeeping.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
@@ -27,6 +19,8 @@
 
 /* строка для (пере)запуска тахометрового таймера*/
 #define starttacho_vt() {chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);}
+
+#define MEDIAN_FILTER_LEN     5
 
 /*
  ******************************************************************************
@@ -61,6 +55,7 @@ static uint32_t tacho_period = 0;
 
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
+static int32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
@@ -118,10 +113,14 @@ static void rtcwakeup_cb(EXTDriver *extp, expchannel_t channel){
 static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
+  const uint32_t TACHO_LIM = 15000;
 
   tmStopMeasurement(&tacho_tmup);
+
   tacho_period = RTT2US(tacho_tmup.last);
-  mavlink_vfr_hud_struct.groundspeed = tacho_period;
+  if (tacho_period > TACHO_LIM) {/* filter random spikes */
+    mavlink_vfr_hud_struct.groundspeed = median_filter_5(tacho_filter_buf, tacho_period);
+  }
   tmStartMeasurement(&tacho_tmup);
 
 //  pulsecnt++;
@@ -253,11 +252,15 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
                    BinarySemaphore *mma8451_sem,
                    BinarySemaphore *bmp085_sem,
                    BinarySemaphore *itg3200_sem){
+  uint32_t i = 0;
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;
   bmp085_semp  = bmp085_sem;
   itg3200_semp = itg3200_sem;
+
+  for (i=0; i < MEDIAN_FILTER_LEN; i++)
+    tacho_filter_buf[i] = 0;
 
   raw_data.odometer = 0;
   chSysLock();
@@ -271,7 +274,7 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
 }
 
 /**
- * Enables interrupts from PPS
+ * Enables interrupts from PPS from GPS receiver
  */
 void ExtiEnablePps(void){
   extChannelEnable(&EXTD1, 0);
