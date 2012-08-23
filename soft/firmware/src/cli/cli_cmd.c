@@ -250,6 +250,8 @@ Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarra
     cli_print(curr->p_name);
     cli_print("\t");
     //cli_print(curr->p_state);
+    //cli_print(curr->p_prio);
+    //cli_print(curr->p_time);
     cli_print("\n\r");
     curr = chRegNextThread(curr);
   }

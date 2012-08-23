@@ -4,7 +4,6 @@
  */
 
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
-// TODO: heartbeat missing handler (return to home for example)
 // TODO: PID
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
@@ -38,7 +37,7 @@ uint32_t GlobalFlags = 0;
 /* EEPROM "file" */
 EepromFileStream EepromFile;
 
-/* heap for link threads OR shell thread */
+/* heap for some threads */
 MemoryHeap ThdHeap;
 static uint8_t link_thd_buf[THREAD_HEAP_SIZE + sizeof(stkalign_t)];
 

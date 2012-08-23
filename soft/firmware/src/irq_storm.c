@@ -22,7 +22,7 @@ extern MemoryHeap ThdHeap;
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS      1
+#define ITERATIONS      10
 #endif
 
 #ifndef NUM_THREADS
@@ -324,7 +324,9 @@ static msg_t StormTread(void *arg){
   return 0;
 }
 
-
+/**
+ *
+ */
 Thread* IRQStormStart(void){
   gptStart(&IRQSTROM_GPTD1, &gpt1cfg);
   gptStart(&IRQSTROM_GPTD2, &gpt2cfg);
@@ -336,6 +338,9 @@ Thread* IRQStormStart(void){
                              NULL);
 }
 
+/**
+ *
+ */
 Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)argv;
   (void)argc;

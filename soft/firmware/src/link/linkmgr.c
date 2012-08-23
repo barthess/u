@@ -45,7 +45,7 @@ static msg_t LinkMgrThread(void *arg){
   bool_t shell_active = FALSE;
 
   /* wait slowpoke modems */
-  chThdSleepMilliseconds(5000);
+  chThdSleepMilliseconds(4000);
 
   /* define what we need to run based on flag */
   if (*sh_enable == 0){
