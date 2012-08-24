@@ -55,7 +55,7 @@ static uint32_t tacho_period = 0;
 
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
-static int32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
+static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
@@ -119,8 +119,9 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
 
   tacho_period = RTT2US(tacho_tmup.last);
   if (tacho_period > TACHO_LIM) {/* filter random spikes */
-    mavlink_vfr_hud_struct.groundspeed = median_filter_5(tacho_filter_buf, tacho_period);
+    mavlink_vfr_hud_struct.groundspeed = median_filter_3(tacho_filter_buf, tacho_period);
   }
+  //mavlink_vfr_hud_struct.groundspeed = tacho_period;
   tmStartMeasurement(&tacho_tmup);
 
 //  pulsecnt++;

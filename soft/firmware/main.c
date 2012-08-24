@@ -3,8 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: PID
+// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
 // TODO: (semi)automated zeroing of magnetometer and accelerometer.
