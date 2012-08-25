@@ -121,9 +121,9 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.hdg = 65535;
 
   /* отправим последние достоверные кординаты */
-  mavlink_global_position_int_struct.lat = bkpLoadGpsLatitude();
-  mavlink_global_position_int_struct.lon = bkpLoadGpsLongitude();
-  mavlink_global_position_int_struct.alt = bkpLoadGpsAltitude();
+  mavlink_global_position_int_struct.lat = bkpGetGpsLatitude();
+  mavlink_global_position_int_struct.lon = bkpGetGpsLongitude();
+  mavlink_global_position_int_struct.alt = bkpGetGpsAltitude();
 
   while (TRUE) {
 
@@ -251,9 +251,9 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     raw_data.gps_satellites = 0;
 
     /* отправим последние достоверные кординаты */
-    global_pos_struct->lat = bkpLoadGpsLatitude();
-    global_pos_struct->lon = bkpLoadGpsLongitude();
-    global_pos_struct->alt = bkpLoadGpsAltitude();
+    global_pos_struct->lat = bkpGetGpsLatitude();
+    global_pos_struct->lon = bkpGetGpsLongitude();
+    global_pos_struct->alt = bkpGetGpsAltitude();
 	}
 }
 

@@ -16,6 +16,7 @@ Mailbox mavlink_param_set_mb;
 Mailbox mavlink_command_long_mb;
 Mailbox controller_mb;
 Mailbox logwriter_mb;
+Mailbox speedometer_mb;           /* measured time intervals from spedometer */
 
 /* variable for storing system state */
 mavlink_system_t              mavlink_system_struct;
@@ -45,6 +46,7 @@ static msg_t mavlink_param_set_mb_buf[2];
 static msg_t controller_mb_buf[3];
 static msg_t mavlink_command_long_mb_buf[4];
 static msg_t logwriter_mb_buf[10];
+static msg_t speedometer_mb_buf[1];
 
 /*
  ******************************************************************************
@@ -82,6 +84,9 @@ void MsgInit(void){
   chMBInit(&logwriter_mb,
       logwriter_mb_buf,
       (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
+  chMBInit(&speedometer_mb,
+      speedometer_mb_buf,
+      (sizeof(speedometer_mb_buf)/sizeof(msg_t)));
 }
 
 void MavInit(void){

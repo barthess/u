@@ -4,6 +4,14 @@
  */
 
 // TODO: PID
+/* calibrate odometer
+ * thread for speed PID
+ * odometer save to bkp
+ * command for get/set odometer
+ * command for straight line running on fixed distance to fine tuning
+ * thread for heading PID
+ */
+
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.

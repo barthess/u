@@ -20,18 +20,16 @@
 /* строка для (пере)запуска тахометрового таймера*/
 #define starttacho_vt() {chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);}
 
-#define MEDIAN_FILTER_LEN     5
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
-extern RawData raw_data;
 extern uint32_t imu_update_period;
 extern BinarySemaphore rtc_sem;
 //extern mavlink_system_t mavlink_system_struct;
-extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
+extern Mailbox speedometer_mb;
 
 /*
  ******************************************************************************
@@ -45,17 +43,8 @@ BinarySemaphore *mma8451_semp = NULL;
 BinarySemaphore *bmp085_semp  = NULL;
 BinarySemaphore *itg3200_semp = NULL;
 
-/**
- * Global turn counter for engine.
- * Incrementes on every exti pulse.
- * Zeroes in virtual timer callback.
- */
-//static uint32_t pulsecnt = 0;
-static uint32_t tacho_period = 0;
-
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
-static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
@@ -91,12 +80,10 @@ static void vt_tachocheck_cb(void *par){
 static void rtcalarm_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
-//  if (RTCD1.id_rtc->ISR | RTC_ISR_ALRBF){
-//    RTCD1.id_rtc->ISR &= ~RTC_ISR_ALRBF;
-//  }
-//  if (RTCD1.id_rtc->ISR | RTC_ISR_ALRAF){
-//    RTCD1.id_rtc->ISR &= ~RTC_ISR_ALRAF;
-//  }
+  if (RTCD1.id_rtc->ISR | RTC_ISR_ALRBF)
+    RTCD1.id_rtc->ISR &= ~RTC_ISR_ALRBF;
+  if (RTCD1.id_rtc->ISR | RTC_ISR_ALRAF)
+    RTCD1.id_rtc->ISR &= ~RTC_ISR_ALRAF;
 }
 
 /**
@@ -105,27 +92,26 @@ static void rtcalarm_cb(EXTDriver *extp, expchannel_t channel){
 static void rtcwakeup_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
-//  if (RTCD1.id_rtc->ISR | RTC_ISR_WUTF){
-//    RTCD1.id_rtc->ISR &= ~RTC_ISR_WUTF;
-//  }
+  if (RTCD1.id_rtc->ISR | RTC_ISR_WUTF)
+    RTCD1.id_rtc->ISR &= ~RTC_ISR_WUTF;
 }
 
 static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
-  const uint32_t TACHO_LIM = 15000;
+
+  const uint32_t TACHO_LIM = MS2RTT(15);/* for rejecting spikes shorter than 15 ms */
 
   tmStopMeasurement(&tacho_tmup);
 
-  tacho_period = RTT2US(tacho_tmup.last);
-  if (tacho_period > TACHO_LIM) {/* filter random spikes */
-    mavlink_vfr_hud_struct.groundspeed = median_filter_3(tacho_filter_buf, tacho_period);
+   /* reject short random spikes */
+  if (tacho_tmup.last > TACHO_LIM){
+    chSysLockFromIsr();
+    chMBPostI(&speedometer_mb, tacho_tmup.last);
+    chSysUnlockFromIsr();
   }
-  //mavlink_vfr_hud_struct.groundspeed = tacho_period;
-  tmStartMeasurement(&tacho_tmup);
 
-//  pulsecnt++;
-//  raw_data.odometer++;
+  tmStartMeasurement(&tacho_tmup);
 }
 
 static void microsd_inset_cb(EXTDriver *extp, expchannel_t channel){
@@ -165,6 +151,14 @@ static void mma8451_int1_cb(EXTDriver *extp, expchannel_t channel){
 //  chSysUnlockFromIsr();
 }
 
+static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
+  (void)extp;
+  (void)channel;
+  chSysLockFromIsr();
+  chBSemSignalI(mma8451_semp);
+  chSysUnlockFromIsr();
+}
+
 static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
@@ -185,14 +179,9 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   chSysUnlockFromIsr();
 }
 
-static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
-  (void)extp;
-  (void)channel;
-  chSysLockFromIsr();
-  chBSemSignalI(mma8451_semp);
-  chSysUnlockFromIsr();
-}
-
+/**
+ *
+ */
 static const EXTConfig extcfg = {
   {
     {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOE, gps_pps_cb},// секундная метка с GPS
@@ -253,17 +242,12 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
                    BinarySemaphore *mma8451_sem,
                    BinarySemaphore *bmp085_sem,
                    BinarySemaphore *itg3200_sem){
-  uint32_t i = 0;
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;
   bmp085_semp  = bmp085_sem;
   itg3200_semp = itg3200_sem;
 
-  for (i=0; i < MEDIAN_FILTER_LEN; i++)
-    tacho_filter_buf[i] = 0;
-
-  raw_data.odometer = 0;
   chSysLock();
   starttacho_vt();
   chSysUnlock();
