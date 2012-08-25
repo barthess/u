@@ -136,6 +136,7 @@ CSRC = $(PORTSRC) \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
+       src/controller/speed_control.c \
        src/message.c \
        src/dsp.c \
        src/pwr_mgmt.c \

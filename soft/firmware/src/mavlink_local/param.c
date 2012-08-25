@@ -33,7 +33,7 @@ int32_t OnboardParamCount = 0;
 /*
  * variable array of parameters in RAM
  */
-static floatint gd_val[110];
+static floatint gd_val[128];
 
 /**
  *
@@ -190,9 +190,13 @@ const GlobalParam_t global_data[] = {
   {"FLEN_reserved3",  {.u32 = 0},          &gd_val[102],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
   {"FLEN_reserved4",  {.u32 = 0},          &gd_val[103],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
 
-  /* multiply odometer pulses count to this coeff to get trip in cm */
-  {"ODO_cminpulse",   {.f32 = 2.0},        &gd_val[106],          {.f32 = 10.0},       MAVLINK_TYPE_FLOAT},
-  {"ODO_reserved",    {.f32 = 0.2},        &gd_val[107],          {.f32 = 1.0},         MAVLINK_TYPE_FLOAT},
+  /* multiply odometer pulses count to this coeff to get trip in cm
+   * coarse value is 5.555555 */
+  {"SPD_cminpulse",   {.f32 = 2.0},        &gd_val[106],          {.f32 = 10.0},     MAVLINK_TYPE_FLOAT},
+  /* pid coefficients for speed control */
+  {"SPD_iGain",       {.f32 = 0},          &gd_val[107],          {.f32 = 1.0},      MAVLINK_TYPE_FLOAT},
+  {"SPD_pGain",       {.f32 = 0},          &gd_val[108],          {.f32 = 200.0},    MAVLINK_TYPE_FLOAT},
+  {"SPD_dGain",       {.f32 = 0},          &gd_val[109],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
   /* fake field with 14 symbols name */
   {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},

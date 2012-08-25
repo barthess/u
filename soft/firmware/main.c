@@ -4,9 +4,7 @@
  */
 
 // TODO: PID
-/* calibrate odometer
- * thread for speed PID
- * odometer save to bkp
+/* 2 modes stab/man and man. In 1-st use PID, in 2-nt translate params as is
  * command for get/set odometer
  * command for straight line running on fixed distance to fine tuning
  * thread for heading PID
