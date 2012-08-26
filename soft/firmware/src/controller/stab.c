@@ -5,7 +5,10 @@
  * DEFINES
  ******************************************************************************
  */
-#define SPEEDOMETER_TMO   MS2ST(1000)
+/* approximately define calculate retry count
+ * stabilization updates syncronously with servos: every 20 ms
+ * we nee timout 1S */
+#define SPEED_UPDATE_RETRY  (1000 / 20)
 
 /*
  ******************************************************************************
@@ -23,8 +26,6 @@ extern Mailbox speedometer_mb;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float      *cminpulse;
-static pid_f32    spd_pid;
 
 /*
  ******************************************************************************
@@ -39,31 +40,47 @@ static pid_f32    spd_pid;
  ******************************************************************************
  ******************************************************************************
  */
+
 /**
- * k - cm in one pulse (got from params)
- *
- *      S      k / 100          k
- * v = --- = ------------ = ------------
- *      t    uS / 1000000   uS / 10000.0
+ * Прикинем регулятор:
+ * Пусть максимальная скорость будет 2м/с,
+ * тогда должен быть выработан следующий сигнал
+ * (2/128) * drive + 128
  */
-float calc_speed(uint32_t uS){
-  if (uS == 0)/* prevent division by zero */
-    return 3;
-  float k = *cminpulse;
-  float t = ((float)uS / 10000.0);
-  return k / t;
+void speed_stab(pid_f32 *spd_pid, float speed){
+  float drive = 0;
+
+  /* do PID stuff */
+  float desired = 1.0; // hardcoded value
+  drive = UpdatePID(spd_pid, desired - speed, speed);
+  drive = 128 + drive * (2.0 / 128);
+
+  ServoCarThrustSet(float2thrust(drive / 128));
 }
 
 /**
- *
+ * Calculate current ground speed from tachometer pulses
  */
-void speed_control(float speed){
+void _update_speed(uint32_t *retry){
+  msg_t tmp = 0;
+  msg_t status = 0;
 
-  /* do PID stuff */
-  float desired = 1.2;
-  UpdatePID(&spd_pid, desired - speed, speed);
+  /* get current speed without waiting, because it updates very slowly comparing to other sensors */
+  status = chMBFetch(&speedometer_mb, &tmp, TIME_IMMEDIATE);
+  if (status == RDY_OK){
+    comp_data.groundspeed = calc_ground_rover_speed(tmp);
+    *retry = 0;
+  }
+  else{
+    (*retry)++;
+    if (*retry > SPEED_UPDATE_RETRY){
+      *retry = SPEED_UPDATE_RETRY + 2; // to avoid overflow
+      comp_data.groundspeed = 0.0;
+    }
+  }
 
-  //ServoCarThrustSet((uint8_t)((3.0 / 128) * drive) + 128);
+  /* set variable for telemetry */
+  mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed;
 }
 
 /**
@@ -74,30 +91,20 @@ static msg_t StabThread(void* arg){
   chRegSetThreadName("Stab");
   (void)arg;
 
-  msg_t tmp = 0;
-  msg_t status = 0;
-  uint32_t t = 0;
+  uint32_t speed_retry = 0;
 
-  const uint32_t MEDIAN_FILTER_LEN = 3;
-  uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-
-  /* reset filter */
-  uint32_t i = 0;
-  for (i=0; i < MEDIAN_FILTER_LEN; i++)
-    tacho_filter_buf[i] = 0;
+  pid_f32 spd_pid;
+  spd_pid.iGain = ValueSearch("SPD_iGain");
+  spd_pid.pGain = ValueSearch("SPD_pGain");
+  spd_pid.dGain = ValueSearch("SPD_dGain");
+  spd_pid.iMax = 20;
+  spd_pid.iMin = -20;
+  spd_pid.iState = 0;
+  spd_pid.dState = 0;
 
   while (TRUE) {
-    /* get current speed */
-    status = chMBFetch(&speedometer_mb, &tmp, SPEEDOMETER_TMO);
-    if (status == RDY_OK){
-      t = median_filter_3(tacho_filter_buf, RTT2US(tmp));
-      comp_data.groundspeed = calc_speed(t);
-      bkpOdometer++;
-    }
-    else
-      comp_data.groundspeed = 0.0;
-
-    mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed;
+    _update_speed(&speed_retry);
+    speed_stab(&spd_pid, comp_data.groundspeed);
   }
   return 0;
 }
@@ -108,17 +115,7 @@ static msg_t StabThread(void* arg){
  ******************************************************************************
  */
 
-Thread* SpeedControlInit(void){
-
-  cminpulse = ValueSearch("SPD_cminpulse");
-
-  spd_pid.iGain = ValueSearch("SPD_iGain");
-  spd_pid.pGain = ValueSearch("SPD_pGain");
-  spd_pid.dGain = ValueSearch("SPD_dGain");
-  spd_pid.iMax = 20;
-  spd_pid.iMin = -20;
-  spd_pid.iState = 0;
-  spd_pid.dState = 0;
+Thread* StabInit(void){
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(StabThreadWA),
@@ -126,7 +123,7 @@ Thread* SpeedControlInit(void){
                             StabThread,
                             NULL);
   if (tp == NULL)
-    chdbgPanic("Can not allocate memory");
+    chDbgPanic("Can not allocate memory");
 
   return tp;
 }

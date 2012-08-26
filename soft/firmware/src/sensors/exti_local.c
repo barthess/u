@@ -108,6 +108,7 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   if (tacho_tmup.last > TACHO_LIM){
     chSysLockFromIsr();
     chMBPostI(&speedometer_mb, tacho_tmup.last);
+    bkpOdometer++;
     chSysUnlockFromIsr();
   }
 

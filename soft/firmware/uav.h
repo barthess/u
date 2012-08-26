@@ -21,6 +21,7 @@
 #include "exti_local.h"
 #include "gnc.h"
 #include "gps.h"
+#include "ground_rover.h"
 #include "i2c_local.h"
 #include "irq_storm.h"
 #include "itg3200.h"

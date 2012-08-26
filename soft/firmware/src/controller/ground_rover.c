@@ -1,15 +1,16 @@
-#include <math.h>
+/*
+ * Stores functions sutable for ground rover - pulses to speed conversio, etc.
+ */
 
 #include "uav.h"
-
-#include "ground_rover.h"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define CONTROLLER_TMO    MS2ST(500)
+#define CONTROLLER_TMO      MS2ST(500)
+#define MEDIAN_FILTER_LEN   3
 
 /*
  ******************************************************************************
@@ -25,7 +26,8 @@ extern MemoryHeap ThdHeap;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
+static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
+static float      *cminpulse;
 
 /*
  *******************************************************************************
@@ -34,6 +36,24 @@ extern MemoryHeap ThdHeap;
  *******************************************************************************
  *******************************************************************************
  */
+
+/**
+ * k - cm in one pulse (got from params)
+ *
+ *      S      k / 100          k
+ * v = --- = ------------ = ------------
+ *      t    uS / 1000000   uS / 10000.0
+ */
+float calc_ground_rover_speed(uint32_t rtt){
+
+  uint32_t uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
+
+  if (uS == 0)/* prevent division by zero */
+    return 3;
+  float k = *cminpulse;
+  float t = ((float)uS / 10000.0);
+  return k / t;
+}
 
 /**
  *
@@ -90,8 +110,16 @@ static msg_t ControllerThread(void* arg){
  *******************************************************************************
  */
 Thread *ControllerGroundRoverInit(void){
+
+  cminpulse = ValueSearch("SPD_cminpulse");
+
+  /* reset filter */
+  uint32_t i = 0;
+  for (i=0; i < MEDIAN_FILTER_LEN; i++)
+    tacho_filter_buf[i] = 0;
+
   ServoInit();
-  SpeedControlInit();
+  StabInit();
 
   Servo4Set(128);
   Servo5Set(128);
@@ -104,6 +132,8 @@ Thread *ControllerGroundRoverInit(void){
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
                             NULL);
+  if (tp == NULL)
+    chDbgPanic("Can not allocate memory");
 
   return tp;
 }

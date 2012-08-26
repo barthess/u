@@ -2,6 +2,6 @@
 #define SPEED_CONTROL_H_
 
 
-Thread* SpeedControlInit(void);
+Thread* StabInit(void);
 
 #endif /* SPEED_CONTROL_H_ */
