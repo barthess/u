@@ -13,6 +13,7 @@
  */
 extern GlobalParam_t global_data[];
 extern mavlink_system_t mavlink_system_struct;
+extern BinarySemaphore servo_updated_sem;
 
 /*
  ******************************************************************************
@@ -36,6 +37,13 @@ extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+static void pwm4plane_cb(PWMDriver *pwmp);
+
+/*
+ ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
@@ -56,7 +64,7 @@ static const PWMConfig pwm1plane_cfg = {
 static const PWMConfig pwm4plane_cfg = {
     PWM_FREQ,
     RELOAD_PLANE,
-    NULL,//pwm4cb,
+    pwm4plane_cb,//callback,
     {
       {PWM_OUTPUT_ACTIVE_HIGH, NULL},
       {PWM_OUTPUT_ACTIVE_HIGH, NULL},
@@ -106,6 +114,16 @@ static uint32_t *car_dz;
  *******************************************************************************
  *******************************************************************************
  */
+
+/**
+ * Sincronize PID with servo update cycle.
+ */
+static void pwm4plane_cb(PWMDriver *pwmp){
+  (void)pwmp;
+  chSysLockFromIsr();
+  chBSemSignalI(&servo_updated_sem);
+  chSysUnlockFromIsr();
+}
 
 /**
  * Рассчитывает значение, которое надо загрузить в регистры ШИМа
@@ -222,14 +240,15 @@ void ServoInit(void){
 
   car_dz = ValueSearch("SERVO_car_dz");
 
-  /* this channel allways run in plane mode */
-  pwmStart(&PWMD4, &pwm4plane_cfg);
-
-  /* this one in can be run in different modes */
+  /* this channel can be run in different modes (plane and rover) */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
     pwmStart(&PWMD1, &pwm1car_cfg);
   else
     pwmStart(&PWMD1, &pwm1plane_cfg);
+
+  /* this channel allways run in plane mode. It must be started _after_
+   * PWM1 because of syncronization PID with them. */
+  pwmStart(&PWMD4, &pwm4plane_cfg);
 }
 
 

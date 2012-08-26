@@ -49,10 +49,10 @@ float UpdatePID(pid_f32 *pid, float error, float position){
 
   /* calculate the integral state with appropriate limiting */
   pid->iState += error;
-  if (pid->iState > pid->iMax)
-      pid->iState = pid->iMax;
-  else if (pid->iState < pid->iMin)
-      pid->iState = pid->iMin;
+  if (pid->iState > *(pid->iMax))
+      pid->iState = *(pid->iMax);
+  else if (pid->iState < *(pid->iMin))
+      pid->iState = *(pid->iMin);
 
   /* calculate the integral term */
   iTerm = *(pid->iGain) * pid->iState;
@@ -68,14 +68,18 @@ float UpdatePID(pid_f32 *pid, float error, float position){
  * Convert from float -1..1 value to uint8_t 0..255
  */
 uint8_t float2thrust(float v){
-  return __SSAT(roundf(256 * v), 9);
+  int32_t tmp = 0;
+  tmp = roundf((v + 1) * 128);
+  return __USAT(tmp, 8);
 }
 
 /**
  * Convert from -0.2 .. 0.2 to uint8_t 0..255
  */
 uint8_t float2servo(float v){
-  return __SSAT((roundf(128 * 5 * v) + 128), 9);
+  int32_t tmp =0;
+  tmp = roundf(128 * 5 * (v + 0.2));
+  return __USAT(tmp, 8);
 }
 
 /**

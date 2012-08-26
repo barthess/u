@@ -197,6 +197,8 @@ const GlobalParam_t global_data[] = {
   {"SPD_iGain",       {.f32 = 0},          &gd_val[107],          {.f32 = 1.0},      MAVLINK_TYPE_FLOAT},
   {"SPD_pGain",       {.f32 = 0},          &gd_val[108],          {.f32 = 200.0},    MAVLINK_TYPE_FLOAT},
   {"SPD_dGain",       {.f32 = 0},          &gd_val[109],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
+  {"SPD_iMin",        {.f32 = -10000},     &gd_val[110],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
+  {"SPD_iMax",        {.f32 = -10000},     &gd_val[111],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
   /* fake field with 14 symbols name */
   {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},

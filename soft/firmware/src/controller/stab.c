@@ -7,8 +7,8 @@
  */
 /* approximately define calculate retry count
  * stabilization updates syncronously with servos: every 20 ms
- * we nee timout 1S */
-#define SPEED_UPDATE_RETRY  (1000 / 20)
+ * we nee timout 0.5S */
+#define SPEED_UPDATE_RETRY  (500 / 20)
 
 /*
  ******************************************************************************
@@ -20,6 +20,7 @@ extern MemoryHeap ThdHeap;
 extern CompensatedData comp_data;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern Mailbox speedometer_mb;
+extern BinarySemaphore servo_updated_sem;
 
 /*
  ******************************************************************************
@@ -42,26 +43,22 @@ extern Mailbox speedometer_mb;
  */
 
 /**
- * Прикинем регулятор:
- * Пусть максимальная скорость будет 2м/с,
- * тогда должен быть выработан следующий сигнал
- * (2/128) * drive + 128
+ *
  */
-void speed_stab(pid_f32 *spd_pid, float speed){
+void stab_speed_rover(pid_f32 *spd_pid, float speed, float desired){
   float drive = 0;
 
-  /* do PID stuff */
-  float desired = 1.0; // hardcoded value
   drive = UpdatePID(spd_pid, desired - speed, speed);
-  drive = 128 + drive * (2.0 / 128);
+  if (drive < 0)
+    drive = 0;
 
-  ServoCarThrustSet(float2thrust(drive / 128));
+  ServoCarThrustSet(float2thrust(drive));
 }
 
 /**
  * Calculate current ground speed from tachometer pulses
  */
-void _update_speed(uint32_t *retry){
+void update_speed_rover(uint32_t *retry){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -94,17 +91,18 @@ static msg_t StabThread(void* arg){
   uint32_t speed_retry = 0;
 
   pid_f32 spd_pid;
-  spd_pid.iGain = ValueSearch("SPD_iGain");
-  spd_pid.pGain = ValueSearch("SPD_pGain");
-  spd_pid.dGain = ValueSearch("SPD_dGain");
-  spd_pid.iMax = 20;
-  spd_pid.iMin = -20;
+  spd_pid.iGain  = ValueSearch("SPD_iGain");
+  spd_pid.pGain  = ValueSearch("SPD_pGain");
+  spd_pid.dGain  = ValueSearch("SPD_dGain");
+  spd_pid.iMin   = ValueSearch("SPD_iMin");
+  spd_pid.iMax   = ValueSearch("SPD_iMax");
   spd_pid.iState = 0;
   spd_pid.dState = 0;
 
   while (TRUE) {
-    _update_speed(&speed_retry);
-    speed_stab(&spd_pid, comp_data.groundspeed);
+    chBSemWait(&servo_updated_sem);
+    update_speed_rover(&speed_retry);
+    stab_speed_rover(&spd_pid, comp_data.groundspeed, 0.8);
   }
   return 0;
 }

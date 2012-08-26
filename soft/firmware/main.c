@@ -4,12 +4,15 @@
  */
 
 // TODO: PID
-/* 2 modes stab/man and man. In 1-st use PID, in 2-nt translate params as is
- * command for get/set odometer
+/*
+ * CLI for PID mode (speed 0.8, heading 359, etc.)
  * command for straight line running on fixed distance to fine tuning
+ *
+ * 2 modes stab/man and man. In 1-st use PID, in 2-nt translate params as is
  * thread for heading PID
  */
 
+// TODO: command for get/set odometer
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
@@ -30,6 +33,9 @@
  */
 /* RTC-GPS sync */
 BinarySemaphore rtc_sem;
+
+/* Servo-PID sync */
+BinarySemaphore servo_updated_sem;
 
 /* store here time from GPS */
 struct tm gps_timp;
@@ -66,6 +72,7 @@ int main(void) {
   chSysInit();
 
   chBSemInit(&rtc_sem, TRUE);
+  chBSemInit(&servo_updated_sem, TRUE);
 
   chThdSleepMilliseconds(200);
 
