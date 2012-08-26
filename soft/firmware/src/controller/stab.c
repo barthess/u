@@ -13,6 +13,7 @@
  ******************************************************************************
  */
 //extern RawData raw_data;
+extern MemoryHeap ThdHeap;
 extern CompensatedData comp_data;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern Mailbox speedometer_mb;
@@ -57,11 +58,10 @@ float calc_speed(uint32_t uS){
  *
  */
 void speed_control(float speed){
-  float drive = 0;
 
   /* do PID stuff */
   float desired = 1.2;
-  drive = UpdatePID(&spd_pid, desired - speed, speed);
+  UpdatePID(&spd_pid, desired - speed, speed);
 
   //ServoCarThrustSet((uint8_t)((3.0 / 128) * drive) + 128);
 }
@@ -69,9 +69,9 @@ void speed_control(float speed){
 /**
  *
  */
-static WORKING_AREA(PidTrustThreadWA, 512);
-static msg_t PidTrustThread(void* arg){
-  chRegSetThreadName("PidTrust");
+static WORKING_AREA(StabThreadWA, 512);
+static msg_t StabThread(void* arg){
+  chRegSetThreadName("Stab");
   (void)arg;
 
   msg_t tmp = 0;
@@ -81,7 +81,7 @@ static msg_t PidTrustThread(void* arg){
   const uint32_t MEDIAN_FILTER_LEN = 3;
   uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 
-  /* clear filter */
+  /* reset filter */
   uint32_t i = 0;
   for (i=0; i < MEDIAN_FILTER_LEN; i++)
     tacho_filter_buf[i] = 0;
@@ -108,7 +108,7 @@ static msg_t PidTrustThread(void* arg){
  ******************************************************************************
  */
 
-void SpeedControlInit(void){
+Thread* SpeedControlInit(void){
 
   cminpulse = ValueSearch("SPD_cminpulse");
 
@@ -120,10 +120,14 @@ void SpeedControlInit(void){
   spd_pid.iState = 0;
   spd_pid.dState = 0;
 
-  chThdCreateStatic(PidTrustThreadWA,
-        sizeof(PidTrustThreadWA),
-        NORMALPRIO,
-        PidTrustThread,
-        NULL);
+  Thread *tp = NULL;
+  tp = chThdCreateFromHeap(&ThdHeap, sizeof(StabThreadWA),
+                            CONTROLLER_THREADS_PRIO,
+                            StabThread,
+                            NULL);
+  if (tp == NULL)
+    chdbgPanic("Can not allocate memory");
+
+  return tp;
 }
 

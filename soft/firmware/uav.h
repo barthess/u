@@ -41,7 +41,7 @@
 #include "sensors.h"
 #include "servo.h"
 #include "servo_cli.h"
-#include "speed_control.h"
+#include "stab.h"
 #include "timekeeping.h"
 #include "tlm_sender.h"
 #include "tmp75.h"
