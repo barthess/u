@@ -16,6 +16,7 @@
 #include "cli.h"
 #include "cli_cmd.h"
 #include "controller.h"
+#include "controller_cli.h"
 #include "dsp.h"
 #include "eeprom.h"
 #include "exti_local.h"
