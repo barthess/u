@@ -12,9 +12,9 @@ typedef struct
   float *iGain;         /* integral gain */
   float *pGain;         /* proportional gain */
   float *dGain;         /* derivative gain */
-}pid_f32;
+}pid_f32_t;
 
-float UpdatePID(pid_f32 *pid, float error, float position);
+float UpdatePID(pid_f32_t *pid, float error, float position);
 
 
 #endif /* PID_H_ */

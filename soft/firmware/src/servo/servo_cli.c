@@ -68,7 +68,7 @@ static void _servo_cli_help(void){
   cli_println("    255 : max right");
 
   cli_println("Allowable commands in fixed wing mode:");
-  cli_println("  TODO:");
+  cli_println("  NOT REALISED YET");
 }
 
 /**
@@ -83,7 +83,7 @@ void _servo_cli_fixed_wing(const char * const * argv){
  * @return  -1      in case of error
  *          0..255  value in other case
  */
-int32_t _servo_cli_get_value(const char * val){
+int32_t _servor_cli_get_value(const char * val){
   int32_t sscanf_status;
   uint32_t v;
 
@@ -106,14 +106,14 @@ void _servo_cli_ground_rover(const char * const * argv){
   int32_t v = -1;
 
   if (strcmp(argv[0], "thrust") == 0){
-    v = _servo_cli_get_value(argv[1]);
+    v = _servor_cli_get_value(argv[1]);
     if (v == -1)
       _servo_cli_err();
     else
       ServoCarThrustSet(v);
   }
   else if (strcmp(argv[0], "yaw") == 0){
-    v = _servo_cli_get_value(argv[1]);
+    v = _servor_cli_get_value(argv[1]);
     if (v == -1)
       _servo_cli_err();
     else

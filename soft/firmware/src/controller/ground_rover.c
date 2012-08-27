@@ -50,6 +50,7 @@ float calc_ground_rover_speed(uint32_t rtt){
 
   if (uS == 0)/* prevent division by zero */
     return 3;
+
   float k = *cminpulse;
   float t = ((float)uS / 10000.0);
   return k / t;

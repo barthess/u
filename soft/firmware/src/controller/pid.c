@@ -41,7 +41,7 @@
 /**
  *
  */
-float UpdatePID(pid_f32 *pid, float error, float position){
+float UpdatePID(pid_f32_t *pid, float error, float position){
   float pTerm, dTerm, iTerm;
 
   /* calculate the proportional term */

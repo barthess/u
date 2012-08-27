@@ -5,9 +5,6 @@
 
 // TODO: PID
 /*
- * CLI for PID mode (speed 0.8, heading 359, etc.)
- * command for straight line running on fixed distance to fine tuning
- *
  * 2 modes stab/man and man. In 1-st use PID, in 2-nt translate params as is
  * thread for heading PID
  */

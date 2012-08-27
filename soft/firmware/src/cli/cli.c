@@ -35,6 +35,7 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
 
 static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,     NULL,  "clear screen"},
+    {"controller",&controller_clicmd,NULL,  "set controller parameters. Test PIDs"},
     {"date",      &date_cmd,         NULL,  "print and set current date"},
     {"echo",      &echo_clicmd,      NULL,  "echo it's input to terminal"},
     {"help",      &help_clicmd,      NULL,  "this message"},
@@ -46,7 +47,7 @@ static const ShellCmd_t chibiutils[] = {
     {"ps",        &ps_clicmd,        NULL,  "info about running threads"},
     {"selftest",  &selftest_clicmd,  NULL,  "exectute selftests (stub)"},
     {"sensor",    &sensor_clicmd,    NULL,  "get human readable data from onboard sensors (stub)"},
-    {"servo",     &servo_clicmd,     NULL,  "change actuators' state"},
+    {"servo",     &servo_clicmd,     NULL,  "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,     NULL,  "put autopilot board in sleep state (do not use it)"},
     {"reboot",    &reboot_clicmd,    NULL,  "reboot system. Use with caution"},
     {"uname",     &uname_clicmd,     NULL,  "'info' alias"},

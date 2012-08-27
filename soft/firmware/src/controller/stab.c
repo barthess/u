@@ -21,6 +21,7 @@ extern CompensatedData comp_data;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern Mailbox speedometer_mb;
 extern BinarySemaphore servo_updated_sem;
+extern Mailbox testpoint_mb;
 
 /*
  ******************************************************************************
@@ -45,7 +46,7 @@ extern BinarySemaphore servo_updated_sem;
 /**
  *
  */
-void stab_speed_rover(pid_f32 *spd_pid, float speed, float desired){
+void stab_speed_rover(pid_f32_t *spd_pid, float speed, float desired){
   float drive = 0;
 
   drive = UpdatePID(spd_pid, desired - speed, speed);
@@ -53,6 +54,13 @@ void stab_speed_rover(pid_f32 *spd_pid, float speed, float desired){
     drive = 0;
 
   ServoCarThrustSet(float2thrust(drive));
+}
+
+/**
+ *
+ */
+void stab_heading_rover(uint32_t heading){
+  (void)heading;
 }
 
 /**
@@ -88,9 +96,17 @@ static msg_t StabThread(void* arg){
   chRegSetThreadName("Stab");
   (void)arg;
 
-  uint32_t speed_retry = 0;
+  uint32_t speed_retry_cnt = 0;
 
-  pid_f32 spd_pid;
+  uint32_t heading = 0;
+  float target_trip = 0;
+  float speed = 0;
+  float *cminpulse;
+  msg_t status = 0;
+  msg_t tmp = 0;
+
+  pid_f32_t spd_pid;
+  cminpulse = ValueSearch("SPD_cminpulse");
   spd_pid.iGain  = ValueSearch("SPD_iGain");
   spd_pid.pGain  = ValueSearch("SPD_pGain");
   spd_pid.dGain  = ValueSearch("SPD_dGain");
@@ -101,8 +117,26 @@ static msg_t StabThread(void* arg){
 
   while (TRUE) {
     chBSemWait(&servo_updated_sem);
-    update_speed_rover(&speed_retry);
-    stab_speed_rover(&spd_pid, comp_data.groundspeed, 0.8);
+    update_speed_rover(&speed_retry_cnt);
+
+    status = chMBFetch(&testpoint_mb, &tmp, TIME_IMMEDIATE);
+    if (status == RDY_OK){
+      if (tmp != (msg_t)NULL){
+        /* load new task */
+        speed = ((test_point_t*)tmp)->speed;
+        heading = ((test_point_t*)tmp)->heading;
+        target_trip = bkpOdometer * *cminpulse;
+        target_trip += ((test_point_t*)tmp)->trip;
+      }
+      else
+        target_trip = bkpOdometer * *cminpulse;/* task canselled. Stopping. */
+    }
+
+    if ((bkpOdometer * *cminpulse) >= target_trip)
+      speed = 0; /* task finished. Stopping. */
+
+    stab_speed_rover(&spd_pid, comp_data.groundspeed, speed);
+    stab_heading_rover(heading);
   }
   return 0;
 }
