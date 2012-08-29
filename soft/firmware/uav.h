@@ -36,6 +36,7 @@
 #include "message.h"
 #include "microsd.h"
 #include "mma8451.h"
+#include "navigation.h"
 #include "param.h"
 #include "param_cli.h"
 #include "param_persistant.h"
@@ -50,6 +51,7 @@
 #include "tlm_sender.h"
 #include "tmp75.h"
 #include "utils.h"
+#include "waypoints_persistant.h"
 
 /* Heap size for dynamic thread creation */
 #define THREAD_HEAP_SIZE    (1024 * 5)

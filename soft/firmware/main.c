@@ -3,12 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: PID
-/*
- * 2 modes stab/man and man. In 1-st use PID, in 2-nt translate params as is
- * thread for heading PID
- */
-
+// TODO: waypoints acquring, storing, loading etc.
+// TODO: thread for PIDs
+// TODO: CLI for waypoints
 // TODO: command for get/set odometer
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.

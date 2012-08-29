@@ -67,7 +67,7 @@ static void _controller_cli_help(void){
   cli_println("    rover heading in degrees");
   cli_println("  controller trip [0..100]");
   cli_println("    path length in m. It will be run at previously set speed and heading");
-  cli_println("  controller stop");
+  cli_println("  controller stop 1");
   cli_println("    cansel current point and stop");
 
   cli_println("Allowable commands in fixed wing mode:");

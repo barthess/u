@@ -89,7 +89,12 @@ void update_speed_rover(uint32_t *retry){
 }
 
 /**
- *
+ * Stabilization thread.
+ * 1) perform PIDs in infinite loop synchronized with servo PWM
+ * 2) every cycle tries to get new task from message_box[1]
+ * 3) place task in local variables inside lock
+ * 4) there is now way to cansel task, you only can send new one with zero speed
+ *    or home coordinates, etc.
  */
 static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
@@ -126,7 +131,7 @@ static msg_t StabThread(void* arg){
         speed = ((test_point_t*)tmp)->speed;
         heading = ((test_point_t*)tmp)->heading;
         target_trip = bkpOdometer * *cminpulse;
-        target_trip += ((test_point_t*)tmp)->trip;
+        target_trip += ((test_point_t*)tmp)->trip * 100 * *cminpulse;
       }
       else
         target_trip = bkpOdometer * *cminpulse;/* task canselled. Stopping. */

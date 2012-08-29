@@ -107,11 +107,13 @@ CSRC = $(PORTSRC) \
        src/kinematic/dcm.c \
        src/kinematic/gnc.c \
        src/kinematic/airspeed.c \
+       src/kinematic/pid.c \
        src/sanity.c \
        src/mavlink_local/mavcmd_local.c \
        src/mavlink_local/param.c \
        src/mavlink_local/param_cli.c \
        src/mavlink_local/param_persistant.c \
+       src/mavlink_local/waypoints_persistant.c \
        src/timekeeping.c \
        src/sensors/gps.c \
        src/sensors/adc_local.c \
@@ -136,8 +138,8 @@ CSRC = $(PORTSRC) \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
+       src/controller/navigation.c \
        src/controller/stab.c \
-       src/controller/pid.c \
        src/controller/controller_cli.c \
        src/message.c \
        src/dsp.c \

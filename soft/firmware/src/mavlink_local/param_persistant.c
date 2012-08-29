@@ -117,17 +117,3 @@ bool_t save_params_to_eeprom(void){
 }
 
 
-/**
- * Загрузка миссии из EEPROM
- */
-bool_t load_mission_from_eeprom(void){
-  return 0;
-}
-
-/**
- * Сохранение миссии в EEPROM
- */
-bool_t save_mission_to_eeprom(void){
-  return 0;
-}
-
