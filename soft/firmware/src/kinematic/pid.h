@@ -4,8 +4,7 @@
 /**
  * Float PID controller structure.
  */
-typedef struct
-{
+typedef struct{
   float dState;         /* Last position input */
   float iState;         /* Integrator state */
   float *iMax, *iMin;   /* Maximum and minimum allowable integrator state */

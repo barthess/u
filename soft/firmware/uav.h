@@ -36,11 +36,11 @@
 #include "message.h"
 #include "microsd.h"
 #include "mma8451.h"
-#include "navigation.h"
 #include "param.h"
 #include "param_cli.h"
 #include "param_persistant.h"
 #include "pid.h"
+#include "planner.h"
 #include "pwr_mgmt.h"
 #include "sanity.h"
 #include "sensors.h"
@@ -51,6 +51,7 @@
 #include "tlm_sender.h"
 #include "tmp75.h"
 #include "utils.h"
+#include "waypoints.h"
 #include "waypoints_persistant.h"
 
 /* Heap size for dynamic thread creation */
@@ -116,6 +117,8 @@
 #define LINK_FAILED       CH_FAILED
 #define TLM_SUCCESS       CH_SUCCESS
 #define TLM_FAILED        CH_FAILED
+#define WP_SUCCESS        CH_SUCCESS
+#define WP_FAILED         CH_FAILED
 
 /******************************************************************
 * константы для мавлинка */
@@ -129,11 +132,17 @@
 
 
 /******************************************************************
-* data offsets in eeprom "file" */
-#define EEPROM_SETTINGS_START    8192
-#define EEPROM_SETTINGS_SIZE     4096
-#define EEPROM_SETTINGS_FINISH   (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
+* data offsets and sizes in eeprom "file" */
+#define EEPROM_SETTINGS_START         8192
+#define EEPROM_SETTINGS_SIZE          4096
 
+/* waypoints count saved here */
+#define EEPROM_MISSION_WP_CNT_OFFSET  (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
+/* size in byte of waypoint count variable */
+#define EEPROM_MISSION_WP_CNT_SIZE    2
+/* actual waypoints offset */
+#define EEPROM_MISSION_START          (EEPROM_MISSION_WP_CNT_OFFSET + EEPROM_MISSION_WP_CNT_SIZE)
+#define EEPROM_MISSION_SIZE           (8192 - EEPROM_MISSION_WP_CNT_SIZE)
 
 /******************************************************************
 * дефайны для модема */

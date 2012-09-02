@@ -120,7 +120,7 @@ Thread *ControllerGroundRoverInit(void){
     tacho_filter_buf[i] = 0;
 
   ServoInit();
-  NavigationInit();
+  PlannerInit();
   StabInit();
 
   Servo4Set(128);

@@ -74,7 +74,7 @@ static msg_t SanityControlThread(void *arg) {
       log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleepMilliseconds(50);
+    chThdSleepMilliseconds(10);
     mavlink_sys_status_struct.load = get_cpu_load();
 
     if (GlobalFlags & SIGHALT_FLAG){

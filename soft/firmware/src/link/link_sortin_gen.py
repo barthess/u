@@ -8,6 +8,13 @@ names = [
         ("command_long",        "command_long_mail",    "mavlink_command_long_mb"),
         ("manual_control",      "manual_control_mail",  "controller_mb"),
         ("set_mode",            "set_mode_mail",        "controller_mb"),
+        ("mission_request_list","mission_mail",         "mission_mb"),
+        ("mission_request",     "mission_mail",         "mission_mb"),
+        ("mission_item",        "mission_mail",         "mission_mb"),
+        ("mission_count",       "mission_mail",         "mission_mb"),
+        ("mission_ack",         "mission_mail",         "mission_mb"),
+        ("mission_clear_all",   "mission_mail",         "mission_mb"),
+        ("mission_set_current", "mission_mail",         "mission_mb"),
         ]
 
 for i in names:

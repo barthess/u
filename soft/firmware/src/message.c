@@ -18,6 +18,7 @@ Mailbox controller_mb;
 Mailbox logwriter_mb;
 Mailbox speedometer_mb;           /* measured time intervals from spedometer */
 Mailbox testpoint_mb;             /* testing points for controller */
+Mailbox mission_mb;               /* messages for mission planner */
 
 /* variable for storing system state */
 mavlink_system_t              mavlink_system_struct;
@@ -36,6 +37,13 @@ mavlink_heartbeat_t           mavlink_heartbeat_struct;
 mavlink_param_value_t         mavlink_param_value_struct;
 mavlink_gps_raw_int_t         mavlink_gps_raw_int_struct;
 
+mavlink_mission_count_t       mavlink_mission_count_struct;
+mavlink_mission_item_t        mavlink_mission_item_struct;
+mavlink_mission_request_t     mavlink_mission_request_struct;
+mavlink_mission_ack_t         mavlink_mission_ack_struct;
+mavlink_mission_clear_all_t   mavlink_mission_clear_all_struct;
+mavlink_mission_set_current_t mavlink_mission_set_current_struct;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -49,6 +57,7 @@ static msg_t mavlink_command_long_mb_buf[4];
 static msg_t logwriter_mb_buf[10];
 static msg_t speedometer_mb_buf[1];
 static msg_t testpoint_mb_buf[1];
+static msg_t mission_mb_buf[2];
 
 /*
  ******************************************************************************
@@ -92,6 +101,9 @@ void MsgInit(void){
   chMBInit(&testpoint_mb,
       testpoint_mb_buf,
       (sizeof(testpoint_mb_buf)/sizeof(msg_t)));
+  chMBInit(&mission_mb,
+      mission_mb_buf,
+      (sizeof(mission_mb_buf)/sizeof(msg_t)));
 }
 
 void MavInit(void){

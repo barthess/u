@@ -3,7 +3,14 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: waypoints acquring, storing, loading etc.
+// TODO: rename file "waypoints" to "wps"
+// TODO: wait_tmo must be send retries too
+// TODO: waypoints ACK message with deep parameter checks.
+// TODO: waypoints timeout in separate thread.
+// TODO: remove testpoint_mb_buf and all related code
+
+// TODO: disarming safety switch
+
 // TODO: thread for PIDs
 // TODO: CLI for waypoints
 // TODO: command for get/set odometer

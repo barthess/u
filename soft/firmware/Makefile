@@ -114,6 +114,7 @@ CSRC = $(PORTSRC) \
        src/mavlink_local/param_cli.c \
        src/mavlink_local/param_persistant.c \
        src/mavlink_local/waypoints_persistant.c \
+       src/mavlink_local/waypoints.c \
        src/timekeeping.c \
        src/sensors/gps.c \
        src/sensors/adc_local.c \
@@ -138,7 +139,7 @@ CSRC = $(PORTSRC) \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
-       src/controller/navigation.c \
+       src/controller/planner.c \
        src/controller/stab.c \
        src/controller/controller_cli.c \
        src/message.c \

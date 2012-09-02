@@ -17,23 +17,32 @@ extern mavlink_system_t mavlink_system_struct;
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox controller_mb;
+extern Mailbox mission_mb;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static mavlink_param_set_t          mavlink_param_set_struct;
-static mavlink_param_request_list_t mavlink_param_request_list_struct;
-static mavlink_param_request_read_t mavlink_param_request_read_struct;
-static mavlink_command_long_t       mavlink_command_long_struct;
-static mavlink_manual_control_t     mavlink_manual_control_struct;
-static mavlink_set_mode_t           mavlink_set_mode_struct;
+static mavlink_param_set_t              mavlink_param_set_struct;
+static mavlink_param_request_list_t     mavlink_param_request_list_struct;
+static mavlink_param_request_read_t     mavlink_param_request_read_struct;
+static mavlink_command_long_t           mavlink_command_long_struct;
+static mavlink_manual_control_t         mavlink_manual_control_struct;
+static mavlink_set_mode_t               mavlink_set_mode_struct;
+static mavlink_mission_request_list_t   mavlink_mission_request_list_struct;
+static mavlink_mission_request_t        mavlink_mission_request_struct;
+static mavlink_mission_item_t           mavlink_mission_item_struct;
+static mavlink_mission_clear_all_t      mavlink_mission_clear_all_struct;
+static mavlink_mission_set_current_t    mavlink_mission_set_current_struct;
+static mavlink_mission_count_t          mavlink_mission_count_struct;
+static mavlink_mission_ack_t            mavlink_mission_ack_struct;
 
 static Mail param_set_mail      = {NULL, MAVLINK_MSG_ID_PARAM_SET,      NULL};
 static Mail command_long_mail   = {NULL, MAVLINK_MSG_ID_COMMAND_LONG,   NULL};
 static Mail manual_control_mail = {NULL, MAVLINK_MSG_ID_MANUAL_CONTROL, NULL};
 static Mail set_mode_mail       = {NULL, MAVLINK_MSG_ID_SET_MODE,       NULL};
+static Mail mission_mail        = {NULL, MAVLINK_MSG_ID_MISSION_REQUEST,NULL};
 
 /*
  *******************************************************************************
@@ -130,6 +139,124 @@ bool_t sort_input_messages(mavlink_message_t *msg){
     else
       return LINK_SUCCESS;
     break;
+
+
+
+
+
+
+
+
+
+
+     /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+    mavlink_msg_mission_request_list_decode(msg, &mavlink_mission_request_list_struct);
+    if (mavlink_mission_request_list_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_REQUEST_LIST;
+    mission_mail.payload = &mavlink_mission_request_list_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_REQUEST:
+    mavlink_msg_mission_request_decode(msg, &mavlink_mission_request_struct);
+    if (mavlink_mission_request_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_REQUEST;
+    mission_mail.payload = &mavlink_mission_request_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_ITEM:
+    mavlink_msg_mission_item_decode(msg, &mavlink_mission_item_struct);
+    if (mavlink_mission_item_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_ITEM;
+    mission_mail.payload = &mavlink_mission_item_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_COUNT:
+    mavlink_msg_mission_count_decode(msg, &mavlink_mission_count_struct);
+    if (mavlink_mission_count_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_COUNT;
+    mission_mail.payload = &mavlink_mission_count_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_ACK:
+    mavlink_msg_mission_ack_decode(msg, &mavlink_mission_ack_struct);
+    if (mavlink_mission_ack_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_ACK;
+    mission_mail.payload = &mavlink_mission_ack_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
+    mavlink_msg_mission_clear_all_decode(msg, &mavlink_mission_clear_all_struct);
+    if (mavlink_mission_clear_all_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_CLEAR_ALL;
+    mission_mail.payload = &mavlink_mission_clear_all_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+  /* automatically generated handler */
+  case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+    mavlink_msg_mission_set_current_decode(msg, &mavlink_mission_set_current_struct);
+    if (mavlink_mission_set_current_struct.target_system != mavlink_system_struct.sysid)
+      return LINK_SUCCESS; /* silently ignore messages not for this system */
+    mission_mail.invoice = MAVLINK_MSG_ID_MISSION_SET_CURRENT;
+    mission_mail.payload = &mavlink_mission_set_current_struct;
+    status = chMBPost(&mission_mb, (msg_t)&mission_mail, TIME_IMMEDIATE);
+    if (status != RDY_OK)
+      return LINK_FAILED;
+    else
+      return LINK_SUCCESS;
+    break;
+
+
+
+
+
+
+
+
+
+
+
 
 
   case MAVLINK_MSG_ID_HEARTBEAT:

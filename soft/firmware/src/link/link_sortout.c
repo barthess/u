@@ -31,6 +31,11 @@ extern mavlink_attitude_t            mavlink_attitude_struct;
 extern mavlink_heartbeat_t           mavlink_heartbeat_struct;
 extern mavlink_param_value_t         mavlink_param_value_struct;
 
+extern mavlink_mission_count_t       mavlink_mission_count_struct;
+extern mavlink_mission_item_t        mavlink_mission_item_struct;
+extern mavlink_mission_request_t     mavlink_mission_request_struct;
+extern mavlink_mission_ack_t         mavlink_mission_ack_struct;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -94,6 +99,26 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
   case MAVLINK_MSG_ID_COMMAND_ACK:
     len = mavlink_msg_command_ack_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_command_ack_struct);
     break;
+
+
+
+
+  case MAVLINK_MSG_ID_MISSION_COUNT:
+    len = mavlink_msg_mission_count_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_count_struct);
+    break;
+  case MAVLINK_MSG_ID_MISSION_ITEM:
+    len = mavlink_msg_mission_item_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_item_struct);
+    break;
+  case MAVLINK_MSG_ID_MISSION_REQUEST:
+    len = mavlink_msg_mission_request_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_request_struct);
+    break;
+  case MAVLINK_MSG_ID_MISSION_ACK:
+    len = mavlink_msg_mission_ack_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_ack_struct);
+    break;
+
+
+
+
   default:
     chDbgPanic("ID not defined");
     break;
@@ -107,7 +132,7 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
  * Определяет тип сообщения, чтобы применить правильную функцию упаковки.
  * Пакует письмо из ящика в мавлинковое сообщение.
  * ЗаNULLяет указатель на содержимое, как знак того, что данные обработаны.
- * Возвращает длинну сообщения получившегося сообщения.
+ * Возвращает длинну получившегося сообщения.
  */
 uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   uint16_t len = 0;

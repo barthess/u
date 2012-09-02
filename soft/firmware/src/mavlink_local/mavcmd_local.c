@@ -122,10 +122,10 @@ void handle_cmd_preflight_storage(mavlink_command_long_t *mavlink_command_long_s
   else if (mavlink_command_long_struct->param1 == 1)
     status = save_params_to_eeprom();
 
-  if (mavlink_command_long_struct->param2 == 0)
-    status = load_mission_from_eeprom();
-  else if (mavlink_command_long_struct->param2 == 1)
-    status = save_mission_to_eeprom();
+//  if (mavlink_command_long_struct->param2 == 0)
+//    status = load_mission_from_eeprom();
+//  else if (mavlink_command_long_struct->param2 == 1)
+//    status = save_mission_to_eeprom();
 
   if (status != CH_SUCCESS)
     command_failed();
