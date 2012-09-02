@@ -14,7 +14,6 @@
  ******************************************************************************
  */
 extern mavlink_system_t       mavlink_system_struct;
-extern Mailbox testpoint_mb;
 
 /*
  ******************************************************************************
@@ -150,10 +149,10 @@ void _controller_cli_ground_rover(const char * const * argv){
     _controller_cli_get_heading(argv[1]);
   else if (strcmp(argv[0], "trip") == 0){
     _controller_cli_get_trip(argv[1]);
-    chMBPost(&testpoint_mb, (msg_t)&test_point, TIME_IMMEDIATE);
+    //chMBPost(&testpoint_mb, (msg_t)&test_point, TIME_IMMEDIATE);
   }
   else if (strcmp(argv[0], "stop") == 0)
-    chMBPost(&testpoint_mb, (msg_t)NULL, TIME_IMMEDIATE);
+    ;//chMBPost(&testpoint_mb, (msg_t)NULL, TIME_IMMEDIATE);
   else
     _controller_cli_err();
 }

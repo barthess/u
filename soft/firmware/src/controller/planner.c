@@ -59,7 +59,9 @@ static Mail mission_out_mail = {NULL, MAVLINK_MSG_ID_MISSION_COUNT, NULL};
 void send_ack(uint8_t type){
   msg_t status = RDY_RESET;
 
-  mavlink_mission_ack_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+  /* logically the target_component must be MAV_COMP_ID_MISSIONPLANNER,
+   * but QGC does not accept them. */
+  mavlink_mission_ack_struct.target_component = MAV_COMP_ID_ALL;
   mavlink_mission_ack_struct.target_system = GROUND_STATION_ID;
   mavlink_mission_ack_struct.type = type;
   mission_out_mail.payload = &mavlink_mission_ack_struct;
@@ -180,7 +182,7 @@ static bool_t mission_count_handler(Mail* mailp){
 
   /* send ACK */
   send_ack(MAV_MISSION_ACCEPTED);
-
+  //send_ack(MAV_MISSION_NO_SPACE);
   return MAVLINK_WPM_STATE_IDLE;
 }
 

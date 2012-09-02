@@ -21,7 +21,6 @@ extern CompensatedData comp_data;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern Mailbox speedometer_mb;
 extern BinarySemaphore servo_updated_sem;
-extern Mailbox testpoint_mb;
 
 /*
  ******************************************************************************
@@ -107,7 +106,7 @@ static msg_t StabThread(void* arg){
   float target_trip = 0;
   float speed = 0;
   float *cminpulse;
-  msg_t status = 0;
+  msg_t status = RDY_RESET;
   msg_t tmp = 0;
 
   pid_f32_t spd_pid;
@@ -124,7 +123,7 @@ static msg_t StabThread(void* arg){
     chBSemWait(&servo_updated_sem);
     update_speed_rover(&speed_retry_cnt);
 
-    status = chMBFetch(&testpoint_mb, &tmp, TIME_IMMEDIATE);
+    //status = chMBFetch(&testpoint_mb, &tmp, TIME_IMMEDIATE);
     if (status == RDY_OK){
       if (tmp != (msg_t)NULL){
         /* load new task */

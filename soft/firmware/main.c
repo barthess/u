@@ -3,17 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: rename file "waypoints" to "wps"
-// TODO: wait_tmo must be send retries too
-// TODO: waypoints ACK message with deep parameter checks.
-// TODO: waypoints timeout in separate thread.
-// TODO: remove testpoint_mb_buf and all related code
-
-// TODO: disarming safety switch
-
 // TODO: thread for PIDs
-// TODO: CLI for waypoints
-// TODO: command for get/set odometer
+// TODO: waypoints ACK message with deeper parameter checks.
+// TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
