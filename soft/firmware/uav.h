@@ -51,8 +51,8 @@
 #include "tlm_sender.h"
 #include "tmp75.h"
 #include "utils.h"
-#include "waypoints.h"
-#include "waypoints_persistant.h"
+#include "wps.h"
+#include "wps_persistant.h"
 
 /* Heap size for dynamic thread creation */
 #define THREAD_HEAP_SIZE    (1024 * 5)

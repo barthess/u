@@ -17,8 +17,8 @@
  
  ****************************************************************************/
 
-#ifndef WAYPOINTS_H_
-#define WAYPOINTS_H_
+#ifndef WPS_H_
+#define WPS_H_
 
 // FIXME XXX - TO BE MOVED TO XML
 typedef enum {
@@ -77,4 +77,4 @@ typedef struct{
 
 void MavlinkWpmInit(void);
 
-#endif /* WAYPOINTS_H_ */
+#endif /* WPS_H_ */
