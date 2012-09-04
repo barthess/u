@@ -49,7 +49,7 @@ static float const *pulse2m;
 /**
  *
  */
-void stab_speed_rover(pid_f32_t *spd_pid, float speed, float desired){
+static void keep_speed(pid_f32_t *spd_pid, float speed, float desired){
   float drive = 0;
 
   drive = UpdatePID(spd_pid, desired - speed, speed);
@@ -62,14 +62,14 @@ void stab_speed_rover(pid_f32_t *spd_pid, float speed, float desired){
 /**
  *
  */
-void stab_heading_rover(uint32_t heading){
+static void keep_heading(uint32_t heading){
   (void)heading;
 }
 
 /**
  * Calculate current ground speed from tachometer pulses
  */
-void update_speed_rover(uint32_t *retry){
+static void update_speed(uint32_t *retry){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -114,7 +114,7 @@ static msg_t StabThread(void* arg){
 
   while (TRUE) {
     chBSemWait(&servo_updated_sem);
-    update_speed_rover(&speed_retry_cnt);
+    update_speed(&speed_retry_cnt);
 
     //status = chMBFetch(&testpoint_mb, &tmp, TIME_IMMEDIATE);
     if (status == RDY_OK){
@@ -132,8 +132,8 @@ static msg_t StabThread(void* arg){
     if ((bkpOdometer * *pulse2m) >= target_trip)
       speed = 0; /* task finished. Stopping. */
 
-    stab_speed_rover(&speed_pid, comp_data.groundspeed, speed);
-    stab_heading_rover(heading);
+    keep_speed(&speed_pid, comp_data.groundspeed, speed);
+    keep_heading(heading);
   }
   return 0;
 }
