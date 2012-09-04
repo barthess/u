@@ -1,7 +1,6 @@
 /*
  * Stores functions sutable for ground rover - pulses to speed conversio, etc.
  */
-
 #include "uav.h"
 
 /*
@@ -27,7 +26,7 @@ extern MemoryHeap ThdHeap;
  ******************************************************************************
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-static float      *pulse2m;
+static float *pulse2m;
 
 /*
  *******************************************************************************
@@ -38,11 +37,11 @@ static float      *pulse2m;
  */
 
 /**
- * k - cm in one pulse (got from params)
+ * k - m in one pulse (got from params)
  *
- *      S      k / 100          k
- * v = --- = ------------ = ------------
- *      t    uS / 1000000   uS / 10000.0
+ *      S      k
+ * v = --- = ------------
+ *      t    uS / 1000000
  */
 float calc_ground_rover_speed(uint32_t rtt){
 
@@ -51,9 +50,8 @@ float calc_ground_rover_speed(uint32_t rtt){
   if (uS == 0)/* prevent division by zero */
     return 3;
 
-  float k = *pulse2m;
-  float t = ((float)uS / 10000.0);
-  return k / t;
+  float t = ((float)uS / 1000000.0);
+  return *pulse2m / t;
 }
 
 /**

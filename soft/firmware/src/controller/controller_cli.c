@@ -20,7 +20,6 @@ extern mavlink_system_t       mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static test_point_t test_point = {0,0,0};
 
 /*
  ******************************************************************************
@@ -87,17 +86,17 @@ void _controller_cli_fixed_wing(const char * const * argv){
 void _controller_cli_get_speed(const char * val){
   int32_t sscanf_status;
 
-  sscanf_status = sscanf(val, "%f", &test_point.speed);
-  if (sscanf_status == 1){
-    float tmp = test_point.speed;
-    putinrange(test_point.speed, 0, 10);
-    if (tmp != test_point.speed)
-      cli_println("WARNING: value clamped to 0..10 limits.");
-  }
-  else{
-    test_point.speed = 0;
-    _controller_cli_err();
-  }
+//  sscanf_status = sscanf(val, "%f", &test_point.speed);
+//  if (sscanf_status == 1){
+//    float tmp = test_point.speed;
+//    putinrange(test_point.speed, 0, 10);
+//    if (tmp != test_point.speed)
+//      cli_println("WARNING: value clamped to 0..10 limits.");
+//  }
+//  else{
+//    test_point.speed = 0;
+//    _controller_cli_err();
+//  }
 }
 
 /**
@@ -106,17 +105,17 @@ void _controller_cli_get_speed(const char * val){
 void _controller_cli_get_heading(const char * val){
   int32_t sscanf_status;
 
-  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.heading);
-  if (sscanf_status == 1){
-    uint32_t tmp = test_point.heading;
-    putinrange(test_point.heading, 0, 359);
-    if (tmp != test_point.heading)
-      cli_println("WARNING: value clamped to 0..359 limits.");
-  }
-  else{
-    test_point.heading = 0;
-    _controller_cli_err();
-  }
+//  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.heading);
+//  if (sscanf_status == 1){
+//    uint32_t tmp = test_point.heading;
+//    putinrange(test_point.heading, 0, 359);
+//    if (tmp != test_point.heading)
+//      cli_println("WARNING: value clamped to 0..359 limits.");
+//  }
+//  else{
+//    test_point.heading = 0;
+//    _controller_cli_err();
+//  }
 }
 
 /**
@@ -125,17 +124,17 @@ void _controller_cli_get_heading(const char * val){
 void _controller_cli_get_trip(const char * val){
   int32_t sscanf_status;
 
-  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.trip);
-  if (sscanf_status == 1){
-    uint32_t tmp = test_point.trip;
-    putinrange(test_point.trip, 0, 100);
-    if (tmp != test_point.trip)
-      cli_println("WARNING: value clamped to 0..100 limits.");
-  }
-  else{
-    test_point.trip = 0;
-    _controller_cli_err();
-  }
+//  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.trip);
+//  if (sscanf_status == 1){
+//    uint32_t tmp = test_point.trip;
+//    putinrange(test_point.trip, 0, 100);
+//    if (tmp != test_point.trip)
+//      cli_println("WARNING: value clamped to 0..100 limits.");
+//  }
+//  else{
+//    test_point.trip = 0;
+//    _controller_cli_err();
+//  }
 }
 
 /**

@@ -199,6 +199,12 @@ const GlobalParam_t global_data[] = {
   {"SPD_dGain",       {.f32 = 0},          &gd_val[109],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
   {"SPD_iMin",        {.f32 = -10000},     &gd_val[110],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
   {"SPD_iMax",        {.f32 = -10000},     &gd_val[111],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
+  /* pid coefficients for heading control */
+  {"HEAD_iGain",      {.f32 = 0},          &gd_val[112],          {.f32 = 1.0},      MAVLINK_TYPE_FLOAT},
+  {"HEAD_pGain",      {.f32 = 0},          &gd_val[113],          {.f32 = 200.0},    MAVLINK_TYPE_FLOAT},
+  {"HEAD_dGain",      {.f32 = 0},          &gd_val[114],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
+  {"HEAD_iMin",       {.f32 = -10000},     &gd_val[115],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
+  {"HEAD_iMax",       {.f32 = -10000},     &gd_val[116],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
   /* fake field with 14 symbols name */
   {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},

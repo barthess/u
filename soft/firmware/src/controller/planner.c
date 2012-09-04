@@ -82,7 +82,7 @@ static void mission_clear_all(void){
 /**
  *
  */
-static Mail* send_tmo(Mail* outmailp, bool_t retry){
+static Mail* send_with_tmo(Mail* outmailp, bool_t retry){
   msg_t status = RDY_RESET;
   msg_t msg = 0;
   uint32_t retry_cnt;
@@ -123,7 +123,7 @@ static MAVLINK_WPM_STATES mission_item_request_handler(Mail* mailp){
     mission_out_mail.payload = &mavlink_mission_item_struct;
     mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_ITEM;
 
-    mailp = send_tmo(&mission_out_mail, TRUE);
+    mailp = send_with_tmo(&mission_out_mail, TRUE);
   }while((mailp->invoice == MAVLINK_MSG_ID_MISSION_REQUEST) && (mailp != NULL));
 
   return MAVLINK_WPM_STATE_IDLE;
@@ -140,9 +140,9 @@ static MAVLINK_WPM_STATES mission_request_list_handler(Mail* mailp){
   mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_COUNT;
 
   if (mavlink_mission_count_struct.count == 0)
-    mailp = send_tmo(&mission_out_mail, FALSE);
+    mailp = send_with_tmo(&mission_out_mail, FALSE);
   else
-    mailp = send_tmo(&mission_out_mail, TRUE);
+    mailp = send_with_tmo(&mission_out_mail, TRUE);
 
   if (mailp != NULL)
     return mission_item_request_handler(mailp);
@@ -168,7 +168,7 @@ static bool_t mission_count_handler(Mail* mailp){
     mission_out_mail.payload = &mavlink_mission_request_struct;
     mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_REQUEST;
 
-    mailp = send_tmo(&mission_out_mail, TRUE);
+    mailp = send_with_tmo(&mission_out_mail, TRUE);
     if ((mailp != NULL) && (mailp->invoice == MAVLINK_MSG_ID_MISSION_ITEM)){
       save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, mailp->payload);
       mavlink_mission_request_struct.seq++;

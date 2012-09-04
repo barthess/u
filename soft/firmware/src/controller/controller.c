@@ -73,6 +73,7 @@ void ControllerInit(void){
     break;
 
   case MAV_TYPE_FIXED_WING:
+    chDbgPanic("Fixed wing mode not implemented yet");
     if (ControllerFixedWingInit() == NULL)
       chDbgPanic("Can not allocate memory");
     break;
