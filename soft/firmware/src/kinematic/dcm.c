@@ -59,10 +59,10 @@ extern float dcmEst[3][3];
 static float mag_modulus = 0;
 
 /* accelerometer data weight relative to gyro's weight of 1 */
-static float *accweight = NULL;
+static float const *accweight = NULL;
 
 /* magnetometer data weight relative to gyro's weight of 1. */
-static float *magweight = NULL;
+static float const *magweight = NULL;
 
 /*
  *******************************************************************************

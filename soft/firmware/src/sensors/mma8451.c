@@ -29,9 +29,9 @@ static uint8_t rxbuf[ACCEL_RX_DEPTH];
 static uint8_t txbuf[ACCEL_TX_DEPTH];
 
 /* указатели в структуре с параметрами */
-static int32_t  *xoffset, *yoffset, *zoffset;
-static int32_t  *xpol,    *ypol,    *zpol;
-static uint32_t *xsens,   *ysens,   *zsens;
+static int32_t const  *xoffset, *yoffset, *zoffset;
+static int32_t const  *xpol,    *ypol,    *zpol;
+static uint32_t const *xsens,   *ysens,   *zsens;
 
 /*
  *******************************************************************************

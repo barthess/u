@@ -25,7 +25,7 @@ static SerialConfig xbee_ser_cfg = {
     USART_CR3_CTSE | USART_CR3_RTSE,
 };
 
-static uint32_t *sh_enable;
+static uint32_t const *sh_enable;
 
 /*
  *******************************************************************************

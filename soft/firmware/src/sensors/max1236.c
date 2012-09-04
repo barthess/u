@@ -37,7 +37,7 @@ static uint8_t txbuf[MAX1236_TX_DEPTH];
 /**/
 static alphabeta_instance_q31 press_diff_filter;
 
-static uint32_t *flen_pres_dyn;
+static uint32_t const *flen_pres_dyn;
 
 /*
  *******************************************************************************

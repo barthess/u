@@ -30,7 +30,7 @@ extern BinarySemaphore servo_updated_sem;
 static pid_f32_t speed_pid;
 static pid_f32_t heading_pid;
 
-static float *pulse2m;
+static float const *pulse2m;
 
 /*
  ******************************************************************************

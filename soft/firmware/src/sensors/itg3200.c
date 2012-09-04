@@ -40,8 +40,8 @@ static uint32_t zero_cnt = 0;
 static uint32_t awg_samplescnt;
 
 /* указатели на коэффициенты */
-static float   *xsens, *ysens, *zsens;
-static int32_t *xpol,  *ypol,  *zpol;
+static float const   *xsens, *ysens, *zsens;
+static int32_t const *xpol,  *ypol,  *zpol;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;

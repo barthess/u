@@ -44,7 +44,7 @@ static uint32_t up = 0, ut = 0;
 static alphabeta_instance_q31 bmp085_filter;
 
 /* length of filter */
-static uint32_t *flen_pres_stat;
+static uint32_t const *flen_pres_stat;
 
 /*
  *******************************************************************************

@@ -44,7 +44,7 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n);
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t *flen_adc;      /* length of filter for ADC */
+static uint32_t const *flen_adc;      /* length of filter for ADC */
 
 static ADCConfig adccfg; // dummy for STM32
 

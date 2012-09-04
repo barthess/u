@@ -29,12 +29,12 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t *bat_cap;       /* battery capacitance in A*mS */
-static uint32_t *bat_fill;      /* battery filling in A*mS */
-static uint32_t *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-static uint32_t *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
-static uint32_t *adc_sv_gain;   /* secondary voltage gain */
-static uint32_t *adc_mv_gain;   /* main voltage gain */
+static uint32_t const *bat_cap;       /* battery capacitance in A*mS */
+static uint32_t const *bat_fill;      /* battery filling in A*mS */
+static uint32_t const *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
+static uint32_t const *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
+static uint32_t const *adc_sv_gain;   /* secondary voltage gain */
+static uint32_t const *adc_mv_gain;   /* main voltage gain */
 
 /*
  *******************************************************************************

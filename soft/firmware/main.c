@@ -35,7 +35,7 @@ BinarySemaphore servo_updated_sem;
 struct tm gps_timp;
 
 /* pointer to "timezone" value. Initialized in timekeeping.c */
-int32_t *timezone = NULL;
+int32_t const *timezone = NULL;
 
 /* some global flags */
 uint32_t GlobalFlags = 0;

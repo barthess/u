@@ -105,7 +105,7 @@ static const ServoConfig servocfg_array[] = {
 static int32_t servoblock_index = -1;
 
 /* размер мертвой зоны, актуален только для ручного управления */
-static uint32_t *car_dz;
+static uint32_t const *car_dz;
 
 /*
  *******************************************************************************
