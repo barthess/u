@@ -5,9 +5,9 @@
  * DEFINES
  ******************************************************************************
  */
-/* approximately define calculate retry count
- * stabilization updates syncronously with servos: every 20 ms
- * we nee timout 0.5S */
+/* define approximated retry count
+ * stabilization updates syncronously with servos: every 20 ms and
+ * we nee timout 500mS */
 #define SPEED_UPDATE_RETRY  (500 / 20)
 
 /*
@@ -105,12 +105,12 @@ static msg_t StabThread(void* arg){
   uint32_t heading = 0;
   float target_trip = 0;
   float speed = 0;
-  float *cminpulse;
+  float *pulse2m;
   msg_t status = RDY_RESET;
   msg_t tmp = 0;
 
   pid_f32_t spd_pid;
-  cminpulse = ValueSearch("SPD_cminpulse");
+  pulse2m        = ValueSearch("SPD_pulse2m");
   spd_pid.iGain  = ValueSearch("SPD_iGain");
   spd_pid.pGain  = ValueSearch("SPD_pGain");
   spd_pid.dGain  = ValueSearch("SPD_dGain");
@@ -129,14 +129,14 @@ static msg_t StabThread(void* arg){
         /* load new task */
         speed = ((test_point_t*)tmp)->speed;
         heading = ((test_point_t*)tmp)->heading;
-        target_trip = bkpOdometer * *cminpulse;
-        target_trip += ((test_point_t*)tmp)->trip * 100 * *cminpulse;
+        target_trip = bkpOdometer * *pulse2m;
+        target_trip += ((test_point_t*)tmp)->trip * *pulse2m;
       }
       else
-        target_trip = bkpOdometer * *cminpulse;/* task canselled. Stopping. */
+        target_trip = bkpOdometer * *pulse2m;/* task canselled. Stopping. */
     }
 
-    if ((bkpOdometer * *cminpulse) >= target_trip)
+    if ((bkpOdometer * *pulse2m) >= target_trip)
       speed = 0; /* task finished. Stopping. */
 
     stab_speed_rover(&spd_pid, comp_data.groundspeed, speed);

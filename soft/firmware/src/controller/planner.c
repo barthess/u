@@ -215,11 +215,6 @@ static MAVLINK_WPM_STATES msg_handler(Mail* mailp){
   return status;
 }
 
-
-
-
-
-
 /**
  * Planner thread.
  * process mission commands from ground

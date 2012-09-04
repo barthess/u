@@ -3,6 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: coeff to calc from pulses to path must be in SI units
 // TODO: thread for PIDs
 // TODO: waypoints ACK message with deeper parameter checks.
 // TODO: disarming safety switch

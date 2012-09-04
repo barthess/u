@@ -222,6 +222,10 @@ MCU  = cortex-m4 -lm
 TRGT = arm-none-eabi-
 CC   = $(TRGT)gcc
 CPPC = $(TRGT)g++
+#TRGT = ""
+#CC   = $(TRGT)clang
+#CPPC = $(TRGT)clang++
+
 # Enable loading with g++ only if you need C++ runtime support.
 # NOTE: You can use C++ even without C++ support if you are careful. C++
 #       runtime support makes code size explode.

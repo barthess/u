@@ -27,7 +27,7 @@ extern MemoryHeap ThdHeap;
  ******************************************************************************
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-static float      *cminpulse;
+static float      *pulse2m;
 
 /*
  *******************************************************************************
@@ -51,7 +51,7 @@ float calc_ground_rover_speed(uint32_t rtt){
   if (uS == 0)/* prevent division by zero */
     return 3;
 
-  float k = *cminpulse;
+  float k = *pulse2m;
   float t = ((float)uS / 10000.0);
   return k / t;
 }
@@ -112,7 +112,7 @@ static msg_t ControllerThread(void* arg){
  */
 Thread *ControllerGroundRoverInit(void){
 
-  cminpulse = ValueSearch("SPD_cminpulse");
+  pulse2m = ValueSearch("SPD_pulse2m");
 
   /* reset filter */
   uint32_t i = 0;

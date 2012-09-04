@@ -190,9 +190,9 @@ const GlobalParam_t global_data[] = {
   {"FLEN_reserved3",  {.u32 = 0},          &gd_val[102],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
   {"FLEN_reserved4",  {.u32 = 0},          &gd_val[103],          {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
 
-  /* multiply odometer pulses count to this coeff to get trip in cm
-   * coarse value is 5.555555 */
-  {"SPD_cminpulse",   {.f32 = 2.0},        &gd_val[106],          {.f32 = 10.0},     MAVLINK_TYPE_FLOAT},
+  /* multiply odometer pulses count to this coeff to get trip in m
+   * coarse value is 0.05555555 */
+  {"SPD_pulse2m",     {.f32 = 0.0},        &gd_val[106],          {.f32 = 1.0},      MAVLINK_TYPE_FLOAT},
   /* pid coefficients for speed control */
   {"SPD_iGain",       {.f32 = 0},          &gd_val[107],          {.f32 = 1.0},      MAVLINK_TYPE_FLOAT},
   {"SPD_pGain",       {.f32 = 0},          &gd_val[108],          {.f32 = 200.0},    MAVLINK_TYPE_FLOAT},
