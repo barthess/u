@@ -146,7 +146,7 @@ static msg_t StabThread(void* arg){
 
 Thread* StabInit(void){
 
-  pulse2m          = ValueSearch("SPD_pulse2m");
+  pulse2m = ValueSearch("SPD_pulse2m");
 
   speed_pid.iGain  = ValueSearch("SPD_iGain");
   speed_pid.pGain  = ValueSearch("SPD_pGain");

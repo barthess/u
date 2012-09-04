@@ -4,6 +4,7 @@
  */
 
 // TODO: thread for PIDs
+// TODO: simple WPs_cli instead of controller_cli
 // TODO: waypoints ACK message with deeper parameter checks.
 // TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.

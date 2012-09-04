@@ -235,27 +235,6 @@ static msg_t PlannerThread(void* arg){
   return 0;
 }
 
-/**
- * 1) decide if task complete or not
- * 2) take new task from EEPROM
- * 3) place new task in message_box[1] for stabilization thread
- */
-static WORKING_AREA(NavThreadWA, 256);
-static msg_t NavThread(void* arg){
-  chRegSetThreadName("Nav");
-  (void)arg;
-//  msg_t status = RDY_RESET;
-//  msg_t msg = 0;
-
-  while (TRUE) {
-    chThdSleepMilliseconds(20);
-  }
-  return 0;
-}
-
-
-
-
 /*
  ******************************************************************************
  * EXPORTED FUNCTIONS
@@ -272,15 +251,6 @@ Thread* PlannerInit(void){
                         sizeof(PlannerThreadWA),
                         CONTROLLER_THREADS_PRIO,
                         PlannerThread,
-                        NULL);
-  if (tp == NULL)
-    chDbgPanic("Can not allocate memory");
-
-  tp = NULL;
-  tp = chThdCreateStatic(NavThreadWA,
-                        sizeof(NavThreadWA),
-                        CONTROLLER_THREADS_PRIO,
-                        NavThread,
                         NULL);
   if (tp == NULL)
     chDbgPanic("Can not allocate memory");

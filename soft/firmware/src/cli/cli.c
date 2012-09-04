@@ -35,7 +35,7 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
 
 static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,     NULL,  "clear screen"},
-    {"controller",&controller_clicmd,NULL,  "set controller parameters. Test PIDs"},
+    //{"controller",&controller_clicmd,NULL,  "set controller parameters. Test PIDs"},
     {"date",      &date_cmd,         NULL,  "print and set current date"},
     {"echo",      &echo_clicmd,      NULL,  "echo it's input to terminal"},
     {"help",      &help_clicmd,      NULL,  "this message"},

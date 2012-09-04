@@ -84,7 +84,7 @@ void _controller_cli_fixed_wing(const char * const * argv){
  *
  */
 void _controller_cli_get_speed(const char * val){
-  int32_t sscanf_status;
+//  int32_t sscanf_status;
 
 //  sscanf_status = sscanf(val, "%f", &test_point.speed);
 //  if (sscanf_status == 1){
@@ -103,7 +103,7 @@ void _controller_cli_get_speed(const char * val){
  *
  */
 void _controller_cli_get_heading(const char * val){
-  int32_t sscanf_status;
+//  int32_t sscanf_status;
 
 //  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.heading);
 //  if (sscanf_status == 1){
@@ -122,7 +122,7 @@ void _controller_cli_get_heading(const char * val){
  *
  */
 void _controller_cli_get_trip(const char * val){
-  int32_t sscanf_status;
+//  int32_t sscanf_status;
 
 //  sscanf_status = sscanf(val, "%u", (unsigned int*)&test_point.trip);
 //  if (sscanf_status == 1){

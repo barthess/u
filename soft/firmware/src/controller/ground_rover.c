@@ -26,7 +26,7 @@ extern MemoryHeap ThdHeap;
  ******************************************************************************
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-static float *pulse2m;
+static float const *pulse2m;
 
 /*
  *******************************************************************************
@@ -118,14 +118,15 @@ Thread *ControllerGroundRoverInit(void){
     tacho_filter_buf[i] = 0;
 
   ServoInit();
-  PlannerInit();
-  StabInit();
-
   Servo4Set(128);
   Servo5Set(128);
   Servo6Set(128);
   Servo7Set(128);
   ServoCarThrustSet(128);
+
+  PlannerInit();
+  NavInit();
+  StabInit();
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
