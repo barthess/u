@@ -131,7 +131,6 @@ Thread *ControllerGroundRoverInit(void){
   ServoCarThrustSet(128);
 
   PlannerInit();
-  NavInit();
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),

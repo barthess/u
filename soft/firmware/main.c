@@ -5,9 +5,8 @@
 
 // TODO: controller thread must fork stabilization thread on command from groound
 // TODO: MISSION_SET_CURRENT handler
-// TODO: remove nav.c module
 // TODO: simple WPs_cli instead of controller_cli
-// TODO: waypoints ACK message with must be sent on deeper parameter checks.
+// TODO: before waypoints ACK message there must be much deeper parameter checks.
 
 // TODO: disarming safety switch
 // TODO: speed autotuning
