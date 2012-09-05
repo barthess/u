@@ -19,7 +19,6 @@
 //extern RawData raw_data;
 extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
-extern mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
 
 /*
  ******************************************************************************
@@ -27,8 +26,8 @@ extern mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
  ******************************************************************************
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-static float const *pulse2m;
 static uint16_t WpSeqOverwrite = 0;
+static float const *pulse2m;
 
 /*
  *******************************************************************************

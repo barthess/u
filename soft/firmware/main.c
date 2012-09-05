@@ -4,12 +4,11 @@
  */
 
 // TODO: controller thread must fork stabilization thread on command from groound
-// TODO: MISSION_SET_CURRENT handler
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
-// TODO: disarming safety switch
 // TODO: speed autosetting
+// TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
