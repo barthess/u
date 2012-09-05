@@ -14,6 +14,7 @@ struct ServoConfig{
 };
 typedef struct ServoConfig ServoConfig;
 
+#define ServoCarYawSet(v) {Servo7Set(v);}
 
 void Servo0Set(uint8_t angle);
 void Servo1Set(uint8_t angle);

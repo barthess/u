@@ -32,13 +32,14 @@ struct CompensatedData{
   int16_t   baro_altitude;      /* высота по барометру bmp085. Целое (dm)*/
   uint32_t  baro_filtered;      /* прошедшие через фильтр значение. Паскали */
   uint16_t  air_speed;          /* воздушная скорость. Фиксированная точка. (mm/s)*/
-  int16_t   temp_onboard;       /* температура c tmp75. 0.01 градуса. */
+  int16_t   temp_onboard;       /* температура c tmp75. (цельсий / 100). */
   // напряжение и ток бортовой сети
   uint16_t  main_voltage;      // mV
   uint32_t  main_current;      // mA
   uint16_t  secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
 
-  float     groundspeed;        ///< Current ground speed in m/s
+  float     groundspeed;        // Current ground speed in m/s
+  float     heading;            // Current heading in radians
 };
 
 

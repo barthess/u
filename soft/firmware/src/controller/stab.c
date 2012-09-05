@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "uav.h"
 
 /*
@@ -16,11 +18,15 @@
  ******************************************************************************
  */
 //extern RawData raw_data;
-extern MemoryHeap ThdHeap;
-extern CompensatedData comp_data;
-extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
-extern Mailbox speedometer_mb;
-extern BinarySemaphore servo_updated_sem;
+extern MemoryHeap         ThdHeap;
+extern CompensatedData    comp_data;
+extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
+extern Mailbox            speedometer_mb;
+extern BinarySemaphore    servo_updated_sem;
+extern Mailbox            tolink_mb;
+
+extern mavlink_mission_current_t      mavlink_mission_current_struct;
+extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
 
 /*
  ******************************************************************************
@@ -29,8 +35,12 @@ extern BinarySemaphore servo_updated_sem;
  */
 static pid_f32_t speed_pid;
 static pid_f32_t heading_pid;
+static float x_prev_wp = 0, y_prev_wp = 0;
 
 static float const *pulse2m;
+
+static Mail mission_current_mail = {NULL, MAVLINK_MSG_ID_MISSION_CURRENT, NULL};
+static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL};
 
 /*
  ******************************************************************************
@@ -49,27 +59,53 @@ static float const *pulse2m;
 /**
  *
  */
-static void keep_speed(pid_f32_t *spd_pid, float speed, float desired){
-  float drive = 0;
-
-  drive = UpdatePID(spd_pid, desired - speed, speed);
-  if (drive < 0)
-    drive = 0;
-
-  ServoCarThrustSet(float2thrust(drive));
+static void broadcast_mission_current(uint16_t seq){
+  mavlink_mission_current_struct.seq = seq;
+  mission_current_mail.invoice = MAVLINK_MSG_ID_MISSION_CURRENT;
+  mission_current_mail.payload = &mavlink_mission_current_struct;
+  chMBPost(&tolink_mb, (msg_t)&mission_current_mail, TIME_IMMEDIATE);
 }
 
 /**
  *
  */
-static void keep_heading(uint32_t heading){
-  (void)heading;
+static void broadcast_mission_item_reached(uint16_t seq){
+  mavlink_mission_item_reached_struct.seq = seq;
+  mission_item_reached_mail.invoice = MAVLINK_MSG_ID_MISSION_ITEM_REACHED;
+  mission_item_reached_mail.payload = &mavlink_mission_item_reached_struct;
+  chMBPost(&tolink_mb, (msg_t)&mission_item_reached_mail, TIME_IMMEDIATE);
+}
+
+/**
+ *
+ */
+static void keep_speed(pid_f32_t *spd_pidp, float current, float desired){
+  float impact = 0;
+
+  impact = UpdatePID(spd_pidp, desired - current, current);
+  if (impact < 0)
+    impact = 0;
+
+  ServoCarThrustSet(float2thrust(impact));
+}
+
+/**
+ *
+ */
+static void keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
+  float impact = 0;
+
+  impact = UpdatePID(hdng_pidp, desired - current, current);
+  if (impact < 0)
+    impact = 0;
+
+  ServoCarYawSet(float2servo(impact));
 }
 
 /**
  * Calculate current ground speed from tachometer pulses
  */
-static void update_speed(uint32_t *retry){
+static void measure_speed(uint32_t *retry){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -92,6 +128,40 @@ static void update_speed(uint32_t *retry){
 }
 
 /**
+ * Load waypoint from EEPROM and calculate desired values.
+ */
+static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
+  mavlink_mission_item_t wp;
+  bool_t status = WP_FAILED;
+
+  /* get current waypoint */
+  status = get_waypoint_from_eeprom(seq, &wp);
+  if (status != WP_SUCCESS)
+    return WP_FAILED;
+  else{
+    float delta_x = x_prev_wp - wp.x;
+    float delta_y = y_prev_wp - wp.y;
+    *heading = atan2f(delta_x, delta_y);
+    *target_trip = sqrtf(delta_x * delta_x + delta_y * delta_y);
+  }
+
+  /* save values for next iteration */
+  x_prev_wp = wp.x;
+  y_prev_wp = wp.y;
+  return WP_SUCCESS;
+}
+
+/**
+ *
+ */
+bool_t is_wp_reached(float target_trip){
+  if ((bkpOdometer * *pulse2m) >= target_trip)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+/**
  * Stabilization thread.
  * 1) perform PIDs in infinite loop synchronized with servo PWM
  * 2) every cycle tries to get new task from message_box[1]
@@ -101,40 +171,37 @@ static void update_speed(uint32_t *retry){
  */
 static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
-  chRegSetThreadName("Stab");
+  chRegSetThreadName("StabGroundRover");
   (void)arg;
 
   uint32_t speed_retry_cnt = 0;
+  float target_trip = bkpOdometer * *pulse2m; /* current position is starting point */
+  float desired_heading = 0;
+  float desired_speed = 1.5;
+  uint16_t seq = 0;
+  uint16_t wp_cnt = get_waypoint_count();
 
-  uint32_t heading = 0;
-  float target_trip = 0;
-  float speed = 0;
-  msg_t status = RDY_RESET;
-  msg_t tmp = 0;
+  /* are there some waypoints on board? */
+  if (wp_cnt == 0)
+    chThdExit(RDY_RESET);
 
-  while (TRUE) {
-    chBSemWait(&servo_updated_sem);
-    update_speed(&speed_retry_cnt);
+  do {
+    parse_next_wp(seq, &desired_heading, &target_trip);
+    broadcast_mission_current(seq);
 
-    //status = chMBFetch(&testpoint_mb, &tmp, TIME_IMMEDIATE);
-    if (status == RDY_OK){
-      if (tmp != (msg_t)NULL){
-        /* load new task */
-//        speed = ((test_point_t*)tmp)->speed;
-//        heading = ((test_point_t*)tmp)->heading;
-//        target_trip = bkpOdometer * *pulse2m;
-//        target_trip += ((test_point_t*)tmp)->trip * *pulse2m;
-      }
-      else
-        target_trip = bkpOdometer * *pulse2m;/* task canselled. Stopping. */
+    while (!is_wp_reached(target_trip)){
+      chBSemWait(&servo_updated_sem);
+      measure_speed(&speed_retry_cnt);
+      keep_speed(&speed_pid, comp_data.groundspeed, desired_speed);
+      keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 
-    if ((bkpOdometer * *pulse2m) >= target_trip)
-      speed = 0; /* task finished. Stopping. */
+    broadcast_mission_item_reached(seq);
+    seq++;
+  } while (seq < wp_cnt);
 
-    keep_speed(&speed_pid, comp_data.groundspeed, speed);
-    keep_heading(heading);
-  }
+  /* mission complete */
+  chThdExit(RDY_OK);
   return 0;
 }
 

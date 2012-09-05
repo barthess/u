@@ -117,7 +117,7 @@ void _servo_cli_ground_rover(const char * const * argv){
     if (v == -1)
       _servo_cli_err();
     else
-      Servo7Set(v);
+      ServoCarYawSet(v);
   }
   else
     _servo_cli_err();

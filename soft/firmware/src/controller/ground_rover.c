@@ -8,7 +8,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define CONTROLLER_TMO      MS2ST(500)
+#define CONTROLLER_TMO      MS2ST(50)
 #define MEDIAN_FILTER_LEN   3
 
 /*
@@ -81,6 +81,10 @@ static msg_t ControllerThread(void* arg){
   Mail* mailp = NULL;
   msg_t tmp = 0;
   msg_t status = 0;
+  Thread *stab_tp = NULL;
+
+  /* launch stabilization thread */
+  stab_tp = StabInit();
 
   while (TRUE) {
     status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
@@ -91,14 +95,16 @@ static msg_t ControllerThread(void* arg){
       case MAVLINK_MSG_ID_MANUAL_CONTROL:
         manual_control_handler(mailp->payload);
         break;
-
       case MAVLINK_MSG_ID_SET_MODE:
         set_mode_handler(mailp->payload);
         break;
       }
-
       chBSemSignal(mailp->semp);
     }
+
+    /* collect memory from ended stabilization thread */
+    if (stab_tp->p_state == THD_STATE_FINAL)
+      chThdWait(stab_tp);
   }
   return 0;
 }
@@ -126,7 +132,6 @@ Thread *ControllerGroundRoverInit(void){
 
   PlannerInit();
   NavInit();
-  StabInit();
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),

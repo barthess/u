@@ -62,13 +62,13 @@ bool_t get_waypoint_from_eeprom(uint16_t seq, mavlink_mission_item_t *wp){
 
   chFileStreamSeek(&EepromFile, offset);
   if (chFileStreamGetPosition(&EepromFile) != offset)
-    chDbgPanic("seek failed");
+    chDbgPanic("seek failed"); return WP_FAILED;
 
   status = chFileStreamRead(&EepromFile, (uint8_t*)wp, wpsize);
   if (status < wpsize)
-    chDbgPanic("read failed");
+    chDbgPanic("read failed"); return WP_FAILED;
 
-  return 0;
+  return WP_SUCCESS;
 }
 
 /**

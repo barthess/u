@@ -17,7 +17,7 @@
  ******************************************************************************
  */
 //extern mavlink_system_t          mavlink_system_struct;
-extern Mailbox                   tolink_mb;
+extern Mailbox                    tolink_mb;
 
 //extern RawData raw_data;
 //extern MemoryHeap ThdHeap;
@@ -26,7 +26,7 @@ extern Mailbox                   tolink_mb;
 //extern Mailbox speedometer_mb;
 //extern BinarySemaphore servo_updated_sem;
 //extern Mailbox testpoint_mb;
-extern Mailbox mission_mb;
+extern Mailbox                    mission_mb;
 
 extern mavlink_mission_count_t    mavlink_mission_count_struct;
 extern mavlink_mission_item_t     mavlink_mission_item_struct;

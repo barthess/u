@@ -31,6 +31,17 @@
  ******************************************************************************
  ******************************************************************************
  */
+
+/**
+ * Set the mission item with sequence number seq as current item.
+ * This means that the MAV will continue to this mission item on the
+ * shortest path (not following the mission items in-between)
+ */
+bool_t nav_set_current_wp(uint16_t seq){
+  (void)seq;
+  return WP_FAILED;//stub
+}
+
 /**
  * 1) decide if task complete or not
  * 2) take new task from EEPROM

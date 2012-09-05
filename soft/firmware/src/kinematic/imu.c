@@ -23,7 +23,7 @@ extern uint32_t imu_update_period;
 extern Mailbox logwriter_mb;
 extern uint32_t GlobalFlags;
 
-uint32_t imu_step = 0;                /* incremented on each call to imu_update */
+uint32_t imu_step = 0;                /* increments on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
                       {0,0,1}};   /* estimated DCM matrix */
@@ -56,8 +56,9 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
   /* from DCM */
-  //mavlink_attitude_struct->yaw            = atan2f(Rxy, -Rxx);
-  mavlink_attitude_struct->yaw = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
+  //comp_data.heading = atan2f(Rxy, -Rxx);
+  comp_data.heading = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
+  mavlink_attitude_struct->yaw = comp_data.heading;
 
   /* or from Z gyro */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;

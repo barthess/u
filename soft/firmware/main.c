@@ -3,10 +3,14 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: thread for PIDs
+// TODO: controller thread must fork stabilization thread on command from groound
+// TODO: MISSION_SET_CURRENT handler
+// TODO: remove nav.c module
 // TODO: simple WPs_cli instead of controller_cli
-// TODO: waypoints ACK message with deeper parameter checks.
+// TODO: waypoints ACK message with must be sent on deeper parameter checks.
+
 // TODO: disarming safety switch
+// TODO: speed autotuning
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.
