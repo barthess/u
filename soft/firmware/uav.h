@@ -16,7 +16,6 @@
 #include "cli.h"
 #include "cli_cmd.h"
 #include "controller.h"
-//#include "controller_cli.h"
 #include "dsp.h"
 #include "eeprom.h"
 #include "exti_local.h"
@@ -52,6 +51,7 @@
 #include "tmp75.h"
 #include "utils.h"
 #include "wps.h"
+#include "wps_cli.h"
 #include "wps_persistant.h"
 
 /* Heap size for dynamic thread creation */

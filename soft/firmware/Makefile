@@ -113,8 +113,9 @@ CSRC = $(PORTSRC) \
        src/mavlink_local/param.c \
        src/mavlink_local/param_cli.c \
        src/mavlink_local/param_persistant.c \
-       src/mavlink_local/wps_persistant.c \
        src/mavlink_local/wps.c \
+       src/mavlink_local/wps_cli.c \
+       src/mavlink_local/wps_persistant.c \
        src/timekeeping.c \
        src/sensors/gps.c \
        src/sensors/adc_local.c \
