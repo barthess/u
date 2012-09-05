@@ -19,6 +19,7 @@
 //extern RawData raw_data;
 extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
+extern mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
 
 /*
  ******************************************************************************
@@ -27,6 +28,7 @@ extern MemoryHeap ThdHeap;
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 static float const *pulse2m;
+static uint16_t WpSeqOverwrite = 0;
 
 /*
  *******************************************************************************
@@ -57,17 +59,26 @@ float calc_ground_rover_speed(uint32_t rtt){
 /**
  *
  */
-void manual_control_handler(mavlink_manual_control_t *mavlink_manual_control_struct){
+static void manual_control_handler(mavlink_manual_control_t *mc){
   uint32_t v = 0;
 
-  if (mavlink_manual_control_struct->thrust_manual == 1){
-    v = float2thrust(mavlink_manual_control_struct->thrust);
+  if (mc->thrust_manual == 1){
+    v = float2thrust(mc->thrust);
     ServoCarThrustSet(v);
   }
-  if (mavlink_manual_control_struct->yaw_manual == 1){
-    v = float2servo(mavlink_manual_control_struct->yaw);
+  if (mc->yaw_manual == 1){
+    v = float2servo(mc->yaw);
     Servo7Set(v);
   }
+}
+
+/**
+ * Set autopilot mode logic.
+ */
+static void set_current_handler(mavlink_mission_set_current_t *sc){
+  chSysLock();
+  WpSeqOverwrite = sc->seq;
+  chSysUnlock();
 }
 
 /**
@@ -98,6 +109,9 @@ static msg_t ControllerThread(void* arg){
       case MAVLINK_MSG_ID_SET_MODE:
         set_mode_handler(mailp->payload);
         break;
+      case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+        set_current_handler(mailp->payload);
+        break;
       }
       chBSemSignal(mailp->semp);
     }
@@ -115,6 +129,8 @@ static msg_t ControllerThread(void* arg){
  *******************************************************************************
  */
 Thread *ControllerGroundRoverInit(void){
+
+  WpSeqOverwrite = 0;
 
   pulse2m = ValueSearch("SPD_pulse2m");
 
@@ -136,7 +152,7 @@ Thread *ControllerGroundRoverInit(void){
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
-                            NULL);
+                            &WpSeqOverwrite);
   if (tp == NULL)
     chDbgPanic("Can not allocate memory");
 

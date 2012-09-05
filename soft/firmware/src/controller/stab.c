@@ -172,7 +172,8 @@ bool_t is_wp_reached(float target_trip){
 static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
-  (void)arg;
+
+  uint16_t *WpSeqOverwrite_p = arg;
 
   uint32_t speed_retry_cnt = 0;
   float target_trip = bkpOdometer * *pulse2m; /* current position is starting point */
@@ -190,14 +191,26 @@ static msg_t StabThread(void* arg){
     broadcast_mission_current(seq);
 
     while (!is_wp_reached(target_trip)){
+      if (*WpSeqOverwrite_p != 0)
+        break; /* exit from while*/
+
       chBSemWait(&servo_updated_sem);
       measure_speed(&speed_retry_cnt);
       keep_speed(&speed_pid, comp_data.groundspeed, desired_speed);
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 
-    broadcast_mission_item_reached(seq);
-    seq++;
+    if (*WpSeqOverwrite_p == 0){
+      broadcast_mission_item_reached(seq);
+      seq++;
+    }
+    else{
+      seq = *WpSeqOverwrite_p;
+      chSysLock();
+      *WpSeqOverwrite_p = 0;
+      chSysUnlock();
+    }
+
   } while (seq < wp_cnt);
 
   /* mission complete */
