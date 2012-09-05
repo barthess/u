@@ -35,6 +35,8 @@ extern mavlink_mission_count_t       mavlink_mission_count_struct;
 extern mavlink_mission_item_t        mavlink_mission_item_struct;
 extern mavlink_mission_request_t     mavlink_mission_request_struct;
 extern mavlink_mission_ack_t         mavlink_mission_ack_struct;
+extern mavlink_mission_current_t     mavlink_mission_current_struct;
+extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
 
 /*
  ******************************************************************************
@@ -101,8 +103,6 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
     break;
 
 
-
-
   case MAVLINK_MSG_ID_MISSION_COUNT:
     len = mavlink_msg_mission_count_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_count_struct);
     break;
@@ -115,9 +115,12 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
   case MAVLINK_MSG_ID_MISSION_ACK:
     len = mavlink_msg_mission_ack_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_ack_struct);
     break;
-
-
-
+  case MAVLINK_MSG_ID_MISSION_CURRENT:
+    len = mavlink_msg_mission_current_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_current_struct);
+    break;
+  case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
+    len = mavlink_msg_mission_item_reached_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_item_reached_struct);
+    break;
 
   default:
     chDbgPanic("ID not defined");

@@ -9,7 +9,7 @@
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
 // TODO: disarming safety switch
-// TODO: speed autotuning
+// TODO: speed autosetting
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Magnetometer fusion with DCM, not accelerometer.

@@ -18,6 +18,8 @@ names = [
         ("mission_item",        "MISSIONPLANNER"),
         ("mission_request",     "MISSIONPLANNER"),
         ("mission_ack",         "MISSIONPLANNER"),
+        ("mission_current",     "MISSIONPLANNER"),
+        ("mission_item_reached","MISSIONPLANNER"),
         ]
 
 for i in names:
