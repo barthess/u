@@ -57,16 +57,20 @@ void save_waypoint_count(uint16_t cnt){
  */
 bool_t get_waypoint_from_eeprom(uint16_t seq, mavlink_mission_item_t *wp){
   uint32_t status = 0;
-  const size_t wpsize = sizeof(mavlink_mission_item_t);
+  size_t wpsize = sizeof(mavlink_mission_item_t);
   fileoffset_t offset = EEPROM_MISSION_START + seq * wpsize;
 
   chFileStreamSeek(&EepromFile, offset);
-  if (chFileStreamGetPosition(&EepromFile) != offset)
-    chDbgPanic("seek failed"); return WP_FAILED;
+  if (chFileStreamGetPosition(&EepromFile) != offset){
+    chDbgPanic("seek failed");
+    return WP_FAILED;
+  }
 
   status = chFileStreamRead(&EepromFile, (uint8_t*)wp, wpsize);
-  if (status < wpsize)
-    chDbgPanic("read failed"); return WP_FAILED;
+  if (status != wpsize){
+    chDbgPanic("read failed");
+    return WP_FAILED;
+  }
 
   return WP_SUCCESS;
 }

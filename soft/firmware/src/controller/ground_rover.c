@@ -112,12 +112,14 @@ static msg_t ControllerThread(void* arg){
         set_current_handler(mailp->payload);
         break;
       }
-      chBSemSignal(mailp->semp);
+      ReleaseMail(mailp);
     }
 
     /* collect memory from ended stabilization thread */
-    if (stab_tp->p_state == THD_STATE_FINAL)
+    if (stab_tp != NULL && stab_tp->p_state == THD_STATE_FINAL){
       chThdWait(stab_tp);
+      stab_tp = NULL;
+    }
   }
   return 0;
 }

@@ -2,8 +2,8 @@
  *
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
-
-// TODO: controller thread must fork stabilization thread on command from groound
+// TODO: refactor handle_cmd_preflight_storage to cmd_preflight_storage_handler
+// TODO: controller thread must fork stabilization thread on command (lift up) from groound
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 

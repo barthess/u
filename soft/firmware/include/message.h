@@ -27,7 +27,7 @@ struct Mail{
   BinarySemaphore *semp;
 };
 
-
+void ReleaseMail(Mail* mailp);
 void MsgInit(void);
 void MavInit(void);
 

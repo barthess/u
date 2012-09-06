@@ -25,6 +25,7 @@
 extern uint32_t GlobalFlags;
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
+extern Mailbox controller_mb;
 
 extern mavlink_system_t mavlink_system_struct;
 
@@ -121,12 +122,6 @@ void handle_cmd_preflight_storage(mavlink_command_long_t *mavlink_command_long_s
     status = load_params_from_eeprom();
   else if (mavlink_command_long_struct->param1 == 1)
     status = save_params_to_eeprom();
-
-//  if (mavlink_command_long_struct->param2 == 0)
-//    status = load_mission_from_eeprom();
-//  else if (mavlink_command_long_struct->param2 == 1)
-//    status = save_mission_to_eeprom();
-
   if (status != CH_SUCCESS)
     command_failed();
   else
@@ -144,7 +139,7 @@ void handle_cmd_do_set_mode(mavlink_command_long_t *mavlink_command_long_struct)
 }
 
 /**
- * прием и обработка комманд с земли
+ * parsing and execution of commands from ground
  */
 void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
 
@@ -181,6 +176,12 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
       handle_cmd_preflight_storage(mavlink_command_long_struct);
     break;
 
+  case (MAV_CMD_NAV_LOITER_UNLIM || MAV_CMD_NAV_RETURN_TO_LAUNCH ||
+        MAV_CMD_NAV_LAND || MAV_CMD_NAV_TAKEOFF ||  MAV_CMD_OVERRIDE_GOTO):
+    //chMBPost(&controller_mb);
+    //(&tolink_mb, (msg_t)(&mission_out_mail), PLANNER_POST_TMO);
+    break;
+
   /*
    *
    */
@@ -204,9 +205,8 @@ static msg_t CmdThread(void* arg){
     status = chMBFetch(&mavlink_command_long_mb, &tmp, TIME_INFINITE);
     (void)status;
     input_mail = (Mail*)tmp;
-    process_cmd((mavlink_command_long_t *)input_mail->payload);
-    input_mail->payload = NULL;
-    chBSemSignal(input_mail->semp);
+    process_cmd(input_mail->payload);
+    ReleaseMail(input_mail);
   }
 
   return 0;
