@@ -120,11 +120,15 @@ static MAVLINK_WPM_STATES mission_item_request_handler(Mail* mailp){
     mr = mailp->payload;
     get_waypoint_from_eeprom(mr->seq, &mavlink_mission_item_struct);
     mavlink_mission_item_struct.target_system = GROUND_STATION_ID;
+    mavlink_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
     mission_out_mail.payload = &mavlink_mission_item_struct;
     mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_ITEM;
 
     mailp = send_with_tmo(&mission_out_mail, TRUE);
-  }while((mailp->invoice == MAVLINK_MSG_ID_MISSION_REQUEST) && (mailp != NULL));
+    if (mailp->invoice != MAVLINK_MSG_ID_MISSION_REQUEST)
+      break;
+
+  }while((mailp != NULL) && (mailp->invoice == MAVLINK_MSG_ID_MISSION_REQUEST));
 
   return MAVLINK_WPM_STATE_IDLE;
 }
@@ -157,6 +161,7 @@ static bool_t mission_count_handler(Mail* mailp){
   mavlink_mission_count_t *mc = mailp->payload;
   uint16_t waypoint_cnt = mc->count;
   mavlink_mission_request_struct.seq = 0;
+  mavlink_mission_item_t *wp = NULL;
 
   /* start transaction from clean state to be safer */
   save_waypoint_count(0);
@@ -170,7 +175,8 @@ static bool_t mission_count_handler(Mail* mailp){
 
     mailp = send_with_tmo(&mission_out_mail, TRUE);
     if ((mailp != NULL) && (mailp->invoice == MAVLINK_MSG_ID_MISSION_ITEM)){
-      save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, mailp->payload);
+      wp = mailp->payload;
+      save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, wp);
       mavlink_mission_request_struct.seq++;
     }
     else
