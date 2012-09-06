@@ -32,6 +32,8 @@
  * 0...3        Lowest...Highest.
  */
 
+#define STM32F4xx_MCUCONF
+
 /*
  * HAL driver system settings.
  */
