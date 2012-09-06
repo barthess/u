@@ -99,8 +99,9 @@ static Mail* send_with_tmo(Mail* outmailp, bool_t retry){
 
     /* wait any data */
     status = chMBFetch(&mission_mb, &msg, PLANNER_RETRY_TMO);
-    if (status == RDY_OK)
+    if (status == RDY_OK){
       return (Mail*)msg;
+    }
     else
       retry_cnt--;
   }
@@ -119,6 +120,8 @@ static MAVLINK_WPM_STATES mission_item_request_handler(Mail* mailp){
 
     mr = mailp->payload;
     get_waypoint_from_eeprom(mr->seq, &mavlink_mission_item_struct);
+    ReleaseMail(mailp);
+
     mavlink_mission_item_struct.target_system = GROUND_STATION_ID;
     mavlink_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
     mission_out_mail.payload = &mavlink_mission_item_struct;
@@ -217,6 +220,7 @@ static MAVLINK_WPM_STATES msg_handler(Mail* mailp){
     //chDbgPanic("unimplemented");
     break;
   }
+  ReleaseMail(mailp);
 
   return status;
 }

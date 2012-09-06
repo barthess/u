@@ -141,10 +141,7 @@ uint16_t sort_output_mail(Mail *mailp, mavlink_message_t *mavlink_msgbuf){
   uint16_t len = 0;
 
   len = mavencoder(mailp->invoice, mavlink_system_struct.sysid, mavlink_msgbuf);
-  mailp->payload = NULL;
-
-  if (mailp->semp != NULL)
-    chBSemSignal(mailp->semp);
+  ReleaseMail(mailp);
   return len;
 }
 

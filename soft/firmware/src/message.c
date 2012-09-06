@@ -53,11 +53,11 @@ mavlink_mission_item_reached_t  mavlink_mission_item_reached_struct;
 /* mailbox buffers */
 static msg_t tolink_mb_buf[8];
 static msg_t mavlink_param_set_mb_buf[2];
-static msg_t controller_mb_buf[3];
+static msg_t controller_mb_buf[4];
 static msg_t mavlink_command_long_mb_buf[4];
 static msg_t logwriter_mb_buf[10];
 static msg_t speedometer_mb_buf[1];
-static msg_t mission_mb_buf[2];
+static msg_t mission_mb_buf[1];
 
 /*
  ******************************************************************************
@@ -79,6 +79,18 @@ static msg_t mission_mb_buf[2];
  *******************************************************************************
  */
 
+/**
+ * Signal processing thread about end of data processing
+ */
+void ReleaseMail(Mail* mailp){
+  mailp->payload = NULL;
+  if (mailp->semp != NULL)
+    chBSemSignal(mailp->semp);
+}
+
+/**
+ *
+ */
 void MsgInit(void){
   chMBInit(&tolink_mb,
       tolink_mb_buf,
@@ -103,6 +115,9 @@ void MsgInit(void){
       (sizeof(mission_mb_buf)/sizeof(msg_t)));
 }
 
+/**
+ *
+ */
 void MavInit(void){
   /* initial mavlink values */
   mavlink_system_struct.sysid  = 20;                   ///< ID 20 for this airplane

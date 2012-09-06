@@ -112,7 +112,7 @@ static msg_t ControllerThread(void* arg){
         set_current_handler(mailp->payload);
         break;
       }
-      chBSemSignal(mailp->semp);
+      ReleaseMail(mailp);
     }
 
     /* collect memory from ended stabilization thread */

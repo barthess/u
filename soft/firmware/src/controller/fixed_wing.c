@@ -51,7 +51,7 @@ static msg_t ControllerThread(void* arg){
     if (status == RDY_OK){
       mailp = (Mail*)tmp;
       mavlink_manual_control_struct = mailp->payload;
-      chBSemSignal(mailp->semp);
+      ReleaseMail(mailp);
     }
     else{
       /* testing values */
