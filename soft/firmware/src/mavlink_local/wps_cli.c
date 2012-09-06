@@ -13,7 +13,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_system_t       mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -34,23 +33,25 @@ extern mavlink_system_t       mavlink_system_struct;
  ******************************************************************************
  ******************************************************************************
  */
-/**
- *
- */
-#define _wps_cli_err() (cli_println(\
-    "ERROR: command can not be recognised. Try 'wps help'."))
 
 /**
  *
  */
 static void _wps_print_all_cmd(void){
-  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
-    cli_println("Atopilot is running in ground rover mode.");
-  }
-  else{
-    cli_println("Atopilot is running in fixed wing mode.");
-  }
-  cli_println("Try 'controller help' to get list of allowable subcommands.");
+}
+
+/**
+ * Print single waypoint
+ */
+static void _wps_print_wp(uint16_t seq){
+  (void)seq;
+}
+
+/**
+ * Print single waypoint
+ */
+static void _wps_cli_set_wp(const char * const * argv){
+
 }
 
 /**
@@ -58,41 +59,7 @@ static void _wps_print_all_cmd(void){
  */
 static void _wps_cli_help(void){
   cli_println("Allowable commands in ground rover mode:");
-
-  cli_println("Allowable commands in fixed wing mode:");
-  cli_println("  NOT REALISED YET");
 }
-
-/**
- *
- */
-void _controller_cli_fixed_wing(const char * const * argv){
-  (void)argv;
-  cli_println("ERROR: setting servos for fixed wing unimplemented yet.");
-}
-
-/**
- *
- */
-void _wps_cli_ground_rover(const char * const * argv){
-
-  if (strcmp(argv[0], "speed") == 0)
-    _controller_cli_get_speed(argv[1]);
-
-
-
-  else if (strcmp(argv[0], "heading") == 0)
-    _controller_cli_get_heading(argv[1]);
-  else if (strcmp(argv[0], "trip") == 0){
-    _wps_cli_get_trip(argv[1]);
-    //chMBPost(&testpoint_mb, (msg_t)&test_point, TIME_IMMEDIATE);
-  }
-  else if (strcmp(argv[0], "stop") == 0)
-    ;//chMBPost(&testpoint_mb, (msg_t)NULL, TIME_IMMEDIATE);
-  else
-    _wps_cli_err();
-}
-
 
 /*
  ******************************************************************************
@@ -104,30 +71,40 @@ void _wps_cli_ground_rover(const char * const * argv){
  */
 Thread* wps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
+  int sscanf_status;
+  uint16_t seq = 0;
 
   /* no arguments */
   if (argc == 0)
     _wps_print_all_cmd();
 
-  /* one argument */
+  /* 1 argument */
   else if (argc == 1){
-    if (strcmp(*argv, "help") == 0)
+    sscanf_status = sscanf(argv[0], "%hu", &seq);
+    if (sscanf_status != 1){
+      cli_println("ERROR: Bad arguments.");
       _wps_cli_help();
+    }
     else
-      cli_println("ERROR: not enough arguments. Try 'controller help'.");
+      _wps_print_wp(seq);
   }
 
-  /* two arguments */
+  /* 2 arguments */
   else if (argc == 2){
-    if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
-      _wps_cli_ground_rover(argv);
-    else
-      _controller_cli_fixed_wing(argv);
+    cli_println("ERROR: Bad arguments.");
+    _wps_cli_help();
+  }
+
+  /* 3 arguments */
+  else if (argc == 3){
+    _wps_cli_set_wp(argv);
   }
 
   /* error handler */
-  else
-    cli_println("ERROR: too many arguments. Try 'servo help'.");
+  else{
+    cli_println("ERROR: too many arguments.");
+    _wps_cli_help();
+  }
 
   /* stub */
   return NULL;
