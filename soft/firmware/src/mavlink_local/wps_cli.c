@@ -51,7 +51,7 @@ static void _wps_print_wp(uint16_t seq){
  * Print single waypoint
  */
 static void _wps_cli_set_wp(const char * const * argv){
-
+  (void)argv[0][0];
 }
 
 /**
