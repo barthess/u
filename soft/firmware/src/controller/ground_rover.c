@@ -28,6 +28,7 @@ extern MemoryHeap ThdHeap;
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 static uint16_t WpSeqOverwrite = 0;
 static float const *pulse2m;
+static Thread *stab_tp = NULL;
 
 /*
  *******************************************************************************
@@ -91,10 +92,6 @@ static msg_t ControllerThread(void* arg){
   Mail* mailp = NULL;
   msg_t tmp = 0;
   msg_t status = 0;
-  Thread *stab_tp = NULL;
-
-  /* launch stabilization thread */
-  stab_tp = StabInit();
 
   while (TRUE) {
     status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
@@ -128,6 +125,27 @@ static msg_t ControllerThread(void* arg){
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
+ */
+
+/**
+ * Start stabilization thread on command from ground.
+ * TODO: handle different takeoff cmd parameters
+ */
+enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
+  (void)cl;
+
+  if (stab_tp != NULL)    /* probably allready running */
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+
+  stab_tp = StabInit();   /* launch stabilization thread */
+  if (stab_tp == NULL)
+    return MAV_RESULT_FAILED;
+  else
+    return MAV_RESULT_ACCEPTED;
+}
+
+/**
+ *
  */
 Thread *ControllerGroundRoverInit(void){
 

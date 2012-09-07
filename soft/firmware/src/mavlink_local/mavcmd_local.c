@@ -7,16 +7,6 @@
  */
 #define CONFIRM_TMO           MS2ST(500)
 
-/* helper macros */
-#define command_accepted()    (_confirm(MAV_RESULT_ACCEPTED, \
-                                mavlink_command_long_struct->command))
-#define command_denied()      (_confirm(MAV_RESULT_DENIED, \
-                                mavlink_command_long_struct->command))
-#define command_unsupported() (_confirm(MAV_RESULT_UNSUPPORTED, \
-                                mavlink_command_long_struct->command))
-#define command_failed()      (_confirm(MAV_RESULT_FAILED, \
-                                mavlink_command_long_struct->command))
-
 /*
  ******************************************************************************
  * EXTERNS
@@ -25,7 +15,6 @@
 extern uint32_t GlobalFlags;
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
-extern Mailbox controller_mb;
 
 extern mavlink_system_t mavlink_system_struct;
 
@@ -48,7 +37,7 @@ Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
 /**
  * helper funcion
  */
-void _confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
+static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
   mavlink_command_ack_struct.result = result;
   mavlink_command_ack_struct.command = cmd;
   command_ack_mail.payload = &mavlink_command_ack_struct;
@@ -58,7 +47,7 @@ void _confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
 /**
  *
  */
-void handle_cmd_calibration(mavlink_command_long_t *mavlink_command_long_struct){
+static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
   /* Trigger calibration. This command will be only accepted if in pre-flight mode.
   * | Gyro calibration: 0: no, 1: yes
   * | Magnetometer calibration: 0: no, 1: yes
@@ -66,8 +55,11 @@ void handle_cmd_calibration(mavlink_command_long_t *mavlink_command_long_struct)
   * | Radio calibration: 0: no, 1: yes
   * | Empty| Empty| Empty|  */
 
+  if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+
   /* Gyro */
-  if (mavlink_command_long_struct->param1 == 1){
+  if (cl->param1 == 1){
     setGlobalFlag(GYRO_CAL_FLAG);
     mavlink_system_struct.state = MAV_STATE_CALIBRATING;
   }
@@ -77,7 +69,7 @@ void handle_cmd_calibration(mavlink_command_long_t *mavlink_command_long_struct)
   }
 
   /* Magnetometer */
-  if (mavlink_command_long_struct->param2 == 1){
+  if (cl->param2 == 1){
     setGlobalFlag(MAG_CAL_FLAG);
     mavlink_system_struct.state = MAV_STATE_CALIBRATING;
   }
@@ -86,116 +78,121 @@ void handle_cmd_calibration(mavlink_command_long_t *mavlink_command_long_struct)
     mavlink_system_struct.state = MAV_STATE_STANDBY;
   }
 
-  command_accepted();
+  return MAV_RESULT_ACCEPTED;
 }
 
 /**
  *
  */
-void handle_cmd_reboot_shutdown(mavlink_command_long_t *mavlink_command_long_struct){
+static enum MAV_RESULT cmd_reboot_shutdown_handler(mavlink_command_long_t *cl){
  /* Request the reboot or shutdown of system components.|
   * 0: Do nothing for autopilot, 1: Reboot autopilot, 2: Shutdown autopilot.|
   * 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
-  * | Reserved| Reserved| Empty| Empty| Empty|
-  */
+  * | Reserved| Reserved| Empty| Empty| Empty|  */
+
+  if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+    return MAV_RESULT_TEMPORARILY_REJECTED;
 
   /* currently only reboot supported */
-  if (mavlink_command_long_struct->param1 == 1.0){
-    command_accepted();
+  if (cl->param1 == 1.0){
     setGlobalFlag(SIGHALT_FLAG);
-    return;
+    return MAV_RESULT_ACCEPTED;
   }
   else {
-    command_unsupported();
-    return;
+    return MAV_RESULT_UNSUPPORTED;
   }
 }
 
 /**
  *
  */
-void handle_cmd_preflight_storage(mavlink_command_long_t *mavlink_command_long_struct){
-
+static enum MAV_RESULT cmd_preflight_storage_handler(mavlink_command_long_t *cl){
   bool_t status = CH_FAILED;
 
-  if (mavlink_command_long_struct->param1 == 0)
+  if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+
+  if (cl->param1 == 0)
     status = load_params_from_eeprom();
-  else if (mavlink_command_long_struct->param1 == 1)
+  else if (cl->param1 == 1)
     status = save_params_to_eeprom();
+
   if (status != CH_SUCCESS)
-    command_failed();
+    return MAV_RESULT_FAILED;
   else
-    command_accepted();
+    return MAV_RESULT_ACCEPTED;
 }
 
 /**
  * Looks like duplicated functionality of SET_MODE message
  */
-void handle_cmd_do_set_mode(mavlink_command_long_t *mavlink_command_long_struct){
-  /* all modes defined in MAV_MODE */
-//  mavlink_system_struct.mode = mavlink_command_long_struct->param1;
-//  command_accepted();
-  command_denied();
+static enum MAV_RESULT cmd_do_set_mode_handler(mavlink_command_long_t *cl){
+  /* Set system mode. |Mode, as defined by ENUM MAV_MODE| Empty| Empty| Empty| Empty| Empty| Empty|  */
+  (void)cl;
+  return MAV_RESULT_DENIED;
 }
+
+
+
+
+
 
 /**
  * parsing and execution of commands from ground
  */
 void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
+  enum MAV_RESULT result = MAV_RESULT_DENIED;
 
   /* all this flags defined in MAV_CMD enum */
   switch(mavlink_command_long_struct->command){
-
-  /* */
   case MAV_CMD_DO_SET_MODE:
-    /* Set system mode. |Mode, as defined by ENUM MAV_MODE| Empty| Empty| Empty| Empty| Empty| Empty|  */
-    handle_cmd_do_set_mode(mavlink_command_long_struct);
+    /* */
+    result = cmd_do_set_mode_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
-  /* (re)calibrate */
   case MAV_CMD_PREFLIGHT_CALIBRATION:
-    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
-      command_denied();
-    else
-      handle_cmd_calibration(mavlink_command_long_struct);
+    /* (re)calibrate */
+    result = cmd_calibration_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
-  /* */
   case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
-    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
-      command_denied();
-    else
-      handle_cmd_reboot_shutdown(mavlink_command_long_struct);
+    /* */
+    result = cmd_reboot_shutdown_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
   /* Data (storing to)/(loding from) EEPROM */
   case MAV_CMD_PREFLIGHT_STORAGE:
-    if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
-      command_denied();
-    else
-      handle_cmd_preflight_storage(mavlink_command_long_struct);
+    result = cmd_preflight_storage_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
-  case (MAV_CMD_NAV_LOITER_UNLIM || MAV_CMD_NAV_RETURN_TO_LAUNCH ||
-        MAV_CMD_NAV_LAND || MAV_CMD_NAV_TAKEOFF ||  MAV_CMD_OVERRIDE_GOTO):
-    //chMBPost(&controller_mb);
-    //(&tolink_mb, (msg_t)(&mission_out_mail), PLANNER_POST_TMO);
+  case (MAV_CMD_NAV_TAKEOFF):
+    result = cmd_nav_takeoff_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
-  /*
-   *
-   */
+
+
+  /* TODO: realize this functions */
+  case (MAV_CMD_NAV_LOITER_UNLIM || MAV_CMD_NAV_RETURN_TO_LAUNCH || MAV_CMD_NAV_LAND || MAV_CMD_OVERRIDE_GOTO):
+    cmd_confirm(MAV_RESULT_UNSUPPORTED, mavlink_command_long_struct->command);
+    break;
+
   default:
+    cmd_confirm(MAV_RESULT_UNSUPPORTED, mavlink_command_long_struct->command);
     break;
   }
 }
 
 /**
- * Поток, принимающий и обрабатывающий команды с земли.
+ * Command processing thread.
  */
 static WORKING_AREA(CmdThreadWA, 512);
 static msg_t CmdThread(void* arg){
-  chRegSetThreadName("MAV_cmd_exec");
+  chRegSetThreadName("MAVCommand");
   (void)arg;
   msg_t tmp = 0;
   msg_t status = 0;
