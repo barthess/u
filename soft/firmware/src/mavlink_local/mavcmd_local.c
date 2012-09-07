@@ -15,16 +15,16 @@
 extern uint32_t GlobalFlags;
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
-
 extern mavlink_system_t mavlink_system_struct;
+
+mavlink_command_ack_t mavlink_command_ack_struct;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-mavlink_command_ack_t mavlink_command_ack_struct;
-Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
+static Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
 
 /*
  *******************************************************************************
@@ -41,7 +41,7 @@ static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
   mavlink_command_ack_struct.result = result;
   mavlink_command_ack_struct.command = cmd;
   command_ack_mail.payload = &mavlink_command_ack_struct;
-  chMBPostAhead(&tolink_mb, (msg_t)&command_ack_mail, CONFIRM_TMO);
+  chMBPost(&tolink_mb, (msg_t)&command_ack_mail, CONFIRM_TMO);
 }
 
 /**
@@ -131,10 +131,6 @@ static enum MAV_RESULT cmd_do_set_mode_handler(mavlink_command_long_t *cl){
   (void)cl;
   return MAV_RESULT_DENIED;
 }
-
-
-
-
 
 
 /**

@@ -26,7 +26,6 @@ extern MemoryHeap ThdHeap;
  ******************************************************************************
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
-static uint16_t WpSeqOverwrite = 0;
 static float const *pulse2m;
 static Thread *stab_tp = NULL;
 
@@ -76,9 +75,7 @@ static void manual_control_handler(mavlink_manual_control_t *mc){
  * Set autopilot mode logic.
  */
 static void set_current_handler(mavlink_mission_set_current_t *sc){
-  chSysLock();
-  WpSeqOverwrite = sc->seq;
-  chSysUnlock();
+  WpSeqOverwrite(sc->seq);
 }
 
 /**
@@ -132,6 +129,14 @@ static msg_t ControllerThread(void* arg){
  * TODO: handle different takeoff cmd parameters
  */
 enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
+  /* Takeoff from ground / hand
+   * | Minimum pitch (if airspeed sensor present), desired pitch without sensor
+   * | Empty
+   * | Empty
+   * | Yaw angle (if magnetometer present), ignored without magnetometer
+   * | Latitude
+   * | Longitude
+   * | Altitude|  */
   (void)cl;
 
   if (stab_tp != NULL)    /* probably allready running */
@@ -144,30 +149,46 @@ enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
     return MAV_RESULT_ACCEPTED;
 }
 
-enum MAV_RESULT cmd_nav_return_to_launch_handler(mavlink_command_long_t *cl){
-  (void)cl;
+/**
+ *
+ */
+enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
+  /* Hold / continue the current action
+   * | MAV_GOTO_DO_HOLD: hold MAV_GOTO_DO_CONTINUE: continue with next item in mission plan
+   * | MAV_GOTO_HOLD_AT_CURRENT_POSITION: Hold at current position MAV_GOTO_HOLD_AT_SPECIFIED_POSITION: hold at specified position
+   * | MAV_FRAME coordinate frame of hold point
+   * | Desired yaw angle in degrees
+   * | Latitude / X position
+   * | Longitude / Y position
+   * | Altitude / Z position|  */
+  if (cl->param1 == MAV_GOTO_DO_HOLD && cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
+    if (stab_tp != NULL){
+      chThdTerminate(stab_tp);
+      return MAV_RESULT_ACCEPTED;
+    }
+    else
+      return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
+
+  /* default return value */
   return MAV_RESULT_UNSUPPORTED;
 }
 
+/* stubs */
+enum MAV_RESULT cmd_nav_return_to_launch_handler(mavlink_command_long_t *cl){
+  (void)cl;
+  return MAV_RESULT_UNSUPPORTED;}
 enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
   (void)cl;
-  return MAV_RESULT_UNSUPPORTED;
-}
+  return MAV_RESULT_UNSUPPORTED;}
 enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl){
   (void)cl;
-  return MAV_RESULT_UNSUPPORTED;
-}
-enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
-  (void)cl;
-  return MAV_RESULT_UNSUPPORTED;
-}
+  return MAV_RESULT_UNSUPPORTED;}
 
 /**
  *
  */
 Thread *ControllerGroundRoverInit(void){
-
-  WpSeqOverwrite = 0;
 
   pulse2m = ValueSearch("SPD_pulse2m");
 
@@ -189,7 +210,7 @@ Thread *ControllerGroundRoverInit(void){
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
-                            &WpSeqOverwrite);
+                            NULL);
   if (tp == NULL)
     chDbgPanic("Can not allocate memory");
 

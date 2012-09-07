@@ -36,6 +36,7 @@ extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
 static pid_f32_t speed_pid;
 static pid_f32_t heading_pid;
 static float x_prev_wp = 0, y_prev_wp = 0;
+static uint16_t WpSeqNew = 0;
 
 static float const *pulse2m;
 
@@ -143,6 +144,7 @@ static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
     float delta_y = y_prev_wp - wp.y;
     *heading = atan2f(delta_x, delta_y);
     *target_trip = sqrtf(delta_x * delta_x + delta_y * delta_y);
+    *target_trip += (bkpOdometer * *pulse2m);
   }
 
   /* save values for next iteration */
@@ -155,7 +157,10 @@ static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
  *
  */
 bool_t is_wp_reached(float target_trip){
-  if ((bkpOdometer * *pulse2m) >= target_trip)
+  uint32_t odo = bkpOdometer;
+  float k = *pulse2m;
+
+  if ((odo * k) >= target_trip)
     return TRUE;
   else
     return FALSE;
@@ -172,8 +177,7 @@ bool_t is_wp_reached(float target_trip){
 static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
-
-  uint16_t *WpSeqOverwrite_p = arg;
+  (void)arg;
 
   uint32_t speed_retry_cnt = 0;
   float target_trip = bkpOdometer * *pulse2m; /* current position is starting point */
@@ -184,14 +188,19 @@ static msg_t StabThread(void* arg){
 
   /* are there some waypoints on board? */
   if (wp_cnt == 0)
-    chThdExit(RDY_RESET);
+    chThdExit(RDY_OK); /* stop thread */
 
+  /* loop for whole mission */
   do {
     parse_next_wp(seq, &desired_heading, &target_trip);
     broadcast_mission_current(seq);
 
+    /* stabilization loop for single waypoint */
     while (!is_wp_reached(target_trip)){
-      if (*WpSeqOverwrite_p != 0)
+      if (chThdShouldTerminate())
+        goto END;
+
+      if (WpSeqNew != 0)
         break; /* exit from while*/
 
       chBSemWait(&servo_updated_sem);
@@ -200,20 +209,24 @@ static msg_t StabThread(void* arg){
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 
-    if (*WpSeqOverwrite_p == 0){
+    /* loading nex waypoint */
+    if (WpSeqNew == 0){
       broadcast_mission_item_reached(seq);
       seq++;
     }
     else{
-      seq = *WpSeqOverwrite_p;
+      seq = WpSeqNew;
       chSysLock();
-      *WpSeqOverwrite_p = 0;
+      WpSeqNew = 0;
       chSysUnlock();
     }
 
   } while (seq < wp_cnt);
 
-  /* mission complete */
+END:
+  /* mission completed or interrupted */
+  ServoCarThrustSet(128);
+  ServoCarYawSet(128);
   chThdExit(RDY_OK);
   return 0;
 }
@@ -224,6 +237,20 @@ static msg_t StabThread(void* arg){
  ******************************************************************************
  */
 
+/**
+ *
+ */
+void WpSeqOverwrite(uint16_t seq){
+  if (WpSeqNew < get_waypoint_count()){
+    chSysLock();
+    WpSeqNew = seq;
+    chSysUnlock();
+  }
+}
+
+/**
+ *
+ */
 Thread* StabInit(void){
 
   pulse2m = ValueSearch("SPD_pulse2m");
