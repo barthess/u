@@ -144,6 +144,24 @@ enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
     return MAV_RESULT_ACCEPTED;
 }
 
+enum MAV_RESULT cmd_nav_return_to_launch_handler(mavlink_command_long_t *cl){
+  (void)cl;
+  return MAV_RESULT_UNSUPPORTED;
+}
+
+enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
+  (void)cl;
+  return MAV_RESULT_UNSUPPORTED;
+}
+enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl){
+  (void)cl;
+  return MAV_RESULT_UNSUPPORTED;
+}
+enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
+  (void)cl;
+  return MAV_RESULT_UNSUPPORTED;
+}
+
 /**
  *
  */

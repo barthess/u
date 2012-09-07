@@ -163,8 +163,8 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
-  /* Data (storing to)/(loding from) EEPROM */
   case MAV_CMD_PREFLIGHT_STORAGE:
+    /* Data (storing to)/(loding from) EEPROM */
     result = cmd_preflight_storage_handler(mavlink_command_long_struct);
     cmd_confirm(result, mavlink_command_long_struct->command);
     break;
@@ -174,11 +174,24 @@ void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
     cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
+  case (MAV_CMD_NAV_RETURN_TO_LAUNCH):
+    result = cmd_nav_return_to_launch_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
+    break;
 
+  case (MAV_CMD_NAV_LAND):
+    result = cmd_nav_land_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
+    break;
 
-  /* TODO: realize this functions */
-  case (MAV_CMD_NAV_LOITER_UNLIM || MAV_CMD_NAV_RETURN_TO_LAUNCH || MAV_CMD_NAV_LAND || MAV_CMD_OVERRIDE_GOTO):
-    cmd_confirm(MAV_RESULT_UNSUPPORTED, mavlink_command_long_struct->command);
+  case (MAV_CMD_NAV_LOITER_UNLIM):
+    result = cmd_nav_loiter_unlim_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
+    break;
+
+  case (MAV_CMD_OVERRIDE_GOTO):
+    result = cmd_override_goto_handler(mavlink_command_long_struct);
+    cmd_confirm(result, mavlink_command_long_struct->command);
     break;
 
   default:
