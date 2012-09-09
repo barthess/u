@@ -116,10 +116,10 @@ uint16_t get_cpu_load(void){
   /* получаем мгновенное значение счетчика из Idle */
   if (chThdGetTicks(IdleThread_p) >= last_idle_ticks)
     i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
-  else /* произошло переполнение */
+  else /* overflow */
     i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
-  /* обновляем счетчик */
-    last_idle_ticks = chThdGetTicks(IdleThread_p);
+
+  last_idle_ticks = chThdGetTicks(IdleThread_p);
 
   /* получаем мгновенное значение счетчика из системы */
   s = GetTimeInterval(&last_sys_ticks);

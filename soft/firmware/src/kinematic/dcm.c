@@ -75,7 +75,6 @@ static float const *magweight = NULL;
  ******************************************************************************
  */
 static void _update(float *w, float *wA, float *wM, float imu_interval);
-static void _update_no_mag(float *w, float *wA, float imu_interval);
 static void _update_enforced_mag(float *w, float *wA, float *wM, float imu_interval);
 
 /*
@@ -207,24 +206,29 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   if (mag_modulus == 0)
     mag_modulus = vector3d_modulus(Imag);
 
-  /* ignore magnetometer readings if external magnetic field too strong */
-  if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
+  /* ignore magnetometer readings if external magnetic field too strong
+   * and if there is no fresh data measured */
+  if ((GlobalFlags & MAG_DATA_READY_FLAG) && (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX)){
     /* Проработать комплексирование с нижним рядом DCM вместо вектора
      * гравитации. Какие-то непонятные результаты получаются, или я их
      * готовить не умею. */
     float tmpM[3];
     vector3d_normalize(Imag);
-    vector3d_cross(Kacc, Imag, tmpM);
+    //vector3d_cross(Kacc, Imag, tmpM);
+    vector3d_cross(dcmEst[2], Imag, tmpM);
     vector3d_normalize(tmpM);
-    vector3d_cross(tmpM, Kacc, Imag);
+    //vector3d_cross(tmpM, Kacc, Imag);
+    vector3d_cross(tmpM, dcmEst[2], Imag);
     vector3d_normalize(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
     vector3d_cross(dcmEst[0], Imag, wM);
+
+    clearGlobalFlag(MAG_DATA_READY_FLAG);
   }
   else{
-    wM[0] = 0.0;
-    wM[1] = 0.0;
-    wM[2] = 0.0;
+    wM[0] = 0.0f;
+    wM[1] = 0.0f;
+    wM[2] = 0.0f;
   }
 
   //---------------
@@ -243,12 +247,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     need_mag_force--;
   }
   else{
-    if (GlobalFlags & MAG_DATA_READY_FLAG){
-      _update(w, wA, wM, imu_interval);
-      clearGlobalFlag(MAG_DATA_READY_FLAG);
-    }
-    else
-      _update_no_mag(w, wA, imu_interval);
+    _update(w, wA, wM, imu_interval);
   }
 
   dcm_rotate(dcmEst, w);
@@ -269,26 +268,14 @@ void _update(float *w, float *wA, float *wM, float imu_interval){
 }
 
 /**
- * Update of DCM without magnetometer data (because we have not fresh measured data).
- */
-void _update_no_mag(float *w, float *wA, float imu_interval){
-  uint32_t i;
-  for(i=0;i<3;i++){
-    w[i] *= imu_interval;
-    w[i] = (w[i] + *accweight * wA[i]) /
-              (1.0f + *accweight);
-  }
-}
-
-/**
  * Forcing magnetometer weight to increase speed of couse acquision.
  */
 void _update_enforced_mag(float *w, float *wA, float *wM, float imu_interval){
   uint32_t i;
   for(i=0;i<3;i++){
     w[i] *= imu_interval;
-    w[i] = (w[i] + *accweight * wA[i] + 0.1f * wM[i]) /
-                 (1.0f + *accweight + 0.1f);
+    w[i] = (w[i] + *accweight * wA[i] + 0.3f * wM[i]) /
+                 (1.0f + *accweight + 0.3f);
   }
 }
 
