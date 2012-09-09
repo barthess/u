@@ -85,6 +85,7 @@
 #define MODEM_FLAG            (1UL << 7)  /* 1 - modem ready, 0 - modem down */
 #define LOGGER_READY_FLAG     (1UL << 8)  /* ready logger thred */
 #define SIGHALT_FLAG          (1UL << 9)  /* ready logger thred */
+#define MAG_DATA_READY_FLAG   (1UL << 10)
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}

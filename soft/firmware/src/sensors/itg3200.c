@@ -139,7 +139,7 @@ void process_gyro_data(void){
  */
 void itg3200_write_log(uint32_t *i){
   const uint32_t decimator = 0b11;
-  if (((*i & decimator) == decimator) && (GlobalFlags & LOGGER_READY_FLAG)){
+  if ((*i & decimator) == decimator){
     log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
     log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
   }

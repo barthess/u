@@ -18,6 +18,8 @@ extern mavlink_sys_status_t   mavlink_sys_status_struct;
  * DEFINES
  ******************************************************************************
  */
+#define HEART_BEAT_PERIOD   1000
+#define LED_FLASH_TIME      50
 
 /*
  ******************************************************************************
@@ -52,17 +54,17 @@ static msg_t SanityControlThread(void *arg) {
 
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, &sanity_sem};
 
-  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;//MAV_AUTOPILOT_ARDUPILOTMEGA;//
+  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
   mavlink_heartbeat_struct.custom_mode = 0;
 
   while (TRUE) {
     palSetPad(GPIOB, GPIOB_LED_B);
-    chThdSleepMilliseconds(950);
+    chThdSleepMilliseconds(HEART_BEAT_PERIOD - LED_FLASH_TIME);
 
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
     if (GlobalFlags & TLM_LINK_FLAG){
-      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;//MAV_TYPE_FIXED_WING;//
+      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;
@@ -70,11 +72,10 @@ static msg_t SanityControlThread(void *arg) {
     }
     chBSemSignal(&sanity_sem);
 
-    if (GlobalFlags & LOGGER_READY_FLAG)
-      log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
+    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleepMilliseconds(10);
+    chThdSleepMilliseconds(LED_FLASH_TIME);
     mavlink_sys_status_struct.load = get_cpu_load();
 
     if (GlobalFlags & SIGHALT_FLAG){

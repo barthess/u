@@ -44,7 +44,7 @@ static uint32_t const *xsens,   *ysens,   *zsens;
 /**
  *
  */
-void process_accel_data(uint8_t *rxbuf){
+static void process_accel_data(uint8_t *rxbuf){
   raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
   raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
   raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
@@ -64,17 +64,17 @@ void process_accel_data(uint8_t *rxbuf){
   mavlink_scaled_imu_struct.zacc = comp_data.zacc;
 }
 
-void set_failed_values(void){
-  raw_data.xacc = -32768;
-  raw_data.yacc = -32768;
-  raw_data.zacc = -32768;
-  mavlink_raw_imu_struct.xacc = -32768;
-  mavlink_raw_imu_struct.yacc = -32768;
-  mavlink_raw_imu_struct.zacc = -32768;
-  mavlink_scaled_imu_struct.xacc = -32768;
-  mavlink_scaled_imu_struct.yacc = -32768;
-  mavlink_scaled_imu_struct.zacc = -32768;
-}
+//static void set_failed_values(void){
+//  raw_data.xacc = -32768;
+//  raw_data.yacc = -32768;
+//  raw_data.zacc = -32768;
+//  mavlink_raw_imu_struct.xacc = -32768;
+//  mavlink_raw_imu_struct.yacc = -32768;
+//  mavlink_raw_imu_struct.zacc = -32768;
+//  mavlink_scaled_imu_struct.xacc = -32768;
+//  mavlink_scaled_imu_struct.yacc = -32768;
+//  mavlink_scaled_imu_struct.zacc = -32768;
+//}
 
 /**
  *

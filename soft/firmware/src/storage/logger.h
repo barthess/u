@@ -11,7 +11,11 @@
  * @param[in] id      Mavlink message id.
  * @api
  */
-#define log_write_schedule(id) {chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);}
+#define log_write_schedule(id) {\
+  if (GlobalFlags & LOGGER_READY_FLAG){\
+    chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);\
+  }\
+}
 
 
 FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data);
