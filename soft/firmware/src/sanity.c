@@ -52,7 +52,7 @@ static msg_t SanityControlThread(void *arg) {
 
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, &sanity_sem};
 
-  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
+  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;//MAV_AUTOPILOT_ARDUPILOTMEGA;//
   mavlink_heartbeat_struct.custom_mode = 0;
 
   while (TRUE) {
@@ -62,7 +62,7 @@ static msg_t SanityControlThread(void *arg) {
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
     if (GlobalFlags & TLM_LINK_FLAG){
-      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
+      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;//MAV_TYPE_FIXED_WING;//
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       heartbeat_mail.payload = &mavlink_heartbeat_struct;

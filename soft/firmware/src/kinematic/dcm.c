@@ -235,7 +235,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     for(i=0;i<3;i++){
       w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
       //compute weighted average with the accelerometer correction vector
-      w[i] = (w[i] + *accweight*wA[i] + *magweight*wM[i]) / (1.0f + *accweight + *magweight);
+      w[i] = (w[i] + *accweight * wA[i] + *magweight * wM[i]) /
+                   (1.0f + *accweight + *magweight);
     }
   }
 

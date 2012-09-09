@@ -33,6 +33,8 @@ extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static uint32_t speed_retry_cnt = 0;
+
 static pid_f32_t speed_pid;
 static pid_f32_t heading_pid;
 static float x_prev_wp = 0, y_prev_wp = 0;
@@ -106,7 +108,7 @@ static void keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
 /**
  * Calculate current ground speed from tachometer pulses
  */
-static void measure_speed(uint32_t *retry){
+static void measure_speed(void){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -114,12 +116,12 @@ static void measure_speed(uint32_t *retry){
   status = chMBFetch(&speedometer_mb, &tmp, TIME_IMMEDIATE);
   if (status == RDY_OK){
     comp_data.groundspeed = calc_ground_rover_speed(tmp);
-    *retry = 0;
+    speed_retry_cnt = 0;
   }
   else{
-    (*retry)++;
-    if (*retry > SPEED_UPDATE_RETRY){
-      *retry = SPEED_UPDATE_RETRY + 2; // to avoid overflow
+    (speed_retry_cnt)++;
+    if (speed_retry_cnt > SPEED_UPDATE_RETRY){
+      speed_retry_cnt = SPEED_UPDATE_RETRY + 2; // to avoid overflow
       comp_data.groundspeed = 0.0;
     }
   }
@@ -179,7 +181,7 @@ static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
   (void)arg;
 
-  uint32_t speed_retry_cnt = 0;
+  speed_retry_cnt = 0;
   float target_trip = bkpOdometer * *pulse2m; /* current position is starting point */
   float desired_heading = 0;
   float desired_speed = 1.5;
@@ -204,7 +206,7 @@ static msg_t StabThread(void* arg){
         break; /* exit from while*/
 
       chBSemWait(&servo_updated_sem);
-      measure_speed(&speed_retry_cnt);
+      measure_speed();
       keep_speed(&speed_pid, comp_data.groundspeed, desired_speed);
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
