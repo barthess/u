@@ -108,10 +108,9 @@ static msg_t Imu(void *semp) {
   uint32_t i = 0;
   const uint32_t decimator = 0b11;
 
-  while (imu_update_period == 0){
-    /* wait until giro sampling time measured */
+  /* wait until giro sampling time measured */
+  while (imu_update_period == 0)
     chThdSleepMilliseconds(10);
-  }
   interval = (((float)imu_update_period)/1000000.0);
 
   while (TRUE) {
@@ -130,7 +129,7 @@ static msg_t Imu(void *semp) {
 
       get_attitude(&mavlink_attitude_struct);
 
-      if (((i & decimator) == decimator) && (GlobalFlags & LOGGER_READY_FLAG))
+      if ((i & decimator) == decimator)
         log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
       i++;
     }

@@ -87,11 +87,9 @@ static msg_t PollMax1236Thread(void *arg) {
 
       comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
 
-      if (GlobalFlags & LOGGER_READY_FLAG){
-        log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
-        log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
-        log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
-      }
+      log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
+      log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
+      log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
     }
     if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);

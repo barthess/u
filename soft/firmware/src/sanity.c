@@ -18,6 +18,8 @@ extern mavlink_sys_status_t   mavlink_sys_status_struct;
  * DEFINES
  ******************************************************************************
  */
+#define HEART_BEAT_PERIOD   1000
+#define LED_FLASH_TIME      50
 
 /*
  ******************************************************************************
@@ -57,7 +59,7 @@ static msg_t SanityControlThread(void *arg) {
 
   while (TRUE) {
     palSetPad(GPIOB, GPIOB_LED_B);
-    chThdSleepMilliseconds(950);
+    chThdSleepMilliseconds(HEART_BEAT_PERIOD - LED_FLASH_TIME);
 
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
@@ -70,11 +72,10 @@ static msg_t SanityControlThread(void *arg) {
     }
     chBSemSignal(&sanity_sem);
 
-    if (GlobalFlags & LOGGER_READY_FLAG)
-      log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
+    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleepMilliseconds(10);
+    chThdSleepMilliseconds(LED_FLASH_TIME);
     mavlink_sys_status_struct.load = get_cpu_load();
 
     if (GlobalFlags & SIGHALT_FLAG){
@@ -115,10 +116,10 @@ uint16_t get_cpu_load(void){
   /* получаем мгновенное значение счетчика из Idle */
   if (chThdGetTicks(IdleThread_p) >= last_idle_ticks)
     i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
-  else /* произошло переполнение */
+  else /* overflow */
     i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
-  /* обновляем счетчик */
-    last_idle_ticks = chThdGetTicks(IdleThread_p);
+
+  last_idle_ticks = chThdGetTicks(IdleThread_p);
 
   /* получаем мгновенное значение счетчика из системы */
   s = GetTimeInterval(&last_sys_ticks);

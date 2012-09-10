@@ -94,7 +94,6 @@ int main(void) {
   TimekeepingInit();
   SensorsInit();      /* sensors use I2C */
   PwrMgmtInit();
-  GncInit();
   TlmSenderInit();
   MavCmdInitLocal();
   StorageInit();

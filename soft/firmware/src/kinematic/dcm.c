@@ -5,8 +5,7 @@
 
 #include <math.h>
 
-#include "ch.h"
-#include "hal.h"
+#include "uav.h"
 
 #include "dcm.h"
 #include "vector3d.h"
@@ -41,11 +40,15 @@ Output variables are:
  * forces that are not attributed to earth's magnetic field */
 #define MAG_ERR_MAX 0.2f
 
+/* how many steps must be done in magnetometer enforced mode */
+#define MAG_FORCE_STEPS 200
+
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
 
@@ -54,6 +57,8 @@ extern float dcmEst[3][3];
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+/* denotes flag used to increas speed of magnenotmeter course stabilization */
+static uint32_t need_mag_force = MAG_FORCE_STEPS;
 
 /* modulus of magnetic flux */
 static float mag_modulus = 0;
@@ -63,6 +68,14 @@ static float const *accweight = NULL;
 
 /* magnetometer data weight relative to gyro's weight of 1. */
 static float const *magweight = NULL;
+
+/*
+ ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
+static void _update(float *w, float *wA, float *wM, float imu_interval);
+static void _update_enforced_mag(float *w, float *wA, float *wM, float imu_interval);
 
 /*
  *******************************************************************************
@@ -127,7 +140,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
                float xgyro, float ygyro, float zgyro,
                float xmag,  float ymag,  float zmag,
                float imu_interval){
-  uint32_t i;
+
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
 
@@ -193,24 +206,29 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   if (mag_modulus == 0)
     mag_modulus = vector3d_modulus(Imag);
 
-  /* ignore magnetometer readings if external magnetic field too strong */
-  if (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX){
+  /* ignore magnetometer readings if external magnetic field too strong
+   * and if there is no fresh data measured */
+  if ((GlobalFlags & MAG_DATA_READY_FLAG) && (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX)){
     /* Проработать комплексирование с нижним рядом DCM вместо вектора
      * гравитации. Какие-то непонятные результаты получаются, или я их
      * готовить не умею. */
     float tmpM[3];
     vector3d_normalize(Imag);
-    vector3d_cross(Kacc, Imag, tmpM);
+    //vector3d_cross(Kacc, Imag, tmpM);
+    vector3d_cross(dcmEst[2], Imag, tmpM);
     vector3d_normalize(tmpM);
-    vector3d_cross(tmpM, Kacc, Imag);
+    //vector3d_cross(tmpM, Kacc, Imag);
+    vector3d_cross(tmpM, dcmEst[2], Imag);
     vector3d_normalize(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
     vector3d_cross(dcmEst[0], Imag, wM);
+
+    clearGlobalFlag(MAG_DATA_READY_FLAG);
   }
   else{
-    wM[0] = 0.0;
-    wM[1] = 0.0;
-    wM[2] = 0.0;
+    wM[0] = 0.0f;
+    wM[1] = 0.0f;
+    wM[2] = 0.0f;
   }
 
   //---------------
@@ -223,30 +241,52 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   w[0] = -xgyro;  //rotation rate about accelerometer's X axis (GY output)
   w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
   w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
-  if (imu_step < 200){
-    /* speedup magnetic course obtaining */
-    for(i=0;i<3;i++){
-      w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
-      w[i] = (w[i] + *accweight*wA[i] + 0.1f*wM[i]) / (1.0f + *accweight + 0.1f);
-    }
+
+  if (need_mag_force){
+    _update_enforced_mag(w, wA, wM, imu_interval);
+    need_mag_force--;
   }
   else{
-    /* normal mode */
-    for(i=0;i<3;i++){
-      w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
-      //compute weighted average with the accelerometer correction vector
-      w[i] = (w[i] + *accweight*wA[i] + *magweight*wM[i]) / (1.0f + *accweight + *magweight);
-    }
+    _update(w, wA, wM, imu_interval);
   }
 
   dcm_rotate(dcmEst, w);
   imu_step++;
 }
 
+/**
+ * Full update of DCM.
+ */
+void _update(float *w, float *wA, float *wM, float imu_interval){
+  uint32_t i;
+  for(i=0;i<3;i++){
+    w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
+    //compute weighted average with the accelerometer correction vector
+    w[i] = (w[i] + *accweight * wA[i] + *magweight * wM[i]) /
+                  (1.0f + *accweight + *magweight);
+  }
+}
+
+/**
+ * Forcing magnetometer weight to increase speed of couse acquision.
+ */
+void _update_enforced_mag(float *w, float *wA, float *wM, float imu_interval){
+  uint32_t i;
+  for(i=0;i<3;i++){
+    w[i] *= imu_interval;
+    w[i] = (w[i] + *accweight * wA[i] + 0.3f * wM[i]) /
+                 (1.0f + *accweight + 0.3f);
+  }
+}
+
+
 //-------------------------------------------------------------------
 // imu_init
 //-------------------------------------------------------------------
 void dcmInit(){
+
+  need_mag_force = MAG_FORCE_STEPS;
+
   magweight = ValueSearch("IMU_magweight");
   accweight = ValueSearch("IMU_accweight");
 }

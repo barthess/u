@@ -99,6 +99,7 @@ static msg_t PollMagThread(void *semp){
     txbuf[0] = MAG_OUT_DATA;
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
+    setGlobalFlag(MAG_DATA_READY_FLAG);
 
     /* overdose? */
     check_and_clean_overdose();
