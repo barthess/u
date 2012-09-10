@@ -4,6 +4,9 @@
  */
 
 // TODO: rewrite stabilization thread using static memory allocation and sleeps
+//      - loiter
+//      - continue
+
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
