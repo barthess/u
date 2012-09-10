@@ -17,6 +17,8 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t           GlobalFlags;
+
 //extern RawData raw_data;
 extern MemoryHeap         ThdHeap;
 extern CompensatedData    comp_data;
@@ -158,7 +160,7 @@ static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
 /**
  *
  */
-bool_t is_wp_reached(float target_trip){
+static bool_t is_wp_reached(float target_trip){
   uint32_t odo = bkpOdometer;
   float k = *pulse2m;
 
@@ -166,6 +168,16 @@ bool_t is_wp_reached(float target_trip){
     return TRUE;
   else
     return FALSE;
+}
+
+/**
+ * Unlimited loiter intil flag will be cleared.
+ */
+static void loiter_if_need(void){
+  while (GlobalFlags & MISSION_LOITER_FLAG){
+    ServoCarThrustSet(128);
+    chThdSleepMilliseconds(20);
+  }
 }
 
 /**
@@ -203,7 +215,7 @@ static msg_t StabThread(void* arg){
         goto END;
 
       if (WpSeqNew != 0)
-        break; /* exit from while*/
+        break; /* exit from while (!is_wp_reached(target_trip)) */
 
       chBSemWait(&servo_updated_sem);
       measure_speed();
@@ -211,7 +223,7 @@ static msg_t StabThread(void* arg){
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 
-    /* loading nex waypoint */
+    /* loading next waypoint */
     if (WpSeqNew == 0){
       broadcast_mission_item_reached(seq);
       seq++;

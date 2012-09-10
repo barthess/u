@@ -16,6 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t GlobalFlags;
 //extern RawData raw_data;
 extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
