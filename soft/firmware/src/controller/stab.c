@@ -11,14 +11,16 @@
  * stabilization updates syncronously with servos: every 20 ms and
  * we nee timout 500mS */
 #define SPEED_UPDATE_RETRY  (500 / 20)
+#define STAB_TMO            MS2ST(20)
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
+extern uint32_t           GlobalFlags;
+
 //extern RawData raw_data;
-extern MemoryHeap         ThdHeap;
 extern CompensatedData    comp_data;
 extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
 extern Mailbox            speedometer_mb;
@@ -158,7 +160,7 @@ static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
 /**
  *
  */
-bool_t is_wp_reached(float target_trip){
+static bool_t is_wp_reached(float target_trip){
   uint32_t odo = bkpOdometer;
   float k = *pulse2m;
 
@@ -166,6 +168,26 @@ bool_t is_wp_reached(float target_trip){
     return TRUE;
   else
     return FALSE;
+}
+
+/**
+ * Unlimited loiter intil flag will be cleared.
+ */
+static void loiter_if_need(void){
+  while (GlobalFlags & MISSION_LOITER_FLAG){
+    ServoCarThrustSet(128);
+    chThdSleep(STAB_TMO);
+  }
+}
+
+/**
+ *
+ */
+static void reset_pids(void){
+  speed_pid.iState = 0;
+  speed_pid.dState = 0;
+  heading_pid.iState = 0;
+  heading_pid.dState = 0;
 }
 
 /**
@@ -180,30 +202,47 @@ static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
   (void)arg;
+  float target_trip;      /* current position will be starting point */
+  float desired_heading;
+  float desired_speed;
+  uint16_t seq;
+  uint16_t wp_cnt;
+
+WAIT_NEW_MISSION:
+  clearGlobalFlag(MISSION_ABORT_FLAG);
+  clearGlobalFlag(MISSION_TAKEOFF_FLAG);
+  clearGlobalFlag(MISSION_LOITER_FLAG);
+  reset_pids();
+  ServoCarThrustSet(128);
+  ServoCarYawSet(128);
+  while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
+    chThdSleep(STAB_TMO);
 
   speed_retry_cnt = 0;
-  float target_trip = bkpOdometer * *pulse2m; /* current position is starting point */
-  float desired_heading = 0;
-  float desired_speed = 1.5;
-  uint16_t seq = 0;
-  uint16_t wp_cnt = get_waypoint_count();
+  target_trip = bkpOdometer * *pulse2m;
+  desired_heading = 0;
+  desired_speed = 1.5;
+  seq = 0;
+  wp_cnt = get_waypoint_count();
 
   /* are there some waypoints on board? */
   if (wp_cnt == 0)
-    chThdExit(RDY_OK); /* stop thread */
+    goto WAIT_NEW_MISSION; /* nothing to do */
 
-  /* loop for whole mission */
+  /* loop realize the whole mission */
   do {
     parse_next_wp(seq, &desired_heading, &target_trip);
     broadcast_mission_current(seq);
 
     /* stabilization loop for single waypoint */
     while (!is_wp_reached(target_trip)){
-      if (chThdShouldTerminate())
-        goto END;
+      if (GlobalFlags & MISSION_ABORT_FLAG)
+        goto WAIT_NEW_MISSION;
+
+      loiter_if_need();
 
       if (WpSeqNew != 0)
-        break; /* exit from while*/
+        break; /* exit from while (!is_wp_reached(target_trip)) */
 
       chBSemWait(&servo_updated_sem);
       measure_speed();
@@ -211,12 +250,11 @@ static msg_t StabThread(void* arg){
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 
-    /* loading nex waypoint */
-    if (WpSeqNew == 0){
+    if (WpSeqNew == 0){   /* regular schedule next waypoint */
       broadcast_mission_item_reached(seq);
       seq++;
     }
-    else{
+    else{                 /* force schedule specified waypoint */
       seq = WpSeqNew;
       chSysLock();
       WpSeqNew = 0;
@@ -225,11 +263,8 @@ static msg_t StabThread(void* arg){
 
   } while (seq < wp_cnt);
 
-END:
-  /* mission completed or interrupted */
-  ServoCarThrustSet(128);
-  ServoCarYawSet(128);
-  chThdExit(RDY_OK);
+  goto WAIT_NEW_MISSION;
+
   return 0;
 }
 
@@ -262,22 +297,19 @@ Thread* StabInit(void){
   speed_pid.dGain  = ValueSearch("SPD_dGain");
   speed_pid.iMin   = ValueSearch("SPD_iMin");
   speed_pid.iMax   = ValueSearch("SPD_iMax");
-  speed_pid.iState = 0;
-  speed_pid.dState = 0;
 
   heading_pid.iGain  = ValueSearch("HEAD_iGain");
   heading_pid.pGain  = ValueSearch("HEAD_pGain");
   heading_pid.dGain  = ValueSearch("HEAD_dGain");
   heading_pid.iMin   = ValueSearch("HEAD_iMin");
   heading_pid.iMax   = ValueSearch("HEAD_iMax");
-  heading_pid.iState = 0;
-  heading_pid.dState = 0;
 
   Thread *tp = NULL;
-  tp = chThdCreateFromHeap(&ThdHeap, sizeof(StabThreadWA),
-                            CONTROLLER_THREADS_PRIO,
-                            StabThread,
-                            NULL);
+
+  tp = chThdCreateStatic(StabThreadWA, sizeof(StabThreadWA),
+                         CONTROLLER_THREADS_PRIO,
+                         StabThread,
+                         NULL);
   if (tp == NULL)
     chDbgPanic("Can not allocate memory");
 

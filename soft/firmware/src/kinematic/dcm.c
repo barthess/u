@@ -208,7 +208,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   /* ignore magnetometer readings if external magnetic field too strong
    * and if there is no fresh data measured */
-  if ((GlobalFlags & MAG_DATA_READY_FLAG) && (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX)){
+  if ((GlobalFlags & MAG_DATA_READY_FLAG) &&
+      (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX)){
+    clearGlobalFlag(MAG_DATA_READY_FLAG);
     /* Проработать комплексирование с нижним рядом DCM вместо вектора
      * гравитации. Какие-то непонятные результаты получаются, или я их
      * готовить не умею. */
@@ -222,13 +224,11 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     vector3d_normalize(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
     vector3d_cross(dcmEst[0], Imag, wM);
-
-    clearGlobalFlag(MAG_DATA_READY_FLAG);
   }
   else{
-    wM[0] = 0.0f;
-    wM[1] = 0.0f;
-    wM[2] = 0.0f;
+    wM[0] = 0;
+    wM[1] = 0;
+    wM[2] = 0;
   }
 
   //---------------

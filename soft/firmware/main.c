@@ -3,7 +3,10 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: rewrite stabilization thread using static memory allocation and sleeps
+// TODO: states for stab thread. Probably in status variable.
+//      - loiter
+//      - continue
+
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
