@@ -3,7 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: rewrite stabilization thread using static memory allocation and sleeps
+// TODO: states for stab thread. Probably in status variable.
 //      - loiter
 //      - continue
 

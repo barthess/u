@@ -28,7 +28,6 @@ extern MemoryHeap ThdHeap;
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 static float const *pulse2m;
-static Thread *stab_tp = NULL;
 
 /*
  *******************************************************************************
@@ -75,7 +74,7 @@ static void manual_control_handler(mavlink_manual_control_t *mc){
 /**
  * Set autopilot mode logic.
  */
-static void set_current_handler(mavlink_mission_set_current_t *sc){
+static void set_current_wp_handler(mavlink_mission_set_current_t *sc){
   WpSeqOverwrite(sc->seq);
 }
 
@@ -104,16 +103,10 @@ static msg_t ControllerThread(void* arg){
         set_mode_handler(mailp->payload);
         break;
       case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
-        set_current_handler(mailp->payload);
+        set_current_wp_handler(mailp->payload);
         break;
       }
       ReleaseMail(mailp);
-    }
-
-    /* collect memory from ended stabilization thread */
-    if (stab_tp != NULL && stab_tp->p_state == THD_STATE_FINAL){
-      chThdWait(stab_tp);
-      stab_tp = NULL;
     }
   }
   return 0;
@@ -140,14 +133,14 @@ enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
    * | Altitude|  */
   (void)cl;
 
-  if (stab_tp != NULL)    /* probably allready running */
+  if (GlobalFlags & MISSION_TAKEOFF_FLAG)    /* allready done */
     return MAV_RESULT_TEMPORARILY_REJECTED;
-
-  stab_tp = StabInit();   /* launch stabilization thread */
-  if (stab_tp == NULL)
-    return MAV_RESULT_FAILED;
-  else
+  else{
+    setGlobalFlag(MISSION_TAKEOFF_FLAG);
     return MAV_RESULT_ACCEPTED;
+  }
+  /* default value */
+  return MAV_RESULT_FAILED;
 }
 
 /**
@@ -162,29 +155,49 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
    * | Latitude / X position
    * | Longitude / Y position
    * | Altitude / Z position|  */
-  if (cl->param1 == MAV_GOTO_DO_HOLD && cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
-    if (stab_tp != NULL){
-      chThdTerminate(stab_tp);
-      return MAV_RESULT_ACCEPTED;
-    }
-    else
-      return MAV_RESULT_TEMPORARILY_REJECTED;
+  if (cl->param1 == MAV_GOTO_DO_HOLD &&
+      cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
+    setGlobalFlag(MISSION_ABORT_FLAG); /* this is not correct but correspond too QGC stop button*/
+    return MAV_RESULT_ACCEPTED;
   }
-
+  else if (cl->param1 == MAV_GOTO_DO_CONTINUE &&
+           cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
+    clearGlobalFlag(MISSION_LOITER_FLAG);
+    return MAV_RESULT_ACCEPTED;
+  }
   /* default return value */
   return MAV_RESULT_UNSUPPORTED;
 }
 
-/* stubs */
+/**
+ * Start unlimited loiter
+ */
+enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl){
+  (void)cl;
+
+  if (GlobalFlags & MISSION_LOITER_FLAG)    /* allready done */
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  else{
+    setGlobalFlag(MISSION_LOITER_FLAG);
+    return MAV_RESULT_ACCEPTED;
+  }
+  /* default return value */
+  return MAV_RESULT_UNSUPPORTED;
+}
+
+/* stub */
 enum MAV_RESULT cmd_nav_return_to_launch_handler(mavlink_command_long_t *cl){
   (void)cl;
   return MAV_RESULT_UNSUPPORTED;}
+
+/**
+ * Flight straight to land location
+ */
 enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
   (void)cl;
-  return MAV_RESULT_UNSUPPORTED;}
-enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl){
-  (void)cl;
-  return MAV_RESULT_UNSUPPORTED;}
+  WpSeqOverwrite(get_waypoint_count() - 1);
+  return MAV_RESULT_ACCEPTED;
+}
 
 /**
  *
@@ -206,6 +219,7 @@ Thread *ControllerGroundRoverInit(void){
   ServoCarThrustSet(128);
 
   PlannerInit();
+  StabInit();
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),

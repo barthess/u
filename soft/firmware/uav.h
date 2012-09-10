@@ -86,15 +86,9 @@
 #define LOGGER_READY_FLAG     (1UL << 8)  /* ready logger thred */
 #define SIGHALT_FLAG          (1UL << 9)  /* ready logger thred */
 #define MAG_DATA_READY_FLAG   (1UL << 10)
-
-
-
 #define MISSION_TAKEOFF_FLAG  (1UL << 11)
 #define MISSION_LOITER_FLAG   (1UL << 12)
 #define MISSION_ABORT_FLAG    (1UL << 13)
-
-
-
 
 #define setGlobalFlag(flag)   {chSysLock(); GlobalFlags |= (flag); chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); GlobalFlags &= (~(flag)); chSysUnlock();}

@@ -226,9 +226,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
     vector3d_cross(dcmEst[0], Imag, wM);
   }
   else{
-    wM[0] = 0.0f;
-    wM[1] = 0.0f;
-    wM[2] = 0.0f;
+    wM[0] = 0;
+    wM[1] = 0;
+    wM[2] = 0;
   }
 
   //---------------
