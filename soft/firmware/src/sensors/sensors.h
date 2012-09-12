@@ -49,9 +49,9 @@ struct CompensatedData{
 typedef struct RawData RawData;
 struct RawData{
   /* смещения нулей гироскопа, посчитанные во время выставки.*/
-  int32_t xgyro_zero;
-  int32_t ygyro_zero;
-  int32_t zgyro_zero;
+  int32_t xgyro_zero_sum;
+  int32_t ygyro_zero_sum;
+  int32_t zgyro_zero_sum;
   /* данные с гироскопа. Эти оси не обязаны совпадать с осями платы автопилота,
    * они содержат показания из регистров датчика в том порядке, в котором
    * вычитываются */

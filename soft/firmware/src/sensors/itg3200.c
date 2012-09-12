@@ -19,11 +19,10 @@ extern uint32_t GlobalFlags;
 extern Mailbox logwriter_mb;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern mavlink_system_t mavlink_system_struct;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
-uint32_t imu_update_period = 10000;
+uint32_t imu_update_period = 10000; /* close to real value (10mS) */
 
 /*
  ******************************************************************************
@@ -33,15 +32,13 @@ uint32_t imu_update_period = 10000;
 static uint8_t rxbuf[GYRO_RX_DEPTH];
 static uint8_t txbuf[GYRO_TX_DEPTH];
 
-// счетчик для выставки нулей
-static uint32_t zero_cnt = 0;
-
-/* индексы в структуре с параметрами */
-static uint32_t awg_samplescnt;
+/* количество сэмплов для усреднения */
+//static uint32_t SamplesCnt;
 
 /* указатели на коэффициенты */
-static float const   *xsens, *ysens, *zsens;
-static int32_t const *xpol,  *ypol,  *zpol;
+static float  const   *xsens, *ysens, *zsens;
+static int32_t  const *xpol,  *ypol,  *zpol;
+static uint32_t const *zerocnt;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
@@ -56,32 +53,12 @@ static uint32_t i = 0;
  *******************************************************************************
  *******************************************************************************
  */
-
-/**
- * Определение смещения нулей.
- */
-void gyrozeroing(void){
-  if (zero_cnt > 0){
-    palClearPad(GPIOB, GPIOB_LED_R);
-    raw_data.xgyro_zero += raw_data.xgyro;
-    raw_data.ygyro_zero += raw_data.ygyro;
-    raw_data.zgyro_zero += raw_data.zgyro;
-    zero_cnt--;
-    return;
-  }
-  else{
-    clearGlobalFlag(GYRO_CAL_FLAG);
-    palSetPad(GPIOB, GPIOB_LED_R);
-    mavlink_system_struct.state = MAV_STATE_STANDBY;
-  }
-}
-
 /**
  * пересчет из сырых значений в рад/сек
  */
 static float calc_gyro_rate(int32_t raw, float sens){
   float tmp = (float)raw;
-  tmp /= (float)awg_samplescnt;
+  tmp /= (float)*zerocnt;
   tmp /= sens;
   tmp *= (PI / 180.0);
   return tmp;
@@ -102,9 +79,9 @@ void process_gyro_data(void){
   int32_t gyroX, gyroY, gyroZ;
 
   /* correct placement (we need to swap just x and y axis) and advance to zero offset */
-  gyroX = ((int32_t)raw_data.ygyro) * awg_samplescnt - raw_data.ygyro_zero;
-  gyroY = ((int32_t)raw_data.xgyro) * awg_samplescnt - raw_data.xgyro_zero;
-  gyroZ = ((int32_t)raw_data.zgyro) * awg_samplescnt - raw_data.zgyro_zero;
+  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt - raw_data.ygyro_zero_sum;
+  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt - raw_data.xgyro_zero_sum;
+  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt - raw_data.zgyro_zero_sum;
 
   /* adjust rotation direction */
   gyroX *= *xpol;
@@ -168,6 +145,7 @@ static msg_t PollGyroThread(void *semp){
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
+  Thread *cal_tp = NULL;
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
@@ -176,18 +154,27 @@ static msg_t PollGyroThread(void *semp){
       chDbgAssert(retry > 0, "PollGyroThread(), #1",
           "probably no interrupts from gyro");
     }
-
     txbuf[0] = GYRO_OUT_DATA;     // register address
     i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
     sort_rxbuff(rxbuf);
-    if (GlobalFlags & GYRO_CAL_FLAG)
-      gyrozeroing();
-    else{
+
+    /* decide to fork or collect terminated calibration thread */
+    if (GlobalFlags & GYRO_CAL_FLAG){
+      if (cal_tp == NULL)
+        cal_tp = GyroCalStart();
+      gyro_stat_update();
+    }
+    else{ /* thread collected all needed data and termintaed itself */
+      if (cal_tp != NULL && cal_tp->p_state == THD_STATE_FINAL){
+        chThdWait(cal_tp);
+        cal_tp = NULL;
+      }
       process_gyro_data();
       chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
       itg3200_write_log();/* save data to logfile */
     }
 
+    /* system halt handler */
     if (GlobalFlags & SIGHALT_FLAG)
       chThdExit(RDY_OK);
   }
@@ -199,14 +186,13 @@ static msg_t PollGyroThread(void *semp){
  *  perform searching of indexes
  */
 static void search_indexes(void){
-  xsens = ValueSearch("GYRO_xsens");
-  ysens = ValueSearch("GYRO_ysens");
-  zsens = ValueSearch("GYRO_zsens");
-  xpol = ValueSearch("GYRO_xpol");
-  ypol = ValueSearch("GYRO_ypol");
-  zpol = ValueSearch("GYRO_zpol");
-
-  awg_samplescnt = *(uint32_t *)ValueSearch("GYRO_zeroconut");
+  xsens   = ValueSearch("GYRO_xsens");
+  ysens   = ValueSearch("GYRO_ysens");
+  zsens   = ValueSearch("GYRO_zsens");
+  xpol    = ValueSearch("GYRO_xpol");
+  ypol    = ValueSearch("GYRO_ypol");
+  zpol    = ValueSearch("GYRO_zpol");
+  zerocnt = ValueSearch("GYRO_zerocnt");
 }
 
 /*
@@ -265,18 +251,6 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   chThdSleepMilliseconds(2);
 
   /* fireup calibration */
-  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
   setGlobalFlag(GYRO_CAL_FLAG);
-  gyro_refresh_zeros();
-}
-
-/**
- * Сбрасывает рассчитанные нули и проводит калибровку заново.
- */
-void gyro_refresh_zeros(void){
-  raw_data.xgyro_zero = 0;
-  raw_data.ygyro_zero = 0;
-  raw_data.zgyro_zero = 0;
-  zero_cnt = awg_samplescnt;
 }
 

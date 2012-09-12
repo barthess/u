@@ -7,8 +7,9 @@
  * DEFINES
  ******************************************************************************
  */
-#define mma8451addr     0b0011100
-#define ACCEL_SEM_TMO   MS2ST(100)
+#define mma8451addr       0b0011100
+#define ACCEL_SEM_TMO     MS2ST(100)
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -32,6 +33,9 @@ static uint8_t txbuf[ACCEL_TX_DEPTH];
 static int32_t const  *xoffset, *yoffset, *zoffset;
 static int32_t const  *xpol,    *ypol,    *zpol;
 static uint32_t const *xsens,   *ysens,   *zsens;
+static uint32_t const *still_thr;
+
+static bool_t DeviceStill = FALSE;
 
 /*
  *******************************************************************************
@@ -45,9 +49,23 @@ static uint32_t const *xsens,   *ysens,   *zsens;
  *
  */
 static void process_accel_data(uint8_t *rxbuf){
+  int16_t prevx, prevy, prevz;
+  uint32_t delta;
+
+  /* save previouse values */
+  prevx = raw_data.xacc;
+  prevy = raw_data.yacc;
+  prevz = raw_data.zacc;
+
   raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
   raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
   raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
+
+  delta  = (prevx - raw_data.xacc) * (prevx - raw_data.xacc);
+  delta += (prevy - raw_data.yacc) * (prevy - raw_data.yacc);
+  delta += (prevz - raw_data.zacc) * (prevz - raw_data.zacc);
+  if (delta > *still_thr)
+    DeviceStill = FALSE;
 
   /* there is no need of correcting of placement. Just get milli g */
   mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
@@ -63,18 +81,6 @@ static void process_accel_data(uint8_t *rxbuf){
   mavlink_scaled_imu_struct.yacc = comp_data.yacc;
   mavlink_scaled_imu_struct.zacc = comp_data.zacc;
 }
-
-//static void set_failed_values(void){
-//  raw_data.xacc = -32768;
-//  raw_data.yacc = -32768;
-//  raw_data.zacc = -32768;
-//  mavlink_raw_imu_struct.xacc = -32768;
-//  mavlink_raw_imu_struct.yacc = -32768;
-//  mavlink_raw_imu_struct.zacc = -32768;
-//  mavlink_scaled_imu_struct.xacc = -32768;
-//  mavlink_scaled_imu_struct.yacc = -32768;
-//  mavlink_scaled_imu_struct.zacc = -32768;
-//}
 
 /**
  *
@@ -108,15 +114,16 @@ static msg_t PollAccelThread(void *semp){
  *
  */
 static void search_indexes(void){
-  xoffset = ValueSearch("ACC_xoffset");
-  yoffset = ValueSearch("ACC_yoffset");
-  zoffset = ValueSearch("ACC_zoffset");
-  xpol    = ValueSearch("ACC_xpol");
-  ypol    = ValueSearch("ACC_ypol");
-  zpol    = ValueSearch("ACC_zpol");
-  xsens   = ValueSearch("ACC_xsens");
-  ysens   = ValueSearch("ACC_ysens");
-  zsens   = ValueSearch("ACC_zsens");
+  xoffset   = ValueSearch("ACC_xoffset");
+  yoffset   = ValueSearch("ACC_yoffset");
+  zoffset   = ValueSearch("ACC_zoffset");
+  xpol      = ValueSearch("ACC_xpol");
+  ypol      = ValueSearch("ACC_ypol");
+  zpol      = ValueSearch("ACC_zpol");
+  xsens     = ValueSearch("ACC_xsens");
+  ysens     = ValueSearch("ACC_ysens");
+  zsens     = ValueSearch("ACC_zsens");
+  still_thr = ValueSearch("IMU_still_thr");
 }
 
 /*
@@ -128,7 +135,14 @@ static void search_indexes(void){
  *
  */
 bool_t is_device_still(void){
-  return TRUE;
+  return DeviceStill;
+}
+
+/**
+ * Raise still flag
+ */
+void device_still_clear(void){
+  DeviceStill = TRUE;
 }
 
 /**

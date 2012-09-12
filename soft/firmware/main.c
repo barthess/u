@@ -3,26 +3,21 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: run mag and gyro calibration from sensors' threads or from cli with passing paramter to deduce from where it run
+// TODO: simple cli for start calibration and look to result
+// TODO: (semi)automated zeroing of magnetometer and accelerometer.
+
 // TODO: states for stab thread. Probably in status variable.
 //      - loiter
 //      - continue
-
-// TODO: realize is_device_still()
-// TODO: run mag calibration from mag thread or from cli with passing paramter to deduce from where it run
-// TODO: smart blinking in calibration thread
-// TODO: use is_device_still() in gyro thread
-
-// TODO: simple cli for start calibration and look to result
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
+// TODO: delete all halt code
 // TODO: speed autosetting
 // TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
-// TODO: Magnetometer fusion with DCM, not accelerometer.
-// TODO: (semi)automated zeroing of magnetometer and accelerometer.
-// TODO: Rewrite messaging holy crap.
 // TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
 // TODO: One more point in dynamic pressure thermal compensation algorith (at 60 celsius)

@@ -15,6 +15,7 @@
 extern RawData raw_data;
 extern uint32_t GlobalFlags;
 extern MemoryHeap ThdHeap;
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -28,7 +29,7 @@ extern MemoryHeap ThdHeap;
  ******************************************************************************
  */
 /* sums for offset calibration */
-static BinarySemaphore cal_sem;
+static BinarySemaphore mag_cal_sem;
 
 /*
  ******************************************************************************
@@ -52,7 +53,7 @@ static msg_t MagCalThread(void *arg){
   chRegSetThreadName("MagCal");
   (void)arg;
 
-  uint32_t const *zerocount = ValueSearch("MAG_zerocount");
+  uint32_t const *zerocount = ValueSearch("MAG_zerocnt");
   uint32_t CurrentPoint = 0;
   uint32_t SamplesCnt = *zerocount;
   int32_t MagSumX = 0, MagSumY = 0, MagSumZ = 0;
@@ -63,16 +64,19 @@ static msg_t MagCalThread(void *arg){
                    {0, 0, 0},
                    {0, 0, 0}};
 
+  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+
   /* main loop */
   while(CurrentPoint < 4){
     while(SamplesCnt){
-      sem_status = chBSemWaitTimeout(&cal_sem, MS2ST(200));
+      sem_status = chBSemWaitTimeout(&mag_cal_sem, MS2ST(200));
       if (sem_status == RDY_OK){
         if(is_device_still()){
           MagSumX += raw_data.xmag;
           MagSumY += raw_data.ymag;
           MagSumZ += raw_data.zmag;
           SamplesCnt--;
+          ProgramBlink(3, MS2ST(100), MS2ST(1));
         }
         else{
           /* clear all collected statistics */
@@ -80,6 +84,8 @@ static msg_t MagCalThread(void *arg){
           MagSumX = 0;
           MagSumY = 0;
           MagSumZ = 0;
+          device_still_clear();
+          ProgramBlink(2, MS2ST(100), MS2ST(100));
         }
       }
       /* sigterm handler */
@@ -94,7 +100,7 @@ static msg_t MagCalThread(void *arg){
     CurrentPoint++;
   }
 
-  /* all point got. Calculate sphere */
+  /* all points got. Calculate sphere */
   SolveSphere(&S, P);
   *(int32_t *)(ValueSearch("MAG_xoffset")) = floorf(S.c[0]);
   *(int32_t *)(ValueSearch("MAG_yoffset")) = floorf(S.c[1]);
@@ -102,6 +108,7 @@ static msg_t MagCalThread(void *arg){
 
 TERMINATE:
   clearGlobalFlag(MAG_CAL_FLAG);
+  mavlink_system_struct.state = MAV_STATE_STANDBY;
   chThdExit(0);
   return 0;
 }
@@ -113,18 +120,17 @@ TERMINATE:
  ******************************************************************************
  */
 /**
- *
+ * Syncronization functions for statistics update.
  */
 void mag_stat_update(void){
-  if (GlobalFlags & MAG_CAL_FLAG)
-    chBSemSignal(&cal_sem);
+  chBSemSignal(&mag_cal_sem);
 }
 
 /**
  *
  */
 Thread* MagCalStart(void){
-  chBSemInit(&cal_sem,  TRUE);
+  chBSemInit(&mag_cal_sem,  TRUE);
 
   Thread *tp = NULL;
   tp = chThdCreateFromHeap(&ThdHeap,

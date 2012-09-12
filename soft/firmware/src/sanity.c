@@ -33,6 +33,10 @@ static Thread *IdleThread_p = NULL;
 static uint32_t last_sys_ticks = 0;
 static uint32_t last_idle_ticks = 0;
 
+static BinarySemaphore blink_sem;
+static uint32_t BlinkCnt = 0;
+static systime_t offtime = 10, ontime = 10;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -88,20 +92,75 @@ static msg_t SanityControlThread(void *arg) {
   return 0;
 }
 
+/**
+ * Blinker thread for red LED.
+ */
+static WORKING_AREA(RedBlinkThreadWA, 48);
+static msg_t RedBlinkThread(void *arg) {
+  chRegSetThreadName("RedBlink");
+  (void)arg;
+
+  while(TRUE){
+    chBSemWait(&blink_sem);
+    while(BlinkCnt){
+      palClearPad(GPIOB, GPIOB_LED_R);
+      chThdSleep(ontime);
+      palSetPad(GPIOB, GPIOB_LED_R);
+      chThdSleep(offtime);
+      BlinkCnt--;
+    }
+  }
+  return 0;
+}
+
 
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+/**
+ * Schedule blink sequence.
+ * [in] count of blinks and time intervals in sytem ticks
+ */
+void ProgramBlink(uint32_t cnt, uint32_t on, uint32_t off){
+  const systime_t max = MS2ST(500);
+
+  chSysLock()
+  if (off > max)
+    offtime = max;
+  else
+    offtime = off;
+  if (on > max)
+    ontime = max;
+  else
+    ontime = on;
+  BlinkCnt = cnt;
+  chSysUnlock();
+
+  chBSemSignal(&blink_sem);
+}
+
+/**
+ *
+ */
 void SanityControlInit(void){
 
+  chBSemInit(&blink_sem,  TRUE);
+
   IdleThread_p = chSysGetIdleThread();
+
 
   chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),
           NORMALPRIO,
           SanityControlThread,
+          NULL);
+
+  chThdCreateStatic(RedBlinkThreadWA,
+          sizeof(RedBlinkThreadWA),
+          NORMALPRIO - 10,
+          RedBlinkThread,
           NULL);
 }
 

@@ -64,6 +64,7 @@ static msg_t PollMagThread(void *semp){
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
+  Thread *cal_tp = NULL;
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
@@ -82,6 +83,19 @@ static msg_t PollMagThread(void *semp){
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
     setGlobalFlag(MAG_DATA_READY_FLAG);
+
+    /* decide to fork or collect terminated calibration thread */
+    if (GlobalFlags & MAG_CAL_FLAG){
+      if (cal_tp == NULL)
+        cal_tp = MagCalStart();
+      mag_stat_update();
+    }
+    else{ /* thread collected all needed data and termintaed itself */
+      if (cal_tp != NULL && cal_tp->p_state == THD_STATE_FINAL){
+        chThdWait(cal_tp);
+        cal_tp = NULL;
+      }
+    }
 
     /* overdose? */
     check_and_clean_overdose();
@@ -115,8 +129,6 @@ void process_magentometer_data(uint8_t *rxbuf){
   comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
   comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
   comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
-
-  mag_stat_update();
 }
 
 /**

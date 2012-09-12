@@ -125,6 +125,7 @@ CSRC = $(PORTSRC) \
        src/sensors/mag3110.c \
        src/sensors/mag_cal.c \
        src/sensors/itg3200.c \
+       src/sensors/gyro_cal.c \
        src/sensors/i2c_local.c \
        src/cli/cli.c \
        src/cli/cli_cmd.c \

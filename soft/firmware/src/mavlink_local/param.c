@@ -54,7 +54,7 @@ const GlobalParam_t global_data[] = {
   {"IMU_g1",          {.f32 = -1},         &gd_val[3],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
   {"IMU_g2",          {.f32 = -1},         &gd_val[4],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
   {"IMU_g3",          {.f32 = -1},         &gd_val[5],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved",    {.u32 = 0},          &gd_val[6],        {.u32 = 1000},       MAVLINK_TYPE_UINT32_T},
+  {"IMU_still_thr",   {.u32 = 100},        &gd_val[6],        {.u32 = 3000},       MAVLINK_TYPE_UINT32_T},
 
   /**** смещения нулей магнитометра ****/
   {"MAG_xoffset",     {.i32 = -5000},      &gd_val[7],        {.i32 = 5000},       MAVLINK_TYPE_INT32_T},
@@ -158,7 +158,7 @@ const GlobalParam_t global_data[] = {
   {"IMU_reserved6",   {.f32 = 0.0},        &gd_val[78],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
 
   /* sample count for zeroing */
-  {"GYRO_zeroconut",  {.u32 = 256},        &gd_val[79],          {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
+  {"GYRO_zerocnt",    {.u32 = 256},        &gd_val[79],          {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
 
   /* intervals between sending different data (mS) */
   {"T_raw_imu",       {.u32 = SEND_OFF},   &gd_val[80],          {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
@@ -207,7 +207,7 @@ const GlobalParam_t global_data[] = {
   {"HEAD_iMax",       {.f32 = -10000},     &gd_val[116],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
   /**/
-  {"MAG_zeroconut",   {.u32 = 256},        &gd_val[117],          {.u32 = 4096},     MAVLINK_TYPE_UINT32_T},
+  {"MAG_zerocnt",     {.u32 = 256},        &gd_val[117],          {.u32 = 4096},     MAVLINK_TYPE_UINT32_T},
 
   /* fake field with 14 symbols name */
   {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},     MAVLINK_TYPE_UINT32_T},
