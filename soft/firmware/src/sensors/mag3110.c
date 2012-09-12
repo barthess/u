@@ -38,21 +38,6 @@ static float          *xsens,   *ysens,   *zsens;
 static int32_t        *xoffset, *yoffset, *zoffset;
 static int32_t const  *xpol,    *ypol,    *zpol;
 
-/* массив максимальных и минмальных показаний по осям для калибровки смещения */
-static int16_t extremums[6]; //minx, maxx, miny, maxy, mixz, maxz
-
-/**
- * @brief   Magnenometer thread state machine possible states.
- */
-typedef enum {
-  MAG_UNINIT = 0,         /**< Not initialized.*/
-  MAG_CAL = 1,            /**< Calibrating ongoing.*/
-  MAG_ACTIVE = 2,         /**< Normal data acquision.*/
-} magnetometerstate_t;
-
-static magnetometerstate_t state;
-
-
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -61,9 +46,6 @@ static magnetometerstate_t state;
 //static void raise_error_flags(void);
 static void check_and_clean_overdose(void);
 static void process_magentometer_data(uint8_t *rxbuf);
-static void collect_staticstics(RawData *raw_data, int16_t extremums[6]);
-static void calc_coefficients(int16_t extremums[6]);
-static void clear_statistics(RawData *raw_data, int16_t extremums[6]);
 
 /*
  *******************************************************************************
@@ -134,84 +116,7 @@ void process_magentometer_data(uint8_t *rxbuf){
   comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
   comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
 
-  /* collect statistics for calibration purpose */
-  if (GlobalFlags & MAG_CAL_FLAG){
-    /* запускаем сбор статистики */
-    if (state == MAG_ACTIVE){
-      clear_statistics(&raw_data, extremums);
-      state = MAG_CAL;
-    }
-    collect_staticstics(&raw_data, extremums);
-  }
-  else{
-    if (state == MAG_CAL){
-      /* останавливаем сбор статистики */
-      state = MAG_ACTIVE;
-      calc_coefficients(extremums);
-    }
-  }
-}
-
-/**
- * Посчитаем калибровочные коэффициенты исходя из накопленных данных
- */
-void calc_coefficients(int16_t extremums[6]){
-
-  int16_t xmagnitude = extremums[1] - extremums[0];
-  int16_t ymagnitude = extremums[3] - extremums[2];
-  int16_t zmagnitude = extremums[5] - extremums[4];
-
-  *xoffset = extremums[1] - xmagnitude / 2;
-  *yoffset = extremums[3] - ymagnitude / 2;
-  *zoffset = extremums[5] - zmagnitude / 2;
-
-  float avg = (float)(xmagnitude + ymagnitude + zmagnitude) / 3.0;
-
-  /* slightly correct stock sens (0.1uT/LSB) */
-  *xsens = mag3110sens * (avg / (float)xmagnitude);
-  *ysens = mag3110sens * (avg / (float)ymagnitude);
-  *zsens = mag3110sens * (avg / (float)zmagnitude);
-}
-
-
-/**
- * Resets collected extremums
- */
-void clear_statistics(RawData *raw_data, int16_t extremums[6]){
-  extremums[0] = raw_data->xmag;
-  extremums[1] = raw_data->xmag;
-
-  extremums[2] = raw_data->ymag;
-  extremums[3] = raw_data->ymag;
-
-  extremums[4] = raw_data->zmag;
-  extremums[5] = raw_data->zmag;
-}
-
-/**
- * Helper function
- */
-void stats_check(int16_t val, int16_t storage[2]){
-  if (val == ERR_VAL)
-    return;
-  if (val < storage[0])
-    storage[0] = val;
-  else if (val > storage[1])
-    storage[1] = val;
-}
-
-/**
- * @brief  Собирает статистику по максимальным показаниям и минимальным
- * для автоматической калибровки.
- *
- * @param[in]  *raw_data    pointer to object with raw measurements
- * @param[in]  *extremums   array with maximus and minimums of raw magnetic
- *                          measurements
- */
-void collect_staticstics(RawData *raw_data, int16_t extremums[6]){
-  stats_check(raw_data->xmag, &(extremums[0]));
-  stats_check(raw_data->ymag, &(extremums[2]));
-  stats_check(raw_data->zmag, &(extremums[4]));
+  mag_stat_update();
 }
 
 /**
@@ -229,30 +134,12 @@ void check_and_clean_overdose(void){
   }
 }
 
-/**
- * Функция выставляет значения, которые трактуются, как знамение ошибки
- */
-//void raise_error_flags(void){
-//  raw_data.xmag = ERR_VAL;
-//  raw_data.ymag = ERR_VAL;
-//  raw_data.zmag = ERR_VAL;
-//  mavlink_raw_imu_struct.xmag = raw_data.xmag;
-//  mavlink_raw_imu_struct.ymag = raw_data.ymag;
-//  mavlink_raw_imu_struct.zmag = raw_data.zmag;
-//  mavlink_scaled_imu_struct.xmag = raw_data.xmag;
-//  mavlink_scaled_imu_struct.ymag = raw_data.ymag;
-//  mavlink_scaled_imu_struct.zmag = raw_data.zmag;
-//}
-
-
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
 void init_mag3110(BinarySemaphore *mag3110_semp){
-
-  state = MAG_UNINIT;
 
   /* Поиск индексов в массиве настроек */
   xoffset = ValueSearch("MAG_xoffset");
@@ -297,7 +184,7 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
           I2C_THREADS_PRIO,
           PollMagThread,
           mag3110_semp);
-  state = MAG_ACTIVE;
+
   chThdSleepMilliseconds(1);
 }
 

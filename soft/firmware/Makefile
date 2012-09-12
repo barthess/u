@@ -123,6 +123,7 @@ CSRC = $(PORTSRC) \
        src/sensors/bmp085.c \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
+       src/sensors/mag_cal.c \
        src/sensors/itg3200.c \
        src/sensors/i2c_local.c \
        src/cli/cli.c \

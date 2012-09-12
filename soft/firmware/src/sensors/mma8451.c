@@ -124,6 +124,16 @@ static void search_indexes(void){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+/**
+ *
+ */
+bool_t is_device_still(void){
+  return TRUE;
+}
+
+/**
+ *
+ */
 void init_mma8451(BinarySemaphore *mma8451_semp){
 
   search_indexes();

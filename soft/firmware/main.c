@@ -7,6 +7,12 @@
 //      - loiter
 //      - continue
 
+// TODO: realize is_device_still()
+// TODO: run mag calibration from mag thread or from cli with passing paramter to deduce from where it run
+// TODO: smart blinking in calibration thread
+// TODO: use is_device_still() in gyro thread
+
+// TODO: simple cli for start calibration and look to result
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 

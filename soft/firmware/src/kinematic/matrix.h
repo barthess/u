@@ -35,20 +35,6 @@ void matrix_copy(int m, int n, float* A, float* B ){
 			B[i*n+j] = A[i*n+j];	
 }
 
-//print a Matrix
-void matrix_print(int m, int n, float* A){
-	int i,j;
-	for(i=0;i<m;i++){
-		printf("{");
-		for(j=0;j<n;j++){
-			if(j>0) printf(",");
-			printf("%f", (double)(A[i*n+j]));
-		}
-		printf("},\n");
-	}
-}
-
-
 // Matrix Inversion Routine from http://www.arduino.cc/playground/Code/MatrixMath
 // * This function inverts a matrix based on the Gauss Jordan method.
 // * Specifically, it uses partial pivoting to improve numeric stability.

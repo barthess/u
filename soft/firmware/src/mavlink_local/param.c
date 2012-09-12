@@ -206,8 +206,11 @@ const GlobalParam_t global_data[] = {
   {"HEAD_iMin",       {.f32 = -10000},     &gd_val[115],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
   {"HEAD_iMax",       {.f32 = -10000},     &gd_val[116],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
+  /**/
+  {"MAG_zeroconut",   {.u32 = 256},        &gd_val[117],          {.u32 = 4096},     MAVLINK_TYPE_UINT32_T},
+
   /* fake field with 14 symbols name */
-  {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
+  {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},     MAVLINK_TYPE_UINT32_T},
 };
 
 

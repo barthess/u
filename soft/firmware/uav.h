@@ -29,6 +29,7 @@
 #include "link.h"
 #include "logger.h"
 #include "mag3110.h"
+#include "mag_cal.h"
 #include "mavcmd_local.h"
 #include "max1236.h"
 #include "message.h"
