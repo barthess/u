@@ -44,6 +44,7 @@
 #include "sensors.h"
 #include "servo.h"
 #include "servo_cli.h"
+#include "sphere.h"
 #include "stab.h"
 #include "timekeeping.h"
 #include "tlm_sender.h"

@@ -93,7 +93,6 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \
        src/stubs.c \
-       src/utils.c \
        src/bkp.c \
        src/exti_local.c \
        src/microrl/src/microrl.c \
@@ -141,6 +140,8 @@ CSRC = $(PORTSRC) \
        src/controller/fixed_wing.c \
        src/controller/planner.c \
        src/controller/stab.c \
+       src/utils/sphere.c \
+       src/utils/utils.c \
        src/message.c \
        src/dsp.c \
        src/pwr_mgmt.c \
@@ -200,6 +201,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/controller \
          src/mavlink_local \
          src/servo \
+         src/utils \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart
