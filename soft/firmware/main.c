@@ -3,15 +3,13 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: simple cli for start calibration and show results passing paramter to deduce from where it run
-
 // TODO: states for stab thread. Probably in status variable.
 //      - loiter
 //      - continue
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
-// TODO: delete all halt code
+// TODO: delete all halt code.
 // TODO: resort parameters in param structure
 // TODO: speed autosetting
 // TODO: disarming safety switch

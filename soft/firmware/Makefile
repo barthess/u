@@ -123,10 +123,11 @@ CSRC = $(PORTSRC) \
        src/sensors/bmp085.c \
        src/sensors/mma8451.c \
        src/sensors/mag3110.c \
-       src/sensors/mag_cal.c \
        src/sensors/itg3200.c \
-       src/sensors/gyro_cal.c \
        src/sensors/i2c_local.c \
+       src/calibration/gyro_cal.c \
+       src/calibration/mag_cal.c \
+       src/calibration/cli_cal.c \
        src/cli/cli.c \
        src/cli/cli_cmd.c \
        src/link/linkmgr.c \
@@ -204,6 +205,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/mavlink_local \
          src/servo \
          src/utils \
+         src/calibration \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart

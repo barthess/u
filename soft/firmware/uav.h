@@ -14,6 +14,7 @@
 #include "bkp.h"
 #include "bmp085.h"
 #include "cli.h"
+#include "cli_cal.h"
 #include "cli_cmd.h"
 #include "controller.h"
 #include "dsp.h"
