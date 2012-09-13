@@ -112,12 +112,12 @@ static msg_t MagCalThread(void *arg){
           MagSumY += raw_data.ymag;
           MagSumZ += raw_data.zmag;
           SamplesCnt--;
-          ProgramBlink(3, MS2ST(100), MS2ST(1));
+          SheduleBlink(3, MS2ST(100), MS2ST(1));
         }
         else{
           /* clear all collected statistics */
           clear_state();
-          ProgramBlink(3, MS2ST(20), MS2ST(100));
+          SheduleBlink(3, MS2ST(20), MS2ST(100));
         }
       }
       /* sigterm handler */
@@ -133,7 +133,7 @@ static msg_t MagCalThread(void *arg){
     CurrentPoint++;
 
     if (CurrentPoint < 3){
-      ProgramBlink(30000, MS2ST(500), MS2ST(500));
+      SheduleBlink(30000, MS2ST(500), MS2ST(500));
       wait_status = wait_new_position();
       if (wait_status != RDY_OK)
         goto TERMINATE;
@@ -149,7 +149,7 @@ static msg_t MagCalThread(void *arg){
 TERMINATE:
   clearGlobalFlag(MAG_CAL_FLAG);
   mavlink_system_struct.state = MAV_STATE_STANDBY;
-  ProgramBlink(10, MS2ST(100), MS2ST(100));
+  SheduleBlink(10, MS2ST(100), MS2ST(100));
   chThdExit(0);
   return 0;
 }

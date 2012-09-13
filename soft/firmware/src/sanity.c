@@ -123,7 +123,7 @@ static msg_t RedBlinkThread(void *arg) {
  * Schedule blink sequence.
  * [in] count of blinks and time intervals in sytem ticks
  */
-void ProgramBlink(uint32_t cnt, uint32_t on, uint32_t off){
+void SheduleBlink(uint32_t cnt, uint32_t on, uint32_t off){
   const systime_t max = MS2ST(500);
 
   chSysLock()

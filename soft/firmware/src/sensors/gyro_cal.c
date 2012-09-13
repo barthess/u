@@ -63,7 +63,7 @@ static msg_t GyroCalThread(void *arg){
         raw_data.ygyro_zero_sum += raw_data.ygyro;
         raw_data.zgyro_zero_sum += raw_data.zgyro;
         SamplesCnt--;
-        ProgramBlink(3, MS2ST(20), MS2ST(1));
+        SheduleBlink(3, MS2ST(20), MS2ST(1));
       }
       else{
         /* clear all collected statistics */
@@ -72,7 +72,7 @@ static msg_t GyroCalThread(void *arg){
         raw_data.zgyro_zero_sum = 0;
         SamplesCnt = *zerocount;
         device_still_clear();
-        ProgramBlink(3, MS2ST(20), MS2ST(100));
+        SheduleBlink(3, MS2ST(20), MS2ST(100));
       }
     }
     /* sigterm handler */

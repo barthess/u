@@ -3,8 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: run mag and gyro calibration from sensors' threads or from cli with passing paramter to deduce from where it run
-// TODO: simple cli for start calibration and show results
+// TODO: simple cli for start calibration and show results passing paramter to deduce from where it run
 
 // TODO: states for stab thread. Probably in status variable.
 //      - loiter
@@ -13,6 +12,7 @@
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
 // TODO: delete all halt code
+// TODO: resort parameters in param structure
 // TODO: speed autosetting
 // TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
