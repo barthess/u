@@ -10,7 +10,6 @@
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
 // TODO: delete all halt code.
-// TODO: resort parameters in param structure
 // TODO: speed autosetting
 // TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
