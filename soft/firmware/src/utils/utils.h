@@ -24,4 +24,6 @@ int16_t complement2signed(uint8_t msb, uint8_t lsb);
 uint32_t median_filter_5(uint32_t *buf, uint32_t sample);
 uint32_t median_filter_3(uint32_t *buf, uint32_t sample);
 
+uint32_t isqrt(uint32_t x);
+
 #endif /* UTILS_H_ */

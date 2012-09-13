@@ -51,10 +51,11 @@ const GlobalParam_t global_data[] = {
   {"SH_enable",       {.u32 = 0},          &gd_val[2],          {.u32 = 1},          MAVLINK_TYPE_UINT32_T},
 
   /* IMU - inertial measurement unit */
-  {"IMU_g1",          {.f32 = -1},         &gd_val[3],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
-  {"IMU_g2",          {.f32 = -1},         &gd_val[4],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
-  {"IMU_g3",          {.f32 = -1},         &gd_val[5],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
-  {"IMU_still_thr",   {.u32 = 100},        &gd_val[6],        {.u32 = 3000},       MAVLINK_TYPE_UINT32_T},
+  {"IMU_reserved1",   {.f32 = -1},         &gd_val[3],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved2",   {.f32 = -1},         &gd_val[4],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved3",   {.f32 = -1},         &gd_val[5],        {.f32 = 1},          MAVLINK_TYPE_FLOAT},
+  /* Micro g. If acceleration delta < this value that device is still */
+  {"IMU_still_thr",   {.u32 = 100},        &gd_val[6],        {.u32 = 100000},     MAVLINK_TYPE_UINT32_T},
 
   /**** смещения нулей магнитометра ****/
   {"MAG_xoffset",     {.i32 = -5000},      &gd_val[7],        {.i32 = 5000},       MAVLINK_TYPE_INT32_T},
@@ -150,12 +151,12 @@ const GlobalParam_t global_data[] = {
   {"IMU_accweight",   {.f32 = 0.0},        &gd_val[70],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
   {"IMU_magweight",   {.f32 = 0.0},        &gd_val[71],          {.f32 = 0.9},        MAVLINK_TYPE_FLOAT},
   {"IMU_gpsweight",   {.f32 = 0.0},        &gd_val[72],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved1",   {.f32 = 0.0},        &gd_val[73],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved2",   {.f32 = 0.0},        &gd_val[74],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved3",   {.f32 = 0.0},        &gd_val[75],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved4",   {.f32 = 0.0},        &gd_val[76],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved5",   {.f32 = 0.0},        &gd_val[77],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved6",   {.f32 = 0.0},        &gd_val[78],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved4",   {.f32 = 0.0},        &gd_val[73],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved5",   {.f32 = 0.0},        &gd_val[74],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved6",   {.f32 = 0.0},        &gd_val[75],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved7",   {.f32 = 0.0},        &gd_val[76],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved8",   {.f32 = 0.0},        &gd_val[77],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
+  {"IMU_reserved9",   {.f32 = 0.0},        &gd_val[78],          {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
 
   /* sample count for zeroing */
   {"GYRO_zerocnt",    {.u32 = 256},        &gd_val[79],          {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
@@ -207,7 +208,7 @@ const GlobalParam_t global_data[] = {
   {"HEAD_iMax",       {.f32 = -10000},     &gd_val[116],          {.f32 = 10000.0},  MAVLINK_TYPE_FLOAT},
 
   /**/
-  {"MAG_zerocnt",     {.u32 = 256},        &gd_val[117],          {.u32 = 4096},     MAVLINK_TYPE_UINT32_T},
+  {"MAG_zerocnt",     {.i32 = 256},        &gd_val[117],          {.i32 = 4096},     MAVLINK_TYPE_INT32_T},
 
   /* fake field with 14 symbols name */
   {"param_end_mark",  {.u32 = 1},          &gd_val[104],          {.u32 = 1224},     MAVLINK_TYPE_UINT32_T},

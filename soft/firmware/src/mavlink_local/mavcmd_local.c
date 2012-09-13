@@ -45,7 +45,7 @@ static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
 }
 
 /**
- *
+ * NOTE: Calibration of gyros and magnetometers can not be run simulatiously
  */
 static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
   /* Trigger calibration. This command will be only accepted if in pre-flight mode.
@@ -55,30 +55,22 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
   * | Radio calibration: 0: no, 1: yes
   * | Empty| Empty| Empty|  */
 
-  if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
+  if ((mavlink_system_struct.mode != MAV_MODE_PREFLIGHT) ||
+                            (GlobalFlags & GYRO_CAL_FLAG)||
+                            (GlobalFlags & MAG_CAL_FLAG))
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
   /* Gyro */
   if (cl->param1 == 1){
     setGlobalFlag(GYRO_CAL_FLAG);
-    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+    return MAV_RESULT_ACCEPTED;
   }
-  else{
-    clearGlobalFlag(GYRO_CAL_FLAG);
-    mavlink_system_struct.state = MAV_STATE_STANDBY;
-  }
-
-  /* Magnetometer */
-  if (cl->param2 == 1){
+  else if (cl->param2 == 1){ /* Magnetometer */
     setGlobalFlag(MAG_CAL_FLAG);
-    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+    return MAV_RESULT_ACCEPTED;
   }
-  else{
-    clearGlobalFlag(MAG_CAL_FLAG);
-    mavlink_system_struct.state = MAV_STATE_STANDBY;
-  }
-
-  return MAV_RESULT_ACCEPTED;
+  else
+    return MAV_RESULT_DENIED;
 }
 
 /**

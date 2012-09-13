@@ -6,6 +6,7 @@
  * DEFINES
  ******************************************************************************
  */
+#define NEW_POSITION_THRESHOLD 30000
 
 /*
  ******************************************************************************
@@ -38,26 +39,60 @@ static BinarySemaphore mag_cal_sem;
  ******************************************************************************
  ******************************************************************************
  */
+/**
+ * You must turn device in new position
+ */
+msg_t wait_new_position(void){
+  int16_t prevx, prevy, prevz;
+  uint32_t delta = 0;
+  const uint32_t tmo = 200;
+  const uint32_t overall_tmo = 60000;
+  uint32_t retry = overall_tmo / tmo;
+
+  prevx = raw_data.xmag;
+  prevy = raw_data.ymag;
+  prevz = raw_data.zmag;
+
+  while (delta < NEW_POSITION_THRESHOLD){
+    delta  = (prevx - raw_data.xmag) * (prevx - raw_data.xmag);
+    delta += (prevy - raw_data.ymag) * (prevy - raw_data.ymag);
+    delta += (prevz - raw_data.zmag) * (prevz - raw_data.zmag);
+    retry--;
+    if (retry == 0)
+      return RDY_RESET;
+    chThdSleepMilliseconds(tmo);
+  }
+  return RDY_OK;
+}
+
 /* test matrix */
 //  int32_t P[4][3]={{2572, -2819, -1864},
 //                   {2393, -2990, -1864},
 //                   {2320, -2701, -1867},
 //                   {2423, -2800, -1907}};
 
-/*
- * Blink every mag sample - device is not still
- * Light without blinking - collecting statistics
+#define clear_state() {\
+  SamplesCnt = *zerocount;\
+  MagSumX = 0;\
+  MagSumY = 0;\
+  MagSumZ = 0;\
+  device_still_clear();\
+}
+
+/**
+ *
  */
 static WORKING_AREA(MagCalThreadWA, 512);
 static msg_t MagCalThread(void *arg){
   chRegSetThreadName("MagCal");
   (void)arg;
 
-  uint32_t const *zerocount = ValueSearch("MAG_zerocnt");
+  int32_t const *zerocount = ValueSearch("MAG_zerocnt");
   uint32_t CurrentPoint = 0;
   uint32_t SamplesCnt = *zerocount;
   int32_t MagSumX = 0, MagSumY = 0, MagSumZ = 0;
   msg_t sem_status = RDY_OK;
+  msg_t wait_status = RDY_RESET;
   Sphere S = {{0,0,0}, 0};
   int32_t P[4][3]={{0, 0, 0},
                    {0, 0, 0},
@@ -65,6 +100,7 @@ static msg_t MagCalThread(void *arg){
                    {0, 0, 0}};
 
   mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  clear_state();
 
   /* main loop */
   while(CurrentPoint < 4){
@@ -80,12 +116,8 @@ static msg_t MagCalThread(void *arg){
         }
         else{
           /* clear all collected statistics */
-          SamplesCnt = *zerocount;
-          MagSumX = 0;
-          MagSumY = 0;
-          MagSumZ = 0;
-          device_still_clear();
-          ProgramBlink(2, MS2ST(100), MS2ST(100));
+          clear_state();
+          ProgramBlink(3, MS2ST(20), MS2ST(100));
         }
       }
       /* sigterm handler */
@@ -97,7 +129,15 @@ static msg_t MagCalThread(void *arg){
     P[CurrentPoint][0] = MagSumX / *zerocount;
     P[CurrentPoint][1] = MagSumY / *zerocount;
     P[CurrentPoint][2] = MagSumZ / *zerocount;
+    clear_state();
     CurrentPoint++;
+
+    if (CurrentPoint < 3){
+      ProgramBlink(30000, MS2ST(500), MS2ST(500));
+      wait_status = wait_new_position();
+      if (wait_status != RDY_OK)
+        goto TERMINATE;
+    }
   }
 
   /* all points got. Calculate sphere */
@@ -109,6 +149,7 @@ static msg_t MagCalThread(void *arg){
 TERMINATE:
   clearGlobalFlag(MAG_CAL_FLAG);
   mavlink_system_struct.state = MAV_STATE_STANDBY;
+  ProgramBlink(10, MS2ST(100), MS2ST(100));
   chThdExit(0);
   return 0;
 }

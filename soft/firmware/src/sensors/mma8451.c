@@ -61,10 +61,18 @@ static void process_accel_data(uint8_t *rxbuf){
   raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
   raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
 
-  delta  = (prevx - raw_data.xacc) * (prevx - raw_data.xacc);
-  delta += (prevy - raw_data.yacc) * (prevy - raw_data.yacc);
-  delta += (prevz - raw_data.zacc) * (prevz - raw_data.zacc);
-  if (delta > *still_thr)
+  /* only determine acceleration delta and compare it to threshold in
+   * calibration mode. In normal mode just presume that deivece is moving */
+  if ((GlobalFlags & GYRO_CAL_FLAG) || (GlobalFlags & MAG_CAL_FLAG)){
+    delta  = (prevx - raw_data.xacc) * (prevx - raw_data.xacc);
+    delta += (prevy - raw_data.yacc) * (prevy - raw_data.yacc);
+    delta += (prevz - raw_data.zacc) * (prevz - raw_data.zacc);
+    delta = isqrt(delta);
+    delta = (delta * ACCEL_SENS * 1000000) / (1<<16); // get acceleration delta in micro g
+    if (delta > *still_thr)
+      DeviceStill = FALSE;
+  }
+  else
     DeviceStill = FALSE;
 
   /* there is no need of correcting of placement. Just get milli g */
