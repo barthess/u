@@ -33,7 +33,7 @@ int32_t OnboardParamCount = 0;
 /*
  * variable array of parameters in RAM
  */
-static floatint gd_val[128];
+static floatint gd_val[120];
 
 /**
  *

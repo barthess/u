@@ -173,10 +173,6 @@ static msg_t PollGyroThread(void *semp){
       chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
       itg3200_write_log();/* save data to logfile */
     }
-
-    /* system halt handler */
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }

@@ -6,13 +6,13 @@
 // TODO: states for stab thread. Probably in status variable.
 //      - loiter
 //      - continue
+// TODO: disarming safety switch
+// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
 
-// TODO: delete all halt code.
+
 // TODO: speed autosetting
-// TODO: disarming safety switch
-// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: (semi)automated zeroing of accelerometer.
 // TODO: Power brown out handler for sync/umout SDC.

@@ -19,7 +19,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern uint32_t GlobalFlags;
 
 extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
@@ -186,9 +185,6 @@ static msg_t PollBaroThread(void *semp){
     bmp085_calc();
 
     t++;
-
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }

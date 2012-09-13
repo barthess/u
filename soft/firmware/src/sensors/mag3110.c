@@ -99,9 +99,6 @@ static msg_t PollMagThread(void *semp){
 
     /* overdose? */
     check_and_clean_overdose();
-
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }

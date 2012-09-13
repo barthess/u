@@ -111,9 +111,6 @@ static msg_t PollAccelThread(void *semp){
     txbuf[0] = ACCEL_STATUS;
     i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 7);
     process_accel_data(rxbuf);
-
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }

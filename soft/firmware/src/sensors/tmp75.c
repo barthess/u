@@ -17,7 +17,6 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
-extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -63,9 +62,6 @@ static msg_t PollTmp75Thread(void *arg){
     comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
     mavlink_scaled_pressure_struct.temperature = comp_data.temp_onboard;
     chThdSleepMilliseconds(2000);
-
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }

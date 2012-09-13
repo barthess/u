@@ -91,8 +91,6 @@ static msg_t PollMax1236Thread(void *arg) {
       log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
       log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
     }
-    if (GlobalFlags & SIGHALT_FLAG)
-      chThdExit(RDY_OK);
   }
   return 0;
 }
