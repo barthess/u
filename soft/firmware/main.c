@@ -8,9 +8,7 @@
 //      - continue
 // TODO: disarming safety switch
 // TODO: checking  states of flags in controller: manual, preflight, armed, etc.
-// TODO: simple WPs_cli instead of controller_cli
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
-
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
