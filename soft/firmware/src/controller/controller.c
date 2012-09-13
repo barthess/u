@@ -56,9 +56,8 @@ uint8_t float2servo(float v){
 /**
  * Set autopilot mode logic.
  */
-void set_mode_handler(mavlink_set_mode_t *mavlink_set_mode_struct){
-  mavlink_system_struct.mode = mavlink_set_mode_struct->custom_mode |
-                               mavlink_set_mode_struct->base_mode;
+void set_mode_handler(mavlink_set_mode_t *sms){
+  mavlink_system_struct.mode = sms->custom_mode | sms->base_mode;
 }
 
 /**
