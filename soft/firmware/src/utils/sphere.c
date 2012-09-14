@@ -38,15 +38,15 @@
  */
 
 //  Recursive definition of determinate using expansion by minors.
-float determinant(int32_t a[4][4], uint32_t n)
+float determinant(float a[4][4], uint32_t n)
 {
   uint32_t i, j, j1, j2, q;
   int32_t k = 1;
   float d = 0;
-  int32_t m[4][4] = {{0,0,0,0},
-                     {0,0,0,0},
-                     {0,0,0,0},
-                     {0,0,0,0}};
+  float m[4][4] = {{0,0,0,0},
+                   {0,0,0,0},
+                   {0,0,0,0},
+                   {0,0,0,0}};
 
   if (n == 2){                             // terminate recursion
     d = a[0][0]*a[1][1] - a[1][0]*a[0][1];
@@ -94,10 +94,10 @@ float determinant(int32_t a[4][4], uint32_t n)
 void SolveSphere(Sphere *S, int32_t P[4][3]){
   uint32_t i;
   float m11, m12, m13, m14, m15;
-  int32_t a[4][4] = {{0,0,0,0},
-                     {0,0,0,0},
-                     {0,0,0,0},
-                     {0,0,0,0}};
+  float a[4][4] = {{0,0,0,0},
+                   {0,0,0,0},
+                   {0,0,0,0},
+                   {0,0,0,0}};
 
   for (i = 0; i < 4; i++){                    // find minor 11
     a[i][0] = P[i][0];
