@@ -132,6 +132,7 @@ static msg_t MagCalThread(void *arg){
     clear_state();
     CurrentPoint++;
 
+    /* signal to user that we has got point and device must be turned in new position */
     if (CurrentPoint < 4){
       SheduleBlink(30000, MS2ST(500), MS2ST(500));
       wait_status = wait_new_position();
