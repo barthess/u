@@ -166,6 +166,12 @@ static bool_t mission_count_handler(Mail* mailp){
   mavlink_mission_request_struct.seq = 0;
   mavlink_mission_item_t *wp = NULL;
 
+  /* check available space */
+  if (waypoint_cnt * sizeof(mavlink_mission_item_t) > EEPROM_MISSION_SIZE){
+    send_ack(MAV_MISSION_NO_SPACE);
+    return MAVLINK_WPM_STATE_IDLE;
+  }
+
   /* start transaction from clean state to be safer */
   save_waypoint_count(0);
 
@@ -188,10 +194,7 @@ static bool_t mission_count_handler(Mail* mailp){
 
   /* save waypoint count in eeprom only in the end of successfull transaction */
   save_waypoint_count(mavlink_mission_request_struct.seq);
-
-  /* send ACK */
   send_ack(MAV_MISSION_ACCEPTED);
-  //send_ack(MAV_MISSION_NO_SPACE);
   return MAVLINK_WPM_STATE_IDLE;
 }
 

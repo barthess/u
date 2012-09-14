@@ -156,12 +156,22 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
    * | Longitude / Y position
    * | Altitude / Z position|  */
   if (cl->param1 == MAV_GOTO_DO_HOLD &&
-      cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
+      cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION &&
+      cl->param3 == 0 &&
+      cl->param4 == 0 &&
+      cl->param5 == 0 &&
+      cl->param6 == 0 &&
+      cl->param7 == 0){
     setGlobalFlag(MISSION_ABORT_FLAG); /* this is not correct but correspond too QGC stop button*/
     return MAV_RESULT_ACCEPTED;
   }
   else if (cl->param1 == MAV_GOTO_DO_CONTINUE &&
-           cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION){
+           cl->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION &&
+           cl->param3 == 0 &&
+           cl->param4 == 0 &&
+           cl->param5 == 0 &&
+           cl->param6 == 0 &&
+           cl->param7 == 0){
     clearGlobalFlag(MISSION_LOITER_FLAG);
     return MAV_RESULT_ACCEPTED;
   }

@@ -3,13 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: states for stab thread. Probably in status variable.
-//      - loiter
-//      - continue
-// TODO: disarming safety switch
-// TODO: checking  states of flags in controller: manual, preflight, armed, etc.
+// TODO: usage of local ned notation and GPS.
 // TODO: before waypoints ACK message there must be much deeper parameter checks.
-
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: (semi)automated zeroing of accelerometer.
