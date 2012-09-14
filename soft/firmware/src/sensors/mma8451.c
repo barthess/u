@@ -37,6 +37,9 @@ static uint32_t const *still_thr;
 
 static bool_t DeviceStill = FALSE;
 
+/* variable to check still device or not */
+static int16_t prev_xacc = 0, prev_yacc = 0, prev_zacc = 0;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -49,13 +52,14 @@ static bool_t DeviceStill = FALSE;
  *
  */
 static void process_accel_data(uint8_t *rxbuf){
-  int16_t prevx, prevy, prevz;
   uint32_t delta;
 
   /* save previouse values */
-  prevx = raw_data.xacc;
-  prevy = raw_data.yacc;
-  prevz = raw_data.zacc;
+  if (!DeviceStill){
+    prev_xacc = raw_data.xacc;
+    prev_yacc = raw_data.yacc;
+    prev_zacc = raw_data.zacc;
+  }
 
   raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
   raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
@@ -64,11 +68,11 @@ static void process_accel_data(uint8_t *rxbuf){
   /* only determine acceleration delta and compare it to threshold in
    * calibration mode. In normal mode just presume that deivece is moving */
   if ((GlobalFlags & GYRO_CAL_FLAG) || (GlobalFlags & MAG_CAL_FLAG)){
-    delta  = (prevx - raw_data.xacc) * (prevx - raw_data.xacc);
-    delta += (prevy - raw_data.yacc) * (prevy - raw_data.yacc);
-    delta += (prevz - raw_data.zacc) * (prevz - raw_data.zacc);
+    delta  = (prev_xacc - raw_data.xacc) * (prev_xacc - raw_data.xacc);
+    delta += (prev_yacc - raw_data.yacc) * (prev_yacc - raw_data.yacc);
+    delta += (prev_zacc - raw_data.zacc) * (prev_zacc - raw_data.zacc);
     delta = isqrt(delta);
-    delta = (delta * ACCEL_SENS * 1000000) / (1<<16); // get acceleration delta in micro g
+    delta = (delta * ACCEL_SENS * 1000000) >> 16; // get acceleration delta in milli g
     if (delta > *still_thr)
       DeviceStill = FALSE;
   }

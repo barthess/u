@@ -51,7 +51,7 @@ const GlobalParam_t global_data[] = {
   {"SH_enable",       {.u32 = 0},          &gd_val[2],    {.u32 = 1},          MAVLINK_TYPE_UINT32_T},
 
   /**** IMU - inertial measurement unit */
-  /* Micro g. If acceleration delta < this value that device is still */
+  /* Milli g. If acceleration delta < this value that device is still */
   {"IMU_still_thr",   {.u32 = 100},        &gd_val[3],    {.u32 = 100000},     MAVLINK_TYPE_UINT32_T},
   /* veights of different components */
   {"IMU_accweight",   {.f32 = 0.0},        &gd_val[4],    {.f32 = 0.1},        MAVLINK_TYPE_FLOAT},
