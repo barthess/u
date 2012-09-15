@@ -225,8 +225,8 @@ MCU  = cortex-m4 -lm
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-
-CC   = $(TRGT)gcc
-CPPC = $(TRGT)g++
+CC   = ccache $(TRGT)gcc
+CPPC = ccache $(TRGT)g++
 #TRGT = ""
 #CC   = $(TRGT)clang
 #CPPC = $(TRGT)clang++

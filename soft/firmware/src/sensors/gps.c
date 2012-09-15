@@ -111,16 +111,13 @@ static msg_t gpsRxThread(void *arg){
   Mail gps_mail = {NULL, MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL};
 
   mavlink_global_position_int_struct.time_boot_ms = 0;
-  mavlink_global_position_int_struct.lat = 0;
-  mavlink_global_position_int_struct.lon = 0;
-  mavlink_global_position_int_struct.alt = 0;
   mavlink_global_position_int_struct.relative_alt = 0;
   mavlink_global_position_int_struct.vx = 0;
   mavlink_global_position_int_struct.vy = 0;
   mavlink_global_position_int_struct.vz = 0;
   mavlink_global_position_int_struct.hdg = 65535;
 
-  /* отправим последние достоверные кординаты */
+  /* установим последние достоверные кординаты */
   mavlink_global_position_int_struct.lat = bkpGetGpsLatitude();
   mavlink_global_position_int_struct.lon = bkpGetGpsLongitude();
   mavlink_global_position_int_struct.alt = bkpGetGpsAltitude();
