@@ -11,6 +11,8 @@
 #define PLANNER_RETRY_TMO     MS2ST(1000)
 #define PLANNER_POST_TMO      MS2ST(1000)
 
+#define TARGET_RADIUS         param2 /* dirty fix to correspond QGC not mavlink lib */
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -161,10 +163,12 @@ static MAVLINK_WPM_STATES mission_request_list_handler(Mail* mailp){
  * Perform waypoint checking
  */
 uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
-  if ((wp->frame != MAV_FRAME_GLOBAL) || (wp->frame != MAV_FRAME_LOCAL_NED))
+  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED))
     return MAV_MISSION_UNSUPPORTED_FRAME;
   if (wp->seq != seq)
     return MAV_MISSION_INVALID_SEQUENCE;
+  if (wp->TARGET_RADIUS < 10)
+    return MAV_MISSION_INVALID_PARAM1;
 
   /* no errors found */
   return MAV_MISSION_ACCEPTED;

@@ -12,6 +12,7 @@
  * we nee timout 500mS */
 #define SPEED_UPDATE_RETRY  (500 / 20)
 #define STAB_TMO            MS2ST(20)
+#define TARGET_RADIUS       param2 /* dirty fix to correspond QGC not mavlink lib */
 
 /*
  ******************************************************************************
@@ -20,7 +21,7 @@
  */
 extern uint32_t           GlobalFlags;
 
-//extern RawData raw_data;
+extern RawData raw_data;
 extern CompensatedData    comp_data;
 extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
 extern Mailbox            speedometer_mb;
@@ -29,6 +30,8 @@ extern Mailbox            tolink_mb;
 
 extern mavlink_mission_current_t      mavlink_mission_current_struct;
 extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
+
+extern float LongitudeScale;
 
 /*
  ******************************************************************************
@@ -39,11 +42,11 @@ static uint32_t speed_retry_cnt = 0;
 
 static pid_f32_t speed_pid;
 static pid_f32_t heading_pid;
-static float x_prev_wp = 0, y_prev_wp = 0;
+static float x_prev_wp = 0, y_prev_wp = 0; /* for local NED waypoint calculations */
 static uint16_t WpSeqNew = 0;
 
 static float const *pulse2m;
-static float const *desired_speed__;
+static float const *desired_speed;
 
 static Mail mission_current_mail = {NULL, MAVLINK_MSG_ID_MISSION_CURRENT, NULL};
 static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL};
@@ -61,6 +64,36 @@ static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACH
  ******************************************************************************
  ******************************************************************************
  */
+
+/**
+ *
+ */
+static bool_t is_local_ned_wp_reached(float target_trip){
+  if ((bkpOdometer * *pulse2m) >= target_trip)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+/**
+ * Unlimited loiter intil flag will be cleared.
+ */
+static void loiter_if_need(void){
+  while (GlobalFlags & MISSION_LOITER_FLAG){
+    ServoCarThrustSet(128);
+    chThdSleep(STAB_TMO);
+  }
+}
+
+/**
+ *
+ */
+static void reset_pids(void){
+  speed_pid.iState   = 0;
+  speed_pid.dState   = 0;
+  heading_pid.iState = 0;
+  heading_pid.dState = 0;
+}
 
 /**
  *
@@ -85,7 +118,7 @@ static void broadcast_mission_item_reached(uint16_t seq){
 /**
  *
  */
-static void keep_speed(pid_f32_t *spd_pidp, float current, float desired){
+static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired){
   float impact = 0;
 
   impact = UpdatePID(spd_pidp, desired - current, current);
@@ -98,7 +131,7 @@ static void keep_speed(pid_f32_t *spd_pidp, float current, float desired){
 /**
  *
  */
-static void keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
+static void pid_keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
   float impact = 0;
   impact = UpdatePID(hdng_pidp, desired - current, current);
   ServoCarYawSet(float2servo(impact));
@@ -107,7 +140,7 @@ static void keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
 /**
  * Calculate current ground speed from tachometer pulses
  */
-static void update_speed(void){
+static void update_odometer_speed(void){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -118,10 +151,10 @@ static void update_speed(void){
     speed_retry_cnt = 0;
   }
   else{
-    (speed_retry_cnt)++;
+    speed_retry_cnt++;
     if (speed_retry_cnt > SPEED_UPDATE_RETRY){
       speed_retry_cnt = SPEED_UPDATE_RETRY + 2; // to avoid overflow
-      comp_data.groundspeed = 0.0;
+      comp_data.groundspeed = 0.0; /* device is still */
     }
   }
 
@@ -130,73 +163,127 @@ static void update_speed(void){
 }
 
 /**
- * Calculate desired heading. Needs to be constantly updates.
+ * Calculate trip and heading needed to reach waypoint.
  */
-static void update_heading(void){
-  return;
-}
+static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float *trip){
+  float delta_x = x_prev_wp - wp->x;
+  float delta_y = y_prev_wp - wp->y;
 
-/**
- * Load waypoint from EEPROM and calculate desired values.
- */
-static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
-  mavlink_mission_item_t wp;
-  bool_t status = WP_FAILED;
+  *heading = atan2f(delta_x, delta_y);
 
-  /* get current waypoint */
-  status = get_waypoint_from_eeprom(seq, &wp);
-  if (status != WP_SUCCESS)
-    return WP_FAILED;
-  else{
-    float delta_x = x_prev_wp - wp.x;
-    float delta_y = y_prev_wp - wp.y;
-
-    /* stub! */
-    //*heading = atan2f(delta_x, delta_y);
-    *heading = 0;
-
-    *target_trip = sqrtf(delta_x * delta_x + delta_y * delta_y);
-    *target_trip += (bkpOdometer * *pulse2m);
-  }
+  *trip  = bkpOdometer * *pulse2m;
+  *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
 
   /* save values for next iteration */
-  x_prev_wp = wp.x;
-  y_prev_wp = wp.y;
-  return WP_SUCCESS;
+  x_prev_wp = wp->x;
+  y_prev_wp = wp->y;
 }
 
 /**
- *
+ * Handle waypoint with MAV_FRAME_LOCAL_NED
  */
-static bool_t is_wp_reached(float target_trip){
-  uint32_t odo = bkpOdometer;
-  float k = *pulse2m;
+static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
 
-  if ((odo * k) >= target_trip)
+  float target_trip = 0;
+  float target_heading = 0;
+  speed_retry_cnt = 0;
+
+  broadcast_mission_current(wp->seq);
+  parse_local_ned_wp(wp, &target_heading, &target_trip);
+
+  /* stabilization loop for single waypoint */
+  while (!is_local_ned_wp_reached(target_trip)){
+    if (GlobalFlags & MISSION_ABORT_FLAG)
+      return WP_GOTO_ABORTED;
+
+    loiter_if_need();
+
+    if (WpSeqNew != 0)
+      return WP_GOTO_RESCHEDULED;
+
+    chBSemWait(&servo_updated_sem);
+    update_odometer_speed();
+    pid_keep_speed(&speed_pid, comp_data.groundspeed, *desired_speed);
+    pid_keep_heading(&heading_pid, comp_data.heading, target_heading);
+  }
+  return WP_GOTO_REACHED;
+}
+
+/**
+ * Calculate heading needed to reach waypoint and return TRUE if waypoint reached.
+ */
+static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
+  float delta_x = (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE - wp->x) * LongitudeScale;
+  float delta_y = raw_data.gps_latitude / GPS_FIXED_POINT_SCALE - wp->y;
+
+  *heading = atan2f(delta_x, delta_y);
+
+  if (sqrtf(delta_x * delta_x + delta_y * delta_y) < wp->TARGET_RADIUS)
     return TRUE;
   else
     return FALSE;
 }
 
 /**
- * Unlimited loiter intil flag will be cleared.
+ * Handle waypoint with MAV_FRAME_LOCAL_NED
  */
-static void loiter_if_need(void){
-  while (GlobalFlags & MISSION_LOITER_FLAG){
-    ServoCarThrustSet(128);
-    chThdSleep(STAB_TMO);
+static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
+  float target_heading = 0;
+
+  broadcast_mission_current(wp->seq);
+
+  /* stabilization loop for single waypoint */
+  while (!is_global_wp_reached(wp, &target_heading)){
+    if (GlobalFlags & MISSION_ABORT_FLAG)
+      return WP_GOTO_ABORTED;
+
+    loiter_if_need();
+
+    if (WpSeqNew != 0)
+      return WP_GOTO_RESCHEDULED;
+
+    chBSemWait(&servo_updated_sem);
+    update_odometer_speed();
+    pid_keep_speed(&speed_pid, comp_data.groundspeed, *desired_speed);
+    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
+      pid_keep_heading(&heading_pid, deg2radf(raw_data.gps_course / 100.0), target_heading);
+    else
+      pid_keep_heading(&heading_pid, comp_data.heading, target_heading);
   }
+  return WP_GOTO_REACHED;
 }
 
 /**
- *
+ * Get waypoint from EEPROM
+ * determine its type and call specialized routine
  */
-static void reset_pids(void){
-  speed_pid.iState = 0;
-  speed_pid.dState = 0;
-  heading_pid.iState = 0;
-  heading_pid.dState = 0;
+static goto_wp_result_t goto_wp(uint16_t seq){
+  mavlink_mission_item_t wp;
+  bool_t status = WP_FAILED;
+
+  /* get current waypoint */
+  status = get_waypoint_from_eeprom(seq, &wp);
+  if (status != WP_SUCCESS)
+    return WP_GOTO_FAILED;
+  else{
+    switch (wp.frame){
+    case MAV_FRAME_LOCAL_NED:
+      return goto_wp_local_ned(&wp);
+      break;
+
+    case MAV_FRAME_GLOBAL:
+      return goto_wp_global(&wp);
+      break;
+
+    default:
+      chDbgPanic("");
+      break;
+    }
+  }
+
+  return WP_GOTO_FAILED;
 }
+
 
 /**
  * Stabilization thread.
@@ -209,9 +296,7 @@ static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
   (void)arg;
 
-  float target_trip;      /* current position will be starting point */
-  float desired_heading;
-  float desired_speed;
+  goto_wp_result_t wp_result;
   uint16_t seq;
   uint16_t wp_cnt;
 
@@ -225,10 +310,6 @@ WAIT_NEW_MISSION:
   while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
     chThdSleep(STAB_TMO);
 
-  speed_retry_cnt = 0;
-  target_trip = bkpOdometer * *pulse2m;
-  desired_heading = 0;
-  desired_speed = 0.8;
   seq = 0;
   wp_cnt = get_waypoint_count();
 
@@ -238,38 +319,27 @@ WAIT_NEW_MISSION:
 
   /* loop the whole mission */
   do {
-    parse_next_wp(seq, &desired_heading, &target_trip);
-    broadcast_mission_current(seq);
-
-    /* stabilization loop for single waypoint */
-    while (!is_wp_reached(target_trip)){
-      if (GlobalFlags & MISSION_ABORT_FLAG)
-        goto WAIT_NEW_MISSION;
-
-      loiter_if_need();
-
-      if (WpSeqNew != 0)
-        break; /* exit from "while (!is_wp_reached(target_trip))" */
-
-      chBSemWait(&servo_updated_sem);
-      update_speed();
-      keep_speed(&speed_pid, comp_data.groundspeed, desired_speed);
-      update_heading();
-      keep_heading(&heading_pid, comp_data.heading, desired_heading);
-    }
-
-    if (WpSeqNew == 0){   /* regular schedule next waypoint */
+    wp_result = goto_wp(seq);
+    switch (wp_result){
+    case WP_GOTO_REACHED:
+      /* regular schedule next waypoint */
       broadcast_mission_item_reached(seq);
       seq++;
-    }
-    else{                 /* force schedule specified waypoint */
+      break;
+
+    case WP_GOTO_RESCHEDULED:
+      /* force schedule specified waypoint */
       seq = WpSeqNew;
       chSysLock();
       WpSeqNew = 0;
       chSysUnlock();
-    }
+      break;
 
-  } while (seq < wp_cnt);
+    default:
+      chDbgPanic("");
+      break;
+    }
+  }while (seq < wp_cnt);
 
   goto WAIT_NEW_MISSION;
 
@@ -299,6 +369,7 @@ void WpSeqOverwrite(uint16_t seq){
 Thread* StabInit(void){
 
   pulse2m = ValueSearch("SPD_pulse2m");
+  desired_speed = ValueSearch("SPD_speed");
 
   speed_pid.iGain  = ValueSearch("SPD_iGain");
   speed_pid.pGain  = ValueSearch("SPD_pGain");

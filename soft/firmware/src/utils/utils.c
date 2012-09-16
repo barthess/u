@@ -225,3 +225,16 @@ uint32_t isqrt(uint32_t x){
   return res;
 }
 
+/**
+ * convert from degrees to radians
+ */
+float deg2radf(float deg){
+  return (deg * PI) / 180.0;
+}
+
+/**
+ * convert from degrees to radians
+ */
+float rad2degf(float rad){
+  return (rad * 180.0) / PI;
+}

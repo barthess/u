@@ -56,6 +56,8 @@ extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 extern struct tm gps_timp;
 
+float LongitudeScale = 0;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -241,8 +243,16 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     bkpSaveGpsLatitude(global_pos_struct->lat);
     bkpSaveGpsLongitude(global_pos_struct->lon);
     bkpSaveGpsAltitude(global_pos_struct->alt);
+
+    raw_data.gps_valid = TRUE;
+
+    /**/
+    if (LongitudeScale == 0)
+      LongitudeScale = cosf(deg2radf((float)gps_longitude / GPS_FIXED_POINT_SCALE));
 	}
 	else{
+	  raw_data.gps_valid = FALSE;
+
     raw_data.gps_latitude = 0;
     raw_data.gps_longitude = 0;
     raw_data.gps_altitude = 0;
@@ -298,10 +308,12 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   if (valid == 'A'){                              /* если координаты достоверны */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
+  	raw_data.gps_valid = TRUE;
     mavlink_vfr_hud_struct.groundspeed = (float)(gps_speed_knots * 51) / 100.0;
     get_time(&gps_timp, buft, bufd);
   }
   else{
+    raw_data.gps_valid = FALSE;
   	raw_data.gps_course = 0;
   	raw_data.gps_speed_knots = 0;
   }

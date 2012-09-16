@@ -162,7 +162,7 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
       cl->param5 == 0 &&
       cl->param6 == 0 &&
       cl->param7 == 0){
-    setGlobalFlag(MISSION_ABORT_FLAG); /* this is not correct but correspond too QGC stop button*/
+    setGlobalFlag(MISSION_LOITER_FLAG);
     return MAV_RESULT_ACCEPTED;
   }
   else if (cl->param1 == MAV_GOTO_DO_CONTINUE &&

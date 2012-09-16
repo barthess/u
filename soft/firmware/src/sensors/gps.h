@@ -5,6 +5,9 @@
 #ifndef GPS_H_
 #define GPS_H_
 
+/* divide by this value to obtain degreese */
+#define GPS_FIXED_POINT_SCALE 100000.0f
+
 /* From standard: A sentence may contain up to 80 characters plus "$" and CR/LF.
  * так же вычтем первые 5 символов, которые мы не сохраняем в буфер*/
 #define GPS_MSG_LEN 75

@@ -26,4 +26,7 @@ uint32_t median_filter_3(uint32_t *buf, uint32_t sample);
 
 uint32_t isqrt(uint32_t x);
 
+float deg2radf(float deg);
+float rad2degf(float rad);
+
 #endif /* UTILS_H_ */
