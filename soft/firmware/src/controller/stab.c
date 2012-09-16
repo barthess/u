@@ -43,6 +43,7 @@ static float x_prev_wp = 0, y_prev_wp = 0;
 static uint16_t WpSeqNew = 0;
 
 static float const *pulse2m;
+static float const *desired_speed__;
 
 static Mail mission_current_mail = {NULL, MAVLINK_MSG_ID_MISSION_CURRENT, NULL};
 static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL};
@@ -99,18 +100,14 @@ static void keep_speed(pid_f32_t *spd_pidp, float current, float desired){
  */
 static void keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
   float impact = 0;
-
   impact = UpdatePID(hdng_pidp, desired - current, current);
-  if (impact < 0)
-    impact = 0;
-
   ServoCarYawSet(float2servo(impact));
 }
 
 /**
  * Calculate current ground speed from tachometer pulses
  */
-static void measure_speed(void){
+static void update_speed(void){
   msg_t tmp = 0;
   msg_t status = 0;
 
@@ -133,6 +130,13 @@ static void measure_speed(void){
 }
 
 /**
+ * Calculate desired heading. Needs to be constantly updates.
+ */
+static void update_heading(void){
+  return;
+}
+
+/**
  * Load waypoint from EEPROM and calculate desired values.
  */
 static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
@@ -146,7 +150,11 @@ static bool_t parse_next_wp(uint16_t seq, float *heading, float *target_trip){
   else{
     float delta_x = x_prev_wp - wp.x;
     float delta_y = y_prev_wp - wp.y;
-    *heading = atan2f(delta_x, delta_y);
+
+    /* stub! */
+    //*heading = atan2f(delta_x, delta_y);
+    *heading = 0;
+
     *target_trip = sqrtf(delta_x * delta_x + delta_y * delta_y);
     *target_trip += (bkpOdometer * *pulse2m);
   }
@@ -192,16 +200,15 @@ static void reset_pids(void){
 
 /**
  * Stabilization thread.
- * 1) perform PIDs in infinite loop synchronized with servo PWM
- * 2) every cycle tries to get new task from message_box[1]
- * 3) place task in local variables inside lock
- * 4) there is now way to cansel task, you only can send new one with zero speed
- *    or home coordinates, etc.
+ * - perform PIDs in infinite loop synchronized with servo PWM
+ * - there is now way to cansel task, you only can send new one with zero speed
+ *   or home coordinates, etc.
  */
 static WORKING_AREA(StabThreadWA, 512);
 static msg_t StabThread(void* arg){
   chRegSetThreadName("StabGroundRover");
   (void)arg;
+
   float target_trip;      /* current position will be starting point */
   float desired_heading;
   float desired_speed;
@@ -221,7 +228,7 @@ WAIT_NEW_MISSION:
   speed_retry_cnt = 0;
   target_trip = bkpOdometer * *pulse2m;
   desired_heading = 0;
-  desired_speed = 1.5;
+  desired_speed = 0.8;
   seq = 0;
   wp_cnt = get_waypoint_count();
 
@@ -229,7 +236,7 @@ WAIT_NEW_MISSION:
   if (wp_cnt == 0)
     goto WAIT_NEW_MISSION; /* nothing to do */
 
-  /* loop realize the whole mission */
+  /* loop the whole mission */
   do {
     parse_next_wp(seq, &desired_heading, &target_trip);
     broadcast_mission_current(seq);
@@ -242,11 +249,12 @@ WAIT_NEW_MISSION:
       loiter_if_need();
 
       if (WpSeqNew != 0)
-        break; /* exit from while (!is_wp_reached(target_trip)) */
+        break; /* exit from "while (!is_wp_reached(target_trip))" */
 
       chBSemWait(&servo_updated_sem);
-      measure_speed();
+      update_speed();
       keep_speed(&speed_pid, comp_data.groundspeed, desired_speed);
+      update_heading();
       keep_heading(&heading_pid, comp_data.heading, desired_heading);
     }
 

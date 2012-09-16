@@ -158,6 +158,19 @@ static MAVLINK_WPM_STATES mission_request_list_handler(Mail* mailp){
 }
 
 /**
+ * Perform waypoint checking
+ */
+uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
+  if ((wp->frame != MAV_FRAME_GLOBAL) || (wp->frame != MAV_FRAME_LOCAL_NED))
+    return MAV_MISSION_UNSUPPORTED_FRAME;
+  if (wp->seq != seq)
+    return MAV_MISSION_INVALID_SEQUENCE;
+
+  /* no errors found */
+  return MAV_MISSION_ACCEPTED;
+}
+
+/**
  * Save waypoints in EEPROM
  */
 static bool_t mission_count_handler(Mail* mailp){
@@ -165,6 +178,7 @@ static bool_t mission_count_handler(Mail* mailp){
   uint16_t waypoint_cnt = mc->count;
   mavlink_mission_request_struct.seq = 0;
   mavlink_mission_item_t *wp = NULL;
+  uint8_t type = MAV_MISSION_ERROR;
 
   /* check available space */
   if (waypoint_cnt * sizeof(mavlink_mission_item_t) > EEPROM_MISSION_SIZE){
@@ -175,16 +189,22 @@ static bool_t mission_count_handler(Mail* mailp){
   /* start transaction from clean state to be safer */
   save_waypoint_count(0);
 
-  /* send waypoints one by one */
+  /* save waypoints one by one */
   do{
     mavlink_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
     mavlink_mission_request_struct.target_system = GROUND_STATION_ID;
     mission_out_mail.payload = &mavlink_mission_request_struct;
     mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_REQUEST;
 
+    /* send request to ground */
     mailp = send_with_tmo(&mission_out_mail, TRUE);
+
+    /* wait waypoint */
     if ((mailp != NULL) && (mailp->invoice == MAVLINK_MSG_ID_MISSION_ITEM)){
       wp = mailp->payload;
+      type = check_wp(wp, mavlink_mission_request_struct.seq);
+      if (type != MAV_MISSION_ACCEPTED)
+        break;
       save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, wp);
       mavlink_mission_request_struct.seq++;
     }
@@ -192,9 +212,9 @@ static bool_t mission_count_handler(Mail* mailp){
       break;
   }while(mavlink_mission_request_struct.seq < waypoint_cnt);
 
-  /* save waypoint count in eeprom only in the end of successfull transaction */
+  /* save waypoint count in eeprom only in the end of transaction */
   save_waypoint_count(mavlink_mission_request_struct.seq);
-  send_ack(MAV_MISSION_ACCEPTED);
+  send_ack(type);
   return MAVLINK_WPM_STATE_IDLE;
 }
 

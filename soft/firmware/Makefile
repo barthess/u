@@ -141,6 +141,7 @@ CSRC = $(PORTSRC) \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
+       src/controller/nav.c \
        src/controller/planner.c \
        src/controller/stab.c \
        src/utils/sphere.c \

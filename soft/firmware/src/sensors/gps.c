@@ -42,6 +42,7 @@ including, the "$" and "*".
  * DEFINES
  ******************************************************************************
  */
+#define HDG_UNKNOWN     65535
 
 /*
  ******************************************************************************
@@ -115,14 +116,14 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.vx = 0;
   mavlink_global_position_int_struct.vy = 0;
   mavlink_global_position_int_struct.vz = 0;
-  mavlink_global_position_int_struct.hdg = 65535;
+  mavlink_global_position_int_struct.hdg = HDG_UNKNOWN;
 
   /* установим последние достоверные кординаты */
   mavlink_global_position_int_struct.lat = bkpGetGpsLatitude();
   mavlink_global_position_int_struct.lon = bkpGetGpsLongitude();
   mavlink_global_position_int_struct.alt = bkpGetGpsAltitude();
 
-  while (TRUE) {
+  while(TRUE){
 
 EMPTY:
     if (n >= 2 && (GlobalFlags & TLM_LINK_FLAG)){
@@ -297,17 +298,14 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   if (valid == 'A'){                              /* если координаты достоверны */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
-
-    global_pos_struct->hdg = 65535;
     mavlink_vfr_hud_struct.groundspeed = (float)(gps_speed_knots * 51) / 100.0;
     get_time(&gps_timp, buft, bufd);
   }
   else{
   	raw_data.gps_course = 0;
   	raw_data.gps_speed_knots = 0;
-
-    global_pos_struct->hdg = 65535;
   }
+  global_pos_struct->hdg = HDG_UNKNOWN;
 }
 
 /**

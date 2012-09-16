@@ -67,6 +67,7 @@ static void _servo_cli_help(void){
   cli_println("    128 : neutral");
   cli_println("    255 : max right");
 
+  cli_println("");
   cli_println("Allowable commands in fixed wing mode:");
   cli_println("  NOT REALISED YET");
 }

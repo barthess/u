@@ -37,6 +37,7 @@
 #include "message.h"
 #include "microsd.h"
 #include "mma8451.h"
+#include "nav.h"
 #include "param.h"
 #include "param_cli.h"
 #include "param_persistant.h"
