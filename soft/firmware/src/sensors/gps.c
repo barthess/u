@@ -248,7 +248,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
 
     /**/
     if (LongitudeScale == 0)
-      LongitudeScale = cosf(deg2radf((float)gps_longitude / GPS_FIXED_POINT_SCALE));
+      LongitudeScale = cosf(fdeg2rad((float)gps_longitude / GPS_FIXED_POINT_SCALE));
 	}
 	else{
 	  raw_data.gps_valid = FALSE;

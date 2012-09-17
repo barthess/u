@@ -228,13 +228,20 @@ uint32_t isqrt(uint32_t x){
 /**
  * convert from degrees to radians
  */
-float deg2radf(float deg){
-  return (deg * PI) / 180.0;
+float fdeg2rad(float deg){
+  return deg * (PI / 180.0);
 }
 
 /**
  * convert from degrees to radians
  */
-float rad2degf(float rad){
-  return (rad * 180.0) / PI;
+float frad2deg(float rad){
+  return rad * (180.0 / PI);
+}
+
+/* mod(a, 2*pi) is the remainder you get when you divide a by 2*pi;
+that is, subtract the largest multiple of 2*pi less than a from a,
+and that's the answer. */
+float fmodulo(float x, float y){
+  return x - y * floor(x/y);
 }
