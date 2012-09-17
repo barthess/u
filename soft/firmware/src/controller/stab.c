@@ -183,8 +183,10 @@ static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float
     currWpFrame = MAV_FRAME_LOCAL_NED;
   }
 
-  float delta_x = xPrevWp - wp->x;
-  float delta_y = yPrevWp - wp->y;
+  /* на первый взгляд, тут перепутаны x и y. QGC почему-то считает, что
+   * направление на север - совпадает с осью X */
+  float delta_x = wp->y - xPrevWp;
+  float delta_y = wp->x - yPrevWp;
 
   *heading = atan2f(delta_x, delta_y);
 
@@ -192,8 +194,8 @@ static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float
   *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
 
   /* save values for next iteration */
-  xPrevWp = wp->x;
-  yPrevWp = wp->y;
+  xPrevWp = wp->y;
+  yPrevWp = wp->x;
 }
 
 /**
@@ -326,10 +328,10 @@ WAIT_NEW_MISSION:
   reset_pids();
   ServoCarThrustSet(128);
   ServoCarYawSet(128);
-  currWpFrame = MAV_FRAME_GLOBAL;
   while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
     chThdSleep(STAB_TMO);
 
+  currWpFrame = MAV_FRAME_GLOBAL;
   seq = 0;
   wp_cnt = get_waypoint_count();
 
