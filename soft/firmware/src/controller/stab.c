@@ -2,6 +2,13 @@
 
 #include "uav.h"
 
+/* Bearing Between Two Points:
+ * http://mathforum.org/library/drmath/view/55417.html
+ *
+ * Aviation Formulary V1.46:
+ * http://williams.best.vwh.net/avform.htm
+ */
+
 /*
  ******************************************************************************
  * DEFINES
@@ -38,18 +45,20 @@ extern float LongitudeScale;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t speed_retry_cnt = 0;
+static uint32_t speedRetryCnt = 0;
 
-static pid_f32_t speed_pid;
-static pid_f32_t heading_pid;
-static float x_prev_wp = 0, y_prev_wp = 0; /* for local NED waypoint calculations */
+static pid_f32_t speedPid;
+static pid_f32_t headingPid;
 static uint16_t WpSeqNew = 0;
 
 static float const *pulse2m;
-static float const *desired_speed;
+static float const *desiredSpeed;
 
 static Mail mission_current_mail = {NULL, MAVLINK_MSG_ID_MISSION_CURRENT, NULL};
 static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL};
+
+static uint8_t currWpFrame = MAV_FRAME_GLOBAL;
+static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
 
 /*
  ******************************************************************************
@@ -89,10 +98,10 @@ static void loiter_if_need(void){
  *
  */
 static void reset_pids(void){
-  speed_pid.iState   = 0;
-  speed_pid.dState   = 0;
-  heading_pid.iState = 0;
-  heading_pid.dState = 0;
+  speedPid.iState   = 0;
+  speedPid.dState   = 0;
+  headingPid.iState = 0;
+  headingPid.dState = 0;
 }
 
 /**
@@ -148,12 +157,12 @@ static void update_odometer_speed(void){
   status = chMBFetch(&speedometer_mb, &tmp, TIME_IMMEDIATE);
   if (status == RDY_OK){
     comp_data.groundspeed = calc_ground_rover_speed(tmp);
-    speed_retry_cnt = 0;
+    speedRetryCnt = 0;
   }
   else{
-    speed_retry_cnt++;
-    if (speed_retry_cnt > SPEED_UPDATE_RETRY){
-      speed_retry_cnt = SPEED_UPDATE_RETRY + 2; // to avoid overflow
+    speedRetryCnt++;
+    if (speedRetryCnt > SPEED_UPDATE_RETRY){
+      speedRetryCnt = SPEED_UPDATE_RETRY + 2; // to avoid overflow
       comp_data.groundspeed = 0.0; /* device is still */
     }
   }
@@ -166,8 +175,16 @@ static void update_odometer_speed(void){
  * Calculate trip and heading needed to reach waypoint.
  */
 static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float *trip){
-  float delta_x = x_prev_wp - wp->x;
-  float delta_y = y_prev_wp - wp->y;
+
+  /* clear previosly saved points only if system changed waypoint frame's type */
+  if (currWpFrame == MAV_FRAME_GLOBAL){
+    xPrevWp = 0;
+    yPrevWp = 0;
+    currWpFrame = MAV_FRAME_LOCAL_NED;
+  }
+
+  float delta_x = xPrevWp - wp->x;
+  float delta_y = yPrevWp - wp->y;
 
   *heading = atan2f(delta_x, delta_y);
 
@@ -175,8 +192,8 @@ static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float
   *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
 
   /* save values for next iteration */
-  x_prev_wp = wp->x;
-  y_prev_wp = wp->y;
+  xPrevWp = wp->x;
+  yPrevWp = wp->y;
 }
 
 /**
@@ -186,7 +203,7 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
 
   float target_trip = 0;
   float target_heading = 0;
-  speed_retry_cnt = 0;
+  speedRetryCnt = 0;
 
   broadcast_mission_current(wp->seq);
   parse_local_ned_wp(wp, &target_heading, &target_trip);
@@ -203,8 +220,8 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
 
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
-    pid_keep_speed(&speed_pid, comp_data.groundspeed, *desired_speed);
-    pid_keep_heading(&heading_pid, comp_data.heading, target_heading);
+    pid_keep_speed(&speedPid, comp_data.groundspeed, *desiredSpeed);
+    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
 }
@@ -213,6 +230,8 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
  * Calculate heading needed to reach waypoint and return TRUE if waypoint reached.
  */
 static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
+  currWpFrame = MAV_FRAME_GLOBAL;
+
   float delta_x = (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE - wp->x) * LongitudeScale;
   float delta_y = raw_data.gps_latitude / GPS_FIXED_POINT_SCALE - wp->y;
 
@@ -244,11 +263,11 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
 
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
-    pid_keep_speed(&speed_pid, comp_data.groundspeed, *desired_speed);
+    pid_keep_speed(&speedPid, comp_data.groundspeed, *desiredSpeed);
     if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
-      pid_keep_heading(&heading_pid, deg2radf(raw_data.gps_course / 100.0), target_heading);
+      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0), target_heading);
     else
-      pid_keep_heading(&heading_pid, comp_data.heading, target_heading);
+      pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
 }
@@ -307,6 +326,7 @@ WAIT_NEW_MISSION:
   reset_pids();
   ServoCarThrustSet(128);
   ServoCarYawSet(128);
+  currWpFrame = MAV_FRAME_GLOBAL;
   while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
     chThdSleep(STAB_TMO);
 
@@ -369,19 +389,19 @@ void WpSeqOverwrite(uint16_t seq){
 Thread* StabInit(void){
 
   pulse2m = ValueSearch("SPD_pulse2m");
-  desired_speed = ValueSearch("SPD_speed");
+  desiredSpeed = ValueSearch("SPD_speed");
 
-  speed_pid.iGain  = ValueSearch("SPD_iGain");
-  speed_pid.pGain  = ValueSearch("SPD_pGain");
-  speed_pid.dGain  = ValueSearch("SPD_dGain");
-  speed_pid.iMin   = ValueSearch("SPD_iMin");
-  speed_pid.iMax   = ValueSearch("SPD_iMax");
+  speedPid.iGain  = ValueSearch("SPD_iGain");
+  speedPid.pGain  = ValueSearch("SPD_pGain");
+  speedPid.dGain  = ValueSearch("SPD_dGain");
+  speedPid.iMin   = ValueSearch("SPD_iMin");
+  speedPid.iMax   = ValueSearch("SPD_iMax");
 
-  heading_pid.iGain  = ValueSearch("HEAD_iGain");
-  heading_pid.pGain  = ValueSearch("HEAD_pGain");
-  heading_pid.dGain  = ValueSearch("HEAD_dGain");
-  heading_pid.iMin   = ValueSearch("HEAD_iMin");
-  heading_pid.iMax   = ValueSearch("HEAD_iMax");
+  headingPid.iGain  = ValueSearch("HEAD_iGain");
+  headingPid.pGain  = ValueSearch("HEAD_pGain");
+  headingPid.dGain  = ValueSearch("HEAD_dGain");
+  headingPid.iMin   = ValueSearch("HEAD_iMin");
+  headingPid.iMax   = ValueSearch("HEAD_iMax");
 
   Thread *tp = NULL;
 
