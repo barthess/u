@@ -200,17 +200,17 @@ const GlobalParam_t global_data[] = {
    * coarse value is 0.05555555 */
   {"SPD_pulse2m",     {.f32 = 0.0},        &gd_val[106],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
   /**** pid coefficients for speed control ****/
-  {"SPD_iGain",       {.f32 = 0},          &gd_val[107],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"SPD_pGain",       {.f32 = 0},          &gd_val[108],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
-  {"SPD_dGain",       {.f32 = 0},          &gd_val[109],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"SPD_iMin",        {.f32 = -10000},     &gd_val[110],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"SPD_iMax",        {.f32 = -10000},     &gd_val[111],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"SPD_iGain",       {.f32 = -1.0},       &gd_val[107],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
+  {"SPD_pGain",       {.f32 = -200.0},     &gd_val[108],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
+  {"SPD_dGain",       {.f32 = -10000.0},   &gd_val[109],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"SPD_iMin",        {.f32 = -10000.0},   &gd_val[110],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"SPD_iMax",        {.f32 = -10000.0},   &gd_val[111],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
   /**** pid coefficients for heading control ****/
-  {"HEAD_iGain",      {.f32 = 0},          &gd_val[112],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"HEAD_pGain",      {.f32 = 0},          &gd_val[113],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
-  {"HEAD_dGain",      {.f32 = 0},          &gd_val[114],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"HEAD_iMin",       {.f32 = -10000},     &gd_val[115],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"HEAD_iMax",       {.f32 = -10000},     &gd_val[116],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"HEAD_iGain",      {.f32 = -1.0},       &gd_val[112],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
+  {"HEAD_pGain",      {.f32 = -200.0},     &gd_val[113],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
+  {"HEAD_dGain",      {.f32 = -10000.0},   &gd_val[114],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"HEAD_iMin",       {.f32 = -10000.0},   &gd_val[115],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"HEAD_iMax",       {.f32 = -10000.0},   &gd_val[116],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
   /* desired device speed */
   {"SPD_speed",       {.f32 = 0.5},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
 
