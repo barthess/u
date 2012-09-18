@@ -4,6 +4,7 @@
  */
 
 // TODO: course vrapping over 180
+// TODO: GPS course handled incorrectly
 // TODO: allow breaks in addition to thrust
 
 // TODO: usage of local ned notation and GPS.
