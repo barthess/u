@@ -183,19 +183,18 @@ static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float
     currWpFrame = MAV_FRAME_LOCAL_NED;
   }
 
-  /* на первый взгляд, тут перепутаны x и y. QGC почему-то считает, что
-   * направление на север - совпадает с осью X */
-  float delta_x = wp->y - xPrevWp;
-  float delta_y = wp->x - yPrevWp;
+  float delta_x = wp->x - xPrevWp;
+  float delta_y = wp->y - yPrevWp;
 
-  *heading = atan2f(delta_x, delta_y);
+  /* first argumetn of atan2 must be y, second - x */
+  *heading = atan2f(delta_y, delta_x);
 
   *trip  = bkpOdometer * *pulse2m;
   *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
 
   /* save values for next iteration */
-  xPrevWp = wp->y;
-  yPrevWp = wp->x;
+  xPrevWp = wp->x;
+  yPrevWp = wp->y;
 }
 
 /**
