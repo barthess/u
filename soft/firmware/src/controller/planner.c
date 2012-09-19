@@ -167,7 +167,7 @@ uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
     return MAV_MISSION_UNSUPPORTED_FRAME;
   if (wp->seq != seq)
     return MAV_MISSION_INVALID_SEQUENCE;
-  if (wp->TARGET_RADIUS < 10)
+  if (wp->TARGET_RADIUS < 1)
     return MAV_MISSION_INVALID_PARAM1;
 
   /* no errors found */
