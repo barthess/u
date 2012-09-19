@@ -4,9 +4,8 @@
  */
 
 // TODO: time cli (date_cmd in timekeeping.c), timezones
-// TODO: course vrapping over 180
-// TODO: GPS course handled incorrectly
 // TODO: allow breaks in addition to thrust
+// TODO: correct STOP handling in waypoint algorithm (can not start new mission)
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.

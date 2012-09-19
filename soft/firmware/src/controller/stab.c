@@ -236,18 +236,25 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
  */
 static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   currWpFrame = MAV_FRAME_GLOBAL;
+  float delta_x;
+  float delta_y;
 
-  float delta_x = wp->x - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
-  float delta_y = wp->y - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
+  delta_x = wp->x - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
+  delta_x *= LongitudeScale;
+  delta_y = wp->y - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
 
-  *heading = atan2f(delta_y, delta_x * LongitudeScale);
-
-  float len_deg = sqrtf(delta_x * delta_x + delta_y * delta_y);
-  float len_m = len_deg * 111194.93f;
-  if (len_m < wp->TARGET_RADIUS)
-    return TRUE;
+  // atan2(0,0) is forbidden arguments
+  if (!(delta_y == 0.0f && delta_x == 0.0f)){
+    *heading = atan2f(delta_y, delta_x);
+    float len_deg = sqrtf(delta_x * delta_x + delta_y * delta_y);
+    float len_m = len_deg * 111194.93f;
+    if (len_m < wp->TARGET_RADIUS)
+      return TRUE;
+    else
+      return FALSE;
+  }
   else
-    return FALSE;
+    return TRUE;
 }
 
 /**
