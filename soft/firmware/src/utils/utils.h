@@ -29,4 +29,9 @@ uint32_t isqrt(uint32_t x);
 float fdeg2rad(float deg);
 float frad2deg(float rad);
 
+int32_t wrap_180(int32_t error);
+float wrap_pi(float error);
+int32_t wrap_360(int32_t angle);
+float wrap_2pi(float angle);
+
 #endif /* UTILS_H_ */

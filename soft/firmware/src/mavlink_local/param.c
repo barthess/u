@@ -74,8 +74,8 @@ const GlobalParam_t global_data[] = {
   {"MAG_xpol",        {.i32 = -1},         &gd_val[16],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
   {"MAG_ypol",        {.i32 = -1},         &gd_val[17],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
   {"MAG_zpol",        {.i32 = -1},         &gd_val[18],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  /* inclination */
-  {"MAG_inclinate",   {.i32 = -90},        &gd_val[19],    {.i32 = 90},         MAVLINK_TYPE_INT32_T},
+  /* inclination in degrees */
+  {"MAG_inclinate",   {.f32 = -90},        &gd_val[19],    {.f32 = 90},         MAVLINK_TYPE_FLOAT},
   /* count of samples to zero calibration */
   {"MAG_zerocnt",     {.i32 = 256},        &gd_val[20],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T},
   {"MAG_reserved1",   {.i32 = 0},          &gd_val[21],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T},

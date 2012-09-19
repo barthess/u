@@ -141,8 +141,12 @@ static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired){
  *
  */
 static void pid_keep_heading(pid_f32_t *hdng_pidp, float current, float desired){
-  float impact = 0;
-  impact = UpdatePID(hdng_pidp, desired - current, current);
+  float impact;
+  float error;
+
+  error = wrap_pi(desired - current);
+  impact = UpdatePID(hdng_pidp, error, current);
+  putinrange(impact, -0.2f, 0.2f);
   ServoCarYawSet(float2servo(impact));
 }
 
@@ -236,7 +240,7 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   float delta_x = (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE - wp->x) * LongitudeScale;
   float delta_y = raw_data.gps_latitude / GPS_FIXED_POINT_SCALE - wp->y;
 
-  *heading = atan2f(delta_y, delta_x);
+  *heading = atan2f(delta_y, delta_x)  + PI;
 
   if (sqrtf(delta_x * delta_x + delta_y * delta_y) < wp->TARGET_RADIUS)
     return TRUE;
@@ -265,9 +269,9 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
     pid_keep_speed(&speedPid, comp_data.groundspeed, *desiredSpeed);
-    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
-      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0 - 180), target_heading);
-    else
+//    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
+//      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0 - 180), target_heading);
+//    else
       pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;

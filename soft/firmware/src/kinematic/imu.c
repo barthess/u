@@ -33,7 +33,7 @@ float dcmEst[3][3] = {{1,0,0},
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static int32_t const *magypol, *magxpol;
+static float const *inclinate;
 
 /*
  *******************************************************************************
@@ -55,12 +55,15 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
     mavlink_attitude_struct->pitch        = PI - (-asinf(Rxz));
     mavlink_attitude_struct->roll         = PI - (-asinf(Ryz));
   }
-  /* from DCM */
+
+  /* get yaw from DCM */
   //comp_data.heading = atan2f(Rxy, -Rxx);
-  comp_data.heading = atan2f((*magypol) * Rxy, (*magxpol) * Rxx);
+  //comp_data.heading = atan2f((*magypol) * Rxy, (*magxpol) * Rxx) + PI;
+  comp_data.heading = atan2f(Rxy, -Rxx) + PI + fdeg2rad(*inclinate);
+  comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
-  /* or from Z gyro */
+  /* or from Z gyro for dbug reasons */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
   mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
@@ -143,8 +146,7 @@ static msg_t Imu(void *semp) {
  *******************************************************************************
  */
 void ImuInit(BinarySemaphore *imu_semp){
-  magxpol = ValueSearch("MAG_xpol");
-  magypol = ValueSearch("MAG_ypol");
+  inclinate = ValueSearch("MAG_inclinate");
 
   dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, imu_semp);
