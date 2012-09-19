@@ -3,6 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: time cli (date_cmd in timekeeping.c), timezones
 // TODO: course vrapping over 180
 // TODO: allow breaks in addition to thrust
 

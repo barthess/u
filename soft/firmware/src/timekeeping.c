@@ -150,9 +150,9 @@ Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
   return NULL;
 
 //  rtcGetTime(&RTCD1, &timespec);
-
+//
 //  bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
-
+//
 //  time = mktime(&timp);
 //  chprintf(chp, "date: %U%s%U%s%U%s%U%s%U%s%U", (timp.tm_year + 1900), "/",
 //      (timp.tm_mon + 1), "/", timp.tm_mday, " - ",
