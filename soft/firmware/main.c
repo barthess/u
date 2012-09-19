@@ -8,11 +8,8 @@
 // TODO: GPS course handled incorrectly
 // TODO: allow breaks in addition to thrust
 
-// TODO: usage of local ned notation and GPS.
-// TODO: before waypoints ACK message there must be much deeper parameter checks.
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
-// TODO: (semi)automated zeroing of accelerometer.
 // TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
 // TODO: One more point in dynamic pressure thermal compensation algorith (at 60 celsius)
