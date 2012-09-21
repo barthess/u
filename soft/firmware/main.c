@@ -7,9 +7,8 @@
 // TODO: time cli (date_cmd in timekeeping.c), timezones
 // TODO: replace sqrt in is_global_wp_reached() by rectangular approximation
 // TODO: optimize is_global_wp_reached() by caching of division operation
-// TODO: max-min speed in params
-// TODO: speed autosetting
 
+// TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
