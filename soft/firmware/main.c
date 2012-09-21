@@ -3,9 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: time cli (date_cmd in timekeeping.c), timezones
-// TODO: allow breaks in addition to thrust
-// TODO: correct STOP handling in waypoint algorithm (can not start new mission)
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.

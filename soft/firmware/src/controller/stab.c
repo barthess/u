@@ -131,6 +131,8 @@ static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired){
   float impact = 0;
 
   impact = UpdatePID(spd_pidp, desired - current, current);
+
+  /* this check need because we can not get direction */
   if (impact < 0)
     impact = 0;
 
@@ -238,20 +240,23 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   currWpFrame = MAV_FRAME_GLOBAL;
   float delta_x;
   float delta_y;
+  float distance_deg;
 
   delta_x = wp->x - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
   delta_x *= LongitudeScale;
   delta_y = wp->y - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
 
+//  delta_x = wp->x - ((float)5388568 / GPS_FIXED_POINT_SCALE);
+//  delta_x *= LongitudeScale;
+//  delta_y = wp->y - ((float)2754304 / GPS_FIXED_POINT_SCALE);
+
+  distance_deg = wp->TARGET_RADIUS / 111194.93f;
+
   // atan2(0,0) is forbidden arguments
-  if (!(delta_y == 0.0f && delta_x == 0.0f)){
+  if ((abs(delta_x) > distance_deg) || (abs(delta_y) > distance_deg)){
     *heading = atan2f(delta_y, delta_x);
-    float len_deg = sqrtf(delta_x * delta_x + delta_y * delta_y);
-    float len_m = len_deg * 111194.93f;
-    if (len_m < wp->TARGET_RADIUS)
-      return TRUE;
-    else
-      return FALSE;
+    //float len_deg = sqrtf(delta_x * delta_x + delta_y * delta_y);
+    return FALSE;
   }
   else
     return TRUE;

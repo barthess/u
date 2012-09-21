@@ -18,6 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define STM32F4xx_MCUCONF
+
 /*
  * STM32F4xx drivers configuration.
  * The following settings override the default settings present in
