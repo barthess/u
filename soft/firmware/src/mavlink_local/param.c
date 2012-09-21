@@ -211,11 +211,12 @@ const GlobalParam_t global_data[] = {
   {"HEAD_dGain",      {.f32 = -10000.0},   &gd_val[114],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
   {"HEAD_iMin",       {.f32 = -10000.0},   &gd_val[115],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
   {"HEAD_iMax",       {.f32 = -10000.0},   &gd_val[116],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  /* desired device speed */
-  {"SPD_speed",       {.f32 = 0.5},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
+  /* device's speed limits */
+  {"SPD_speed_min",   {.f32 = 0.0},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
+  {"SPD_speed_max",   {.f32 = 0.0},        &gd_val[118],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
 
   /**** fake field with 14 symbols name ****/
-  {"param_end_mark",  {.u32 = 1},          &gd_val[118],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
+  {"param_end_mark",  {.u32 = 1},          &gd_val[119],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
 };
 
 

@@ -52,7 +52,7 @@ static pid_f32_t headingPid;
 static uint16_t WpSeqNew = 0;
 
 static float const *pulse2m;
-static float const *desiredSpeed;
+static float const *speed_min;
 
 static Mail mission_current_mail = {NULL, MAVLINK_MSG_ID_MISSION_CURRENT, NULL};
 static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL};
@@ -227,7 +227,7 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
 
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
-    pid_keep_speed(&speedPid, comp_data.groundspeed, *desiredSpeed);
+    pid_keep_speed(&speedPid, comp_data.groundspeed, *speed_min);
     pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
@@ -279,7 +279,7 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
 
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
-    pid_keep_speed(&speedPid, comp_data.groundspeed, *desiredSpeed);
+    pid_keep_speed(&speedPid, comp_data.groundspeed, *speed_min);
 //    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
 //      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0 - 180), target_heading);
 //    else
@@ -404,8 +404,8 @@ void WpSeqOverwrite(uint16_t seq){
  */
 Thread* StabInit(void){
 
-  pulse2m = ValueSearch("SPD_pulse2m");
-  desiredSpeed = ValueSearch("SPD_speed");
+  pulse2m   = ValueSearch("SPD_pulse2m");
+  speed_min = ValueSearch("SPD_speed_min");
 
   speedPid.iGain  = ValueSearch("SPD_iGain");
   speedPid.pGain  = ValueSearch("SPD_pGain");
