@@ -240,22 +240,19 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   currWpFrame = MAV_FRAME_GLOBAL;
   float delta_x;
   float delta_y;
-  float distance_deg;
+  float wpradius;       /* radius of waypoing in degrees */
+  float distance;       /* distance to current waypoint */
 
-  delta_x = wp->x - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
-  delta_x *= LongitudeScale;
-  delta_y = wp->y - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
+  delta_x = wp->x - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
+  delta_y = wp->y - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
+  delta_y *= LongitudeScale;
 
-//  delta_x = wp->x - ((float)5388568 / GPS_FIXED_POINT_SCALE);
-//  delta_x *= LongitudeScale;
-//  delta_y = wp->y - ((float)2754304 / GPS_FIXED_POINT_SCALE);
+  wpradius = wp->TARGET_RADIUS / 111194.93f;
+  distance = sqrtf(delta_x * delta_x + delta_y * delta_y);
 
-  distance_deg = wp->TARGET_RADIUS / 111194.93f;
-
-  // atan2(0,0) is forbidden arguments
-  if ((abs(delta_x) > distance_deg) || (abs(delta_y) > distance_deg)){
+  // atan2(0,0) is forbidden argumentsr
+  if ((distance > wpradius) && (delta_x != 0 || delta_y != 0)){
     *heading = atan2f(delta_y, delta_x);
-    //float len_deg = sqrtf(delta_x * delta_x + delta_y * delta_y);
     return FALSE;
   }
   else
