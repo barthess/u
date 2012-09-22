@@ -101,7 +101,6 @@ static void _param_print_all(void){
  *
  */
 static param_status_t _param_cli_set(const char * val, uint32_t i){
-
   floatint v;
   int sscanf_status;
 

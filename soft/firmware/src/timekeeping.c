@@ -1,5 +1,5 @@
 #include <time.h>
-#include <stdlib.h>
+#include <stdio.h>
 
 #include "uav.h"
 #include "chrtclib.h"
@@ -139,25 +139,50 @@ systime_t GetTimeInterval(systime_t *last){
 }
 
 /**
- * Command to tune RTC.
+ * Command to handle RTC.
  */
 Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)argv;
-  (void)argc;
   (void)cmdarray;
+  struct tm timp;
+  time_t tv_sec = 0;
+  int sscanf_status;
 
-  cli_print("unimplemented yet\r\n");
+  /* two arguments */
+  if (argc == 2){
+    if (strcmp(*argv, "set") == 0){
+      sscanf_status = sscanf(argv[1], "%i", (int*)&tv_sec);
+      if (sscanf_status != 1)
+        cli_println("ERROR. Date value inconsistent");
+      else
+        rtcSetTimeUnixSec(&RTCD1, tv_sec);
+    }
+    else
+      cli_println("ERROR: unsupported parameter.");
+  }
+
+  /* error handler */
+  else{
+    int n = 32;
+    int nres = 0;
+    char str[n];
+
+    tv_sec = rtcGetTimeUnixSec(&RTCD1);
+    rtcGetTimeTm(&RTCD1, &timp);
+
+    cli_print("Current UTC time is: ");
+    strftime(str, n, "%F %H:%M:%S", &timp);
+    cli_println(str);
+
+    nres = snprintf(str, n, "%d", (int)tv_sec);
+    cli_print_long(str, n, nres);
+    cli_println(" seconds since Unix epoch");
+    cli_println("");
+
+    cli_println("To set time run 'date N'");
+    cli_println("    where 'N' is count of seconds (UTC) since Unix epoch.");
+    cli_println("    you can obtain this value from Unix command line: 'date -u +%s'");
+  }
+
+  /* stub */
   return NULL;
-
-//  rtcGetTime(&RTCD1, &timespec);
-//
-//  bcd2tm(&timp, timespec.tv_time, timespec.tv_date);
-//
-//  time = mktime(&timp);
-//  chprintf(chp, "date: %U%s%U%s%U%s%U%s%U%s%U", (timp.tm_year + 1900), "/",
-//      (timp.tm_mon + 1), "/", timp.tm_mday, " - ",
-//      timp.tm_hour, ":", timp.tm_min, ":", timp.tm_sec);
-//  chprintf(chp, "\r\n");
-//  chprintf(chp, "time_t: %U", time);
-//  chprintf(chp, "\r\n");
 }
