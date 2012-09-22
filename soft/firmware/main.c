@@ -4,7 +4,6 @@
  */
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
-// TODO: param cli nice formatting
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.

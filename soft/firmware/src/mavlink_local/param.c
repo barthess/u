@@ -41,182 +41,182 @@ static floatint gd_val[120];
 const GlobalParam_t global_data[] = {
   /*  key             min                  val            max                  type                       */
   /*-------------------------------------------------------------------------------------------------------*/
-  {"SYS_ID",          {.u32 = 1},          &gd_val[0],    {.u32 = 255},         MAVLINK_TYPE_UINT32_T},
+  {"SYS_ID",          {.u32 = 1},          &gd_val[0],    {.u32 = 255},         MAVLINK_TYPE_UINT32_T, "System ID. Value 0 reserved for ground station."},
 
   /* Atopilot type (MAV_TYPE enum) to be able to switch between car and plane.
    * You need to reboot after changing it. */
-  {"SYS_mavtype",     {.u32 = 0},          &gd_val[1],    {.u32 = 16},          MAVLINK_TYPE_UINT32_T},
+  {"SYS_mavtype",     {.u32 = 0},          &gd_val[1],    {.u32 = 16},          MAVLINK_TYPE_UINT32_T, "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\nOther types you can found in enum MAV_TYPE \nNOTE! You must REBOOT device after changing it."},
 
   /**** всякие флаги для коммандной оболочки ****/
-  {"SH_enable",       {.u32 = 0},          &gd_val[2],    {.u32 = 1},           MAVLINK_TYPE_UINT32_T},
+  {"SH_enable",       {.u32 = 0},          &gd_val[2],    {.u32 = 1},           MAVLINK_TYPE_UINT32_T, NULL},
 
   /**** IMU - inertial measurement unit */
   /* Milli g. If acceleration delta < this value that device is still */
-  {"IMU_still_thr",   {.u32 = 100},        &gd_val[3],    {.u32 = 100000},      MAVLINK_TYPE_UINT32_T},
+  {"IMU_still_thr",   {.u32 = 100},        &gd_val[3],    {.u32 = 100000},      MAVLINK_TYPE_UINT32_T, NULL},
   /* veights of different components */
-  {"IMU_accweight",   {.f32 = 0.0},        &gd_val[4],    {.f32 = 0.1},         MAVLINK_TYPE_FLOAT},
-  {"IMU_magweight",   {.f32 = 0.0},        &gd_val[5],    {.f32 = 0.9},         MAVLINK_TYPE_FLOAT},
-  {"IMU_gpsweight",   {.f32 = 0.0},        &gd_val[6],    {.f32 = 0.1},         MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved1",   {.f32 = -1},         &gd_val[7],    {.f32 = 1},           MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved2",   {.f32 = -1},         &gd_val[8],    {.f32 = 1},           MAVLINK_TYPE_FLOAT},
-  {"IMU_reserved3",   {.f32 = -1},         &gd_val[9],    {.f32 = 1},           MAVLINK_TYPE_FLOAT},
+  {"IMU_accweight",   {.f32 = 0.0},        &gd_val[4],    {.f32 = 0.1},         MAVLINK_TYPE_FLOAT, NULL},
+  {"IMU_magweight",   {.f32 = 0.0},        &gd_val[5],    {.f32 = 0.9},         MAVLINK_TYPE_FLOAT, NULL},
+  {"IMU_gpsweight",   {.f32 = 0.0},        &gd_val[6],    {.f32 = 0.1},         MAVLINK_TYPE_FLOAT, NULL},
+  {"IMU_reserved1",   {.f32 = -1},         &gd_val[7],    {.f32 = 1},           MAVLINK_TYPE_FLOAT, NULL},
+  {"IMU_reserved2",   {.f32 = -1},         &gd_val[8],    {.f32 = 1},           MAVLINK_TYPE_FLOAT, NULL},
+  {"IMU_reserved3",   {.f32 = -1},         &gd_val[9],    {.f32 = 1},           MAVLINK_TYPE_FLOAT, NULL},
 
   /**** Magnetometer ****/
   /* zero offsets */
-  {"MAG_xoffset",     {.i32 = -5000},      &gd_val[10],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T},
-  {"MAG_yoffset",     {.i32 = -5000},      &gd_val[11],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T},
-  {"MAG_zoffset",     {.i32 = -5000},      &gd_val[12],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T},
+  {"MAG_xoffset",     {.i32 = -5000},      &gd_val[10],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_yoffset",     {.i32 = -5000},      &gd_val[11],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_zoffset",     {.i32 = -5000},      &gd_val[12],    {.i32 = 5000},       MAVLINK_TYPE_INT32_T, NULL},
   /* axis sensitivity */
-  {"MAG_xsens",       {.f32 = 0.001},      &gd_val[13],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"MAG_ysens",       {.f32 = 0.001},      &gd_val[14],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"MAG_zsens",       {.f32 = 0.001},      &gd_val[15],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
+  {"MAG_xsens",       {.f32 = 0.001},      &gd_val[13],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
+  {"MAG_ysens",       {.f32 = 0.001},      &gd_val[14],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
+  {"MAG_zsens",       {.f32 = 0.001},      &gd_val[15],    {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
   /* axis polarities. Relative to device axis */
-  {"MAG_xpol",        {.i32 = -1},         &gd_val[16],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"MAG_ypol",        {.i32 = -1},         &gd_val[17],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"MAG_zpol",        {.i32 = -1},         &gd_val[18],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
+  {"MAG_xpol",        {.i32 = -1},         &gd_val[16],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_ypol",        {.i32 = -1},         &gd_val[17],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_zpol",        {.i32 = -1},         &gd_val[18],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   /* inclination in degrees */
-  {"MAG_inclinate",   {.f32 = -90},        &gd_val[19],    {.f32 = 90},         MAVLINK_TYPE_FLOAT},
+  {"MAG_inclinate",   {.f32 = -90},        &gd_val[19],    {.f32 = 90},         MAVLINK_TYPE_FLOAT, NULL},
   /* count of samples to zero calibration */
-  {"MAG_zerocnt",     {.i32 = 256},        &gd_val[20],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T},
-  {"MAG_reserved1",   {.i32 = 0},          &gd_val[21],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T},
-  {"MAG_reserved2",   {.i32 = 0},          &gd_val[22],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T},
+  {"MAG_zerocnt",     {.i32 = 256},        &gd_val[20],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_reserved1",   {.i32 = 0},          &gd_val[21],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T, NULL},
+  {"MAG_reserved2",   {.i32 = 0},          &gd_val[22],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T, NULL},
 
   /**** accelerometer ****/
   /* zero offsets */
-  {"ACC_xoffset",     {.i32 = -100},       &gd_val[23],    {.i32 = 100},        MAVLINK_TYPE_INT32_T},
-  {"ACC_yoffset",     {.i32 = -100},       &gd_val[24],    {.i32 = 100},        MAVLINK_TYPE_INT32_T},
-  {"ACC_zoffset",     {.i32 = -100},       &gd_val[25],    {.i32 = 100},        MAVLINK_TYPE_INT32_T},
+  {"ACC_xoffset",     {.i32 = -100},       &gd_val[23],    {.i32 = 100},        MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_yoffset",     {.i32 = -100},       &gd_val[24],    {.i32 = 100},        MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_zoffset",     {.i32 = -100},       &gd_val[25],    {.i32 = 100},        MAVLINK_TYPE_INT32_T, NULL},
   /* sens LSB/g, nominals: 4096, 8192, 16384 ****/
-  {"ACC_xsens",       {.u32 = 3000},       &gd_val[26],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T},
-  {"ACC_ysens",       {.u32 = 3000},       &gd_val[27],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T},
-  {"ACC_zsens",       {.u32 = 3000},       &gd_val[28],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T},
+  {"ACC_xsens",       {.u32 = 3000},       &gd_val[26],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"ACC_ysens",       {.u32 = 3000},       &gd_val[27],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"ACC_zsens",       {.u32 = 3000},       &gd_val[28],    {.u32 = 17000},      MAVLINK_TYPE_UINT32_T, NULL},
   /* axis polarities. Relative to device axis  */
-  {"ACC_xpol",        {.i32 = -1},         &gd_val[29],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"ACC_ypol",        {.i32 = -1},         &gd_val[30],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"ACC_zpol",        {.i32 = -1},         &gd_val[31],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"ACC_reserved1",   {.i32 = -1},         &gd_val[32],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"ACC_reserved2",   {.i32 = -1},         &gd_val[33],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
+  {"ACC_xpol",        {.i32 = -1},         &gd_val[29],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_ypol",        {.i32 = -1},         &gd_val[30],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_zpol",        {.i32 = -1},         &gd_val[31],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_reserved1",   {.i32 = -1},         &gd_val[32],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"ACC_reserved2",   {.i32 = -1},         &gd_val[33],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
 
   /* Gyroscopes */
   /* sens (LSB/(deg/s)) */
-  {"GYRO_xsens",      {.f32 = 7.0},        &gd_val[34],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT},
-  {"GYRO_ysens",      {.f32 = 7.0},        &gd_val[35],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT},
-  {"GYRO_zsens",      {.f32 = 7.0},        &gd_val[36],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT},
+  {"GYRO_xsens",      {.f32 = 7.0},        &gd_val[34],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT, NULL},
+  {"GYRO_ysens",      {.f32 = 7.0},        &gd_val[35],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT, NULL},
+  {"GYRO_zsens",      {.f32 = 7.0},        &gd_val[36],    {.f32 = 30.0},       MAVLINK_TYPE_FLOAT, NULL},
   /* polarities */
-  {"GYRO_xpol",       {.i32 = -1},         &gd_val[37],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"GYRO_ypol",       {.i32 = -1},         &gd_val[38],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
-  {"GYRO_zpol",       {.i32 = -1},         &gd_val[39],    {.i32 = 1},          MAVLINK_TYPE_INT32_T},
+  {"GYRO_xpol",       {.i32 = -1},         &gd_val[37],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"GYRO_ypol",       {.i32 = -1},         &gd_val[38],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
+  {"GYRO_zpol",       {.i32 = -1},         &gd_val[39],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   /* sample count for zeroing */
-  {"GYRO_zerocnt",    {.u32 = 0},          &gd_val[40],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
-  {"GYRO_reserv1",    {.u32 = 0},          &gd_val[41],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
-  {"GYRO_reserv2",    {.u32 = 0},          &gd_val[42],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T},
+  {"GYRO_zerocnt",    {.u32 = 0},          &gd_val[40],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"GYRO_reserv1",    {.u32 = 0},          &gd_val[41],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"GYRO_reserv2",    {.u32 = 0},          &gd_val[42],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
 
   /**** PMU - pressure measurement unit ****/
   // coefficients for thermal compensation
-  {"PMU_reserved1",   {.i32 = -2000000},   &gd_val[43],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved2",   {.i32 = -2000000},   &gd_val[44],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved3",   {.i32 = -2000000},   &gd_val[45],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved4",   {.i32 = -2000000},   &gd_val[46],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
-  {"PMU_reserved5",   {.i32 = -2000000},   &gd_val[47],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T},
+  {"PMU_reserved1",   {.i32 = -2000000},   &gd_val[43],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved2",   {.i32 = -2000000},   &gd_val[44],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved3",   {.i32 = -2000000},   &gd_val[45],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved4",   {.i32 = -2000000},   &gd_val[46],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved5",   {.i32 = -2000000},   &gd_val[47],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
 
   /**** ADC coefficients ****/
   // смещение нуля датчика тока в условных единицах АЦП
-  {"ADC_I_offset",    {.u32 = 0},          &gd_val[48],    {.u32 = 4096},       MAVLINK_TYPE_UINT32_T},
+  {"ADC_I_offset",    {.u32 = 0},          &gd_val[48],    {.u32 = 4096},       MAVLINK_TYPE_UINT32_T, NULL},
   // на столько надо поделить, чтобы получить амперы. Для машинки 1912, для самолета 37
-  {"ADC_I_gain",      {.u32 = 0},          &gd_val[49],    {.u32 = 12240},      MAVLINK_TYPE_UINT32_T},
+  {"ADC_I_gain",      {.u32 = 0},          &gd_val[49],    {.u32 = 12240},      MAVLINK_TYPE_UINT32_T, NULL},
   // secondary voltage. на столько надо умножить, чтобы получить uV
-  {"ADC_SV_gain",     {.u32 = 0},          &gd_val[50],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
+  {"ADC_SV_gain",     {.u32 = 0},          &gd_val[50],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T, NULL},
   // main voltage. на столько надо умножить, чтобы получить uV
-  {"ADC_MV_gain",     {.u32 = 0},          &gd_val[51],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
-  {"ADC_reserved1",   {.u32 = 0},          &gd_val[52],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
-  {"ADC_reserved2",   {.u32 = 0},          &gd_val[53],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T},
+  {"ADC_MV_gain",     {.u32 = 0},          &gd_val[51],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T, NULL},
+  {"ADC_reserved1",   {.u32 = 0},          &gd_val[52],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T, NULL},
+  {"ADC_reserved2",   {.u32 = 0},          &gd_val[53],    {.u32 = 122400},     MAVLINK_TYPE_UINT32_T, NULL},
 
   /**** Bttery parameters ****/
   // battery capacity (mAh)
-  {"BAT_cap",         {.u32 = 0},          &gd_val[54],    {.u32 = 11000},      MAVLINK_TYPE_UINT32_T},
+  {"BAT_cap",         {.u32 = 0},          &gd_val[54],    {.u32 = 11000},      MAVLINK_TYPE_UINT32_T, NULL},
   // battery filling in percents
-  {"BAT_fill",        {.u32 = 0},          &gd_val[55],    {.u32 = 100},        MAVLINK_TYPE_UINT32_T},
+  {"BAT_fill",        {.u32 = 0},          &gd_val[55],    {.u32 = 100},        MAVLINK_TYPE_UINT32_T, NULL},
 
   /**** Servos coefficients ****/
-  {"SERVO_1_min",     {.u32 = SERVO_MIN},  &gd_val[56],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_1_max",     {.u32 = SERVO_MIN},  &gd_val[57],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_1_neutra",  {.u32 = SERVO_MIN},  &gd_val[58],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_2_min",     {.u32 = SERVO_MIN},  &gd_val[59],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_2_max",     {.u32 = SERVO_MIN},  &gd_val[60],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_2_neutra",  {.u32 = SERVO_MIN},  &gd_val[61],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_3_min",     {.u32 = SERVO_MIN},  &gd_val[62],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_3_max",     {.u32 = SERVO_MIN},  &gd_val[63],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_3_neutra",  {.u32 = SERVO_MIN},  &gd_val[64],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_4_min",     {.u32 = SERVO_MIN},  &gd_val[65],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_4_max",     {.u32 = SERVO_MIN},  &gd_val[66],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_4_neutra",  {.u32 = SERVO_MIN},  &gd_val[67],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_5_min",     {.u32 = SERVO_MIN},  &gd_val[68],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_5_max",     {.u32 = SERVO_MIN},  &gd_val[69],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_5_neutra",  {.u32 = SERVO_MIN},  &gd_val[70],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_6_min",     {.u32 = SERVO_MIN},  &gd_val[71],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_6_max",     {.u32 = SERVO_MIN},  &gd_val[72],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_6_neutra",  {.u32 = SERVO_MIN},  &gd_val[73],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_7_min",     {.u32 = SERVO_MIN},  &gd_val[74],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_7_max",     {.u32 = SERVO_MIN},  &gd_val[75],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_7_neutra",  {.u32 = SERVO_MIN},  &gd_val[76],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_8_min",     {.u32 = SERVO_MIN},  &gd_val[77],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_8_max",     {.u32 = SERVO_MIN},  &gd_val[78],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_8_neutra",  {.u32 = SERVO_MIN},  &gd_val[79],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
+  {"SERVO_1_min",     {.u32 = SERVO_MIN},  &gd_val[56],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_1_max",     {.u32 = SERVO_MIN},  &gd_val[57],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_1_neutra",  {.u32 = SERVO_MIN},  &gd_val[58],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_2_min",     {.u32 = SERVO_MIN},  &gd_val[59],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_2_max",     {.u32 = SERVO_MIN},  &gd_val[60],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_2_neutra",  {.u32 = SERVO_MIN},  &gd_val[61],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_3_min",     {.u32 = SERVO_MIN},  &gd_val[62],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_3_max",     {.u32 = SERVO_MIN},  &gd_val[63],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_3_neutra",  {.u32 = SERVO_MIN},  &gd_val[64],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_4_min",     {.u32 = SERVO_MIN},  &gd_val[65],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_4_max",     {.u32 = SERVO_MIN},  &gd_val[66],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_4_neutra",  {.u32 = SERVO_MIN},  &gd_val[67],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_5_min",     {.u32 = SERVO_MIN},  &gd_val[68],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_5_max",     {.u32 = SERVO_MIN},  &gd_val[69],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_5_neutra",  {.u32 = SERVO_MIN},  &gd_val[70],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_6_min",     {.u32 = SERVO_MIN},  &gd_val[71],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_6_max",     {.u32 = SERVO_MIN},  &gd_val[72],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_6_neutra",  {.u32 = SERVO_MIN},  &gd_val[73],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_7_min",     {.u32 = SERVO_MIN},  &gd_val[74],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_7_max",     {.u32 = SERVO_MIN},  &gd_val[75],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_7_neutra",  {.u32 = SERVO_MIN},  &gd_val[76],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_8_min",     {.u32 = SERVO_MIN},  &gd_val[77],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_8_max",     {.u32 = SERVO_MIN},  &gd_val[78],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_8_neutra",  {.u32 = SERVO_MIN},  &gd_val[79],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
   /* car specific settings */
-  {"SERVO_car_max",   {.u32 = 1},          &gd_val[80],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T},
-  {"SERVO_car_dz",    {.u32 = 1},          &gd_val[81],    {.u32 = 64},         MAVLINK_TYPE_UINT32_T},
+  {"SERVO_car_max",   {.u32 = 1},          &gd_val[80],    {.u32 = SERVO_MAX},  MAVLINK_TYPE_UINT32_T, NULL},
+  {"SERVO_car_dz",    {.u32 = 1},          &gd_val[81],    {.u32 = 64},         MAVLINK_TYPE_UINT32_T, NULL},
 
   /* intervals between sending different data (mS) */
-  {"T_raw_imu",       {.u32 = SEND_OFF},   &gd_val[82],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_raw_press",     {.u32 = SEND_OFF},   &gd_val[83],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_scal_imu",      {.u32 = SEND_OFF},   &gd_val[84],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_scal_press",    {.u32 = SEND_OFF},   &gd_val[85],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_attitude",      {.u32 = SEND_OFF},   &gd_val[86],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_vfr_hud",       {.u32 = SEND_OFF},   &gd_val[87],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_gps_int",       {.u32 = SEND_OFF},   &gd_val[88],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_sys_status",    {.u32 = SEND_OFF},   &gd_val[89],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved0",     {.u32 = SEND_OFF},   &gd_val[90],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved1",     {.u32 = SEND_OFF},   &gd_val[91],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved2",     {.u32 = SEND_OFF},   &gd_val[92],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved3",     {.u32 = SEND_OFF},   &gd_val[93],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved4",     {.u32 = SEND_OFF},   &gd_val[94],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved5",     {.u32 = SEND_OFF},   &gd_val[95],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
-  {"T_reserved6",     {.u32 = SEND_OFF},   &gd_val[96],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T},
+  {"T_raw_imu",       {.u32 = SEND_OFF},   &gd_val[82],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_raw_press",     {.u32 = SEND_OFF},   &gd_val[83],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_scal_imu",      {.u32 = SEND_OFF},   &gd_val[84],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_scal_press",    {.u32 = SEND_OFF},   &gd_val[85],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_attitude",      {.u32 = SEND_OFF},   &gd_val[86],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_vfr_hud",       {.u32 = SEND_OFF},   &gd_val[87],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_gps_int",       {.u32 = SEND_OFF},   &gd_val[88],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_sys_status",    {.u32 = SEND_OFF},   &gd_val[89],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved0",     {.u32 = SEND_OFF},   &gd_val[90],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved1",     {.u32 = SEND_OFF},   &gd_val[91],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved2",     {.u32 = SEND_OFF},   &gd_val[92],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved3",     {.u32 = SEND_OFF},   &gd_val[93],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved4",     {.u32 = SEND_OFF},   &gd_val[94],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved5",     {.u32 = SEND_OFF},   &gd_val[95],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
+  {"T_reserved6",     {.u32 = SEND_OFF},   &gd_val[96],    {.u32 = SEND_MAX},   MAVLINK_TYPE_UINT32_T, NULL},
 
   /* Timezone. Just simple offset in hours. */
-  {"TIME_zone",       {.i32 = -24},        &gd_val[97],    {.i32 = 24},         MAVLINK_TYPE_INT32_T},
+  {"TIME_zone",       {.i32 = -24},        &gd_val[97],    {.i32 = 24},         MAVLINK_TYPE_INT32_T, NULL},
 
   /* Length of filters for different systems. */
-  {"FLEN_adc",        {.u32 = 0},          &gd_val[98],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_pres_dyn",   {.u32 = 0},          &gd_val[99],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_pres_stat",  {.u32 = 0},          &gd_val[100],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved0",  {.u32 = 0},          &gd_val[101],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved1",  {.u32 = 0},          &gd_val[102],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved2",  {.u32 = 0},          &gd_val[103],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved3",  {.u32 = 0},          &gd_val[104],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
-  {"FLEN_reserved4",  {.u32 = 0},          &gd_val[105],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T},
+  {"FLEN_adc",        {.u32 = 0},          &gd_val[98],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_pres_dyn",   {.u32 = 0},          &gd_val[99],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_pres_stat",  {.u32 = 0},          &gd_val[100],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_reserved0",  {.u32 = 0},          &gd_val[101],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_reserved1",  {.u32 = 0},          &gd_val[102],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_reserved2",  {.u32 = 0},          &gd_val[103],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_reserved3",  {.u32 = 0},          &gd_val[104],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_reserved4",  {.u32 = 0},          &gd_val[105],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
 
   /* multiply odometer pulses count to this coeff to get trip in m
    * coarse value is 0.05555555 */
-  {"SPD_pulse2m",     {.f32 = 0.0},        &gd_val[106],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
+  {"SPD_pulse2m",     {.f32 = 0.0},        &gd_val[106],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
   /**** pid coefficients for speed control ****/
-  {"SPD_iGain",       {.f32 = -1.0},       &gd_val[107],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"SPD_pGain",       {.f32 = -200.0},     &gd_val[108],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
-  {"SPD_dGain",       {.f32 = -10000.0},   &gd_val[109],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"SPD_iMin",        {.f32 = -10000.0},   &gd_val[110],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"SPD_iMax",        {.f32 = -10000.0},   &gd_val[111],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"SPD_iGain",       {.f32 = -1.0},       &gd_val[107],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
+  {"SPD_pGain",       {.f32 = -200.0},     &gd_val[108],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT, NULL},
+  {"SPD_dGain",       {.f32 = -10000.0},   &gd_val[109],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"SPD_iMin",        {.f32 = -10000.0},   &gd_val[110],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"SPD_iMax",        {.f32 = -10000.0},   &gd_val[111],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
   /**** pid coefficients for heading control ****/
-  {"HEAD_iGain",      {.f32 = -1.0},       &gd_val[112],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT},
-  {"HEAD_pGain",      {.f32 = -200.0},     &gd_val[113],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT},
-  {"HEAD_dGain",      {.f32 = -10000.0},   &gd_val[114],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"HEAD_iMin",       {.f32 = -10000.0},   &gd_val[115],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
-  {"HEAD_iMax",       {.f32 = -10000.0},   &gd_val[116],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT},
+  {"HEAD_iGain",      {.f32 = -1.0},       &gd_val[112],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
+  {"HEAD_pGain",      {.f32 = -200.0},     &gd_val[113],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT, NULL},
+  {"HEAD_dGain",      {.f32 = -10000.0},   &gd_val[114],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"HEAD_iMin",       {.f32 = -10000.0},   &gd_val[115],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"HEAD_iMax",       {.f32 = -10000.0},   &gd_val[116],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
   /* device's speed limits */
-  {"SPD_speed_min",   {.f32 = 0.0},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
-  {"SPD_speed_max",   {.f32 = 0.0},        &gd_val[118],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT},
+  {"SPD_speed_min",   {.f32 = 0.0},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT, NULL},
+  {"SPD_speed_max",   {.f32 = 0.0},        &gd_val[118],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT, NULL},
 
   /**** fake field with 14 symbols name ****/
-  {"param_end_mark",  {.u32 = 1},          &gd_val[119],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T},
+  {"param_end_mark",  {.u32 = 1},          &gd_val[119],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T, "Fake parameter with maximum name length"},
 };
 
 

@@ -55,36 +55,51 @@ static void _param_cli_confirm(param_status_t status){
 /**
  *
  */
-static void _param_cli_print(uint32_t i){
+static void _param_cli_print(uint32_t i, bool_t need_help){
 
   int n = 80;
   int nres = 0;
   char str[n];
 
+  nres = snprintf(str, n, "%-15s", global_data[i].name);
+  cli_print_long(str, n, nres);
+
   switch(global_data[i].param_type){
   case MAVLINK_TYPE_FLOAT:
-    nres = snprintf(str, n, " = %f, (min = %f, max = %f)",
-        global_data[i].valuep->f32,
+    nres = snprintf(str, n, " %-15f %-15f %-15f",
         global_data[i].min.f32,
+        global_data[i].valuep->f32,
         global_data[i].max.f32);
     break;
   case MAVLINK_TYPE_INT32_T:
-    nres = snprintf(str, n, " = %d, (min = %d, max = %d)",
-        (int)global_data[i].valuep->i32,
+    nres = snprintf(str, n, " %-15d %-15d %-15d",
         (int)global_data[i].min.i32,
+        (int)global_data[i].valuep->i32,
         (int)global_data[i].max.i32);
     break;
   default: // uint32_t
-    nres = snprintf(str, n, " = %u, (min = %u, max = %u)",
-        (unsigned int)global_data[i].valuep->u32,
+    nres = snprintf(str, n, " %-15u %-15u %-15u",
         (unsigned int)global_data[i].min.u32,
+        (unsigned int)global_data[i].valuep->u32,
         (unsigned int)global_data[i].max.u32);
     break;
   }
 
-  cli_print(global_data[i].name);
   cli_print_long(str, n, nres);
   cli_print(ENDL);
+
+  if (need_help && (global_data[i].help != NULL)){
+    cli_println("");
+    cli_println(global_data[i].help);
+  }
+}
+
+/**
+ *
+ */
+void _param_cli_print_header(void){
+  cli_println("Name            min             value           max");
+  cli_println("--------------------------------------------------------------");
 }
 
 /**
@@ -93,8 +108,10 @@ static void _param_cli_print(uint32_t i){
 static void _param_print_all(void){
   uint32_t i = 0;
 
+  _param_cli_print_header();
+
   for (i = 0; i < OnboardParamCount; i++)
-    _param_cli_print(i);
+    _param_cli_print(i, FALSE);
 }
 
 /**
@@ -169,8 +186,10 @@ Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
     }
     else{
       i = key_index_search(*argv);
-      if (i != -1)
-        _param_cli_print(i);
+      if (i != -1){
+        _param_cli_print_header();
+        _param_cli_print(i, TRUE);
+      }
       else{
         cli_println("ERROR: unknown parameter name.");
       }

@@ -24,13 +24,13 @@ typedef union{float f32; int32_t i32; uint32_t u32;} floatint;
 /**
  * Global parameter
  */
-struct GlobalParam_t
-{
-  char *name;
-  floatint min;
-  floatint *valuep;
-  floatint max;
-  uint8_t  param_type;
+struct GlobalParam_t{
+  char      *name;
+  floatint  min;
+  floatint  *valuep;
+  floatint  max;
+  uint8_t   param_type;
+  char      *help;
 };
 
 /**
