@@ -19,7 +19,8 @@
  * we nee timout 500mS */
 #define SPEED_UPDATE_RETRY  (500 / 20)
 #define STAB_TMO            MS2ST(20)
-#define TARGET_RADIUS       param2 /* dirty fix to correspond QGC not mavlink lib */
+#define TARGET_RADIUS       param2      /* dirty fix to correspond QGC not mavlink lib */
+#define METERS_IN_DEGREE    111194.93f  /* meter in degree on equator */
 
 /*
  ******************************************************************************
@@ -59,6 +60,9 @@ static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACH
 
 static uint8_t currWpFrame = MAV_FRAME_GLOBAL;
 static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
+
+float CurrentWpRadius;        /* radius of current waypoing in degrees */
+float CurrentWpPseudoRadius;  /* the length of the side of a square of approximated waypoing radius */
 
 /*
  ******************************************************************************
@@ -237,21 +241,17 @@ static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
  * Calculate heading needed to reach waypoint and return TRUE if waypoint reached.
  */
 static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
-  currWpFrame = MAV_FRAME_GLOBAL;
   float delta_x;
   float delta_y;
-  float wpradius;       /* radius of waypoing in degrees */
-  float distance;       /* distance to current waypoint */
 
-  delta_x = wp->x - ((float)(raw_data.gps_latitude) / GPS_FIXED_POINT_SCALE);
-  delta_y = wp->y - ((float)(raw_data.gps_longitude) / GPS_FIXED_POINT_SCALE);
+  currWpFrame = MAV_FRAME_GLOBAL;
+
+  delta_x = wp->x - (raw_data.gps_latitude  / GPS_FIXED_POINT_SCALE);
+  delta_y = wp->y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
   delta_y *= LongitudeScale;
 
-  wpradius = wp->TARGET_RADIUS / 111194.93f;
-  distance = sqrtf(delta_x * delta_x + delta_y * delta_y);
-
-  // atan2(0,0) is forbidden argumentsr
-  if ((distance > wpradius) && (delta_x != 0 || delta_y != 0)){
+  //NOTE: atan2(0,0) is forbidden arguments
+  if (fabsf(delta_x) > CurrentWpPseudoRadius || fabsf(delta_y) > CurrentWpPseudoRadius){
     *heading = atan2f(delta_y, delta_x);
     return FALSE;
   }
@@ -260,12 +260,14 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
 }
 
 /**
- * Handle waypoint with MAV_FRAME_LOCAL_NED
+ * Handle waypoint with MAV_FRAME_GLOBAL
  */
 static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
   float target_heading = 0;
 
   broadcast_mission_current(wp->seq);
+
+  CurrentWpPseudoRadius = (sqrtf(2)/2) * (wp->TARGET_RADIUS / METERS_IN_DEGREE);
 
   /* stabilization loop for single waypoint */
   while (!is_global_wp_reached(wp, &target_heading)){
