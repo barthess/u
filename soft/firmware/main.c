@@ -5,8 +5,6 @@
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: time cli (date_cmd in timekeeping.c), timezones
-// TODO: replace sqrt in is_global_wp_reached() by rectangular approximation
-// TODO: optimize is_global_wp_reached() by caching of division operation
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
