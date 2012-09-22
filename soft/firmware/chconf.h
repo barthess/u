@@ -34,6 +34,7 @@
 
 #define CORTEX_VTOR_INIT                0xC0000
 #define CORTEX_USE_FPU                  FALSE
+#define CORTEX_ENABLE_WFI_IDLE          FALSE
 
 /*===========================================================================*/
 /* Kernel parameters.                                                        */
