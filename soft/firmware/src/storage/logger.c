@@ -3,9 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "message.h"
-#include "logger.h"
-#include "timekeeping.h"
+#include "uav.h"
 #include "link_sortout.h"
 
 /*
@@ -13,9 +11,6 @@
  * DEFINES
  ******************************************************************************
  */
-
-/* use mavlink log format or raw format */
-#define MAVLINK_LOG_FORMAT  FALSE
 
 /* FS buffer size */
 #define BUFF_SIZE 8192

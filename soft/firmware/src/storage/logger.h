@@ -1,8 +1,10 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
-#include "message.h"
 #include "ff.h"
+
+/* use mavlink log format or raw format */
+#define MAVLINK_LOG_FORMAT  TRUE
 
 /**
  *

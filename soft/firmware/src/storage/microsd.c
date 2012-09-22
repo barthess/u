@@ -6,8 +6,6 @@
 #include "chrtclib.h"
 #include "ff.h"
 
-
-
 /*
  ******************************************************************************
  * DEFINES
@@ -139,7 +137,11 @@ static size_t name_from_time(char *buf){
   if (timezone != NULL)
     t += *timezone * 60 * 60;
 
+#if MAVLINK_LOG_FORMAT
   return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.mavlink", localtime(&t));
+#else
+  return strftime(buf, MAX_FILENAME_SIZE, "%F_%H.%M.%S.raw", localtime(&t));
+#endif
 }
 
 /**
@@ -178,7 +180,7 @@ FRESULT fs_sync(FIL *Log){
  * Если произошла ошибка - просто тушится
  * поток логгера, потому что исправить всё равно ничего нельзя.
  */
-static WORKING_AREA(SdThreadWA, 2048);
+static WORKING_AREA(SdThreadWA, 1536);
 static msg_t SdThread(void *arg){
   chRegSetThreadName("MicroSD");
   (void)arg;
