@@ -70,6 +70,14 @@ static SerialConfig gps_ser_cfg = {
     0,
 };
 
+/**/
+static uint8_t ggabuf[GPS_MSG_LEN];
+static uint8_t rmcbuf[GPS_MSG_LEN];
+
+/* checksum thumbnalis */
+static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
+static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
+
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -98,13 +106,6 @@ static msg_t gpsRxThread(void *arg){
   (void)arg;
   uint32_t tmp = 0;
   uint32_t n = 0;
-
-  // буфера под принятые сообщения
-  static uint8_t ggabuf[GPS_MSG_LEN];
-  static uint8_t rmcbuf[GPS_MSG_LEN];
-  // заготовки контрольных сумм
-  static uint8_t ggachecksum = 'G' ^ 'P' ^ 'G' ^ 'G' ^ 'A';
-  static uint8_t rmcchecksum = 'G' ^ 'P' ^ 'R' ^ 'M' ^ 'C';
 
   /* to sync with tlm sender */
   BinarySemaphore gps_sem;
@@ -337,7 +338,6 @@ int tm_wday      days since Sunday [0-6]
 int tm_yday      days since January 1st [0-365]
 int tm_isdst     daylight savings indicator (1 = yes, 0 = no, -1 = unknown)
  */
-
 void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
   timp->tm_hour = 10 * (buft[0] - '0') + (buft[1] - '0');
   timp->tm_min  = 10 * (buft[2] - '0') + (buft[3] - '0');
@@ -348,6 +348,9 @@ void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
   timp->tm_year = 10 * (bufd[4] - '0') + (bufd[5] - '0') + 2000 - 1900;
 }
 
+/**
+ *
+ */
 uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
   uint8_t byte = 0, i = 0;
 
