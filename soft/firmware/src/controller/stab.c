@@ -28,8 +28,7 @@
  ******************************************************************************
  */
 extern uint32_t           GlobalFlags;
-
-extern RawData raw_data;
+extern RawData            raw_data;
 extern CompensatedData    comp_data;
 extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
 extern Mailbox            speedometer_mb;
