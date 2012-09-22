@@ -42,7 +42,7 @@ static BinarySemaphore gyro_cal_sem;
  * Blink every mag sample - device is not still
  * Light without blinking - collecting statistics
  */
-static WORKING_AREA(GyroCalThreadWA, 512);
+static WORKING_AREA(GyroCalThreadWA, 256);
 static msg_t GyroCalThread(void *arg){
   chRegSetThreadName("GyroCal");
   (void)arg;
