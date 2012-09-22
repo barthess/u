@@ -4,6 +4,7 @@
  */
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
+// TODO: help for parameters
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
@@ -28,9 +29,6 @@ BinarySemaphore servo_updated_sem;
 
 /* store here time from GPS */
 struct tm gps_timp;
-
-/* pointer to "timezone" value. Initialized in timekeeping.c */
-int32_t const *timezone = NULL;
 
 /* some global flags */
 uint32_t GlobalFlags = 0;

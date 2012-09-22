@@ -22,7 +22,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern int32_t *timezone;
 extern Mailbox logwriter_mb;
 extern uint32_t GlobalFlags;
 
@@ -132,6 +131,8 @@ static void remove_handler(void) {
 static size_t name_from_time(char *buf){
 
   time_t t = 0;
+
+  int32_t const *timezone = ValueSearch("TIME_zone");
 
   t = rtcGetTimeUnixSec(&RTCD1);
   if (timezone != NULL)

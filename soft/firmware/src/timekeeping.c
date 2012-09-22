@@ -15,7 +15,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern int32_t *timezone;
 extern BinarySemaphore rtc_sem;
 extern struct tm gps_timp;
 
@@ -84,8 +83,6 @@ static msg_t TimekeeperThread(void *arg){
  */
 
 void TimekeepingInit(void){
-
-  timezone = ValueSearch("TIME_zone");
 
   BootTimestamp = rtcGetTimeUnixUsec(&RTCD1);
   /* поскольку вычитывание метки можеть происходить не сразу же после запуска -
