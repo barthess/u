@@ -66,7 +66,7 @@ bool_t load_params_from_eeprom(void){
             eeprombuf[PARAM_ID_SIZE + 3];
       }
 
-    /* check value acceptability */
+    /* check value acceptability and set it */
     set_global_param(&v, &(global_data[i]));
   }
   return PARAM_SUCCESS;

@@ -1,25 +1,27 @@
 #!/usr/bin/env python
 
-#           name              component id
+#           name                    component id
 names = [
-        ("sys_status",          "ALL"),
-        ("heartbeat",           "ALL"),
-        ("vfr_hud",             "ALL"),
-        ("param_value",         "ALL"),
-        ("command_ack",         "ALL"),
-        ("attitude",            "IMU"),
-        ("raw_pressure",        "IMU"),
-        ("raw_imu",             "IMU"),
-        ("scaled_imu",          "IMU"),
-        ("scaled_pressure",     "IMU"),
-        ("global_position_int", "GPS"),
-        ("gps_raw_int",         "GPS"),
-        ("mission_count",       "MISSIONPLANNER"),
-        ("mission_item",        "MISSIONPLANNER"),
-        ("mission_request",     "MISSIONPLANNER"),
-        ("mission_ack",         "MISSIONPLANNER"),
-        ("mission_current",     "MISSIONPLANNER"),
-        ("mission_item_reached","MISSIONPLANNER"),
+        ("sys_status",              "ALL"),
+        ("heartbeat",               "ALL"),
+        ("vfr_hud",                 "ALL"),
+        ("param_value",             "ALL"),
+        ("command_ack",             "ALL"),
+        ("attitude",                "IMU"),
+        ("raw_pressure",            "IMU"),
+        ("raw_imu",                 "IMU"),
+        ("scaled_imu",              "IMU"),
+        ("scaled_pressure",         "IMU"),
+        ("global_position_int",     "GPS"),
+        ("gps_raw_int",             "GPS"),
+        ("nav_controller_output",   "ALL"),
+        ("local_position_ned",      "ALL"),
+        ("mission_count",           "MISSIONPLANNER"),
+        ("mission_item",            "MISSIONPLANNER"),
+        ("mission_request",         "MISSIONPLANNER"),
+        ("mission_ack",             "MISSIONPLANNER"),
+        ("mission_current",         "MISSIONPLANNER"),
+        ("mission_item_reached",    "MISSIONPLANNER"),
         ]
 
 for i in names:

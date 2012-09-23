@@ -7,6 +7,12 @@
  *
  * Aviation Formulary V1.46:
  * http://williams.best.vwh.net/avform.htm
+ *
+ * what is crosstrack error in pictures
+ * http://diydrones.com/profiles/blogs/705844:BlogPost:43438
+ *
+ * Calculate distance, bearing and more between Latitude/Longitude points
+ * http://www.movable-type.co.uk/scripts/latlong.html
  */
 
 /*
@@ -35,8 +41,9 @@ extern Mailbox            speedometer_mb;
 extern BinarySemaphore    servo_updated_sem;
 extern Mailbox            tolink_mb;
 
-extern mavlink_mission_current_t      mavlink_mission_current_struct;
-extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
+extern mavlink_mission_current_t        mavlink_mission_current_struct;
+extern mavlink_mission_item_reached_t   mavlink_mission_item_reached_struct;
+extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
 
 extern float LongitudeScale;
 
@@ -287,7 +294,7 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
 //    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
 //      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0 - 180), target_heading);
 //    else
-      pid_keep_heading(&headingPid, comp_data.heading, target_heading);
+    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
 }
@@ -340,6 +347,14 @@ static msg_t StabThread(void* arg){
   uint16_t wp_cnt;
 
 WAIT_NEW_MISSION:
+  mavlink_nav_controller_output_struct.nav_roll = 0;
+  mavlink_nav_controller_output_struct.nav_pitch = 0;
+  mavlink_nav_controller_output_struct.alt_error = 0;
+  mavlink_nav_controller_output_struct.wp_dist = 0;
+  mavlink_nav_controller_output_struct.nav_bearing = 0;
+  mavlink_nav_controller_output_struct.target_bearing = 0;
+  mavlink_nav_controller_output_struct.xtrack_error = 0;
+
   clearGlobalFlag(MISSION_ABORT_FLAG);
   clearGlobalFlag(MISSION_TAKEOFF_FLAG);
   clearGlobalFlag(MISSION_LOITER_FLAG);

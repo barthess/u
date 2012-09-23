@@ -10,6 +10,8 @@ names = [
         "attitude",
         "scaled_pressure",
         "vfr_hud",
+        "local_position_ned",
+        "nav_controller_output",
         ]
 
 

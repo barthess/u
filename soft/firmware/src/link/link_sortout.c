@@ -16,27 +16,29 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_system_t              mavlink_system_struct;
+extern mavlink_system_t                 mavlink_system_struct;
 
-extern mavlink_gps_raw_int_t         mavlink_gps_raw_int_struct;
-extern mavlink_raw_pressure_t        mavlink_raw_pressure_struct;
-extern mavlink_raw_imu_t             mavlink_raw_imu_struct;
-extern mavlink_scaled_imu_t          mavlink_scaled_imu_struct;
-extern mavlink_scaled_pressure_t     mavlink_scaled_pressure_struct;
-extern mavlink_sys_status_t          mavlink_sys_status_struct;
-extern mavlink_command_ack_t         mavlink_command_ack_struct;
-extern mavlink_vfr_hud_t             mavlink_vfr_hud_struct; /* air and ground speed values */
-extern mavlink_global_position_int_t mavlink_global_position_int_struct;
-extern mavlink_attitude_t            mavlink_attitude_struct;
-extern mavlink_heartbeat_t           mavlink_heartbeat_struct;
-extern mavlink_param_value_t         mavlink_param_value_struct;
+extern mavlink_gps_raw_int_t            mavlink_gps_raw_int_struct;
+extern mavlink_raw_pressure_t           mavlink_raw_pressure_struct;
+extern mavlink_raw_imu_t                mavlink_raw_imu_struct;
+extern mavlink_scaled_imu_t             mavlink_scaled_imu_struct;
+extern mavlink_scaled_pressure_t        mavlink_scaled_pressure_struct;
+extern mavlink_sys_status_t             mavlink_sys_status_struct;
+extern mavlink_command_ack_t            mavlink_command_ack_struct;
+extern mavlink_vfr_hud_t                mavlink_vfr_hud_struct; /* air and ground speed values */
+extern mavlink_global_position_int_t    mavlink_global_position_int_struct;
+extern mavlink_attitude_t               mavlink_attitude_struct;
+extern mavlink_heartbeat_t              mavlink_heartbeat_struct;
+extern mavlink_param_value_t            mavlink_param_value_struct;
+extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
+extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
 
-extern mavlink_mission_count_t       mavlink_mission_count_struct;
-extern mavlink_mission_item_t        mavlink_mission_item_struct;
-extern mavlink_mission_request_t     mavlink_mission_request_struct;
-extern mavlink_mission_ack_t         mavlink_mission_ack_struct;
-extern mavlink_mission_current_t     mavlink_mission_current_struct;
-extern mavlink_mission_item_reached_t mavlink_mission_item_reached_struct;
+extern mavlink_mission_count_t          mavlink_mission_count_struct;
+extern mavlink_mission_item_t           mavlink_mission_item_struct;
+extern mavlink_mission_request_t        mavlink_mission_request_struct;
+extern mavlink_mission_ack_t            mavlink_mission_ack_struct;
+extern mavlink_mission_current_t        mavlink_mission_current_struct;
+extern mavlink_mission_item_reached_t   mavlink_mission_item_reached_struct;
 
 /*
  ******************************************************************************
@@ -101,8 +103,12 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
   case MAVLINK_MSG_ID_COMMAND_ACK:
     len = mavlink_msg_command_ack_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_command_ack_struct);
     break;
-
-
+  case MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT:
+    len = mavlink_msg_nav_controller_output_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_nav_controller_output_struct);
+    break;
+  case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+    len = mavlink_msg_local_position_ned_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_local_position_ned_struct);
+    break;
   case MAVLINK_MSG_ID_MISSION_COUNT:
     len = mavlink_msg_mission_count_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_count_struct);
     break;
