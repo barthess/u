@@ -60,8 +60,8 @@ static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACH
 static uint8_t currWpFrame = MAV_FRAME_GLOBAL;
 static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
 
-float CurrentWpRadius;        /* radius of current waypoing in degrees */
-float CurrentWpPseudoRadius;  /* the length of the side of a square of approximated waypoing radius */
+//static float CurrentWpRadius;        /* radius of current waypoing in degrees */
+static float CurrentWpPseudoRadius;  /* the length of the side of a square of approximated waypoing radius */
 
 /*
  ******************************************************************************
@@ -81,10 +81,11 @@ float CurrentWpPseudoRadius;  /* the length of the side of a square of approxima
  *
  */
 static bool_t is_local_ned_wp_reached(float target_trip){
-  if ((bkpOdometer * *pulse2m) >= target_trip)
-    return TRUE;
-  else
-    return FALSE;
+//  if ((bkpOdometer * *pulse2m) >= target_trip)
+//    return TRUE;
+//  else
+//    return FALSE;
+  return (bkpOdometer * *pulse2m) >= target_trip;
 }
 
 /**
