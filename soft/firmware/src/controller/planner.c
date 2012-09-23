@@ -11,8 +11,8 @@
 #define PLANNER_RETRY_TMO     MS2ST(1000)
 #define PLANNER_POST_TMO      MS2ST(1000)
 
-#define TARGET_RADIUS         param2 /* dirty fix to correspond QGC not mavlink lib */
-
+#define TARGET_RADIUS         param2  /* dirty fix to correspond QGC not mavlink lib */
+#define MIN_TARGET_RADIUS     5       /* minimal allowed waypoint radius */
 /*
  ******************************************************************************
  * EXTERNS
@@ -167,7 +167,7 @@ uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
     return MAV_MISSION_UNSUPPORTED_FRAME;
   if (wp->seq != seq)
     return MAV_MISSION_INVALID_SEQUENCE;
-  if (wp->TARGET_RADIUS < 1)
+  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS)
     return MAV_MISSION_INVALID_PARAM1;
 
   /* no errors found */

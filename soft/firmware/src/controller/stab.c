@@ -115,6 +115,7 @@ static void broadcast_mission_current(uint16_t seq){
   mission_current_mail.invoice = MAVLINK_MSG_ID_MISSION_CURRENT;
   mission_current_mail.payload = &mavlink_mission_current_struct;
   chMBPost(&tolink_mb, (msg_t)&mission_current_mail, TIME_IMMEDIATE);
+  log_write_schedule(MAVLINK_MSG_ID_MISSION_CURRENT, NULL, 0);
 }
 
 /**
@@ -125,6 +126,7 @@ static void broadcast_mission_item_reached(uint16_t seq){
   mission_item_reached_mail.invoice = MAVLINK_MSG_ID_MISSION_ITEM_REACHED;
   mission_item_reached_mail.payload = &mavlink_mission_item_reached_struct;
   chMBPost(&tolink_mb, (msg_t)&mission_item_reached_mail, TIME_IMMEDIATE);
+  log_write_schedule(MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL, 0);
 }
 
 /**

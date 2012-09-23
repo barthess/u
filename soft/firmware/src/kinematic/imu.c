@@ -20,8 +20,6 @@
 extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_attitude_struct;
 extern uint32_t imu_update_period;
-extern Mailbox logwriter_mb;
-extern uint32_t GlobalFlags;
 
 uint32_t imu_step = 0;                /* increments on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},
@@ -131,10 +129,7 @@ static msg_t Imu(void *semp) {
                 interval);
 
       get_attitude(&mavlink_attitude_struct);
-
-      if ((i & decimator) == decimator)
-        log_write_schedule(MAVLINK_MSG_ID_ATTITUDE);
-      i++;
+      log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
     }
   }
   return 0;

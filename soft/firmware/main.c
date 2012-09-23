@@ -3,6 +3,10 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: report
+//        local_position_ned
+//        nav_controller_output_t
+
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: help for parameters
 

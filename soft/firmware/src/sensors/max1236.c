@@ -19,8 +19,6 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern Mailbox logwriter_mb;
-extern uint32_t GlobalFlags;
 
 extern mavlink_raw_pressure_t     mavlink_raw_pressure_struct;
 extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
@@ -87,9 +85,9 @@ static msg_t PollMax1236Thread(void *arg) {
 
       comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
 
-      log_write_schedule(MAVLINK_MSG_ID_VFR_HUD);
-      log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE);
-      log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE);
+      log_write_schedule(MAVLINK_MSG_ID_VFR_HUD, NULL, 0);
+      log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE, NULL, 0);
+      log_write_schedule(MAVLINK_MSG_ID_SCALED_PRESSURE, NULL, 0);
     }
   }
   return 0;

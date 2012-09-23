@@ -16,7 +16,6 @@
  ******************************************************************************
  */
 extern uint32_t GlobalFlags;
-extern Mailbox logwriter_mb;
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
@@ -42,9 +41,6 @@ static uint32_t const *zerocnt;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
-
-/* variable for regulate log writing frequency */
-static uint32_t i = 0;
 
 /*
  *******************************************************************************
@@ -117,18 +113,6 @@ void process_gyro_data(void){
 /**
  *
  */
-void itg3200_write_log(void){
-  const uint32_t decimator = 0b11;
-  if ((i & decimator) == decimator){
-    log_write_schedule(MAVLINK_MSG_ID_RAW_IMU);
-    log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU);
-  }
-  i++;
-}
-
-/**
- *
- */
 void sort_rxbuff(uint8_t *rxbuf){
   raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
@@ -146,6 +130,10 @@ static msg_t PollGyroThread(void *semp){
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
   Thread *cal_tp = NULL;
+
+  /* variables for regulate log writing frequency */
+  uint32_t i = 0;
+  const uint32_t decimator = 0b11;
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
@@ -171,7 +159,9 @@ static msg_t PollGyroThread(void *semp){
       }
       process_gyro_data();
       chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
-      itg3200_write_log();/* save data to logfile */
+      log_write_schedule(MAVLINK_MSG_ID_RAW_IMU, &i, decimator);
+      i--; /* trick to avoid having one more variable for decimating */
+      log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU, &i, decimator);
     }
   }
   return 0;

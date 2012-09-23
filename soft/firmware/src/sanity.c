@@ -7,7 +7,6 @@
  */
 extern uint32_t GlobalFlags;
 extern Mailbox tolink_mb;
-extern Mailbox logwriter_mb;
 
 extern mavlink_system_t       mavlink_system_struct;
 extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
@@ -75,8 +74,7 @@ static msg_t SanityControlThread(void *arg) {
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
     }
     chBSemSignal(&sanity_sem);
-
-    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT);
+    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
     chThdSleepMilliseconds(LED_FLASH_TIME);
