@@ -51,6 +51,7 @@ uint8_t float2thrust(float v){
     putinrange(v, -1.0f, 1.0f);
     mavlink_vfr_hud_struct.throttle = roundf((v + 1.0) * 50);
   }
+
   return __USAT(tmp, 8);
 }
 
