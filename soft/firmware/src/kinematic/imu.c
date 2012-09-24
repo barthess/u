@@ -21,7 +21,7 @@ extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_attitude_struct;
 extern uint32_t imu_update_period;
 
-uint32_t imu_step = 0;                /* increments on each call to imu_update */
+uint32_t imu_step = 0;            /* increments on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
                       {0,0,1}};   /* estimated DCM matrix */
@@ -55,8 +55,6 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   }
 
   /* get yaw from DCM */
-  //comp_data.heading = atan2f(Rxy, -Rxx);
-  //comp_data.heading = atan2f((*magypol) * Rxy, (*magxpol) * Rxx) + PI;
   comp_data.heading = atan2f(Rxy, -Rxx) + PI + fdeg2rad(*inclinate);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
