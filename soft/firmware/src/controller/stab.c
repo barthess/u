@@ -45,6 +45,7 @@ extern mavlink_mission_current_t        mavlink_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_mission_item_reached_struct;
 extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
 extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
+extern mavlink_vfr_hud_t                mavlink_vfr_hud_struct;
 
 extern float LongitudeScale;
 
@@ -67,9 +68,6 @@ static Mail mission_item_reached_mail = {NULL, MAVLINK_MSG_ID_MISSION_ITEM_REACH
 
 static uint8_t currWpFrame = MAV_FRAME_GLOBAL;
 static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
-
-//static float CurrentWpRadius;        /* radius of current waypoing in degrees */
-static float CurrentWpPseudoRadius;  /* the length of the side of a square of approximated waypoing radius */
 
 /*
  ******************************************************************************
@@ -135,6 +133,9 @@ static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired){
   float impact = 0;
 
   impact = UpdatePID(spd_pidp, desired - current, current);
+
+  mavlink_vfr_hud_struct.groundspeed = current;
+  mavlink_nav_controller_output_struct.aspd_error = desired - current;
 
   /* this check need because we can not get direction */
   if (impact < 0)
@@ -250,8 +251,11 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   delta_y = wp->y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
   delta_y *= LongitudeScale;
 
+  mavlink_nav_controller_output_struct.wp_dist =
+      sqrtf(delta_x*delta_x + delta_y*delta_y) * METERS_IN_DEGREE;
+
   //NOTE: atan2(0,0) is forbidden arguments
-  if (fabsf(delta_x) > CurrentWpPseudoRadius || fabsf(delta_y) > CurrentWpPseudoRadius){
+  if (mavlink_nav_controller_output_struct.wp_dist > wp->TARGET_RADIUS){
     *heading = atan2f(delta_y, delta_x);
     return FALSE;
   }
@@ -266,8 +270,6 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
   float target_heading = 0;
 
   broadcast_mission_current(wp->seq);
-
-  CurrentWpPseudoRadius = (sqrtf(2)/2) * (wp->TARGET_RADIUS / METERS_IN_DEGREE);
 
   /* stabilization loop for single waypoint */
   while (!is_global_wp_reached(wp, &target_heading)){
@@ -341,6 +343,7 @@ WAIT_NEW_MISSION:
   mavlink_nav_controller_output_struct.nav_roll = 0;
   mavlink_nav_controller_output_struct.nav_pitch = 0;
   mavlink_nav_controller_output_struct.alt_error = 0;
+  mavlink_nav_controller_output_struct.aspd_error = 0;
   mavlink_nav_controller_output_struct.wp_dist = 0;
   mavlink_nav_controller_output_struct.nav_bearing = 0;
   mavlink_nav_controller_output_struct.target_bearing = 0;

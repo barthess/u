@@ -45,6 +45,9 @@ static alphabeta_instance_q31 bmp085_filter;
 /* length of filter */
 static uint32_t const *flen_pres_stat;
 
+/* value to calculate time between measurements and climb rate */
+static systime_t measurement_time_prev;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -118,9 +121,15 @@ static void bmp085_calc(void){
   comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval, *flen_pres_stat);
 
   // calculate height
+  float altitude_prev = comp_data.baro_altitude;
   comp_data.baro_altitude = pres_to_height(comp_data.baro_filtered);
+
+  mavlink_vfr_hud_struct.climb = CH_FREQUENCY * (comp_data.baro_altitude - altitude_prev) /
+                                    (chTimeNow() - measurement_time_prev);
+  measurement_time_prev = chTimeNow();
+
   mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
-  mavlink_scaled_pressure_struct.press_abs = (float)comp_data.baro_filtered / 100;
+  mavlink_scaled_pressure_struct.press_abs = (float)comp_data.baro_filtered / 100.0;
   return;
 }
 
