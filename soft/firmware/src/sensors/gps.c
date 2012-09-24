@@ -239,7 +239,6 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     global_pos_struct->lat = gps_latitude * 100;
     global_pos_struct->lon = gps_longitude * 100;
     global_pos_struct->alt = gps_altitude * 10;
-    log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
 
     /* сохраним координаты на будущее */
     bkpSaveGpsLatitude(global_pos_struct->lat);
@@ -265,6 +264,8 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
     global_pos_struct->lon = bkpGetGpsLongitude();
     global_pos_struct->alt = bkpGetGpsAltitude();
 	}
+
+  log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
 }
 
 void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){
