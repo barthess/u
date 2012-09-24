@@ -31,7 +31,7 @@ float dcmEst[3][3] = {{1,0,0},
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float const *inclinate;
+static float const *declinate;
 
 /*
  *******************************************************************************
@@ -55,7 +55,7 @@ void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   }
 
   /* get yaw from DCM */
-  comp_data.heading = atan2f(Rxy, -Rxx) + PI + fdeg2rad(*inclinate);
+  comp_data.heading = atan2f(Rxy, -Rxx) + PI - fdeg2rad(*declinate);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
@@ -139,7 +139,7 @@ static msg_t Imu(void *semp) {
  *******************************************************************************
  */
 void ImuInit(BinarySemaphore *imu_semp){
-  inclinate = ValueSearch("MAG_inclinate");
+  declinate = ValueSearch("MAG_declinate");
 
   dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, imu_semp);

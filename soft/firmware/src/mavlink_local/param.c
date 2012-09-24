@@ -74,8 +74,8 @@ const GlobalParam_t global_data[] = {
   {"MAG_xpol",        {.i32 = -1},         &gd_val[16],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   {"MAG_ypol",        {.i32 = -1},         &gd_val[17],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   {"MAG_zpol",        {.i32 = -1},         &gd_val[18],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
-  /* inclination in degrees */
-  {"MAG_inclinate",   {.f32 = -90},        &gd_val[19],    {.f32 = 90},         MAVLINK_TYPE_FLOAT, NULL},
+  /* declination in degrees */
+  {"MAG_declinate",   {.f32 = -90},        &gd_val[19],    {.f32 = 90},         MAVLINK_TYPE_FLOAT, "Magnetic declination. \nThe declination is positive when the magnetic north is east of true north. \nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"},
   /* count of samples to zero calibration */
   {"MAG_zerocnt",     {.i32 = 256},        &gd_val[20],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T, NULL},
   {"MAG_reserved1",   {.i32 = 0},          &gd_val[21],    {.i32 = 4096},       MAVLINK_TYPE_INT32_T, NULL},
