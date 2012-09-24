@@ -92,7 +92,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/memstreams.c \
        main.c \
-       src/stubs.c \
+       src/gcc_stubs.c \
        src/bkp.c \
        src/exti_local.c \
        src/microrl/src/microrl.c \

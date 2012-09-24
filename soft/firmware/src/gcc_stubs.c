@@ -4,7 +4,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "stubs.h"
+#include "gcc_stubs.h"
 
 // Glibc stubs - HATE THEM
 void _exit(int status){
