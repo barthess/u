@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #ifndef MATRIX_H
 #define MATRIX_H
@@ -57,9 +58,9 @@ int matrix_inverse(int n, float* A)
 		tmp = 0;
 		for (i = k; i < n; i++)
 		{
-			if (fabs(A[i*n+k]) >= tmp)	// 'Avoid using other functions inside abs()?'
+			if (fabsf(A[i*n+k]) >= tmp)	// 'Avoid using other functions inside abs()?'
 			{
-				tmp = fabs(A[i*n+k]);
+				tmp = fabsf(A[i*n+k]);
 				pivrow = i;
 			}
 		}
