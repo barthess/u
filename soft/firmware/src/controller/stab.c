@@ -87,10 +87,6 @@ static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
  *
  */
 static bool_t is_local_ned_wp_reached(float target_trip){
-//  if ((bkpOdometer * *pulse2m) >= target_trip)
-//    return TRUE;
-//  else
-//    return FALSE;
   return (bkpOdometer * *pulse2m) >= target_trip;
 }
 
