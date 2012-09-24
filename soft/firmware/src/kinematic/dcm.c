@@ -9,7 +9,6 @@
 
 #include "dcm.h"
 #include "vector3d.h"
-#include "param.h"
 
 /*
 Output variables are:
