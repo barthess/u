@@ -6,7 +6,6 @@
 // TODO: report
 //        local_position_ned
 //        nav_controller_output_t
-//        mavlink_statustext_t debugging messages like printf("***COLLECT FAULT - KEEP DEVICE STILL***  Axis:%d adcMin:%d adcMax:%d \n", w, collect.adcMin[w] , collect.adcMax[w]);
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: help for parameters

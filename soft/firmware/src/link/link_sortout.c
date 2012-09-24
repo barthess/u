@@ -129,7 +129,7 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
     len = mavlink_msg_mission_item_reached_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_item_reached_struct);
     break;
   case MAVLINK_MSG_ID_STATUSTEXT:
-     len = mavlink_msg_statustext_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_statustext_struct);
+     len = mavlink_msg_statustext_encode(system_id, MAV_COMP_ID_ALL, msg, &mavlink_statustext_struct);
      break;
 
   default:
