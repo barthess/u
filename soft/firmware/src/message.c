@@ -37,6 +37,7 @@ mavlink_param_value_t           mavlink_param_value_struct;
 mavlink_gps_raw_int_t           mavlink_gps_raw_int_struct;
 mavlink_local_position_ned_t    mavlink_local_position_ned_struct;
 mavlink_nav_controller_output_t mavlink_nav_controller_output_struct;
+mavlink_statustext_t            mavlink_statustext_struct;
 
 mavlink_mission_count_t         mavlink_mission_count_struct;
 mavlink_mission_item_t          mavlink_mission_item_struct;

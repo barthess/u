@@ -32,6 +32,7 @@ extern mavlink_heartbeat_t              mavlink_heartbeat_struct;
 extern mavlink_param_value_t            mavlink_param_value_struct;
 extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
 extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
+extern mavlink_statustext_t             mavlink_statustext_struct;
 
 extern mavlink_mission_count_t          mavlink_mission_count_struct;
 extern mavlink_mission_item_t           mavlink_mission_item_struct;
@@ -127,6 +128,9 @@ uint16_t mavencoder(uint8_t msg_id, uint8_t system_id, mavlink_message_t* msg){
   case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
     len = mavlink_msg_mission_item_reached_encode(system_id, MAV_COMP_ID_MISSIONPLANNER, msg, &mavlink_mission_item_reached_struct);
     break;
+  case MAVLINK_MSG_ID_STATUSTEXT:
+     len = mavlink_msg_statustext_encode(system_id, MAV_COMP_ID_IMU, msg, &mavlink_statustext_struct);
+     break;
 
   default:
     chDbgPanic("ID not defined");

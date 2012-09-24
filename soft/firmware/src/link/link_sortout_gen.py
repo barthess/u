@@ -22,6 +22,7 @@ names = [
         ("mission_ack",             "MISSIONPLANNER"),
         ("mission_current",         "MISSIONPLANNER"),
         ("mission_item_reached",    "MISSIONPLANNER"),
+        ("statustext",              "ALL"),
         ]
 
 for i in names:

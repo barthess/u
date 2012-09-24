@@ -78,6 +78,7 @@ int main(void) {
 
   EepromOpen(&EepromFile);
 
+  DbgPrintInit();
   MsgInit();
   SanityControlInit();
   I2CInitLocal();     /* also starts EEPROM and load global parameters from it */

@@ -53,15 +53,20 @@ msg_t wait_new_position(void){
   prevy = raw_data.ymag;
   prevz = raw_data.zmag;
 
+  dbg_print(0, "MAG: wait new position");
+
   while (delta < NEW_POSITION_THRESHOLD){
     delta  = (prevx - raw_data.xmag) * (prevx - raw_data.xmag);
     delta += (prevy - raw_data.ymag) * (prevy - raw_data.ymag);
     delta += (prevz - raw_data.zmag) * (prevz - raw_data.zmag);
     retry--;
-    if (retry == 0)
+    if (retry == 0){
+      dbg_print(0, "MAG: no new position. Calibration interrupted");
       return RDY_RESET;
+    }
     chThdSleepMilliseconds(tmo);
   }
+  dbg_print(0, "MAG: new position is OK");
   return RDY_OK;
 }
 
@@ -100,6 +105,7 @@ static msg_t MagCalThread(void *arg){
                    {0, 0, 0}};
 
   mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  dbg_print(0, "MAG: start calibration");
   clear_state();
 
   /* main loop */
@@ -129,6 +135,7 @@ static msg_t MagCalThread(void *arg){
     P[CurrentPoint][0] = MagSumX / *zerocount;
     P[CurrentPoint][1] = MagSumY / *zerocount;
     P[CurrentPoint][2] = MagSumZ / *zerocount;
+    dbg_print(0, "MAG: point collected");
     clear_state();
     CurrentPoint++;
 
@@ -146,6 +153,7 @@ static msg_t MagCalThread(void *arg){
   *(int32_t *)(ValueSearch("MAG_xoffset")) = floorf(S.c[0]);
   *(int32_t *)(ValueSearch("MAG_yoffset")) = floorf(S.c[1]);
   *(int32_t *)(ValueSearch("MAG_zoffset")) = floorf(S.c[2]);
+  dbg_print(0, "MAG: calibration finished");
 
 TERMINATE:
   clearGlobalFlag(MAG_CAL_FLAG);

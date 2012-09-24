@@ -17,6 +17,7 @@
 #include "cli_cal.h"
 #include "cli_cmd.h"
 #include "controller.h"
+#include "dbg_msg.h"
 #include "dsp.h"
 #include "eeprom.h"
 #include "exti_local.h"

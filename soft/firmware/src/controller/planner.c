@@ -9,7 +9,7 @@
 #define PLANNER_STANDBY_TMO   MS2ST(20) /* poll inbox period waiting message from ground */
 #define PLANNER_RETRY_CNT     5
 #define PLANNER_RETRY_TMO     MS2ST(1000)
-#define PLANNER_POST_TMO      MS2ST(1000)
+#define PLANNER_POST_TMO      MS2ST(2000)
 
 #define TARGET_RADIUS         param2  /* dirty fix to correspond QGC not mavlink lib */
 #define MIN_TARGET_RADIUS     5       /* minimal allowed waypoint radius */
