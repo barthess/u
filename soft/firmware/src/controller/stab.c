@@ -74,6 +74,12 @@ static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
  * PROTOTYPES
  ******************************************************************************
  */
+static void loiter_if_need(void);
+static void broadcast_mission_current(uint16_t seq);
+static void broadcast_mission_item_reached(uint16_t seq);
+static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired);
+static void pid_keep_heading(pid_f32_t *hdng_pidp, float current, float desired);
+static void update_odometer_speed(void);
 
 /*
  ******************************************************************************
@@ -88,6 +94,62 @@ static float xPrevWp = 0, yPrevWp = 0; /* for local NED waypoint calculations */
  */
 static bool_t is_local_ned_wp_reached(float target_trip){
   return (bkpOdometer * *pulse2m) >= target_trip;
+}
+
+/**
+ * Calculate trip and heading needed to reach waypoint.
+ */
+static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float *trip){
+
+  /* clear previosly saved points only if system changed waypoint frame's type */
+  if (currWpFrame == MAV_FRAME_GLOBAL){
+    xPrevWp = 0;
+    yPrevWp = 0;
+    currWpFrame = MAV_FRAME_LOCAL_NED;
+  }
+
+  float delta_x = wp->x - xPrevWp;
+  float delta_y = wp->y - yPrevWp;
+
+  /* first argumetn of atan2 must be y, second - x */
+  *heading = atan2f(delta_y, delta_x);
+
+  *trip  = bkpOdometer * *pulse2m;
+  *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
+
+  /* save values for next iteration */
+  xPrevWp = wp->x;
+  yPrevWp = wp->y;
+}
+
+/**
+ * Handle waypoint with MAV_FRAME_LOCAL_NED
+ */
+static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
+
+  float target_trip = 0;
+  float target_heading = 0;
+  speedRetryCnt = 0;
+
+  broadcast_mission_current(wp->seq);
+  parse_local_ned_wp(wp, &target_heading, &target_trip);
+
+  /* stabilization loop for single waypoint */
+  while (!is_local_ned_wp_reached(target_trip)){
+    if (GlobalFlags & MISSION_ABORT_FLAG)
+      return WP_GOTO_ABORTED;
+
+    loiter_if_need();
+
+    if (WpSeqNew != 0)
+      return WP_GOTO_RESCHEDULED;
+
+    chBSemWait(&servo_updated_sem);
+    update_odometer_speed();
+    pid_keep_speed(&speedPid, comp_data.groundspeed_odo, *speed_min);
+    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
+  }
+  return WP_GOTO_REACHED;
 }
 
 /**
@@ -163,75 +225,19 @@ static void update_odometer_speed(void){
   /* get current speed without waiting, because it updates very slowly comparing to other sensors */
   status = chMBFetch(&speedometer_mb, &tmp, TIME_IMMEDIATE);
   if (status == RDY_OK){
-    comp_data.groundspeed = calc_ground_rover_speed(tmp);
+    comp_data.groundspeed_odo = calc_ground_rover_speed(tmp);
     speedRetryCnt = 0;
   }
   else{
     speedRetryCnt++;
     if (speedRetryCnt > SPEED_UPDATE_RETRY){
       speedRetryCnt = SPEED_UPDATE_RETRY + 2; // to avoid overflow
-      comp_data.groundspeed = 0.0; /* device is still */
+      comp_data.groundspeed_odo = 0.0; /* device is still */
     }
   }
 
   /* set variable for telemetry */
-  mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed;
-}
-
-/**
- * Calculate trip and heading needed to reach waypoint.
- */
-static void parse_local_ned_wp(mavlink_mission_item_t *wp, float *heading, float *trip){
-
-  /* clear previosly saved points only if system changed waypoint frame's type */
-  if (currWpFrame == MAV_FRAME_GLOBAL){
-    xPrevWp = 0;
-    yPrevWp = 0;
-    currWpFrame = MAV_FRAME_LOCAL_NED;
-  }
-
-  float delta_x = wp->x - xPrevWp;
-  float delta_y = wp->y - yPrevWp;
-
-  /* first argumetn of atan2 must be y, second - x */
-  *heading = atan2f(delta_y, delta_x);
-
-  *trip  = bkpOdometer * *pulse2m;
-  *trip += sqrtf(delta_x * delta_x + delta_y * delta_y);
-
-  /* save values for next iteration */
-  xPrevWp = wp->x;
-  yPrevWp = wp->y;
-}
-
-/**
- * Handle waypoint with MAV_FRAME_LOCAL_NED
- */
-static goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
-
-  float target_trip = 0;
-  float target_heading = 0;
-  speedRetryCnt = 0;
-
-  broadcast_mission_current(wp->seq);
-  parse_local_ned_wp(wp, &target_heading, &target_trip);
-
-  /* stabilization loop for single waypoint */
-  while (!is_local_ned_wp_reached(target_trip)){
-    if (GlobalFlags & MISSION_ABORT_FLAG)
-      return WP_GOTO_ABORTED;
-
-    loiter_if_need();
-
-    if (WpSeqNew != 0)
-      return WP_GOTO_RESCHEDULED;
-
-    chBSemWait(&servo_updated_sem);
-    update_odometer_speed();
-    pid_keep_speed(&speedPid, comp_data.groundspeed, *speed_min);
-    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
-  }
-  return WP_GOTO_REACHED;
+  mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
 }
 
 /**
@@ -260,10 +266,42 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
 }
 
 /**
+ * Функция предназначена для плавного перехода с курса по магнитометру
+ * на курс по GPS в процессе движения. Чем меньше разница в скорости
+ * между GPS и одометром - тем больше вес курса GPS.
+ *
+ * v_gps[in]      speed by GPS, m/s
+ * v_odometer[in] speed by odometer, m/s
+ * phi_gps[in]    course by gps, radians
+ * phi_imu[in]    course by imu, radians
+ *
+ * return course in radians.
+ */
+float alphabeta_course(float v_gps, float v_odometer, float phi_gps, float phi_imu){
+  float beta;
+  float phi;
+
+  /* handle situation where device is still and also prevent division by zero */
+  if (v_odometer == 0)
+    return phi_imu;
+
+  /**/
+  if (!raw_data.gps_valid)
+    return phi_imu;
+
+  beta = fabsf(v_gps - v_odometer) / fmaxf(v_gps, v_odometer);
+  putinrange(beta, 0.0f, 1.0f);
+
+  phi = (1.0f - beta) * phi_gps + beta * phi_imu;
+  return wrap_2pi(phi);
+}
+
+/**
  * Handle waypoint with MAV_FRAME_GLOBAL
  */
 static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
   float target_heading = 0;
+  float heading = 0;
 
   broadcast_mission_current(wp->seq);
 
@@ -279,11 +317,14 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
 
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
-    pid_keep_speed(&speedPid, comp_data.groundspeed, *speed_min);
-//    if ((comp_data.groundspeed > 0.3) && raw_data.gps_valid)
-//      pid_keep_heading(&headingPid, fdeg2rad(raw_data.gps_course / 100.0 - 180), target_heading);
-//    else
-    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
+    pid_keep_speed(&speedPid, comp_data.groundspeed_odo, *speed_min);
+
+    heading = alphabeta_course(comp_data.groundspeed_gps,
+                               comp_data.groundspeed_odo,
+                               fdeg2rad((float)raw_data.gps_course / 100.0),
+                               comp_data.heading);
+    pid_keep_heading(&headingPid, heading, target_heading);
+    //pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
 }

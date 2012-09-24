@@ -49,6 +49,7 @@ including, the "$" and "*".
  */
 extern uint32_t GlobalFlags;
 extern RawData raw_data;
+extern CompensatedData comp_data;
 extern Mailbox tolink_mb;
 extern mavlink_global_position_int_t mavlink_global_position_int_struct;
 extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
@@ -310,7 +311,8 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
   	raw_data.gps_valid = TRUE;
-    mavlink_vfr_hud_struct.groundspeed = (float)(gps_speed_knots * 51) / 100.0;
+  	comp_data.groundspeed_gps = (float)(gps_speed_knots * 51) / 100.0;
+    mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed_gps;
     get_time(&gps_timp, buft, bufd);
   }
   else{

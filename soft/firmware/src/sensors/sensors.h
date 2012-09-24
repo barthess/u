@@ -38,8 +38,9 @@ struct CompensatedData{
   uint32_t  main_current;      // mA
   uint16_t  secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
 
-  float     groundspeed;        // Current ground speed in m/s
-  float     heading;            // Current heading in radians
+  float     groundspeed_odo;   // Current ground speed by odometer (m/s)
+  float     groundspeed_gps;   // Current ground speed by gps (m/s)
+  float     heading;           // Current heading in radians
 };
 
 
