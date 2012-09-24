@@ -43,6 +43,7 @@ extern Mailbox            tolink_mb;
 
 extern mavlink_mission_current_t        mavlink_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_mission_item_reached_struct;
+extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
 extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
 
 extern float LongitudeScale;
@@ -103,16 +104,6 @@ static void loiter_if_need(void){
     ServoCarThrustSet(128);
     chThdSleep(STAB_TMO);
   }
-}
-
-/**
- *
- */
-static void reset_pids(void){
-  speedPid.iState   = 0;
-  speedPid.dState   = 0;
-  headingPid.iState = 0;
-  headingPid.dState = 0;
 }
 
 /**
@@ -355,10 +346,21 @@ WAIT_NEW_MISSION:
   mavlink_nav_controller_output_struct.target_bearing = 0;
   mavlink_nav_controller_output_struct.xtrack_error = 0;
 
+  mavlink_local_position_ned_struct.x  = 0;
+  mavlink_local_position_ned_struct.y  = 0;
+  mavlink_local_position_ned_struct.z  = 0;
+  mavlink_local_position_ned_struct.vx = 0;
+  mavlink_local_position_ned_struct.vy = 0;
+  mavlink_local_position_ned_struct.vz = 0;
+  mavlink_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
+
   clearGlobalFlag(MISSION_ABORT_FLAG);
   clearGlobalFlag(MISSION_TAKEOFF_FLAG);
   clearGlobalFlag(MISSION_LOITER_FLAG);
-  reset_pids();
+
+  reset_pid(&headingPid);
+  reset_pid(&speedPid);
+
   ServoCarThrustSet(128);
   ServoCarYawSet(128);
   while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))

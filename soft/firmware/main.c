@@ -3,10 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: report
-//        local_position_ned
-//        nav_controller_output_t
-
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: help for parameters
 
@@ -14,7 +10,7 @@
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Power brown out handler for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
-// TODO: One more point in dynamic pressure thermal compensation algorith (at 60 celsius)
+// TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
 // TODO: WDT with backup domain for fuckups investigation.
 

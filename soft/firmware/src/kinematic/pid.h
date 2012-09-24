@@ -14,6 +14,9 @@ typedef struct{
   float const *dGain;     /* derivative gain */
 }pid_f32_t;
 
+
+#define reset_pid(pid){ (pid)->iState = 0; (pid)->dState = 0; }
+
 float UpdatePID(pid_f32_t *pid, float error, float position);
 
 
