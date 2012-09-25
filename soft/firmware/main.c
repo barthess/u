@@ -3,6 +3,9 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: rewrite stab code in common mode using aviation formulae.
+// TODO: move local NED code in separate file.
+
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
 // TODO: help for parameters
 

@@ -2,7 +2,8 @@
 
 #include "uav.h"
 
-/* Bearing Between Two Points:
+/*
+ * Bearing Between Two Points:
  * http://mathforum.org/library/drmath/view/55417.html
  *
  * Aviation Formulary V1.46:
@@ -56,9 +57,10 @@ extern float LongitudeScale;
  */
 static uint32_t speedRetryCnt = 0;
 
-static pid_f32_t speedPid;
-static pid_f32_t headingPid;
-static uint16_t WpSeqNew = 0;
+static pid_f32_t  speedPid;
+static pid_f32_t  headingPid;
+static pid_f32_t  xtrackPid;
+static uint16_t   WpSeqNew = 0;
 
 static float const *pulse2m;
 static float const *speed_min;
@@ -79,6 +81,7 @@ static void broadcast_mission_current(uint16_t seq);
 static void broadcast_mission_item_reached(uint16_t seq);
 static void pid_keep_speed(pid_f32_t *spd_pidp, float current, float desired);
 static void pid_keep_heading(pid_f32_t *hdng_pidp, float current, float desired);
+static float pid_keep_track(pid_f32_t *track_pidp, float current, float desired);
 static void update_odometer_speed(void);
 
 /*
@@ -216,6 +219,18 @@ static void pid_keep_heading(pid_f32_t *hdng_pidp, float current, float desired)
 }
 
 /**
+ * Calculate course correction of cross track error.
+ */
+static float pid_keep_track(pid_f32_t *track_pidp, float current, float desired){
+  float impact;
+  float error;
+
+  error = desired - current;
+  impact = UpdatePID(track_pidp, error, current);
+  return impact;
+}
+
+/**
  * Calculate current ground speed from tachometer pulses
  */
 static void update_odometer_speed(void){
@@ -266,38 +281,6 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
 }
 
 /**
- * Функция предназначена для плавного перехода с курса по магнитометру
- * на курс по GPS в процессе движения. Чем меньше разница в скорости
- * между GPS и одометром - тем больше вес курса GPS.
- *
- * v_gps[in]      speed by GPS, m/s
- * v_odometer[in] speed by odometer, m/s
- * phi_gps[in]    course by gps, radians
- * phi_imu[in]    course by imu, radians
- *
- * return course in radians.
- */
-float alphabeta_course(float v_gps, float v_odometer, float phi_gps, float phi_imu){
-  float beta;
-  float phi;
-
-  /* handle situation where device is still and also prevent division by zero */
-  if (v_odometer == 0)
-    return phi_imu;
-
-  /**/
-  if (!raw_data.gps_valid)
-    return phi_imu;
-
-  beta = fabsf(v_gps - v_odometer) / fmaxf(v_gps, v_odometer);
-  putinrange(beta, 0.0f, 1.0f);
-
-  phi = (1.0f - beta) * wrap_pi(phi_gps) + beta * wrap_pi(phi_imu);
-  phi += PI;
-  return wrap_2pi(phi);
-}
-
-/**
  * Handle waypoint with MAV_FRAME_GLOBAL
  */
 static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
@@ -318,13 +301,6 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
     chBSemWait(&servo_updated_sem);
     update_odometer_speed();
     pid_keep_speed(&speedPid, comp_data.groundspeed_odo, *speed_min);
-
-//    float heading = 0;
-//    heading = alphabeta_course(comp_data.groundspeed_gps,
-//                               comp_data.groundspeed_odo,
-//                               fdeg2rad((float)raw_data.gps_course / 100.0),
-//                               comp_data.heading);
-//    pid_keep_heading(&headingPid, heading, target_heading);
     pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
@@ -401,6 +377,7 @@ WAIT_NEW_MISSION:
 
   reset_pid(&headingPid);
   reset_pid(&speedPid);
+  reset_pid(&xtrackPid);
 
   ServoCarThrustSet(128);
   ServoCarYawSet(128);
@@ -480,6 +457,12 @@ Thread* StabInit(void){
   headingPid.dGain  = ValueSearch("HEAD_dGain");
   headingPid.iMin   = ValueSearch("HEAD_iMin");
   headingPid.iMax   = ValueSearch("HEAD_iMax");
+
+  xtrackPid.iGain  = ValueSearch("XTRACK_iGain");
+  xtrackPid.pGain  = ValueSearch("XTRACKD_pGain");
+  xtrackPid.dGain  = ValueSearch("XTRACK_dGain");
+  xtrackPid.iMin   = ValueSearch("XTRACK_iMin");
+  xtrackPid.iMax   = ValueSearch("XTRACK_iMax");
 
   Thread *tp = NULL;
 

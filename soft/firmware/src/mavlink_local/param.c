@@ -33,7 +33,7 @@ int32_t OnboardParamCount = 0;
 /*
  * variable array of parameters in RAM
  */
-static floatint gd_val[120];
+static floatint gd_val[128];
 
 /**
  *
@@ -214,9 +214,15 @@ const GlobalParam_t global_data[] = {
   /* device's speed limits */
   {"SPD_speed_min",   {.f32 = 0.0},        &gd_val[117],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT, NULL},
   {"SPD_speed_max",   {.f32 = 0.0},        &gd_val[118],   {.f32 = 60.0},       MAVLINK_TYPE_FLOAT, NULL},
+  /**** pid coefficients for cross track correction ****/
+  {"XTRACK_iGain",    {.f32 = -1.0},       &gd_val[119],   {.f32 = 1.0},        MAVLINK_TYPE_FLOAT, NULL},
+  {"XTRACK_pGain",    {.f32 = -200.0},     &gd_val[120],   {.f32 = 200.0},      MAVLINK_TYPE_FLOAT, NULL},
+  {"XTRACK_dGain",    {.f32 = -10000.0},   &gd_val[121],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"XTRACK_iMin",     {.f32 = -10000.0},   &gd_val[122],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
+  {"XTRACK_iMax",     {.f32 = -10000.0},   &gd_val[123],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
 
   /**** fake field with 14 symbols name ****/
-  {"param_end_mark",  {.u32 = 1},          &gd_val[119],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T, "Fake parameter with maximum name length"},
+  {"param_end_mark",  {.u32 = 1},          &gd_val[124],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T, "Fake parameter with maximum name length"},
 };
 
 

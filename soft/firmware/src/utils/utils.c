@@ -277,3 +277,31 @@ float wrap_2pi(float angle){
     angle += 2*PI;
   return angle;
 }
+
+/**
+ * Suppose you are proceeding on a great circle route from A to B
+ * (course =crs_AB) and end up at D, perhaps off course.
+ * (We presume that A is not a pole!) You can calculate the course from
+ * A to D (crs_AD) and the distance from A to D (dist_AD) using the
+ * formulae above. In terms of these the cross track error, XTD,
+ * (distance off course) is given by
+ *
+ * (positive XTD means right of course, negative means left)
+ */
+float crosstrack( float start_x,    float start_y,
+                  float current_x,  float current_y,
+                  float crs_AB){
+
+  float crs_AD, dist_AD;
+  float XTD;
+  float delta_x, delta_y;
+
+  delta_x = current_x - start_x;
+  delta_y = current_y - start_y;
+  dist_AD = sqrtf(delta_x*delta_x + delta_y*delta_y);
+
+  crs_AD = atan2f(delta_y, delta_x);
+  XTD = asinf(sinf(dist_AD) * sinf(crs_AD - crs_AB));
+  return XTD;
+}
+
