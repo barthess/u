@@ -4,6 +4,7 @@
  */
 
 // TODO: rewrite stab code in common mode using aviation formulae.
+// TODO: probably migrate from float32 to double in coordinate calculations.
 // TODO: move local NED code in separate file.
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
