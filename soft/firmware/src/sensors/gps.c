@@ -310,10 +310,10 @@ void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct
   if (valid == 'A'){                              /* если координаты достоверны */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
-  	raw_data.gps_valid = TRUE;
   	comp_data.groundspeed_gps = (float)(gps_speed_knots * 51) / 100.0;
     mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed_gps;
     get_time(&gps_timp, buft, bufd);
+    raw_data.gps_valid = TRUE;
   }
   else{
     raw_data.gps_valid = FALSE;

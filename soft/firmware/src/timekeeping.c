@@ -15,6 +15,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern RawData raw_data;
 extern BinarySemaphore rtc_sem;
 extern struct tm gps_timp;
 
@@ -60,7 +61,7 @@ static msg_t TimekeeperThread(void *arg){
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout(&rtc_sem, MS2ST(2000));
-    if (sem_status == RDY_OK){
+    if (sem_status == RDY_OK && raw_data.gps_valid){
       pns_time = pnsGetTimeUnixUsec();
 
       gps_time = (int64_t)mktime(&gps_timp) * 1000000;
