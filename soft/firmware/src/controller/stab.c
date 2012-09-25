@@ -293,6 +293,7 @@ float alphabeta_course(float v_gps, float v_odometer, float phi_gps, float phi_i
   putinrange(beta, 0.0f, 1.0f);
 
   phi = (1.0f - beta) * wrap_pi(phi_gps) + beta * wrap_pi(phi_imu);
+  phi += PI;
   return wrap_2pi(phi);
 }
 
@@ -301,7 +302,6 @@ float alphabeta_course(float v_gps, float v_odometer, float phi_gps, float phi_i
  */
 static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
   float target_heading = 0;
-  float heading = 0;
 
   broadcast_mission_current(wp->seq);
 
@@ -319,12 +319,13 @@ static goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
     update_odometer_speed();
     pid_keep_speed(&speedPid, comp_data.groundspeed_odo, *speed_min);
 
-    heading = alphabeta_course(comp_data.groundspeed_gps,
-                               comp_data.groundspeed_odo,
-                               fdeg2rad((float)raw_data.gps_course / 100.0),
-                               comp_data.heading);
-    pid_keep_heading(&headingPid, heading, target_heading);
-    //pid_keep_heading(&headingPid, comp_data.heading, target_heading);
+//    float heading = 0;
+//    heading = alphabeta_course(comp_data.groundspeed_gps,
+//                               comp_data.groundspeed_odo,
+//                               fdeg2rad((float)raw_data.gps_course / 100.0),
+//                               comp_data.heading);
+//    pid_keep_heading(&headingPid, heading, target_heading);
+    pid_keep_heading(&headingPid, comp_data.heading, target_heading);
   }
   return WP_GOTO_REACHED;
 }
