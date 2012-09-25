@@ -292,7 +292,7 @@ float alphabeta_course(float v_gps, float v_odometer, float phi_gps, float phi_i
   beta = fabsf(v_gps - v_odometer) / fmaxf(v_gps, v_odometer);
   putinrange(beta, 0.0f, 1.0f);
 
-  phi = (1.0f - beta) * phi_gps + beta * phi_imu;
+  phi = (1.0f - beta) * wrap_pi(phi_gps) + beta * wrap_pi(phi_imu);
   return wrap_2pi(phi);
 }
 
