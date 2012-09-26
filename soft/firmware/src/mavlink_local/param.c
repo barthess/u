@@ -190,7 +190,7 @@ const GlobalParam_t global_data[] = {
   {"FLEN_adc",        {.u32 = 0},          &gd_val[98],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
   {"FLEN_pres_dyn",   {.u32 = 0},          &gd_val[99],    {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
   {"FLEN_pres_stat",  {.u32 = 0},          &gd_val[100],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
-  {"FLEN_reserved0",  {.u32 = 0},          &gd_val[101],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
+  {"FLEN_climb",      {.u32 = 0},          &gd_val[101],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
   {"FLEN_reserved1",  {.u32 = 0},          &gd_val[102],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
   {"FLEN_reserved2",  {.u32 = 0},          &gd_val[103],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},
   {"FLEN_reserved3",  {.u32 = 0},          &gd_val[104],   {.u32 = 30},         MAVLINK_TYPE_UINT32_T, NULL},

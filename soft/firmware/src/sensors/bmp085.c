@@ -40,13 +40,20 @@ static uint16_t ac4=0, ac5=0, ac6=0;
 static uint32_t up = 0, ut = 0;
 
 /**/
-static alphabeta_instance_q31 bmp085_filter;
+static alphabeta_instance_float bmp085_filter_f32;
+static alphabeta_instance_float bmp085_climb_filter_f32;
 
 /* length of filter */
 static uint32_t const *flen_pres_stat;
+static uint32_t const *flen_climb;
 
 /* value to calculate time between measurements and climb rate */
 static systime_t measurement_time_prev;
+static systime_t measurement_time;
+
+static float altitude = 0;
+static float altitude_prev = 0;
+static float climb = 0;
 
 /*
  *******************************************************************************
@@ -59,28 +66,33 @@ static systime_t measurement_time_prev;
  * calculation height from pressure using precalculated table and linear interpolation
  * return height in decimeters.
  */
-static int16_t pres_to_height(uint32_t pres){
-  uint16_t i = 0;
-  int32_t dp = 0;
+//static int16_t pres_to_height(uint32_t pres){
+//  uint16_t i = 0;
+//  int32_t dp = 0;
+//
+//  if(pres > BMP085_MAX_PRES)
+//    return ptable[0];
+//  if(pres < (BMP085_MIN_PRES - BMP085_STEP))
+//    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
+//
+//  i  = (BMP085_MAX_PRES - pres) >> 8;         // pseudo divide by 256
+//  dp = (BMP085_MAX_PRES - pres) & 0b11111111; // pseudo modulo by 256
+//
+//  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
+//}
 
-  if(pres > BMP085_MAX_PRES)
-    return ptable[0];
-  if(pres < (BMP085_MIN_PRES - BMP085_STEP))
-    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
-
-  i  = (BMP085_MAX_PRES - pres) >> 8;         // pseudo divide by 256
-  dp = (BMP085_MAX_PRES - pres) & 0b11111111; // pseudo modulo by 256
-
-  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
+/**
+ *
+ */
+static float press_to_height_f32(uint32_t press){
+  const float p0 = 101325.0;
+  return 44330.0 * (1.0 - powf((float)press/p0, 1.0/5.255));
 }
 
 /**
  * calculation of compensated pressure value
  */
 static void bmp085_calc(void){
-  float altitude_prev = 0;
-  float climb = 0;
-
   // compensated temperature and pressure values
   uint32_t pval = 0;
   int32_t  tval = 0;
@@ -119,22 +131,20 @@ static void bmp085_calc(void){
 
   raw_data.pressure_static = pval;
 
-  // refresh aweraged pressure value
-  comp_data.baro_filtered = alphabeta_q31(&bmp085_filter, pval, *flen_pres_stat);
+  altitude = press_to_height_f32(pval);
 
-  // calculate height
-  altitude_prev = comp_data.baro_altitude;
-  comp_data.baro_altitude = pres_to_height(comp_data.baro_filtered);
+  measurement_time = chTimeNow();
+  climb = (CH_FREQUENCY * (altitude - altitude_prev)) / (measurement_time - measurement_time_prev);
+  measurement_time_prev = measurement_time;
+  altitude_prev = altitude;
 
-  climb = CH_FREQUENCY * (comp_data.baro_altitude - altitude_prev) /
-                        (chTimeNow() - measurement_time_prev);
-  measurement_time_prev = chTimeNow();
-  climb /= 10.0f;
+  comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter_f32, climb, *flen_climb);
+  comp_data.baro_altitude = alphabeta_float(&bmp085_filter_f32, altitude, *flen_pres_stat);
 
-  mavlink_vfr_hud_struct.climb = climb;
-
-  mavlink_vfr_hud_struct.alt = (float)comp_data.baro_altitude / 10.0;
-  mavlink_scaled_pressure_struct.press_abs = (float)comp_data.baro_filtered / 100.0;
+  mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
+  mavlink_vfr_hud_struct.climb = comp_data.baro_climb;
+  mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
+  mavlink_scaled_pressure_struct.press_abs = (float)pval / 100.0;
 }
 
 /**
@@ -210,6 +220,7 @@ static msg_t PollBaroThread(void *semp){
 void init_bmp085(BinarySemaphore *bmp085_semp){
 
   flen_pres_stat = ValueSearch("FLEN_pres_stat");
+  flen_climb     = ValueSearch("FLEN_climb");
 
   /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;

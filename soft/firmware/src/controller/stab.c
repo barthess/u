@@ -117,7 +117,7 @@ WAIT_NEW_MISSION:
   reset_pid(&speedPid);
   reset_pid(&xtrackPid);
 
-  ServoCarThrustSet(128);
+  ServoCarThrustSet(float2thrust(0));
   ServoCarYawSet(128);
   while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
     chThdSleep(STAB_TMO);
