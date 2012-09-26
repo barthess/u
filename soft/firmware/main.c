@@ -44,6 +44,12 @@ EepromFileStream EepromFile;
 MemoryHeap ThdHeap;
 static uint8_t link_thd_buf[THREAD_HEAP_SIZE + sizeof(stkalign_t)];
 
+/**/
+uint8_t currWpFrame = MAV_FRAME_GLOBAL;
+
+/**/
+uint16_t WpSeqNew = 0;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES

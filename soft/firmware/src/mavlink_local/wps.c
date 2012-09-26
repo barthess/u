@@ -43,7 +43,7 @@
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static mavlink_wpm_storage_t wpm;
+//static mavlink_wpm_storage_t wpm;
 
 /*
  ******************************************************************************
@@ -52,22 +52,22 @@ static mavlink_wpm_storage_t wpm;
  ******************************************************************************
  ******************************************************************************
  */
-void _mavlink_wpm_init(mavlink_wpm_storage_t* state){
-	state->size = 0;
-	state->max_size = 1;
-	state->current_state = MAVLINK_WPM_STATE_IDLE;
-	state->current_partner_sysid = 0;
-	state->current_partner_compid = 0;
-	state->timestamp_lastaction = 0;
-	state->timestamp_last_send_setpoint = 0;
-	state->timeout = MAVLINK_WPM_PROTOCOL_TIMEOUT_DEFAULT;
-	state->delay_setpoint = MAVLINK_WPM_SETPOINT_DELAY_DEFAULT;
-	state->idle = FALSE;
-	state->current_active_wp_id = -1;
-	state->yaw_reached = FALSE;
-	state->pos_reached = FALSE;
-	state->timestamp_lastoutside_orbit = 0;
-	state->timestamp_firstinside_orbit = 0;
+void _mavlink_wpm_init(void){
+//	state->size = 0;
+//	state->max_size = 1;
+//	state->current_state = MAVLINK_WPM_STATE_IDLE;
+//	state->current_partner_sysid = 0;
+//	state->current_partner_compid = 0;
+//	state->timestamp_lastaction = 0;
+//	state->timestamp_last_send_setpoint = 0;
+//	state->timeout = MAVLINK_WPM_PROTOCOL_TIMEOUT_DEFAULT;
+//	state->delay_setpoint = MAVLINK_WPM_SETPOINT_DELAY_DEFAULT;
+//	state->idle = FALSE;
+//	state->current_active_wp_id = -1;
+//	state->yaw_reached = FALSE;
+//	state->pos_reached = FALSE;
+//	state->timestamp_lastoutside_orbit = 0;
+//	state->timestamp_firstinside_orbit = 0;
 }
 
 /*
@@ -77,7 +77,7 @@ void _mavlink_wpm_init(mavlink_wpm_storage_t* state){
  */
 
 void MavlinkWpmInit(void){
-  _mavlink_wpm_init(&wpm);
+  _mavlink_wpm_init();
 }
 
 

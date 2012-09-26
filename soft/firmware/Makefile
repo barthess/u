@@ -125,6 +125,7 @@ CSRC = $(PORTSRC) \
        src/sensors/mag3110.c \
        src/sensors/itg3200.c \
        src/sensors/i2c_local.c \
+       src/sensors/speedometer.c \
        src/calibration/gyro_cal.c \
        src/calibration/mag_cal.c \
        src/calibration/cli_cal.c \
@@ -142,9 +143,11 @@ CSRC = $(PORTSRC) \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
-       src/controller/nav.c \
        src/controller/planner.c \
        src/controller/stab.c \
+       src/controller/wp.c \
+       src/controller/wp_local.c \
+       src/controller/wp_global.c \
        src/math/sphere.c \
        src/math/misc.c \
        src/math/geometry.c \
