@@ -55,6 +55,8 @@ static float altitude = 0;
 static float altitude_prev = 0;
 static float climb = 0;
 
+static uint32_t divider = 0;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -132,14 +134,17 @@ static void bmp085_calc(void){
   raw_data.pressure_static = pval;
 
   altitude = press_to_height_f32(pval);
+  comp_data.baro_altitude = alphabeta_float(&bmp085_filter_f32, altitude, *flen_pres_stat);
 
-  measurement_time = chTimeNow();
-  climb = (CH_FREQUENCY * (altitude - altitude_prev)) / (measurement_time - measurement_time_prev);
-  measurement_time_prev = measurement_time;
-  altitude_prev = altitude;
+//  if ((divider & 1) == 1){
+    measurement_time = chTimeNow();
+    climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
+    measurement_time_prev = measurement_time;
+    altitude_prev = comp_data.baro_altitude;
+//  }
+//  divider++;
 
   comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter_f32, climb, *flen_climb);
-  comp_data.baro_altitude = alphabeta_float(&bmp085_filter_f32, altitude, *flen_pres_stat);
 
   mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
   mavlink_vfr_hud_struct.climb = comp_data.baro_climb;
