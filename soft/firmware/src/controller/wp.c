@@ -100,7 +100,7 @@ goto_wp_result_t goto_wp(uint16_t seq){
       break;
 
     default:
-      chDbgPanic("");
+      chDbgPanic("Frame unsupported");
       break;
     }
   }
