@@ -189,7 +189,7 @@ Thread* StabInit(void){
   headingPid.iMax   = ValueSearch("HEAD_iMax");
 
   xtrackPid.iGain  = ValueSearch("XTRACK_iGain");
-  xtrackPid.pGain  = ValueSearch("XTRACKD_pGain");
+  xtrackPid.pGain  = ValueSearch("XTRACK_pGain");
   xtrackPid.dGain  = ValueSearch("XTRACK_dGain");
   xtrackPid.iMin   = ValueSearch("XTRACK_iMin");
   xtrackPid.iMax   = ValueSearch("XTRACK_iMax");

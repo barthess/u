@@ -5,7 +5,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define SPEED_TMO           MS2ST(500)
+#define SPEED_TMO           MS2ST(1000)
 
 /*
  ******************************************************************************
@@ -39,7 +39,7 @@ extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
 /**
  *
  */
-static WORKING_AREA(SpeedometerThreadWA, 96);
+static WORKING_AREA(SpeedometerThreadWA, 128);
 static msg_t SpeedometerThread(void *arg){
   chRegSetThreadName("Speedometer");
   (void)arg;
