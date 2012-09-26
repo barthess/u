@@ -146,9 +146,10 @@ CSRC = $(PORTSRC) \
        src/controller/planner.c \
        src/controller/stab.c \
        src/math/sphere.c \
-       src/math/utils.c \
+       src/math/misc.c \
+       src/math/geometry.c \
+       src/math/dsp.c \
        src/message.c \
-       src/dsp.c \
        src/pwr_mgmt.c \
        
 

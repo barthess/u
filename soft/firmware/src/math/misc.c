@@ -100,83 +100,6 @@ void time_test(void){
   (void)imu_update_period;
 }
 
-/**
- * Median filter on 5 points
- * *buf[in]     pointer to fifo buffer
- * sample[in]   new sample
- *
- * return       median value
- */
-uint32_t median_filter_5(uint32_t *buf, uint32_t sample){
-  const uint32_t N_samples = 5;
-  uint32_t j = 0, i = 0;
-  int32_t sorted[N_samples];
-  int32_t tmp;
-
-  /* place new sample in fifo */
-  for(j=1; j<N_samples; j++){
-    buf[j-1] = buf[j];
-  }
-  buf[j-1] = sample;
-
-  /* place data in temporal buffer */
-  for(j=0; j<N_samples; j++){
-    sorted[j] = buf[j];
-  }
-
-  /* booble sort */
-  for(i=0; i<=N_samples-1; i++){
-    for(j=i+1; j<N_samples;j++){
-      if(sorted[i] > sorted[j]){
-        tmp = sorted[i];
-        sorted[i] = sorted[j];
-        sorted[j] = tmp;
-      }
-    }
-  }
-
-  return sorted[2];
-}
-
-/**
- * Median filter on 3 points
- * *buf[in]     pointer to fifo buffer
- * sample[in]   new sample
- *
- * return       median value
- */
-uint32_t median_filter_3(uint32_t *buf, uint32_t sample){
-  const uint32_t N_samples = 3;
-  uint32_t j = 0, i = 0;
-  int32_t sorted[N_samples];
-  int32_t tmp;
-
-  /* place new sample in fifo */
-  for(j=1; j<N_samples; j++){
-    buf[j-1] = buf[j];
-  }
-  buf[j-1] = sample;
-
-  /* place data in temporal buffer */
-  for(j=0; j<N_samples; j++){
-    sorted[j] = buf[j];
-  }
-
-  /* booble sort */
-  for(i=0; i<=N_samples-1; i++){
-    for(j=i+1; j<N_samples;j++){
-      if(sorted[i] > sorted[j]){
-        tmp = sorted[i];
-        sorted[i] = sorted[j];
-        sorted[j] = tmp;
-      }
-    }
-  }
-
-  return sorted[1];
-}
-
-
 /*
 Caution added by Martin L. Buchanan, mlb@backgroundtask.com, Wed 11/16/2005:
 
@@ -225,83 +148,9 @@ uint32_t isqrt(uint32_t x){
   return res;
 }
 
-/**
- * convert from degrees to radians
- */
-float fdeg2rad(float deg){
-  return deg * (PI / 180.0);
-}
-
-/**
- * convert from degrees to radians
- */
-float frad2deg(float rad){
-  return rad * (180.0 / PI);
-}
-
 /* mod(a, 2*pi) is the remainder you get when you divide a by 2*pi;
 that is, subtract the largest multiple of 2*pi less than a from a,
 and that's the answer. */
 float fmodulo(float x, float y){
   return x - y * floor(x/y);
 }
-
-int32_t wrap_180(int32_t error){
-  if (error > 180)
-    error -= 360;
-  if (error < -180)
-    error += 360;
-  return error;
-}
-
-float wrap_pi(float error){
-  if (error > PI)
-    error -= 2*PI;
-  if (error < -PI)
-    error += 2*PI;
-  return error;
-}
-
-int32_t wrap_360(int32_t angle){
-  if (angle > 360)
-    angle -= 360;
-  if (angle < 0)
-    angle += 360;
-  return angle;
-}
-
-float wrap_2pi(float angle){
-  if (angle > 2*PI)
-    angle -= 2*PI;
-  if (angle < 0)
-    angle += 2*PI;
-  return angle;
-}
-
-/**
- * Suppose you are proceeding on a great circle route from A to B
- * (course =crs_AB) and end up at D, perhaps off course.
- * (We presume that A is not a pole!) You can calculate the course from
- * A to D (crs_AD) and the distance from A to D (dist_AD) using the
- * formulae above. In terms of these the cross track error, XTD,
- * (distance off course) is given by
- *
- * (positive XTD means right of course, negative means left)
- */
-float crosstrack( float start_x,    float start_y,
-                  float current_x,  float current_y,
-                  float crs_AB){
-
-  float crs_AD, dist_AD;
-  float XTD;
-  float delta_x, delta_y;
-
-  delta_x = current_x - start_x;
-  delta_y = current_y - start_y;
-  dist_AD = sqrtf(delta_x*delta_x + delta_y*delta_y);
-
-  crs_AD = atan2f(delta_y, delta_x);
-  XTD = asinf(sinf(dist_AD) * sinf(crs_AD - crs_AB));
-  return XTD;
-}
-
