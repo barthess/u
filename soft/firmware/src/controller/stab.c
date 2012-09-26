@@ -354,14 +354,14 @@ static msg_t StabThread(void* arg){
   uint16_t wp_cnt;
 
 WAIT_NEW_MISSION:
-  mavlink_nav_controller_output_struct.nav_roll = 0;
-  mavlink_nav_controller_output_struct.nav_pitch = 0;
-  mavlink_nav_controller_output_struct.alt_error = 0;
-  mavlink_nav_controller_output_struct.aspd_error = 0;
-  mavlink_nav_controller_output_struct.wp_dist = 0;
-  mavlink_nav_controller_output_struct.nav_bearing = 0;
+  mavlink_nav_controller_output_struct.nav_roll       = 0;
+  mavlink_nav_controller_output_struct.nav_pitch      = 0;
+  mavlink_nav_controller_output_struct.alt_error      = 0;
+  mavlink_nav_controller_output_struct.aspd_error     = 0;
+  mavlink_nav_controller_output_struct.wp_dist        = 0;
+  mavlink_nav_controller_output_struct.nav_bearing    = 0;
   mavlink_nav_controller_output_struct.target_bearing = 0;
-  mavlink_nav_controller_output_struct.xtrack_error = 0;
+  mavlink_nav_controller_output_struct.xtrack_error   = 0;
 
   mavlink_local_position_ned_struct.x  = 0;
   mavlink_local_position_ned_struct.y  = 0;

@@ -145,8 +145,8 @@ CSRC = $(PORTSRC) \
        src/controller/nav.c \
        src/controller/planner.c \
        src/controller/stab.c \
-       src/utils/sphere.c \
-       src/utils/utils.c \
+       src/math/sphere.c \
+       src/math/utils.c \
        src/message.c \
        src/dsp.c \
        src/pwr_mgmt.c \
@@ -206,7 +206,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/controller \
          src/mavlink_local \
          src/servo \
-         src/utils \
+         src/math \
          src/calibration \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \

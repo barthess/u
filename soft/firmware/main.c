@@ -3,7 +3,7 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: rewrite stab code in common mode using aviation formulae.
+// TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
 // TODO: move local NED code in separate file.
 
