@@ -213,10 +213,7 @@ void loiter_if_need(void){
   switch (mavlink_system_struct.type){
 
   case MAV_TYPE_GROUND_ROVER:
-    while (GlobalFlags & MISSION_LOITER_FLAG){
-      ServoCarThrustSet(128);
-      chThdSleep(STAB_TMO);
-    }
+    loiter_ground_rover();
     break;
 
   case MAV_TYPE_FIXED_WING:

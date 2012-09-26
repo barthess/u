@@ -37,6 +37,13 @@ static float const *pulse2m;
  *******************************************************************************
  */
 
+void loiter_ground_rover(void){
+  while (GlobalFlags & MISSION_LOITER_FLAG){
+    ServoCarThrustSet(128);
+    chThdSleep(MS2ST(20));
+  }
+}
+
 /**
  * k - m in one pulse (got from params)
  *

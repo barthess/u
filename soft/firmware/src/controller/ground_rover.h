@@ -8,6 +8,7 @@ enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl);
 enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl);
 enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl);
 
+void loiter_ground_rover(void);
 float calc_ground_rover_speed(uint32_t rtt);
 Thread *ControllerGroundRoverInit(void);
 
