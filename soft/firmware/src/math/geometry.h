@@ -1,6 +1,8 @@
 #ifndef GEOMETRY_H_
 #define GEOMETRY_H_
 
+#include "arm_math.h"
+
 float fdeg2rad(float deg);
 float frad2deg(float rad);
 
