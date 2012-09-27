@@ -5,10 +5,9 @@
 
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
-// TODO: move local NED code in separate file.
 
 // TODO: correct STOP handling in waypoint algorithm (incorrect realization in QGC)
-// TODO: help for parameters
+// TODO: wrtite help for parameters
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
