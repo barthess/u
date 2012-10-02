@@ -66,38 +66,39 @@ static float climb = 0;
  * calculation height from pressure using precalculated table and linear interpolation
  * return height in decimeters.
  */
-//static int16_t pres_to_height(uint32_t pres){
-//  uint16_t i = 0;
-//  int32_t dp = 0;
-//
-//  if(pres > BMP085_MAX_PRES)
-//    return ptable[0];
-//  if(pres < (BMP085_MIN_PRES - BMP085_STEP))
-//    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
-//
-//  i  = (BMP085_MAX_PRES - pres) >> 8;         // pseudo divide by 256
-//  dp = (BMP085_MAX_PRES - pres) & 0b11111111; // pseudo modulo by 256
-//
-//  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
-//}
+int16_t pres_to_height_tab(uint32_t pres){
+  uint16_t i = 0;
+  int32_t dp = 0;
+
+  if(pres > BMP085_MAX_PRES)
+    return ptable[0];
+  if(pres < (BMP085_MIN_PRES - BMP085_STEP))
+    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
+
+  i  = (BMP085_MAX_PRES - pres) >> 8;         // pseudo divide by 256
+  dp = (BMP085_MAX_PRES - pres) & 0b11111111; // pseudo modulo by 256
+
+  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
+}
 
 /**
  *
  */
 static float press_to_height_f32(uint32_t press){
-  const float p0 = 101325.0;
-  return 44330.0 * (1.0 - powf((float)press/p0, 1.0/5.255));
+  const float p0 = 101325.0f;
+  return 44330.0f * (1.0f - powf((float)press/p0, 1.0f/5.255f));
 }
 
 /**
- * calculation of compensated pressure value
+ * calculation of compensated pressure value using black magic from datasheet
+ *
+ * @return    compensated pressure in Pascals.
  */
-static void bmp085_calc(void){
+static uint32_t bmp085_calc_pressure(void){
   // compensated temperature and pressure values
   uint32_t pval = 0;
   int32_t  tval = 0;
 
-  /* Calculate pressure using black magic from datasheet */
   int32_t  x1, x2, x3, b3, b5, b6, p;
   uint32_t  b4, b7;
 
@@ -127,20 +128,23 @@ static void bmp085_calc(void){
   x1 = (x1 * 3038) >> 16;
   x2 = (-7357L * p) >> 16;
   pval = p + ((x1 + x2 + 3791) >> 4);
-  // end of black magic
 
-  raw_data.pressure_static = pval;
+  return pval;
+}
+
+/**
+ * Calculate height and climb from pressure value
+ * @pval[in]    pressure in Pascals.
+ */
+static void process_pressure(uint32_t pval){
 
   altitude = press_to_height_f32(pval);
   comp_data.baro_altitude = alphabeta_float(&bmp085_filter_f32, altitude, *flen_pres_stat);
 
-//  if ((divider & 1) == 1){
-    measurement_time = chTimeNow();
-    climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
-    measurement_time_prev = measurement_time;
-    altitude_prev = comp_data.baro_altitude;
-//  }
-//  divider++;
+  measurement_time = chTimeNow();
+  climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
+  measurement_time_prev = measurement_time;
+  altitude_prev = comp_data.baro_altitude;
 
   comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter_f32, climb, *flen_climb);
 
@@ -153,7 +157,7 @@ static void bmp085_calc(void){
 /**
  *
  */
-static uint32_t get_temperature(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _get_temperature(BinarySemaphore *semp, int32_t *retry){
 
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
@@ -172,7 +176,7 @@ static uint32_t get_temperature(BinarySemaphore *semp, int32_t *retry){
 /**
  *
  */
-static uint32_t get_pressure(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _get_pressure(BinarySemaphore *semp, int32_t *retry){
 
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
@@ -205,11 +209,11 @@ static msg_t PollBaroThread(void *semp){
 
     /* we get temperature every 0x1F cycle */
     if ((t & 0x1F) == 0x1F)
-      ut = get_temperature((BinarySemaphore*)semp, &retry);
+      ut = _get_temperature((BinarySemaphore*)semp, &retry);
 
-    up = get_pressure((BinarySemaphore*)semp, &retry);
-    bmp085_calc();
-
+    up = _get_pressure((BinarySemaphore*)semp, &retry);
+    raw_data.pressure_static = bmp085_calc_pressure();
+    process_pressure(raw_data.pressure_static);
     t++;
   }
   return 0;
