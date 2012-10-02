@@ -12,6 +12,8 @@
 // sensor precision (see datasheet)
 #define OSS 3 // 3 -- max
 
+#define TEMP_DECIMATOR  0x1F /* decimation value for temperature measurements */
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -36,12 +38,9 @@ static uint8_t txbuf[BMP085_TX_DEPTH] = {0x55,0x55};
 static int16_t  ac1=0, ac2=0, ac3=0, b1=0, b2=0, mb=0, mc=0, md=0;
 static uint16_t ac4=0, ac5=0, ac6=0;
 
-// uncompensated temperature and pressure values
-static uint32_t up = 0, ut = 0;
-
 /**/
-static alphabeta_instance_float bmp085_filter_f32;
-static alphabeta_instance_float bmp085_climb_filter_f32;
+static alphabeta_instance_float bmp085_filter;
+static alphabeta_instance_float bmp085_climb_filter;
 
 /* length of filter */
 static uint32_t const *flen_pres_stat;
@@ -63,38 +62,22 @@ static float climb = 0;
  *******************************************************************************
  */
 /**
- * calculation height from pressure using precalculated table and linear interpolation
- * return height in decimeters.
- */
-int16_t pres_to_height_tab(uint32_t pres){
-  uint16_t i = 0;
-  int32_t dp = 0;
-
-  if(pres > BMP085_MAX_PRES)
-    return ptable[0];
-  if(pres < (BMP085_MIN_PRES - BMP085_STEP))
-    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
-
-  i  = (BMP085_MAX_PRES - pres) >> 8;         // pseudo divide by 256
-  dp = (BMP085_MAX_PRES - pres) & 0b11111111; // pseudo modulo by 256
-
-  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
-}
-
-/**
  *
  */
-static float press_to_height_f32(uint32_t press){
+static float press_to_height_f32(uint32_t pval){
   const float p0 = 101325.0f;
-  return 44330.0f * (1.0f - powf((float)press/p0, 1.0f/5.255f));
+  return 44330.0f * (1.0f - powf((float)pval/p0, 1.0f/5.255f));
 }
 
 /**
- * calculation of compensated pressure value using black magic from datasheet
+ * Calculate compensated pressure value using black magic from datasheet.
+ *
+ * @ut[in]    uncompensated temperature value.
+ * @ut[in]    uncompensated pressure value.
  *
  * @return    compensated pressure in Pascals.
  */
-static uint32_t bmp085_calc_pressure(void){
+static uint32_t bmp085_calc_pressure(uint32_t ut, uint32_t up){
   // compensated temperature and pressure values
   uint32_t pval = 0;
   int32_t  tval = 0;
@@ -139,14 +122,14 @@ static uint32_t bmp085_calc_pressure(void){
 static void process_pressure(uint32_t pval){
 
   altitude = press_to_height_f32(pval);
-  comp_data.baro_altitude = alphabeta_float(&bmp085_filter_f32, altitude, *flen_pres_stat);
+  comp_data.baro_altitude = alphabeta_float(&bmp085_filter, altitude, *flen_pres_stat);
 
   measurement_time = chTimeNow();
   climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
   measurement_time_prev = measurement_time;
   altitude_prev = comp_data.baro_altitude;
 
-  comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter_f32, climb, *flen_climb);
+  comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter, climb, *flen_climb);
 
   mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
   mavlink_vfr_hud_struct.climb = comp_data.baro_climb;
@@ -200,19 +183,20 @@ static uint32_t _get_pressure(BinarySemaphore *semp, int32_t *retry){
 static WORKING_AREA(PollBaroThreadWA, 256);
 static msg_t PollBaroThread(void *semp){
   chRegSetThreadName("PollBaro");
-  uint32_t t = 0;
+  uint32_t t = TEMP_DECIMATOR;
+  uint32_t up = 0, ut = 0;// uncompensated temperature and pressure values
   int32_t retry = 20;
 
   while (TRUE) {
     chDbgAssert(retry > 0, "PollAccelThread(), #1",
           "probably no interrupts from pressure sensor");
 
-    /* we get temperature every 0x1F cycle */
-    if ((t & 0x1F) == 0x1F)
+    /* we get temperature not every cycle */
+    if ((t & TEMP_DECIMATOR) == TEMP_DECIMATOR)
       ut = _get_temperature((BinarySemaphore*)semp, &retry);
 
     up = _get_pressure((BinarySemaphore*)semp, &retry);
-    raw_data.pressure_static = bmp085_calc_pressure();
+    raw_data.pressure_static = bmp085_calc_pressure(ut, up);
     process_pressure(raw_data.pressure_static);
     t++;
   }
@@ -255,3 +239,26 @@ void init_bmp085(BinarySemaphore *bmp085_semp){
   chThdSleepMilliseconds(2);
 }
 
+
+/************************************************************
+ * Old junk
+ */
+
+/**
+ * calculation height from pressure using precalculated table and linear interpolation
+ * return height in decimeters.
+ */
+int16_t pres_to_height_tab(uint32_t pval){
+  uint16_t i = 0;
+  int32_t dp = 0;
+
+  if(pval > BMP085_MAX_PRES)
+    return ptable[0];
+  if(pval < (BMP085_MIN_PRES - BMP085_STEP))
+    return ptable[(sizeof(ptable) / sizeof(int16_t)) - 1];
+
+  i  = (BMP085_MAX_PRES - pval) >> 8;         // pseudo divide by 256
+  dp = (BMP085_MAX_PRES - pval) & 0b11111111; // pseudo modulo by 256
+
+  return(ptable[i] + (((ptable[i+1] - ptable[i]) * dp) >> 8));
+}
