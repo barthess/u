@@ -1,7 +1,5 @@
 #include "uav.h"
 
-#include "arm_math.h"
-
 /**
  *
  */

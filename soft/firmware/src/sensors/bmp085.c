@@ -12,7 +12,9 @@
 // sensor precision (see datasheet)
 #define OSS 3 // 3 -- max
 
-#define TEMP_DECIMATOR  0x1F /* decimation value for temperature measurements */
+#define TEMP_DECIMATOR  0x1F      /* decimation value for temperature measurements */
+#define PRESS_READ_TMO  MS2ST(50) /* wait pressure results (datasheet says 25.5 ms) */
+#define TEMP_READ_TMO   MS2ST(10) /* wait temperature results (datasheet says 4.5 ms) */
 
 /*
  ******************************************************************************
@@ -37,6 +39,9 @@ static uint8_t txbuf[BMP085_TX_DEPTH] = {0x55,0x55};
 // bmp085 calibration coefficients
 static int16_t  ac1=0, ac2=0, ac3=0, b1=0, b2=0, mb=0, mc=0, md=0;
 static uint16_t ac4=0, ac5=0, ac6=0;
+
+/* retry counter for detect no interrupts conditions */
+static int32_t bmp085_read_retry = 20;
 
 /**/
 static alphabeta_instance_float bmp085_filter;
@@ -140,15 +145,14 @@ static void process_pressure(uint32_t pval){
 /**
  *
  */
-static uint32_t _read_temperature(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _read_temperature(BinarySemaphore *semp){
 
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
   i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0);
 
-  /* wait temperature results (datasheet says 4.5 ms) */
-  if (chBSemWaitTimeout(semp, MS2ST(10)) != RDY_OK)
-    (*retry)--;
+  if (chBSemWaitTimeout(semp, TEMP_READ_TMO) != RDY_OK)
+    bmp085_read_retry--;
 
   /* read measured value */
   txbuf[0] = BOSCH_ADC_MSB;
@@ -159,17 +163,15 @@ static uint32_t _read_temperature(BinarySemaphore *semp, int32_t *retry){
 /**
  *
  */
-static uint32_t _read_pressure(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _read_pressure(BinarySemaphore *semp){
 
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = (0x34 + (OSS<<6));
   i2c_transmit(bmp085addr, txbuf, 2, rxbuf, 0);
 
-
-  /* wait pressure results (datasheet says 25.5 ms) */
-  if (chBSemWaitTimeout(semp, MS2ST(50)) != RDY_OK)
-    (*retry)--;
+  if (chBSemWaitTimeout(semp, PRESS_READ_TMO) != RDY_OK)
+    bmp085_read_retry--;
 
   /* acqure pressure */
   txbuf[0] = BOSCH_ADC_MSB;
@@ -181,21 +183,22 @@ static uint32_t _read_pressure(BinarySemaphore *semp, int32_t *retry){
  * Polling thread
  */
 static WORKING_AREA(PollBaroThreadWA, 256);
-static msg_t PollBaroThread(void *semp){
-  chRegSetThreadName("PollBaro");
+static msg_t PollBaroThread(void *msg){
+  BinarySemaphore* semp = (BinarySemaphore*)msg;
   uint32_t t = TEMP_DECIMATOR;
   uint32_t up = 0, ut = 0;// uncompensated temperature and pressure values
-  int32_t retry = 20;
+
+  chRegSetThreadName("PollBaro");
 
   while (TRUE) {
-    chDbgAssert(retry > 0, "PollAccelThread(), #1",
+    chDbgAssert(bmp085_read_retry > 0, "PollAccelThread(), #1",
           "probably no interrupts from pressure sensor");
 
     /* we get temperature not every cycle */
     if ((t & TEMP_DECIMATOR) == TEMP_DECIMATOR)
-      ut = _read_temperature((BinarySemaphore*)semp, &retry);
+      ut = _read_temperature(semp);
 
-    up = _read_pressure((BinarySemaphore*)semp, &retry);
+    up = _read_pressure(semp);
     raw_data.pressure_static = bmp085_calc_pressure(ut, up);
     process_pressure(raw_data.pressure_static);
     t++;
@@ -240,7 +243,7 @@ void init_bmp085(BinarySemaphore *bmp085_semp){
 }
 
 
-/************************************************************
+/*============================================================================
  * Old junk
  */
 
