@@ -140,7 +140,7 @@ static void process_pressure(uint32_t pval){
 /**
  *
  */
-static uint32_t _get_temperature(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _read_temperature(BinarySemaphore *semp, int32_t *retry){
 
   txbuf[0] = BOSCH_CTL;
   txbuf[1] = BOSCH_TEMP;
@@ -159,7 +159,7 @@ static uint32_t _get_temperature(BinarySemaphore *semp, int32_t *retry){
 /**
  *
  */
-static uint32_t _get_pressure(BinarySemaphore *semp, int32_t *retry){
+static uint32_t _read_pressure(BinarySemaphore *semp, int32_t *retry){
 
   // command to measure pressure
   txbuf[0] = BOSCH_CTL;
@@ -193,9 +193,9 @@ static msg_t PollBaroThread(void *semp){
 
     /* we get temperature not every cycle */
     if ((t & TEMP_DECIMATOR) == TEMP_DECIMATOR)
-      ut = _get_temperature((BinarySemaphore*)semp, &retry);
+      ut = _read_temperature((BinarySemaphore*)semp, &retry);
 
-    up = _get_pressure((BinarySemaphore*)semp, &retry);
+    up = _read_pressure((BinarySemaphore*)semp, &retry);
     raw_data.pressure_static = bmp085_calc_pressure(ut, up);
     process_pressure(raw_data.pressure_static);
     t++;
