@@ -45,7 +45,7 @@ const GlobalParam_t global_data[] = {
 
   /* Atopilot type (MAV_TYPE enum) to be able to switch between car and plane.
    * You need to reboot after changing it. */
-  {"SYS_mavtype",     {.u32 = 0},          &gd_val[1],    {.u32 = 16},          MAVLINK_TYPE_UINT32_T, "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\nOther types you can found in enum MAV_TYPE \nNOTE! You must REBOOT device after changing it."},
+  {"SYS_mavtype",     {.u32 = 0},          &gd_val[1],    {.u32 = 16},          MAVLINK_TYPE_UINT32_T, "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\nOther types you can found in enum MAV_TYPE \nNOTE! You MUST REBOOT device after changing it."},
 
   /**** всякие флаги для коммандной оболочки ****/
   {"SH_enable",       {.u32 = 0},          &gd_val[2],    {.u32 = 1},           MAVLINK_TYPE_UINT32_T, NULL},

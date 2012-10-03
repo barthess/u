@@ -34,7 +34,7 @@ struct GlobalParam_t{
 };
 
 /**
- * @brief   Supported modes for the I2C bus.
+ *
  */
 typedef enum {
   PARAM_OK = 1,
