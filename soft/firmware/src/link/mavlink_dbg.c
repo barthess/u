@@ -56,7 +56,7 @@ static BinarySemaphore dbg_sem;
  *
  * return         message posting status
  */
-msg_t dbg_print(uint8_t severity, const char *text){
+msg_t mavlink_dbg_print(uint8_t severity, const char *text){
   uint32_t n = sizeof(mavlink_statustext_struct.text);
   msg_t status = RDY_RESET;
 
@@ -85,6 +85,6 @@ msg_t dbg_print(uint8_t severity, const char *text){
 /**
  *
  */
-void DbgPrintInit(void){
+void MavlinkDbgPrintInit(void){
   chBSemInit(&dbg_sem, FALSE);
 }

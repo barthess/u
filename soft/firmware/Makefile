@@ -134,7 +134,7 @@ CSRC = $(PORTSRC) \
        src/cli/cli_cmd.c \
        src/link/linkmgr.c \
        src/link/link.c \
-       src/link/dbg_msg.c \
+       src/link/mavlink_dbg.c \
        src/link/link_sortout.c \
        src/link/link_sortin.c \
        src/link/tlm_sender.c \

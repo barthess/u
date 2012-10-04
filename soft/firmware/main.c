@@ -3,7 +3,6 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
-// TODO: rename dbg_print() and dbg_msg.c to mavlink_dbg
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
 
@@ -83,7 +82,7 @@ int main(void) {
 
   EepromOpen(&EepromFile);
 
-  DbgPrintInit();
+  MavlinkDbgPrintInit();
   MsgInit();
   SanityControlInit();
   I2CInitLocal();     /* also starts EEPROM and load global parameters from it */
