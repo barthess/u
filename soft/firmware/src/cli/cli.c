@@ -37,6 +37,7 @@ static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      NULL,  "clear screen"},
     {"cal",       &cal_clicmd,        NULL,  "start calibration of onboard sensors"},
     {"date",      &date_cmd,          NULL,  "print and set current date"},
+    {"dcm",       &dcm_clicmd,        NULL,  "print DCM in realtime until ^C pressed"},
     {"echo",      &echo_clicmd,       NULL,  "echo it's input to terminal"},
     {"help",      &help_clicmd,       NULL,  "this message"},
     {"info",      &uname_clicmd,      NULL,  "system information"},
@@ -200,13 +201,13 @@ char ** complete(int argc, const char * const * argv)
  *
  */
 void sigint (void){
+  cli_print("^C pressed. Exiting...");
   if (current_cmd_tp != NULL){
     chThdTerminate(current_cmd_tp);
     chThdWait(current_cmd_tp);
     current_cmd_tp = NULL;
   }
-  cli_print("^C pressed. Exiting...");
-  cli_print(ENDL);
+  cli_print("  Done. Press 'Enter' to return in shell.");
 }
 
 /**
