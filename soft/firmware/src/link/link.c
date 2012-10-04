@@ -60,14 +60,7 @@ static msg_t LinkOutThread(void *sdp){
   Mail *mailp;
   msg_t tmp = 0;
 
-  while (TRUE) {
-    if (chThdShouldTerminate()){
-      /* try correctly stop thread */
-      chThdSleepMilliseconds(200);
-      PurgeUavMailbox(&tolink_mb);
-      chThdExit(0);
-    }
-
+  while (!chThdShouldTerminate()) {
     if (chMBFetch(&tolink_mb, &tmp, MS2ST(200)) == RDY_OK){
       mailp = (Mail*)tmp;
       sort_output_mail(mailp, &mavlink_msgbuf);
@@ -76,6 +69,10 @@ static msg_t LinkOutThread(void *sdp){
     }
   }
 
+  /* try correctly stop thread */
+  chThdSleepMilliseconds(200);
+  PurgeUavMailbox(&tolink_mb);
+  chThdExit(0);
   return 0;
 }
 
@@ -90,10 +87,7 @@ static msg_t LinkInThread(void *sdp){
   mavlink_message_t msg;
   msg_t c = 0;
 
-  while (TRUE) {
-    if (chThdShouldTerminate())
-      chThdExit(0);
-
+  while (!chThdShouldTerminate()) {
     // Try to get a new message
     c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
     if (c != Q_TIMEOUT){
@@ -104,6 +98,8 @@ static msg_t LinkInThread(void *sdp){
       }
     }
   }
+
+  chThdExit(0);
   return 0;
 }
 

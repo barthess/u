@@ -237,7 +237,7 @@ static msg_t ShellThread(void *arg){
   // set callback for ctrl+c handling (optionally)
   microrl_set_sigint_callback(&microrl_shell, sigint);
 
-  while (TRUE){
+  while (!chThdShouldTerminate()){
     // put received char from stdin to microrl lib
     msg_t c = sdGetTimeout(shell_sdp, MS2ST(50));
     if (c != Q_TIMEOUT)
@@ -248,18 +248,15 @@ static msg_t ShellThread(void *arg){
       chThdWait(current_cmd_tp);
       current_cmd_tp = NULL;
     }
-
-    /* умираем по всем правилам, не забываем убить потомков */
-    if (chThdShouldTerminate()){
-      if (current_cmd_tp != NULL){
-        if (current_cmd_tp->p_state != THD_STATE_FINAL){
-          chThdTerminate(current_cmd_tp);
-        }
-        chThdWait(current_cmd_tp);
-      }
-      chThdExit(0);
-    }
   }
+
+  /* умираем по всем правилам, не забываем убить потомков */
+  if (current_cmd_tp != NULL){
+    if (current_cmd_tp->p_state != THD_STATE_FINAL)
+      chThdTerminate(current_cmd_tp);
+    chThdWait(current_cmd_tp);
+  }
+  chThdExit(0);
   return 0;
 }
 

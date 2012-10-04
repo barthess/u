@@ -89,17 +89,16 @@ static msg_t LoopCmdThread(void *arg){
   (void)arg;
 
   cli_print("This is loop function test. Press ^C to stop it.\n\r");
-  while (TRUE){
+  while (!chThdShouldTerminate()){
     int n = 16;
     char str[n];
 
     snprintf(str, n, "%i\r\n", raw_data.zmag);
     cli_print(str);
     chThdSleepMilliseconds(25);
-
-    if (chThdShouldTerminate())
-      chThdExit(0);
   }
+
+  chThdExit(0);
   return 0;
 }
 
