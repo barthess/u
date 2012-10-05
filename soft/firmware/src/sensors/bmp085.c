@@ -194,7 +194,7 @@ static msg_t PollBaroThread(void *arg){
     chDbgAssert(bmp085_read_retry > 0, "PollAccelThread(), #1",
           "probably no interrupts from pressure sensor");
 
-    /* we get temperature not every cycle */
+    /* get temperature NOT every cycle */
     if ((t & TEMP_DECIMATOR) == TEMP_DECIMATOR)
       ut = _read_temperature(semp);
 

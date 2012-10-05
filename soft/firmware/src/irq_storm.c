@@ -62,7 +62,7 @@ static msg_t WorkerThread(void *arg) {
   msg_t msg;
 
   /* Work loop.*/
-  while (TRUE) {
+  while (!chThdShouldTerminate()) {
     /* Waiting for a message.*/
    chMBFetch(&mb[me], &msg, TIME_INFINITE);
 
@@ -104,10 +104,9 @@ static msg_t WorkerThread(void *arg) {
         palToggleIrqStormLed();
       }
     }
-    /* exit correctly */
-    if (chThdShouldTerminate())
-      chThdExit(0);
   }
+
+  chThdExit(0);
   return 0;
 }
 

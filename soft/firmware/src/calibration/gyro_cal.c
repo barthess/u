@@ -39,8 +39,8 @@ static BinarySemaphore gyro_cal_sem;
  */
 
 /*
- * Blink every mag sample - device is not still
- * Light without blinking - collecting statistics
+ * Blinking -- device is not still
+ * Light without blinking -- collecting statistics
  */
 static WORKING_AREA(GyroCalThreadWA, 256);
 static msg_t GyroCalThread(void *arg){
@@ -77,10 +77,9 @@ static msg_t GyroCalThread(void *arg){
     }
     /* sigterm handler */
     if (chThdShouldTerminate())
-      goto TERMINATE;
+      break;
   }
 
-TERMINATE:
   mavlink_system_struct.state = MAV_STATE_STANDBY;
   clearGlobalFlag(GYRO_CAL_FLAG);
   chThdExit(0);
