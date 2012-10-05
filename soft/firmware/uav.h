@@ -85,29 +85,12 @@
 
 
 /******************************************************************
- * глобальные битовые флаги */
-//#define GYRO_CAL_FLAG         (1UL << 0)  /* если установлен в единицу, значит идет выставка гироскопов */
-//#define ACCEL_CAL_FLAG        (1UL << 1)  /* если установлен в единицу, значит идет выставка акселерометров */
-//#define MAG_CAL_FLAG          (1UL << 2)  /* если установлен в единицу, значит идет выставка магнитометра */
-//#define EEPROM_FAILED_FLAG    (1UL << 3)  /* единица означает сбой в EEPROM */
-//#define POSTAGE_FAILED_FLAG   (1UL << 4)  /* Сбой в системе отправки сообщений */
-//#define I2C_RESTARTED_FLAG    (1UL << 5)  /* I2C шина была перезапущена из-за проблем */
-//#define TLM_LINK_FLAG         (1UL << 6)  /* 1 - telemetry link is up, 0 - link is down */
-//#define MODEM_FLAG            (1UL << 7)  /* 1 - modem ready, 0 - modem down */
-//#define LOGGER_READY_FLAG     (1UL << 8)  /* ready logger thred */
-//#define SIGHALT_FLAG          (1UL << 9)  /* ready logger thred */
-//#define MAG_DATA_READY_FLAG   (1UL << 10)
-//#define MISSION_TAKEOFF_FLAG  (1UL << 11)
-//#define MISSION_LOITER_FLAG   (1UL << 12)
-//#define MISSION_ABORT_FLAG    (1UL << 13)
-
+ * global bool flags */
 typedef struct GlobalFlags_t{
   uint32_t gyro_cal:1;
   uint32_t accel_cal:1;
   uint32_t mag_cal:1;
   uint32_t eeprom_failed:1;
-  uint32_t postage_failed:1;
-  uint32_t i2c_restarted:1;
   uint32_t tlm_link_ready:1;
   uint32_t modem_ready:1;
   uint32_t logger_ready:1;
@@ -120,9 +103,6 @@ typedef struct GlobalFlags_t{
 
 #define setGlobalFlag(flag)   {chSysLock(); flag = 1; chSysUnlock();}
 #define clearGlobalFlag(flag) {chSysLock(); flag = 0; chSysUnlock();}
-
-
-
 
 /******************************************************************/
 /* "init daemon" events */
