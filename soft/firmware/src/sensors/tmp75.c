@@ -44,7 +44,9 @@ static msg_t PollTmp75Thread(void *arg){
 
   while (TRUE) {
     txbuf[0] = 1; // point to Configuration Register
-    /* single measurement start */
+    /* single measurement start
+     * To reduce autowarmup at low temperature start less accurate measurements
+     * to speed up data acquision */
     if (comp_data.temp_onboard < 1000){
       txbuf[1] = 0b10000001; /* OS R1 R0 F1 F0 POL TM SD */
       i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
