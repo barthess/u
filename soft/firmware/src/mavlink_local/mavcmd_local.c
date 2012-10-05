@@ -12,7 +12,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox mavlink_command_long_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
@@ -56,17 +56,16 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
   * | Empty| Empty| Empty|  */
 
   if ((mavlink_system_struct.mode != MAV_MODE_PREFLIGHT) ||
-                            (GlobalFlags & GYRO_CAL_FLAG)||
-                            (GlobalFlags & MAG_CAL_FLAG))
+                            (GlobalFlags.gyro_cal) || (GlobalFlags.mag_cal))
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
   /* Gyro */
   if (cl->param1 == 1){
-    setGlobalFlag(GYRO_CAL_FLAG);
+    setGlobalFlag(GlobalFlags.gyro_cal);
     return MAV_RESULT_ACCEPTED;
   }
   else if (cl->param2 == 1){ /* Magnetometer */
-    setGlobalFlag(MAG_CAL_FLAG);
+    setGlobalFlag(GlobalFlags.mag_cal);
     return MAV_RESULT_ACCEPTED;
   }
   else
@@ -87,7 +86,7 @@ static enum MAV_RESULT cmd_reboot_shutdown_handler(mavlink_command_long_t *cl){
 
   /* currently only reboot supported */
   if (cl->param1 == 1.0){
-    setGlobalFlag(SIGHALT_FLAG);
+    setGlobalFlag(GlobalFlags.sighalt);
     return MAV_RESULT_ACCEPTED;
   }
   else {

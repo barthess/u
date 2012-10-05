@@ -24,7 +24,7 @@
 extern Mailbox tolink_mb;
 extern MemoryHeap ThdHeap;
 extern mavlink_status_t mavlink_status_struct;
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -133,7 +133,7 @@ void PurgeUavMailbox(Mailbox *mbp){
  * Kills previously spawned threads
  */
 void KillMavlinkThreads(void){
-  clearGlobalFlag(TLM_LINK_FLAG);
+  clearGlobalFlag(GlobalFlags.tlm_link_ready);
 
   chThdTerminate(linkout_tp);
   chThdTerminate(linkin_tp);
@@ -170,7 +170,7 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
   if (linkin_tp == NULL)
     chDbgPanic("Can not allocate memory");
 
-  setGlobalFlag(TLM_LINK_FLAG);
+  setGlobalFlag(GlobalFlags.tlm_link_ready);
 }
 
 

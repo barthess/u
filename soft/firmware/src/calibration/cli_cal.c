@@ -13,7 +13,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -46,14 +46,14 @@ static void _cal_cli_help(void){
  *
  */
 static void  _cal_cli_gyro(void){
-  setGlobalFlag(GYRO_CAL_FLAG);
+  setGlobalFlag(GlobalFlags.gyro_cal);
 }
 
 /**
  *
  */
 static void _cal_cli_mag(void){
-  setGlobalFlag(MAG_CAL_FLAG);
+  setGlobalFlag(GlobalFlags.mag_cal);
 }
 
 /*

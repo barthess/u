@@ -34,7 +34,7 @@ BinarySemaphore servo_updated_sem;
 struct tm gps_timp;
 
 /* some global flags */
-uint32_t GlobalFlags = 0;
+GlobalFlags_t GlobalFlags;
 
 /* EEPROM "file" */
 EepromFileStream EepromFile;

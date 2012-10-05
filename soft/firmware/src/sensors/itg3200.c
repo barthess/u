@@ -15,7 +15,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
@@ -147,7 +147,7 @@ static msg_t PollGyroThread(void *semp){
     sort_rxbuff(rxbuf);
 
     /* decide to fork or collect terminated calibration thread */
-    if (GlobalFlags & GYRO_CAL_FLAG){
+    if (GlobalFlags.gyro_cal){
       if (cal_tp == NULL)
         cal_tp = GyroCalStart();
       gyro_stat_update();
@@ -237,6 +237,6 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   chThdSleepMilliseconds(2);
 
   /* fireup calibration */
-  setGlobalFlag(GYRO_CAL_FLAG);
+  setGlobalFlag(GlobalFlags.gyro_cal);
 }
 

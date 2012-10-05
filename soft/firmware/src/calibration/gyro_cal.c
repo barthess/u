@@ -12,8 +12,8 @@
  * EXTERNS
  ******************************************************************************
  */
+extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
-extern uint32_t GlobalFlags;
 extern MemoryHeap ThdHeap;
 extern mavlink_system_t mavlink_system_struct;
 
@@ -81,7 +81,7 @@ static msg_t GyroCalThread(void *arg){
   }
 
   mavlink_system_struct.state = MAV_STATE_STANDBY;
-  clearGlobalFlag(GYRO_CAL_FLAG);
+  clearGlobalFlag(GlobalFlags.gyro_cal);
   chThdExit(0);
   return 0;
 }

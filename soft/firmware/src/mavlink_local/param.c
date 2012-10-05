@@ -22,7 +22,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
 extern mavlink_system_t mavlink_system_struct;
@@ -318,7 +318,7 @@ static bool_t send_value(Mail *param_value_mail,
   msg_t status = RDY_TIMEOUT;
   uint32_t j = 0;
 
-  if (!(GlobalFlags & TLM_LINK_FLAG))
+  if (!GlobalFlags.tlm_link_ready)
     return PARAM_FAILED;
 
   if (key != NULL)

@@ -21,7 +21,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox tolink_mb;
 
 extern mavlink_raw_pressure_t           mavlink_raw_pressure_struct;
@@ -218,7 +218,7 @@ void refresh_deadlines(time_t t){
     if (Registy[i].next_dealine == 0){
       if (*(Registy[i].sleepperiod) != SEND_OFF){
         Registy[i].next_dealine = *(Registy[i].sleepperiod);
-        if (GlobalFlags & TLM_LINK_FLAG)
+        if (GlobalFlags.tlm_link_ready)
           Registy[i].sender();
       }
       else

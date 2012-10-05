@@ -16,8 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
-//extern RawData raw_data;
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
 
@@ -38,7 +37,7 @@ static float const *pulse2m;
  */
 
 void loiter_ground_rover(void){
-  while (GlobalFlags & MISSION_LOITER_FLAG){
+  while (GlobalFlags.mission_loiter){
     ServoCarThrustSet(128);
     chThdSleep(MS2ST(20));
   }
@@ -140,10 +139,10 @@ enum MAV_RESULT cmd_nav_takeoff_handler(mavlink_command_long_t *cl){
    * | Altitude|  */
   (void)cl;
 
-  if (GlobalFlags & MISSION_TAKEOFF_FLAG)    /* allready done */
+  if (GlobalFlags.mission_takeoff)    /* allready done */
     return MAV_RESULT_TEMPORARILY_REJECTED;
   else{
-    setGlobalFlag(MISSION_TAKEOFF_FLAG);
+    setGlobalFlag(GlobalFlags.mission_takeoff);
     return MAV_RESULT_ACCEPTED;
   }
   /* default value */
@@ -169,7 +168,7 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
       cl->param5 == 0 &&
       cl->param6 == 0 &&
       cl->param7 == 0){
-    setGlobalFlag(MISSION_LOITER_FLAG);
+    setGlobalFlag(GlobalFlags.mission_loiter);
     return MAV_RESULT_ACCEPTED;
   }
   else if (cl->param1 == MAV_GOTO_DO_CONTINUE &&
@@ -179,7 +178,7 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
            cl->param5 == 0 &&
            cl->param6 == 0 &&
            cl->param7 == 0){
-    clearGlobalFlag(MISSION_LOITER_FLAG);
+    clearGlobalFlag(GlobalFlags.mission_loiter);
     return MAV_RESULT_ACCEPTED;
   }
   /* default return value */
@@ -192,10 +191,10 @@ enum MAV_RESULT cmd_override_goto_handler(mavlink_command_long_t *cl){
 enum MAV_RESULT cmd_nav_loiter_unlim_handler(mavlink_command_long_t *cl){
   (void)cl;
 
-  if (GlobalFlags & MISSION_LOITER_FLAG)    /* allready done */
+  if (GlobalFlags.mission_loiter)    /* allready done */
     return MAV_RESULT_TEMPORARILY_REJECTED;
   else{
-    setGlobalFlag(MISSION_LOITER_FLAG);
+    setGlobalFlag(GlobalFlags.mission_loiter);
     return MAV_RESULT_ACCEPTED;
   }
   /* default return value */

@@ -5,7 +5,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox tolink_mb;
 
 extern mavlink_system_t       mavlink_system_struct;
@@ -66,7 +66,7 @@ static msg_t SanityControlThread(void *arg) {
 
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
-    if (GlobalFlags & TLM_LINK_FLAG){
+    if (GlobalFlags.tlm_link_ready){
       mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
@@ -80,7 +80,7 @@ static msg_t SanityControlThread(void *arg) {
     chThdSleepMilliseconds(LED_FLASH_TIME);
     mavlink_sys_status_struct.load = get_cpu_load();
 
-    if (GlobalFlags & SIGHALT_FLAG){
+    if (GlobalFlags.sighalt){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
       xbee_reset_assert();

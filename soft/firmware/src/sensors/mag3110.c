@@ -18,7 +18,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
@@ -82,10 +82,10 @@ static msg_t PollMagThread(void *semp){
     txbuf[0] = MAG_OUT_DATA;
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
-    setGlobalFlag(MAG_DATA_READY_FLAG);
+    setGlobalFlag(GlobalFlags.mag_data_ready);
 
     /* decide to fork or collect terminated calibration thread */
-    if (GlobalFlags & MAG_CAL_FLAG){
+    if (GlobalFlags.mag_cal){
       if (cal_tp == NULL)
         cal_tp = MagCalStart();
       mag_stat_update();

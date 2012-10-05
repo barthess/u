@@ -11,7 +11,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern uint8_t currWpFrame;
 extern uint16_t WpSeqNew;
 extern BinarySemaphore servo_updated_sem;
@@ -91,7 +91,7 @@ goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
 
   /* stabilization loop for single waypoint */
   while (!is_local_ned_wp_reached(target_trip)){
-    if (GlobalFlags & MISSION_ABORT_FLAG)
+    if (GlobalFlags.mission_abort)
       return WP_GOTO_ABORTED;
 
     loiter_if_need();
