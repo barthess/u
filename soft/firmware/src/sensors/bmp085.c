@@ -183,8 +183,8 @@ static uint32_t _read_pressure(BinarySemaphore *semp){
  * Polling thread
  */
 static WORKING_AREA(PollBaroThreadWA, 256);
-static msg_t PollBaroThread(void *msg){
-  BinarySemaphore* semp = (BinarySemaphore*)msg;
+static msg_t PollBaroThread(void *arg){
+  BinarySemaphore* semp = (BinarySemaphore*)arg;
   uint32_t t = TEMP_DECIMATOR;
   uint32_t up = 0, ut = 0;// uncompensated temperature and pressure values
 
