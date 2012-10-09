@@ -29,6 +29,7 @@ extern mavlink_system_t mavlink_system_struct;
  ******************************************************************************
  */
 static BinarySemaphore gyro_cal_sem;
+static Thread* GyroCal_tp;
 
 /*
  ******************************************************************************
@@ -105,16 +106,15 @@ void gyro_stat_update(void){
 Thread* GyroCalStart(void){
   chBSemInit(&gyro_cal_sem,  TRUE);
 
-  Thread *tp = NULL;
-  tp = chThdCreateFromHeap(&ThdHeap,
+  GyroCal_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(GyroCalThreadWA),
                             NORMALPRIO,
                             GyroCalThread,
                             NULL);
-  if (tp == NULL){
+  if (GyroCal_tp == NULL){
     chDbgPanic("can not allocate memory");
     return NULL;
   }
   else
-    return tp;
+    return GyroCal_tp;
 }
