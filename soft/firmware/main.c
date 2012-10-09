@@ -3,6 +3,8 @@
  * cmpilation without -fomit-frame-pointer cause stack overflows.
  */
 
+// TODO: add autotests for I2C sensors
+
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
 
