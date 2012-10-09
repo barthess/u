@@ -13,8 +13,8 @@
  * EXTERNS
  ******************************************************************************
  */
+extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
-extern uint32_t GlobalFlags;
 extern MemoryHeap ThdHeap;
 extern mavlink_system_t mavlink_system_struct;
 
@@ -156,7 +156,7 @@ static msg_t MagCalThread(void *arg){
   mavlink_dbg_print(0, "MAG: calibration finished");
 
 TERMINATE:
-  clearGlobalFlag(MAG_CAL_FLAG);
+  clearGlobalFlag(GlobalFlags.mag_cal);
   mavlink_system_struct.state = MAV_STATE_STANDBY;
   SheduleBlink(10, MS2ST(100), MS2ST(100));
   chThdExit(0);

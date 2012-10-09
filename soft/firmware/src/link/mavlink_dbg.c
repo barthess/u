@@ -14,9 +14,9 @@
  * EXTERNS
  ******************************************************************************
  */
+extern GlobalFlags_t GlobalFlags;
 extern Mailbox tolink_mb;
 extern mavlink_statustext_t mavlink_statustext_struct;
-extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -60,7 +60,7 @@ msg_t mavlink_dbg_print(uint8_t severity, const char *text){
   uint32_t n = sizeof(mavlink_statustext_struct.text);
   msg_t status = RDY_RESET;
 
-  if (GlobalFlags & TLM_LINK_FLAG){
+  if (GlobalFlags.tlm_link_ready){
     status = chBSemWaitTimeout(&dbg_sem, DBG_PRINT_TMO);
     if (status != RDY_OK){
       chBSemSignal(&dbg_sem);

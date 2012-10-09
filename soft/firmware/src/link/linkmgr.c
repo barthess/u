@@ -11,7 +11,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -58,7 +58,7 @@ static msg_t LinkMgrThread(void *arg){
   }
 
   /* say to all that modem is ready */
-  setGlobalFlag(MODEM_FLAG);
+  setGlobalFlag(GlobalFlags.modem_ready);
 
   /* now track changes of flag and fork appropriate threads */
   while (TRUE) {

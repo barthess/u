@@ -35,7 +35,7 @@
  */
 extern mavlink_system_t   mavlink_system_struct;
 extern Mailbox            logwriter_mb;
-extern uint32_t           GlobalFlags;
+extern GlobalFlags_t      GlobalFlags;
 
 /*
  ******************************************************************************
@@ -161,7 +161,7 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
  * @api
  */
 void log_write_schedule(uint8_t id, uint32_t *i, uint32_t decimator) {
-  if (GlobalFlags & LOGGER_READY_FLAG){
+  if (GlobalFlags.logger_ready){
     if (i == NULL){
       chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
       return;

@@ -47,7 +47,7 @@ Output variables are:
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern uint32_t imu_step;
 extern float dcmEst[3][3];
 
@@ -207,9 +207,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   /* ignore magnetometer readings if external magnetic field too strong
    * and if there is no fresh data measured */
-  if ((GlobalFlags & MAG_DATA_READY_FLAG) &&
+  if (GlobalFlags.mag_data_ready &&
       (((vector3d_modulus(Imag) / mag_modulus) - 1) < MAG_ERR_MAX)){
-    clearGlobalFlag(MAG_DATA_READY_FLAG);
+    clearGlobalFlag(GlobalFlags.mag_data_ready);
     /* Проработать комплексирование с нижним рядом DCM вместо вектора
      * гравитации. Какие-то непонятные результаты получаются, или я их
      * готовить не умею. */

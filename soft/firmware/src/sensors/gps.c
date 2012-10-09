@@ -47,7 +47,7 @@ including, the "$" and "*".
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern Mailbox tolink_mb;
@@ -128,7 +128,7 @@ static msg_t gpsRxThread(void *arg){
   while(TRUE){
 
 EMPTY:
-    if (n >= 2 && (GlobalFlags & TLM_LINK_FLAG)){
+    if (n >= 2 && GlobalFlags.tlm_link_ready){
       chBSemWaitTimeout(&gps_sem, MS2ST(1));
       mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
       gps_mail.payload = &mavlink_global_position_int_struct;

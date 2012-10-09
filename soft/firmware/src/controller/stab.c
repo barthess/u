@@ -28,7 +28,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t           GlobalFlags;
+extern GlobalFlags_t      GlobalFlags;
 extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
 
 extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
@@ -109,9 +109,9 @@ WAIT_NEW_MISSION:
   mavlink_local_position_ned_struct.vz = 0;
   mavlink_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
 
-  clearGlobalFlag(MISSION_ABORT_FLAG);
-  clearGlobalFlag(MISSION_TAKEOFF_FLAG);
-  clearGlobalFlag(MISSION_LOITER_FLAG);
+  clearGlobalFlag(GlobalFlags.mission_abort);
+  clearGlobalFlag(GlobalFlags.mission_takeoff);
+  clearGlobalFlag(GlobalFlags.mission_loiter);
 
   reset_pid(&headingPid);
   reset_pid(&speedPid);
@@ -119,7 +119,7 @@ WAIT_NEW_MISSION:
 
   ServoCarThrustSet(float2thrust(0));
   ServoCarYawSet(128);
-  while(!(GlobalFlags & MISSION_TAKEOFF_FLAG))
+  while(!GlobalFlags.mission_takeoff)
     chThdSleep(STAB_TMO);
 
   currWpFrame = MAV_FRAME_GLOBAL;

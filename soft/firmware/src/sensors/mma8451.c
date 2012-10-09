@@ -15,11 +15,11 @@
  * EXTERNS
  ******************************************************************************
  */
+extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern uint32_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -67,7 +67,7 @@ static void process_accel_data(uint8_t *rxbuf){
 
   /* only determine acceleration delta and compare it to threshold in
    * calibration mode. In normal mode just presume that deivece is moving */
-  if ((GlobalFlags & GYRO_CAL_FLAG) || (GlobalFlags & MAG_CAL_FLAG)){
+  if (GlobalFlags.gyro_cal || GlobalFlags.mag_cal){
     delta  = (prev_xacc - raw_data.xacc) * (prev_xacc - raw_data.xacc);
     delta += (prev_yacc - raw_data.yacc) * (prev_yacc - raw_data.yacc);
     delta += (prev_zacc - raw_data.zacc) * (prev_zacc - raw_data.zacc);
