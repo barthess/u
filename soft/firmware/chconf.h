@@ -123,7 +123,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_USE_REGISTRY) || defined(__DOXYGEN__)
-#define CH_USE_REGISTRY                 FALSE
+#define CH_USE_REGISTRY                 TRUE
 #endif
 
 /**
@@ -394,7 +394,7 @@
  *          @p panic_msg variable set to @p NULL.
  */
 #if !defined(CH_DBG_ENABLE_STACK_CHECK) || defined(__DOXYGEN__)
-#define CH_DBG_ENABLE_STACK_CHECK       FALSE
+#define CH_DBG_ENABLE_STACK_CHECK       TRUE
 #endif
 
 /**
