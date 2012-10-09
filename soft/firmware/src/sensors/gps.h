@@ -19,19 +19,19 @@
 
 // установка выдачи только GGA & RMC
 #define GPS_MSG_STR ((const uint8_t *)("$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n"))
-#define GPS_MSG_STR_LEN 51
+#define GPS_MSG_STR_LEN sizeof(GPS_MSG_STR)
 // подтверждение
 //$PMTK001,314,3*36
 
 // время между фиксацией координат в милисекундах
 #define GPS_FIX_PERIOD_STR ((const uint8_t *)("$PMTK300,200,0,0,0,0*2F\r\n"))
-#define GPS_FIX_PERIOD_STR_LEN 25
+#define GPS_FIX_PERIOD_STR_LEN sizeof(GPS_FIX_PERIOD_STR)
 // подтверждение
 // $PMTK001,300,3*33
 
 // установка скорости обмена
 #define GPS_HI_BAUDRATE_STR ((const uint8_t *)("$PMTK251,57600*2C\r\n"))
-#define GPS_HI_BAUDRATE_STR_LEN 19
+#define GPS_HI_BAUDRATE_STR_LEN sizeof(GPS_HI_BAUDRATE_STR)
 
 #define GPS_DEFAULT_BAUDRATE 9600
 #define GPS_HI_BAUDRATE 57600
