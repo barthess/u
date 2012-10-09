@@ -43,7 +43,7 @@
 
 /* фукнции подачи/отдачи питания на GPS */
 #define gps_power_on()  {palClearPad(GPIOE, GPIOE_GPS_PWR_EN);}
-#define gps_power_off() {palSetPad(GPIOE, GPIOE_GPS_PWR_EN);
+#define gps_power_off() {palSetPad(GPIOE, GPIOE_GPS_PWR_EN);}
 
 
 void GPSInit(void);
