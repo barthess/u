@@ -32,8 +32,8 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
-#define CORTEX_VTOR_INIT                0xC0000
-#define CORTEX_USE_FPU                  FALSE
+//#define CORTEX_VTOR_INIT                0xC0000
+//#define CORTEX_USE_FPU                  TRUE
 #define CORTEX_ENABLE_WFI_IDLE          FALSE
 
 /*===========================================================================*/
@@ -109,7 +109,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_OPTIMIZE_SPEED) || defined(__DOXYGEN__)
-#define CH_OPTIMIZE_SPEED               TRUE
+#define CH_OPTIMIZE_SPEED               FALSE
 #endif
 
 /*===========================================================================*/

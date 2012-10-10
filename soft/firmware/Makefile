@@ -28,11 +28,6 @@ ifeq ($(USE_THUMB),)
   USE_THUMB = yes
 endif
 
-# Enable register caching optimization (read documentation).
-ifeq ($(USE_CURRP_CACHING),)
-  USE_CURRP_CACHING = no
-endif
-
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
   USE_VERBOSE_COMPILE = no
@@ -45,6 +40,12 @@ endif
 ##############################################################################
 # Architecture or project specific options
 #
+
+# Enables the use of FPU on Cortex-M4.
+# Enable this if you really want to use the STM FWLib.
+ifeq ($(USE_FPU),)
+  USE_FPU = yes
+endif
 
 # Enable this if you really want to use the STM FWLib.
 ifeq ($(USE_FWLIB),)
@@ -73,8 +74,8 @@ include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
-LDSCRIPT= STM32F407xG_flash_end.ld
-#LDSCRIPT= $(PORTLD)/STM32F407xG.ld
+#LDSCRIPT= STM32F407xG_flash_end.ld
+LDSCRIPT= $(PORTLD)/STM32F407xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -158,13 +159,13 @@ CSRC = $(PORTSRC) \
        
 
 DSPSRC = cortex_dsp
-CSRC += $(DSPSRC)/arm_common_tables.c \
-		$(DSPSRC)/arm_sqrt_q31.c \
-        $(DSPSRC)/arm_sqrt_q15.c \
-        $(DSPSRC)/arm_cos_f32.c \
-        $(DSPSRC)/arm_cos_q31.c \
-        $(DSPSRC)/FilteringFunctions/arm_fir_q31.c \
-        $(DSPSRC)/FilteringFunctions/arm_fir_init_q31.c \
+#CSRC += $(DSPSRC)/arm_common_tables.c \
+#		$(DSPSRC)/arm_sqrt_q31.c \
+#        $(DSPSRC)/arm_sqrt_q15.c \
+#        $(DSPSRC)/arm_cos_f32.c \
+#        $(DSPSRC)/arm_cos_q31.c \
+#        $(DSPSRC)/FilteringFunctions/arm_fir_q31.c \
+#        $(DSPSRC)/FilteringFunctions/arm_fir_init_q31.c \
         
         
 
@@ -234,6 +235,8 @@ MCU  = cortex-m4 -lm
 TRGT = arm-none-eabi-
 CC   = ccache $(TRGT)gcc
 CPPC = ccache $(TRGT)g++
+#CC   = $(TRGT)gcc
+#CPPC = $(TRGT)g++
 #TRGT = ""
 #CC   = $(TRGT)clang
 #CPPC = $(TRGT)clang++
@@ -311,6 +314,13 @@ ULIBS =
 #
 # End of user defines
 ##############################################################################
+
+ifeq ($(USE_FPU),yes)
+  USE_OPT += -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+  DDEFS += -DCORTEX_USE_FPU=TRUE
+else
+  DDEFS += -DCORTEX_USE_FPU=FALSE
+endif
 
 ifeq ($(USE_FWLIB),yes)
   include $(CHIBIOS)/ext/stm32lib/stm32lib.mk

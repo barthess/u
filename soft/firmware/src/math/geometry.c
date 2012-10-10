@@ -1,6 +1,6 @@
-#include "uav.h"
+#include <math.h>
 
-#include "arm_math.h"
+#include "uav.h"
 
 /**
  * convert from degrees to radians

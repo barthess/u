@@ -64,6 +64,8 @@
 #include "wps_cli.h"
 #include "wps_persistant.h"
 
+#define PI          3.14159265f
+
 /* Heap size for dynamic thread creation */
 #define THREAD_HEAP_SIZE    (1024 * 5)
 

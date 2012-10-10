@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "uav.h"
 
 #include "bmp085_table.h"

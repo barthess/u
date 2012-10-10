@@ -8,8 +8,9 @@
 #ifndef DSP_H_
 #define DSP_H_
 
-#include "arm_math.h"
+//#include "arm_math.h"
 
+typedef int32_t q31_t;
 typedef q31_t alphabeta_instance_q31;
 typedef float alphabeta_instance_float;
 

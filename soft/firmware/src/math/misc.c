@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "uav.h"
 
 /**
@@ -70,34 +72,6 @@ void polled_delay_us(uint32_t uS){
     ;
 }
 
-/**
- * Measure execution time of some function for dubug purpose.
- */
-void time_test(void){
-  TimeMeasurement tmup;
-  volatile float x = 0;
-  volatile uint32_t y = 0;
-  volatile uint32_t n = 1000000;
-  volatile uint32_t imu_update_period = 0;
-
-  tmObjectInit(&tmup);
-  tmStartMeasurement(&tmup);
-  x = arm_cos_f32(PI/3.0);
-  tmStopMeasurement(&tmup);
-  imu_update_period = tmup.last;
-
-  imu_update_period = 0;
-  tmStartMeasurement(&tmup);
-  for (;n >0; n--)
-    y = arm_cos_q31(n);
-  tmStopMeasurement(&tmup);
-  imu_update_period = tmup.last;
-
-  (void)x;
-  (void)y;
-  (void)imu_update_period;
-}
-
 /*
 Caution added by Martin L. Buchanan, mlb@backgroundtask.com, Wed 11/16/2005:
 
@@ -150,5 +124,5 @@ uint32_t isqrt(uint32_t x){
 that is, subtract the largest multiple of 2*pi less than a from a,
 and that's the answer. */
 float fmodulo(float x, float y){
-  return x - y * floor(x/y);
+  return x - y * floorf(x/y);
 }
