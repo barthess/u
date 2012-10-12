@@ -49,6 +49,7 @@
 #include "pwr_mgmt.h"
 #include "sanity.h"
 #include "sensors.h"
+#include "sensors_cli.h"
 #include "servo.h"
 #include "servo_cli.h"
 #include "speedometer.h"

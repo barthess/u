@@ -120,6 +120,7 @@ CSRC = $(PORTSRC) \
        src/sensors/gps.c \
        src/sensors/adc_local.c \
        src/sensors/sensors.c \
+       src/sensors/sensors_cli.c \
        src/sensors/max1236.c \
        src/sensors/tmp75.c \
        src/sensors/bmp085.c \
