@@ -50,7 +50,7 @@ static const ShellCmd_t chibiutils[] = {
     {"sensors",   &sensors_clicmd,    NULL,  "get human readable data from onboard sensors"},
     {"servo",     &servo_clicmd,      NULL,  "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,      NULL,  "put autopilot board in sleep state (do not use it)"},
-    {"reboot",    &reboot_clicmd,     NULL,  "reboot system. Use with caution"},
+    {"reboot",    &reboot_clicmd,     NULL,  "reboot system. Use with caution!"},
     {"uname",     &uname_clicmd,      NULL,  "'info' alias"},
     {"wps",       &wps_clicmd,        NULL,  "simple waypoint interface"},
     {NULL, NULL, NULL, NULL}/* end marker */

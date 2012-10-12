@@ -67,10 +67,10 @@ Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   int32_t i = 0;
 
   cli_println("Use TAB key for completion, UpArrow for previous command.");
-  cli_println("Available commands:");
+  cli_println("Available commands are:");
+  cli_println("-------------------------------------------------------------");
 
   while(cmdarray[i].name != NULL){
-    cli_print("    ");
     cli_print(cmdarray[i].name);
     cli_print(" - ");
     cli_println(cmdarray[i].help);
