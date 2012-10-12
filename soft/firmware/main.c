@@ -4,6 +4,7 @@
  */
 
 // TODO: add autotests for I2C sensors
+// TODO: logrotate functionality and log compression
 
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
@@ -12,7 +13,7 @@
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
-// TODO: Power brown out handler for sync/umout SDC.
+// TODO: Power brown out handler (using ADC comparator?) for sync/umout SDC.
 // TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
 // TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
