@@ -145,17 +145,13 @@ Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray
   time_t tv_sec = 0;
   int sscanf_status;
 
-  /* two arguments */
-  if (argc == 2){
-    if (strcmp(*argv, "set") == 0){
-      sscanf_status = sscanf(argv[1], "%i", (int*)&tv_sec);
-      if (sscanf_status != 1)
-        cli_println("ERROR. Date value inconsistent");
-      else
-        rtcSetTimeUnixSec(&RTCD1, tv_sec);
-    }
+  /* 1 argument */
+  if (argc == 1){
+    sscanf_status = sscanf(argv[0], "%i", (int*)&tv_sec);
+    if (sscanf_status != 1)
+      cli_println("ERROR. Date value inconsistent");
     else
-      cli_println("ERROR: unsupported parameter.");
+      rtcSetTimeUnixSec(&RTCD1, tv_sec);
   }
 
   /* error handler */

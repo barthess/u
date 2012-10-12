@@ -207,13 +207,13 @@ void sigint (void){
     chThdWait(current_cmd_tp);
     current_cmd_tp = NULL;
   }
-  cli_print("  Done. Press 'Enter' to return in shell.");
+  cli_print("--> Done. Press 'Enter' to return to shell");
 }
 
 /**
  * Thread function
  */
-static WORKING_AREA(ShellThreadWA, 1536);
+static WORKING_AREA(ShellThreadWA, 2048);
 static msg_t ShellThread(void *arg){
   chRegSetThreadName("Shell");
 
