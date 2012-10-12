@@ -47,7 +47,7 @@ static const ShellCmd_t chibiutils[] = {
     {"param",     &param_clicmd,      NULL,  "manage onboard system paramters"},
     {"ps",        &ps_clicmd,         NULL,  "info about running threads"},
     {"selftest",  &selftest_clicmd,   NULL,  "exectute selftests (stub)"},
-    {"sensor",    &sensor_clicmd,     NULL,  "get human readable data from onboard sensors (stub)"},
+    {"sensors",   &sensors_clicmd,    NULL,  "get human readable data from onboard sensors"},
     {"servo",     &servo_clicmd,      NULL,  "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,      NULL,  "put autopilot board in sleep state (do not use it)"},
     {"reboot",    &reboot_clicmd,     NULL,  "reboot system. Use with caution"},

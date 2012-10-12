@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 extern EepromFileStream EepromFile;
-extern GlobalParam_t global_data[];
+extern GlobalParam_t GlobalParam[];
 extern int32_t OnboardParamCount;
 
 /*
@@ -26,7 +26,7 @@ extern int32_t OnboardParamCount;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(*(global_data[0].valuep))];
+static uint8_t eeprombuf[PARAM_ID_SIZE + sizeof(*(GlobalParam[0].valuep))];
 
 /*
  *******************************************************************************
@@ -67,7 +67,7 @@ bool_t load_params_from_eeprom(void){
       }
 
     /* check value acceptability and set it */
-    set_global_param(&v, &(global_data[i]));
+    set_global_param(&v, &(GlobalParam[i]));
   }
   return PARAM_SUCCESS;
 }
@@ -89,10 +89,10 @@ bool_t save_params_to_eeprom(void){
     palClearPad(GPIOB, GPIOB_LED_R);
 
     /* first copy parameter name in buffer */
-    memcpy(eeprombuf, global_data[i].name, PARAM_ID_SIZE);
+    memcpy(eeprombuf, GlobalParam[i].name, PARAM_ID_SIZE);
 
     /* now write data */
-    v = global_data[i].valuep->u32;
+    v = GlobalParam[i].valuep->u32;
     eeprombuf[PARAM_ID_SIZE + 0] = (v >> 24) & 0xFF;
     eeprombuf[PARAM_ID_SIZE + 1] = (v >> 16) & 0xFF;
     eeprombuf[PARAM_ID_SIZE + 2] = (v >> 8)  & 0xFF;

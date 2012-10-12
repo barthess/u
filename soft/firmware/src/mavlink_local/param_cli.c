@@ -13,7 +13,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalParam_t global_data[];
+extern GlobalParam_t GlobalParam[];
 extern uint32_t OnboardParamCount;
 
 /*
@@ -61,36 +61,36 @@ static void _param_cli_print(uint32_t i, bool_t need_help){
   int nres = 0;
   char str[n];
 
-  nres = snprintf(str, n, "%-15s", global_data[i].name);
+  nres = snprintf(str, n, "%-15s", GlobalParam[i].name);
   cli_print_long(str, n, nres);
 
-  switch(global_data[i].param_type){
+  switch(GlobalParam[i].param_type){
   case MAVLINK_TYPE_FLOAT:
     nres = snprintf(str, n, " %-15f %-15f %-15f",
-        global_data[i].min.f32,
-        global_data[i].valuep->f32,
-        global_data[i].max.f32);
+        GlobalParam[i].min.f32,
+        GlobalParam[i].valuep->f32,
+        GlobalParam[i].max.f32);
     break;
   case MAVLINK_TYPE_INT32_T:
     nres = snprintf(str, n, " %-15d %-15d %-15d",
-        (int)global_data[i].min.i32,
-        (int)global_data[i].valuep->i32,
-        (int)global_data[i].max.i32);
+        (int)GlobalParam[i].min.i32,
+        (int)GlobalParam[i].valuep->i32,
+        (int)GlobalParam[i].max.i32);
     break;
   default: // uint32_t
     nres = snprintf(str, n, " %-15u %-15u %-15u",
-        (unsigned int)global_data[i].min.u32,
-        (unsigned int)global_data[i].valuep->u32,
-        (unsigned int)global_data[i].max.u32);
+        (unsigned int)GlobalParam[i].min.u32,
+        (unsigned int)GlobalParam[i].valuep->u32,
+        (unsigned int)GlobalParam[i].max.u32);
     break;
   }
 
   cli_print_long(str, n, nres);
   cli_print(ENDL);
 
-  if (need_help && (global_data[i].help != NULL)){
+  if (need_help && (GlobalParam[i].help != NULL)){
     cli_println("");
-    cli_println(global_data[i].help);
+    cli_println(GlobalParam[i].help);
   }
 }
 
@@ -121,7 +121,7 @@ static param_status_t _param_cli_set(const char * val, uint32_t i){
   floatint v;
   int sscanf_status;
 
-  switch(global_data[i].param_type){
+  switch(GlobalParam[i].param_type){
   case MAVLINK_TYPE_FLOAT:
     sscanf_status = sscanf(val, "%f", &v.f32);
     break;
@@ -138,7 +138,7 @@ static param_status_t _param_cli_set(const char * val, uint32_t i){
   if (sscanf_status != 1)
     return PARAM_INCONSISTENT;
   else
-    return set_global_param(&v, &global_data[i]);
+    return set_global_param(&v, &GlobalParam[i]);
 }
 
 /**

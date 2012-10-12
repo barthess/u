@@ -11,7 +11,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalParam_t global_data[];
+extern GlobalParam_t GlobalParam[];
 extern mavlink_system_t mavlink_system_struct;
 extern BinarySemaphore servo_updated_sem;
 
@@ -139,9 +139,9 @@ void _servo_set_angle(uint16_t n, uint8_t angle){
   uint16_t val = 0;
   uint16_t i = servoblock_index + (n) * 3;
 
-  min = global_data[i].valuep->u32 & 0xFFFF;
-  max = global_data[i+1].valuep->u32 & 0xFFFF;
-  neutral = global_data[i+2].valuep->u32 & 0xFFFF;
+  min = GlobalParam[i].valuep->u32 & 0xFFFF;
+  max = GlobalParam[i+1].valuep->u32 & 0xFFFF;
+  neutral = GlobalParam[i+2].valuep->u32 & 0xFFFF;
 
   if (angle > 128){
     len = max - neutral;

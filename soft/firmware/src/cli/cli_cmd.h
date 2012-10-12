@@ -1,7 +1,6 @@
 #ifndef CLI_CMD_H_
 #define CLI_CMD_H_
 
-#include "cli.h"
 #include "../microrl/src/config.h"
 
 Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
@@ -14,7 +13,6 @@ Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
 Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
-Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
 
 

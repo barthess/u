@@ -165,18 +165,6 @@ Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *c
 /**
  *
  */
-Thread* sensor_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)argv;
-  (void)argc;
-  (void)cmdarray;
-  cli_print("temperature is ...");
-  cli_print(ENDL);
-  return NULL;
-}
-
-/**
- *
- */
 Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
   (void)cmdarray;
   (void)argc;

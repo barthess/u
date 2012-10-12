@@ -10,6 +10,7 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_sys_status_t mavlink_sys_status_struct;
+extern const mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -31,8 +32,8 @@ extern mavlink_sys_status_t mavlink_sys_status_struct;
  */
 static uint32_t const *bat_cap;       /* battery capacitance in A*mS */
 static uint32_t const *bat_fill;      /* battery filling in A*mS */
-static uint32_t const *adc_i_gain;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-static uint32_t const *adc_i_offset;  // смещение нуля датчика тока в единицах АЦП
+static uint32_t const *adc_I_b;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
+static uint32_t const *adc_I_k;  // смещение нуля датчика тока в единицах АЦП
 static uint32_t const *adc_sv_gain;   /* secondary voltage gain */
 static uint32_t const *adc_mv_gain;   /* main voltage gain */
 
@@ -54,9 +55,27 @@ static uint16_t get_comp_secondary_voltage(uint16_t raw){
 //  return (uint16_t)(((uint32_t)raw * *adc_mv_gain) / 1000);
 //}
 
-/* пересчет из условных единиц в mA */
+/* пересчет из условных единиц в mA согласно формуле y=kx+b
+ * Формула выводится из уравнения прямой
+ *
+ * y - y1    x - x1
+ * ------- = -------
+ * y2 - y1   x2 - x1
+ *
+ *     (x - x1) * (y2 - y1)
+ * y = -------------------  + y1
+ *            x2 - x1
+ *
+ * Для того, чтобы воспользоваться ей, нам необходимо снять 2 точки.
+ * Для машинки:
+ * (АЦП; мА) -- (193;87), (388;200)
+ * откуда получается (мА):
+ * y = 0.58x + 24.841
+ * или (мкА)
+ * y = 580x + 24841
+ */
 static uint32_t get_comp_main_current(uint16_t raw){
-  return ((raw - *adc_i_offset) * 1000) / *adc_i_gain;
+  return ((((uint32_t)raw) * *adc_I_k) + *adc_I_b) / 1000;
 }
 
 /*
@@ -111,8 +130,15 @@ void PwrMgmtInit(void){
   bat_cap  = ValueSearch("BAT_cap");
   bat_fill = ValueSearch("BAT_fill");
 
-  adc_i_offset = ValueSearch("ADC_I_offset");
-  adc_i_gain   = ValueSearch("ADC_I_gain");
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
+    adc_I_k = ValueSearch("ADC_car_I_k");
+    adc_I_b = ValueSearch("ADC_car_I_b");
+  }
+  else{
+    adc_I_k = ValueSearch("ADC_plane_I_k");
+    adc_I_b = ValueSearch("ADC_plane_I_b");
+  }
+
   adc_sv_gain  = ValueSearch("ADC_SV_gain");
   adc_mv_gain  = ValueSearch("ADC_MV_gain");
 
