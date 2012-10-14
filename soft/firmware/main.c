@@ -5,7 +5,6 @@
 
 // TODO: add autotests for I2C sensors
 // TODO: logrotate functionality and log compression
-// TODO: BaseSequentialStream *chp as parameter to all CLI commands
 
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.

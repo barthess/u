@@ -5,7 +5,6 @@
 
 Thread* ps_clicmd(int argc, const char * const * argv);
 Thread* uname_clicmd(int argc, const char * const * argv);
-Thread* help_clicmd(int argc, const char * const * argv);
 Thread* clear_clicmd(int argc, const char * const * argv);
 Thread* list_clicmd(int argc, const char * const * argv);
 Thread* loop_clicmd(int argc, const char * const * argv);

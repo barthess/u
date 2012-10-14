@@ -24,7 +24,8 @@ extern MemoryHeap ThdHeap;
  * PROTOTYPES
  *******************************************************************************
  */
-Thread* logout_cmd(int argc, const char * const * argv);
+static Thread* logout_cmd(int argc, const char * const * argv);
+static Thread* help_clicmd(int argc, const char * const * argv);
 
 /*
  ******************************************************************************
@@ -32,7 +33,7 @@ Thread* logout_cmd(int argc, const char * const * argv);
  ******************************************************************************
  */
 
-const ShellCmd_t chibiutils[] = {
+static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
     {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
     {"date",      &date_cmd,          "print and set current date"},
@@ -86,73 +87,32 @@ static int32_t cmd_search(const char* key, const ShellCmd_t *cmdarray){
   return -1;
 }
 
-/**
- * Print routine for microrl.
- */
-void cli_print(const char *str){
-  int i = 0;
-  while (str[i] != 0) {
-    sdPut(shell_sdp, str[i]);
-    i++;
-  }
-}
-
-/**
- * Convenience function
- */
-void cli_println(const char *str){
-  cli_print(str);
-  cli_print(ENDL);
-}
-
-/**
- * Convenience function
- */
-void cli_put(char chr){
-  sdPut(shell_sdp, chr);
-}
-
-/**
- * Read routine
- */
-char get_char (void){
-  return sdGet(shell_sdp);
-}
-
-/**
- * helper function
- * Inserts new line symbol if passed string does not contain NULL termination.
- * Must be used in combination with snprintf() function.
- */
-void cli_print_long(const char * str, int n, int nres){
-  cli_print(str);
-  if (nres > n)
-    cli_print(ENDL);
-}
-
 //*****************************************************************************
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
-int execute (int argc, const char * const * argv){
+static int execute (int argc, const char * const * argv){
   int i = 0;
 
   /* search first token */
   i = cmd_search(argv[0], chibiutils);
-  if (i != -1){
+  if (i == -1){
     cli_print ("command: '");
     cli_print ((char*)argv[0]);
     cli_print ("' Not found.\n\r");
   }
-  else
-    current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1]);
-
+  else{
+    if (argc > 1)
+      current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1]);
+    else
+      current_cmd_tp = chibiutils[i].func(0, NULL);
+  }
   return 0;
 }
 
-#ifdef _USE_COMPLETE
 //*****************************************************************************
 // completion callback for microrl library
-char ** complete(int argc, const char * const * argv)
+#ifdef _USE_COMPLETE
+static char ** complete(int argc, const char * const * argv)
 {
   int j = 0;
   int i = 0;
@@ -184,11 +144,10 @@ char ** complete(int argc, const char * const * argv)
 }
 #endif
 
-
 /**
  *
  */
-void sigint (void){
+static void sigint (void){
   cli_print("^C pressed. Exiting...");
   if (current_cmd_tp != NULL){
     chThdTerminate(current_cmd_tp);
@@ -252,11 +211,34 @@ static msg_t ShellThread(void *arg){
 /**
  *
  */
-Thread* logout_cmd(int argc, const char * const * argv){
+static Thread* logout_cmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
 
   *(uint32_t*)ValueSearch("SH_enable") = 0;
+
+  return NULL;
+}
+
+/**
+ *
+ */
+static Thread* help_clicmd(int argc, const char * const * argv){
+  (void)argc;
+  (void)argv;
+
+  int32_t i = 0;
+
+  cli_println("Use TAB key for completion, UpArrow for previous command.");
+  cli_println("Available commands are:");
+  cli_println("-------------------------------------------------------------");
+
+  while(chibiutils[i].name != NULL){
+    cli_print(chibiutils[i].name);
+    cli_print(" - ");
+    cli_println(chibiutils[i].help);
+    i++;
+  }
 
   return NULL;
 }
@@ -266,6 +248,50 @@ Thread* logout_cmd(int argc, const char * const * argv){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+
+/**
+ * Print routine for microrl.
+ */
+void cli_print(const char *str){
+  int i = 0;
+  while (str[i] != 0) {
+    sdPut(shell_sdp, str[i]);
+    i++;
+  }
+}
+
+/**
+ * Convenience function
+ */
+void cli_println(const char *str){
+  cli_print(str);
+  cli_print(ENDL);
+}
+
+/**
+ * Convenience function
+ */
+void cli_put(char chr){
+  sdPut(shell_sdp, chr);
+}
+
+/**
+ * Read routine
+ */
+char get_char (void){
+  return sdGet(shell_sdp);
+}
+
+/**
+ * helper function
+ * Inserts new line symbol if passed string does not contain NULL termination.
+ * Must be used in combination with snprintf() function.
+ */
+void cli_print_long(const char * str, int n, int nres){
+  cli_print(str);
+  if (nres > n)
+    cli_print(ENDL);
+}
 
 /**
  *
