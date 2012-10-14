@@ -48,7 +48,6 @@ Output variables are:
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern uint32_t imu_step;
 extern float dcmEst[3][3];
 
 /*
@@ -68,6 +67,9 @@ static float const *accweight = NULL;
 /* magnetometer data weight relative to gyro's weight of 1. */
 static float const *magweight = NULL;
 
+/* increments on each call to imu_update */
+static uint32_t imu_step;
+
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -86,7 +88,7 @@ static void _update_enforced_mag(float *w, float *wA, float *wM, float imu_inter
 
 /* bring dcm matrix in order - adjust values to make
  * orthonormal (or at least closer to orthonormal) */
-void dcm_orthonormalize(float dcm[3][3]){
+static void dcm_orthonormalize(float dcm[3][3]){
   //err = X . Y ,  X = X - err/2 * Y , Y = Y - err/2 * X  (DCMDraft2 Eqn.19)
   float err = vector3d_dot((float*)(dcm[0]),(float*)(dcm[1]));
   float delta[2][3];
@@ -106,7 +108,7 @@ void dcm_orthonormalize(float dcm[3][3]){
 
 //rotate DCM matrix by a small rotation given by angular rotation vector w
 //see http://gentlenav.googlecode.com/files/DCMDraft2.pdf
-void dcm_rotate(float dcm[3][3], float w[3]){
+static void dcm_rotate(float dcm[3][3], float w[3]){
   //float W[3][3];
   //creates equivalent skew symetric matrix plus identity matrix
   //vector3d_skew_plus_identity((float*)w,(float*)W);

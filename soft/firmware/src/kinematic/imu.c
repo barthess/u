@@ -3,7 +3,6 @@
 #include "uav.h"
 
 #include "dcm.h"
-#include "vector3d.h"
 
 /*
  ******************************************************************************
@@ -20,7 +19,6 @@ extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_attitude_struct;
 extern uint32_t imu_update_period;
 
-uint32_t imu_step = 0;            /* increments on each call to imu_update */
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
                       {0,0,1}};   /* estimated DCM matrix */
@@ -42,7 +40,7 @@ static float const *declinate;
 /**
  * Get attitude from DCM
  */
-void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
+static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
     mavlink_attitude_struct->pitch  = -asinf(Rxz);
