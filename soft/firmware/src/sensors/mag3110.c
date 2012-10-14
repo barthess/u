@@ -106,7 +106,7 @@ static msg_t PollMagThread(void *semp){
 /**
  * Раскладывает полученные данные по структурам, при необходимости масштабирует.
  */
-void process_magentometer_data(uint8_t *rxbuf){
+static void process_magentometer_data(uint8_t *rxbuf){
 
   /**/
   raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
@@ -133,7 +133,7 @@ void process_magentometer_data(uint8_t *rxbuf){
  * в датчике настроить авторесет на каждое измерение, но
  * это как-то не элегантно.
  */
-void check_and_clean_overdose(void){
+static void check_and_clean_overdose(void){
   if (abs(raw_data.xmag) > OVERDOSE ||
       abs(raw_data.ymag) > OVERDOSE ||
       abs(raw_data.zmag) > OVERDOSE){
@@ -143,14 +143,10 @@ void check_and_clean_overdose(void){
   }
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
+/**
+ *
  */
-void init_mag3110(BinarySemaphore *mag3110_semp){
-
-  /* Поиск индексов в массиве настроек */
+static void search_indexes(void){
   xoffset = ValueSearch("MAG_xoffset");
   yoffset = ValueSearch("MAG_yoffset");
   zoffset = ValueSearch("MAG_zoffset");
@@ -160,6 +156,16 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   xsens   = ValueSearch("MAG_xsens");
   ysens   = ValueSearch("MAG_ysens");
   zsens   = ValueSearch("MAG_zsens");
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+void init_mag3110(BinarySemaphore *mag3110_semp){
+
+  search_indexes();
 
   // TODO: сначала вообще убедиться, что девайс отвечает путем запроса его WHOAMI
   // TODO: запустить в нем самодиагностику

@@ -49,7 +49,7 @@ static Mail mission_out_mail = {NULL, MAVLINK_MSG_ID_MISSION_COUNT, NULL};
 /**
  *
  */
-void send_ack(uint8_t type){
+static void send_ack(uint8_t type){
   msg_t status = RDY_RESET;
 
   /* logically the target_component must be MAV_COMP_ID_MISSIONPLANNER,
@@ -153,7 +153,7 @@ static MAVLINK_WPM_STATES mission_request_list_handler(Mail* mailp){
 /**
  * Perform waypoint checking
  */
-uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
+static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
   if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED))
     return MAV_MISSION_UNSUPPORTED_FRAME;
   if (wp->seq != seq)

@@ -42,7 +42,7 @@ static BinarySemaphore mag_cal_sem;
 /**
  * You must turn device in new position
  */
-msg_t wait_new_position(void){
+static msg_t wait_new_position(void){
   int16_t prevx, prevy, prevz;
   uint32_t delta = 0;
   const uint32_t tmo = 200;
@@ -76,13 +76,13 @@ msg_t wait_new_position(void){
 //                   {2320, -2701, -1867},
 //                   {2423, -2800, -1907}};
 
-#define clear_state() {\
+#define clear_state() do{\
   SamplesCnt = *zerocount;\
   MagSumX = 0;\
   MagSumY = 0;\
   MagSumZ = 0;\
   device_still_clear();\
-}
+}while(0)
 
 /**
  *

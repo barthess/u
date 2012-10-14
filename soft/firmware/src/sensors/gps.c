@@ -178,7 +178,7 @@ $GPRMC,115436.000,A,5354.713670,N,02725.690517,E,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,0.20,210.43,010611,,,A*66
 $GPRMC,115436.000,,,,,,,,,,,A*66
 */
-void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct){
+static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct){
   // для широты и долготы выбран знаковый формат чтобы не таскать N, S, W, E
   int32_t  gps_latitude = 0;
   int32_t  gps_longitude = 0;
@@ -267,7 +267,7 @@ void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos_struct
   log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
 }
 
-void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){
+static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){
   int32_t  gps_speed_knots = 0;
   int32_t  gps_course = 0;
 
@@ -340,7 +340,7 @@ int tm_wday      days since Sunday [0-6]
 int tm_yday      days since January 1st [0-365]
 int tm_isdst     daylight savings indicator (1 = yes, 0 = no, -1 = unknown)
  */
-void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
+static void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
   timp->tm_hour = 10 * (buft[0] - '0') + (buft[1] - '0');
   timp->tm_min  = 10 * (buft[2] - '0') + (buft[3] - '0');
   timp->tm_sec  = 10 * (buft[4] - '0') + (buft[5] - '0');
@@ -353,7 +353,7 @@ void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
 /**
  *
  */
-uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
+static uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
   uint8_t byte = 0, i = 0;
 
   while TRUE{
@@ -375,7 +375,7 @@ uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
     return 2;
 }
 
-uint8_t from_hex(uint8_t a){
+static uint8_t from_hex(uint8_t a){
   if (a >= 'A' && a <= 'F')
     return a - 'A' + 10;
   else if (a >= 'a' && a <= 'f')
@@ -387,7 +387,7 @@ uint8_t from_hex(uint8_t a){
 /**
  * Возвращает значение с фиксированной точкой с точностью 2 знака после запятой
  */
-int32_t parse_decimal(uint8_t *p){
+static int32_t parse_decimal(uint8_t *p){
   bool_t isneg = (*p == '-'); /* обработаем наличие знака "-" */
   if (isneg) ++p;
   uint32_t ret = gpsatol(p);  /* сделаем заготовку для возвращаемого значения */
@@ -404,7 +404,7 @@ int32_t parse_decimal(uint8_t *p){
   return isneg ? -ret : ret;
 }
 
-int32_t parse_degrees(uint8_t *p){
+static int32_t parse_degrees(uint8_t *p){
   uint32_t left = gpsatol(p);                       /* читаем первую часть (ddmm) */
   uint32_t tenk_minutes = (left % 100UL) * 10000UL; /* отделяем целые части минут */
 
@@ -419,14 +419,14 @@ int32_t parse_degrees(uint8_t *p){
   return (left / 100) * 100000 + tenk_minutes / 6;
 }
 
-uint32_t gpsatol(const uint8_t *str){
+static uint32_t gpsatol(const uint8_t *str){
   uint32_t ret = 0;
   while (gpsisdigit(*str))
     ret = 10 * ret + *str++ - '0';
   return ret;
 }
 
-bool_t gpsisdigit(char c){
+static bool_t gpsisdigit(char c){
   return c >= '0' && c <= '9';
 }
 

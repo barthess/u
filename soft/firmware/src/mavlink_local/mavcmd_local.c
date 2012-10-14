@@ -127,7 +127,7 @@ static enum MAV_RESULT cmd_do_set_mode_handler(mavlink_command_long_t *cl){
 /**
  * parsing and execution of commands from ground
  */
-void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
+static void process_cmd(mavlink_command_long_t *mavlink_command_long_struct){
   enum MAV_RESULT result = MAV_RESULT_DENIED;
 
   /* all this flags defined in MAV_CMD enum */

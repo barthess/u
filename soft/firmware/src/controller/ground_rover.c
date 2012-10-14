@@ -36,31 +36,6 @@ static float const *pulse2m;
  *******************************************************************************
  */
 
-void loiter_ground_rover(void){
-  while (GlobalFlags.mission_loiter){
-    ServoCarThrustSet(128);
-    chThdSleep(MS2ST(20));
-  }
-}
-
-/**
- * k - m in one pulse (got from params)
- *
- *      S      k
- * v = --- = ------------
- *      t    uS / 1000000
- */
-float calc_ground_rover_speed(uint32_t rtt){
-
-  uint32_t uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
-
-  if (uS == 0)/* prevent division by zero */
-    return 3;
-
-  float t = ((float)uS / 1000000.0);
-  return *pulse2m / t;
-}
-
 /**
  *
  */
@@ -123,6 +98,33 @@ static msg_t ControllerThread(void* arg){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+/**
+ *
+ */
+void loiter_ground_rover(void){
+  while (GlobalFlags.mission_loiter){
+    ServoCarThrustSet(128);
+    chThdSleep(MS2ST(20));
+  }
+}
+
+/**
+ * k - m in one pulse (got from params)
+ *
+ *      S      k
+ * v = --- = ------------
+ *      t    uS / 1000000
+ */
+float calc_ground_rover_speed(uint32_t rtt){
+
+  uint32_t uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
+
+  if (uS == 0)/* prevent division by zero */
+    return 3;
+
+  float t = ((float)uS / 1000000.0);
+  return *pulse2m / t;
+}
 
 /**
  * Start stabilization thread on command from ground.

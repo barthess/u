@@ -131,7 +131,7 @@ static void pwm4plane_cb(PWMDriver *pwmp){
  * @param[in]   n     номер сервы, нумерация с 0.
  * @param[in]   angle отклонение сервы в условных единицах 0..255
  */
-void _servo_set_angle(uint16_t n, uint8_t angle){
+static void _servo_set_angle(uint16_t n, uint8_t angle){
   uint16_t len = 0;
   uint16_t min = 0;
   uint16_t max = 0;

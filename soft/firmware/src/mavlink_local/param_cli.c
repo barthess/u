@@ -97,7 +97,7 @@ static void _param_cli_print(uint32_t i, bool_t need_help){
 /**
  *
  */
-void _param_cli_print_header(void){
+static void _param_cli_print_header(void){
   cli_println("Name            min             value           max");
   cli_println("--------------------------------------------------------------");
 }

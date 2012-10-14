@@ -71,7 +71,7 @@ static float get_degrees(float raw){
 /**
  *
  */
-void process_gyro_data(void){
+static void process_gyro_data(void){
   int32_t gyroX, gyroY, gyroZ;
 
   /* correct placement (we need to swap just x and y axis) and advance to zero offset */
@@ -113,7 +113,7 @@ void process_gyro_data(void){
 /**
  *
  */
-void sort_rxbuff(uint8_t *rxbuf){
+static void sort_rxbuff(uint8_t *rxbuf){
   raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
   raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
