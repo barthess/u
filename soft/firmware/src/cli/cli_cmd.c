@@ -17,6 +17,7 @@
  */
 extern MemoryHeap ThdHeap;
 extern RawData raw_data;
+extern const ShellCmd_t chibiutils[];
 
 /*
  ******************************************************************************
@@ -33,8 +34,7 @@ extern RawData raw_data;
 /**
  *
  */
-Thread* clear_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* clear_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
   cli_print("\033[2J");    // ESC seq for clear entire screen
@@ -45,9 +45,7 @@ Thread* clear_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
 /**
  *
  */
-Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
-
+Thread* echo_clicmd(int argc, const char * const * argv){
   int i = 0;
 
   while (i < argc)
@@ -60,7 +58,7 @@ Thread* echo_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
 /**
  *
  */
-Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* help_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
 
@@ -70,10 +68,10 @@ Thread* help_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
   cli_println("Available commands are:");
   cli_println("-------------------------------------------------------------");
 
-  while(cmdarray[i].name != NULL){
-    cli_print(cmdarray[i].name);
+  while(chibiutils[i].name != NULL){
+    cli_print(chibiutils[i].name);
     cli_print(" - ");
-    cli_println(cmdarray[i].help);
+    cli_println(chibiutils[i].help);
     i++;
   }
 
@@ -105,8 +103,7 @@ static msg_t LoopCmdThread(void *arg){
 /**
  *
  */
-Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* loop_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
 
@@ -121,10 +118,9 @@ Thread* loop_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdar
 /**
  *
  */
-Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* reboot_clicmd(int argc, const char * const * argv){
   (void)argv;
   (void)argc;
-  (void)cmdarray;
   cli_print("System going to reboot now...\r\n");
   chThdSleepMilliseconds(100);
   NVIC_SystemReset();
@@ -134,10 +130,9 @@ Thread* reboot_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmd
 /**
  *
  */
-Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* sleep_clicmd(int argc, const char * const * argv){
   (void)argv;
   (void)argc;
-  (void)cmdarray;
 
   cli_print("System sleeping.\r\n");
   cli_print("Press any key to wake it up.\r\n");
@@ -153,10 +148,9 @@ Thread* sleep_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
 /**
  *
  */
-Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* selftest_clicmd(int argc, const char * const * argv){
   (void)argv;
   (void)argc;
-  (void)cmdarray;
 
   cli_print("GPS - OK\r\nModem - OK\r\nEEPROM - OK\r\nStorage - OK\r\nServos - OK\r\n");
   return NULL;
@@ -165,8 +159,7 @@ Thread* selftest_clicmd(int argc, const char * const * argv, const ShellCmd_t *c
 /**
  *
  */
-Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* uname_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
 
@@ -218,8 +211,7 @@ Thread* uname_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmda
 /**
  *
  */
-Thread* ps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* ps_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
   Thread *curr = NULL;

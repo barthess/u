@@ -64,8 +64,7 @@ static void _cal_cli_mag(void){
 /**
  *
  */
-Thread* cal_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* cal_clicmd(int argc, const char * const * argv){
 
   /* no arguments */
   if (argc == 0)

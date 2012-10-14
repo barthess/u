@@ -73,8 +73,7 @@ static void _wps_cli_help(void){
  * wps 3              print waypoint #3
  * wps 3 10.3 2.0     set waypoint #3 in (10.3,2.0) coordinates
  */
-Thread* wps_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* wps_clicmd(int argc, const char * const * argv){
   int sscanf_status;
   uint16_t seq = 0;
 

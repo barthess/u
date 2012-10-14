@@ -4,6 +4,6 @@
 #define palToggleIrqStormLed() (palTogglePad(GPIOB, GPIOB_LED_R))
 #define palOffIrqStormLed()    (palSetPad(GPIOB, GPIOB_LED_R))
 
-Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
+Thread* irqstorm_clicmd(int argc, const char * const * argv);
 
 #endif /* IRQ_STORM_H_ */

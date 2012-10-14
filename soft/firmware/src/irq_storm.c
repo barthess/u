@@ -340,10 +340,9 @@ Thread* IRQStormStart(void){
 /**
  *
  */
-Thread* irqstorm_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+Thread* irqstorm_clicmd(int argc, const char * const * argv){
   (void)argv;
   (void)argc;
-  (void)cmdarray;
 
   return IRQStormStart();
 }

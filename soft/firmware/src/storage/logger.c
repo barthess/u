@@ -13,7 +13,7 @@
 #define BUFF_SIZE 8192
 
 /* how many spare bytes we have in buffer */
-#define FREE (BUFF_SIZE - BufferOffset)
+#define FREE (BUFF_SIZE - offset)
 
 /* length of timestamp field in mavlink log record */
 #if MAVLINK_LOG_FORMAT
@@ -48,7 +48,7 @@ static uint8_t b1[BUFF_SIZE];
 static uint8_t* CurrentBuffer = b0;
 
 /* offset in current buffer */
-static uint32_t BufferOffset = 0;
+static uint32_t offset = 0;
 
 /* some buffers for mavlink handling */
 static mavlink_message_t mavlink_msgbuf_log;
@@ -88,20 +88,20 @@ static uint8_t* bufferize(uint8_t *payload, uint32_t count){
   uint8_t *ret;
 
   if (FREE > count){
-    memcpy(CurrentBuffer + BufferOffset, payload, count);
-    BufferOffset += count;
+    memcpy(CurrentBuffer + offset, payload, count);
+    offset += count;
     return NULL;
   }
   else{
     /* put in current buffer as much as possible */
-    memcpy(CurrentBuffer + BufferOffset, payload, FREE);
+    memcpy(CurrentBuffer + offset, payload, FREE);
     /* this pointer will be returned as a result of work */
     ret = CurrentBuffer;
     /* switch to free buffer */
     swap_buf();
     /* rest of data put in free buffer */
     memcpy(CurrentBuffer, payload + FREE, count - FREE);
-    BufferOffset = count - FREE;
+    offset = count - FREE;
     return ret;
   }
 }

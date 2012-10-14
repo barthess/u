@@ -139,8 +139,7 @@ systime_t GetTimeInterval(systime_t *last){
 /**
  * Command to handle RTC.
  */
-Thread* date_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  (void)cmdarray;
+Thread* date_cmd(int argc, const char * const * argv){
   struct tm timp;
   time_t tv_sec = 0;
   int sscanf_status;

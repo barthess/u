@@ -161,9 +161,7 @@ static void _param_cli_help(void){
 /**
  * Working with parameters from CLI.
  */
-Thread* param_clicmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-
-  (void)cmdarray;
+Thread* param_clicmd(int argc, const char * const * argv){
   int32_t i = -1;
   param_status_t status;
 

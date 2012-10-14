@@ -24,8 +24,7 @@ extern MemoryHeap ThdHeap;
  * PROTOTYPES
  *******************************************************************************
  */
-int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
-Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray);
+Thread* logout_cmd(int argc, const char * const * argv);
 
 /*
  ******************************************************************************
@@ -33,27 +32,27 @@ Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarr
  ******************************************************************************
  */
 
-static const ShellCmd_t chibiutils[] = {
-    {"clear",     &clear_clicmd,      NULL,  "clear screen"},
-    {"cal",       &cal_clicmd,        NULL,  "start calibration of onboard sensors"},
-    {"date",      &date_cmd,          NULL,  "print and set current date"},
-    {"dcm",       &dcm_clicmd,        NULL,  "print DCM in realtime until ^C pressed"},
-    {"echo",      &echo_clicmd,       NULL,  "echo it's input to terminal"},
-    {"help",      &help_clicmd,       NULL,  "this message"},
-    {"info",      &uname_clicmd,      NULL,  "system information"},
-    {"irqstorm",  &irqstorm_clicmd,   NULL,  "run longterm stability load test"},
-    {"logout",    &logout_cmd,        NULL,  "close shell threads and fork telemtry threads"},
-    {"loop",      &loop_clicmd,       NULL,  "command to test ^C fucntionallity"},
-    {"param",     &param_clicmd,      NULL,  "manage onboard system paramters"},
-    {"ps",        &ps_clicmd,         NULL,  "info about running threads"},
-    {"selftest",  &selftest_clicmd,   NULL,  "exectute selftests (stub)"},
-    {"sensors",   &sensors_clicmd,    NULL,  "get human readable data from onboard sensors"},
-    {"servo",     &servo_clicmd,      NULL,  "change actuators' state during servo limits tuning"},
-    {"sleep",     &sleep_clicmd,      NULL,  "put autopilot board in sleep state (do not use it)"},
-    {"reboot",    &reboot_clicmd,     NULL,  "reboot system. Use with caution!"},
-    {"uname",     &uname_clicmd,      NULL,  "'info' alias"},
-    {"wps",       &wps_clicmd,        NULL,  "simple waypoint interface"},
-    {NULL, NULL, NULL, NULL}/* end marker */
+const ShellCmd_t chibiutils[] = {
+    {"clear",     &clear_clicmd,      "clear screen"},
+    {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
+    {"date",      &date_cmd,          "print and set current date"},
+    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
+    {"echo",      &echo_clicmd,       "echo it's input to terminal"},
+    {"help",      &help_clicmd,       "this message"},
+    {"info",      &uname_clicmd,      "system information"},
+    {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
+    {"logout",    &logout_cmd,        "close shell threads and fork telemtry threads"},
+    {"loop",      &loop_clicmd,       "command to test ^C fucntionallity"},
+    {"param",     &param_clicmd,      "manage onboard system paramters"},
+    {"ps",        &ps_clicmd,         "info about running threads"},
+    {"selftest",  &selftest_clicmd,   "exectute selftests (stub)"},
+    {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
+    {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
+    {"sleep",     &sleep_clicmd,      "put autopilot board in sleep state (do not use it)"},
+    {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
+    {"uname",     &uname_clicmd,      "'info' alias"},
+    {"wps",       &wps_clicmd,        "simple waypoint interface"},
+    {NULL, NULL, NULL}/* end marker */
 };
 
 static SerialDriver *shell_sdp;
@@ -76,7 +75,7 @@ static Thread *shell_tp = NULL;
 /**
  * Search value (pointer to function) by key (name string)
  */
-int32_t cmd_search(const char* key, const ShellCmd_t *cmdarray){
+static int32_t cmd_search(const char* key, const ShellCmd_t *cmdarray){
   uint32_t i = 0;
 
   while (cmdarray[i].name != NULL){
@@ -135,31 +134,20 @@ void cli_print_long(const char * str, int n, int nres){
 // execute callback for microrl library
 // do what you want here, but don't write to argv!!! read only!!
 int execute (int argc, const char * const * argv){
-  if (recursive_execute(argc, argv, chibiutils) == -1){
+  int i = 0;
+
+  /* search first token */
+  i = cmd_search(argv[0], chibiutils);
+  if (i != -1){
     cli_print ("command: '");
     cli_print ((char*)argv[0]);
     cli_print ("' Not found.\n\r");
   }
+  else
+    current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1]);
+
   return 0;
 }
-
-int recursive_execute(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
-  int i = 0;
-
-  /* search first token */
-  i = cmd_search(argv[0], cmdarray);
-
-  /* search token in cmd array */
-  if (i != -1){
-    if (argc > 1)
-      current_cmd_tp = cmdarray[i].func(argc - 1, &argv[1], cmdarray);
-    else
-      current_cmd_tp = cmdarray[i].func(argc - 1, NULL, cmdarray);
-  }
-  return i;
-}
-
-
 
 #ifdef _USE_COMPLETE
 //*****************************************************************************
@@ -261,10 +249,12 @@ static msg_t ShellThread(void *arg){
   return 0;
 }
 
-Thread* logout_cmd(int argc, const char * const * argv, const ShellCmd_t *cmdarray){
+/**
+ *
+ */
+Thread* logout_cmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
-  (void)cmdarray;
 
   *(uint32_t*)ValueSearch("SH_enable") = 0;
 
