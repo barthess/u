@@ -219,16 +219,16 @@ NOT_READY:
   err = f_open(&Log, namebuf, FA_WRITE | FA_CREATE_ALWAYS);
   err_check();
 
-
   /* main write cycle
    * This writer waits msg_t with mavlink message ID. Based on that ID it
    * will pack extern mavlink struct with proper packing function. */
   chMBReset(&logwriter_mb); /* just to be safe */
   setGlobalFlag(GlobalFlags.logger_ready);
-  while TRUE{
+  while (TRUE){
     /* wait ID */
     if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
       if (!sdcIsCardInserted(&SDCD1)){
+        clearGlobalFlag(GlobalFlags.logger_ready);
         remove_handler();
         chMBReset(&logwriter_mb);
         goto NOT_READY;
