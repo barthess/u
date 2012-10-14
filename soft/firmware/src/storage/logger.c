@@ -1,8 +1,5 @@
 #include <string.h>
 
-#include "ch.h"
-#include "hal.h"
-
 #include "uav.h"
 #include "link_sortout.h"
 
@@ -16,7 +13,7 @@
 #define BUFF_SIZE 8192
 
 /* how many spare bytes we have in buffer */
-#define FREE (BUFF_SIZE - offset)
+#define FREE (BUFF_SIZE - BufferOffset)
 
 /* length of timestamp field in mavlink log record */
 #if MAVLINK_LOG_FORMAT
@@ -48,10 +45,10 @@ static uint8_t b0[BUFF_SIZE];
 static uint8_t b1[BUFF_SIZE];
 
 /* pointer to current working buffer */
-static uint8_t* currbuf = b0;
+static uint8_t* CurrentBuffer = b0;
 
 /* offset in current buffer */
-static uint32_t offset = 0;
+static uint32_t BufferOffset = 0;
 
 /* some buffers for mavlink handling */
 static mavlink_message_t mavlink_msgbuf_log;
@@ -74,11 +71,11 @@ static uint8_t recordbuf[RECORD_LEN];
 /**
  * Switch pointer to next free buffer.
  */
-void swap_buf(void){
-  if (currbuf == b0)
-    currbuf = b1;
+static void swap_buf(void){
+  if (CurrentBuffer == b0)
+    CurrentBuffer = b1;
   else
-    currbuf = b0;
+    CurrentBuffer = b0;
 }
 
 
@@ -86,25 +83,25 @@ void swap_buf(void){
  * Fit data to double buffer.
  * return pointer to full buffer or NULL if current buffer is not full
  */
-uint8_t* bufferize(uint8_t *payload, uint32_t count){
+static uint8_t* bufferize(uint8_t *payload, uint32_t count){
 
   uint8_t *ret;
 
   if (FREE > count){
-    memcpy(currbuf + offset, payload, count);
-    offset += count;
+    memcpy(CurrentBuffer + BufferOffset, payload, count);
+    BufferOffset += count;
     return NULL;
   }
   else{
     /* put in current buffer as much as possible */
-    memcpy(currbuf + offset, payload, FREE);
+    memcpy(CurrentBuffer + BufferOffset, payload, FREE);
     /* this pointer will be returned as a result of work */
-    ret = currbuf;
+    ret = CurrentBuffer;
     /* switch to free buffer */
     swap_buf();
     /* rest of data put in free buffer */
-    memcpy(currbuf, payload + FREE, count - FREE);
-    offset = count - FREE;
+    memcpy(CurrentBuffer, payload + FREE, count - FREE);
+    BufferOffset = count - FREE;
     return ret;
   }
 }

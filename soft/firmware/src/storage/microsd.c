@@ -148,7 +148,7 @@ static size_t name_from_time(char *buf){
 /**
  *
  */
-void sync_cb(void *par){
+static void sync_cb(void *par){
   (void)par;
   chSysLockFromIsr();
   chVTSetI(&sync_vt, MS2ST(SYNC_PERIOD), &sync_cb, NULL);
@@ -160,7 +160,7 @@ void sync_cb(void *par){
  * По нескольким критериям определяет, надо ли сбрасывать буфер и при
  * необходимости сбрасывает.
  */
-FRESULT fs_sync(FIL *Log){
+static FRESULT fs_sync(FIL *Log){
   FRESULT err = FR_OK;
 
   if (sync_tmo && fresh_data){
