@@ -211,7 +211,7 @@ static time_t get_sleep_time(void){
 /**
  * refresh deadlines according sleeped time
  */
-void refresh_deadlines(time_t t){
+static void refresh_deadlines(time_t t){
   uint32_t i = 0;
   while (i < TLM_REGISTRY_LEN){
     Registy[i].next_dealine -= t;
@@ -231,16 +231,16 @@ void refresh_deadlines(time_t t){
 /**
  * Update fields in mavlink structures that does not updates itself.
  */
-void update_tlm_data(void){
+static void update_tlm_data(void){
   return;
 }
 
 /**
  *
  */
-static WORKING_AREA(TlmSenderThreadWA, 128);
+static WORKING_AREA(TlmSenderThreadWA, 96);
 static msg_t TlmSenderThread(void *arg) {
-  chRegSetThreadName("TLM_Sender");
+  chRegSetThreadName("TLM_Scheduler");
   (void)arg;
 
   time_t t; /* milliseconds to sleep to next deadline */
