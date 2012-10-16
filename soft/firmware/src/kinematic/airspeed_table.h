@@ -4,7 +4,7 @@
 #define MIN_TEMP   -100 /* celsius / 10 */
 #define MAX_TEMP   400  /* celsius / 10 */
 
-uint16_t zerocomp_table[] = {
+static const uint16_t zerocomp_table[] = {
   34 , // -10 celsius
   34 , // -9.9 celsius
   33 , // -9.8 celsius
