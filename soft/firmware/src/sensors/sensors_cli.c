@@ -57,9 +57,8 @@ static msg_t SensorsCmdThread(void *arg){
 Thread* sensors_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
-  sensor_tp = NULL;
 
-  Thread *sensor_tp = chThdCreateFromHeap(&ThdHeap,
+  sensor_tp = chThdCreateFromHeap(&ThdHeap,
                                   sizeof(SensorsCmdThreadWA),
                                   CMD_THREADS_PRIO - 1,
                                   SensorsCmdThread,

@@ -104,7 +104,7 @@ static void _dcm_cli_help(void){
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-
+static Thread *dcm_clicmd_tp = NULL;
 /**
  * Working with parameters from CLI.
  */
@@ -114,12 +114,18 @@ Thread* dcm_clicmd(int argc, const char * const * argv){
 
   /* no arguments */
   if (argc == 0){
-    return chThdCreateFromHeap(
-        &ThdHeap,
-        sizeof(DcmPrintTreadWA),
-        NORMALPRIO,
-        DcmPrintTread,
-        NULL);
+    dcm_clicmd_tp = chThdCreateFromHeap(
+                    &ThdHeap,
+                    sizeof(DcmPrintTreadWA),
+                    NORMALPRIO,
+                    DcmPrintTread,
+                    NULL);
+    if (dcm_clicmd_tp == NULL){
+      chDbgPanic("can not allocate memory");
+      return NULL;
+    }
+    else
+      return dcm_clicmd_tp;
   }
   else
     _dcm_cli_help();

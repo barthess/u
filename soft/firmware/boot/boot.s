@@ -1,5 +1,6 @@
 .syntax unified
 /*b.w 0xDFFFC*/
 
-LDR.W   r0, 0xD
-BX      r0
+mov.w r3, #0
+movt r3, #2060  //0x80c
+bx r3

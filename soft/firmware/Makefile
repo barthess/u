@@ -44,7 +44,7 @@ endif
 # Enables the use of FPU on Cortex-M4.
 # Enable this if you really want to use the STM FWLib.
 ifeq ($(USE_FPU),)
-  USE_FPU = yes
+  USE_FPU = no
 endif
 
 # Enable this if you really want to use the STM FWLib.
@@ -74,8 +74,8 @@ include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
-LDSCRIPT= STM32F407xG_flash_end.ld
-#LDSCRIPT= $(PORTLD)/STM32F407xG.ld
+#LDSCRIPT= STM32F407xG_flash_end.ld
+LDSCRIPT= $(PORTLD)/STM32F407xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

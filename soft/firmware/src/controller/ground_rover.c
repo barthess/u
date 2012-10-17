@@ -27,6 +27,7 @@ extern MemoryHeap ThdHeap;
  */
 static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
 static float const *pulse2m;
+static Thread *groundrover_tp = NULL;
 
 /*
  *******************************************************************************
@@ -239,14 +240,15 @@ Thread *ControllerGroundRoverInit(void){
   PlannerInit();
   StabInit();
 
-  Thread *tp = NULL;
-  tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
+  groundrover_tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
                             NULL);
-  if (tp == NULL)
-    chDbgPanic("Can not allocate memory");
-
-  return tp;
+  if (groundrover_tp == NULL){
+    chDbgPanic("can not allocate memory");
+    return NULL;
+  }
+  else
+    return groundrover_tp;
 }
 

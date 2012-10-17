@@ -37,6 +37,8 @@ extern MemoryHeap ThdHeap;
 /* Test related code.                                                        */
 /*===========================================================================*/
 
+static Thread *irqstorm_tp = NULL;
+
 #define MSG_SEND_LEFT   0
 #define MSG_SEND_RIGHT  1
 
@@ -330,11 +332,15 @@ Thread* IRQStormStart(void){
   gptStart(&IRQSTROM_GPTD1, &gpt1cfg);
   gptStart(&IRQSTROM_GPTD2, &gpt2cfg);
 
-  return chThdCreateFromHeap(&ThdHeap,
+  irqstorm_tp = chThdCreateFromHeap(&ThdHeap,
                              sizeof(StormTreadWA),
                              NORMALPRIO,
                              StormTread,
                              NULL);
+  if (irqstorm_tp == NULL)
+    chDbgPanic("Can not allocate memory");
+
+  return irqstorm_tp;
 }
 
 /**

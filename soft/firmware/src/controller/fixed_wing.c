@@ -24,6 +24,7 @@ extern MemoryHeap ThdHeap;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static Thread *fixedwing_tp = NULL;
 
 /*
  *******************************************************************************
@@ -73,8 +74,6 @@ static msg_t ControllerThread(void* arg){
  */
 Thread *ControllerFixedWingInit(void){
 
-  Thread *tp = NULL;
-
   ServoInit();
 
   Servo0Set(128);
@@ -86,12 +85,14 @@ Thread *ControllerFixedWingInit(void){
   Servo6Set(128);
   Servo7Set(128);
 
-  tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
+  fixedwing_tp = chThdCreateFromHeap(&ThdHeap, sizeof(ControllerThreadWA),
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
                             NULL);
-  if (tp == NULL)
-    chDbgPanic("Can not allocate memory");
-
-  return tp;
+  if (fixedwing_tp == NULL){
+    chDbgPanic("can not allocate memory");
+    return NULL;
+  }
+  else
+    return fixedwing_tp;
 }

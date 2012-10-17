@@ -38,6 +38,7 @@ extern mavlink_mission_ack_t      mavlink_mission_ack_struct;
  ******************************************************************************
  */
 static Mail mission_out_mail = {NULL, MAVLINK_MSG_ID_MISSION_COUNT, NULL};
+static Thread *planner_tp = NULL;
 
 /*
  ******************************************************************************
@@ -273,15 +274,16 @@ Thread* PlannerInit(void){
 
   MavlinkWpmInit();
 
-  Thread *tp = NULL;
-
-  tp = chThdCreateStatic(PlannerThreadWA,
+  planner_tp = chThdCreateStatic(PlannerThreadWA,
                         sizeof(PlannerThreadWA),
                         CONTROLLER_THREADS_PRIO,
                         PlannerThread,
                         NULL);
-  if (tp == NULL)
-    chDbgPanic("Can not allocate memory");
 
-  return tp;
+  if (planner_tp == NULL){
+    chDbgPanic("can not allocate memory");
+    return NULL;
+  }
+  else
+    return planner_tp;
 }

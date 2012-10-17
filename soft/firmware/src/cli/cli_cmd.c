@@ -23,6 +23,7 @@ extern RawData raw_data;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static Thread *loop_clicmd_tp;
 
 /*
  *******************************************************************************
@@ -83,12 +84,18 @@ Thread* loop_clicmd(int argc, const char * const * argv){
   (void)argc;
   (void)argv;
 
-  Thread *tp = chThdCreateFromHeap(&ThdHeap,
+  loop_clicmd_tp = chThdCreateFromHeap(&ThdHeap,
                                   sizeof(LoopCmdThreadWA),
                                   CMD_THREADS_PRIO - 1,
                                   LoopCmdThread,
                                   NULL);
-  return tp;
+
+  if (loop_clicmd_tp == NULL){
+    chDbgPanic("can not allocate memory");
+    return NULL;
+  }
+  else
+    return loop_clicmd_tp;
 }
 
 /**

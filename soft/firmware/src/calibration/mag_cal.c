@@ -29,7 +29,7 @@ extern mavlink_system_t mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* sums for offset calibration */
+static Thread *mag_cal_tp;
 static BinarySemaphore mag_cal_sem;
 
 /*
@@ -182,16 +182,16 @@ void mag_stat_update(void){
 Thread* MagCalStart(void){
   chBSemInit(&mag_cal_sem,  TRUE);
 
-  Thread *tp = NULL;
-  tp = chThdCreateFromHeap(&ThdHeap,
+  mag_cal_tp = NULL;
+  mag_cal_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(MagCalThreadWA),
                             NORMALPRIO,
                             MagCalThread,
                             NULL);
-  if (tp == NULL){
+  if (mag_cal_tp == NULL){
     chDbgPanic("can not allocate memory");
     return NULL;
   }
   else
-    return tp;
+    return mag_cal_tp;
 }

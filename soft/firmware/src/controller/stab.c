@@ -49,6 +49,7 @@ static pid_f32_t  headingPid;
 static pid_f32_t  xtrackPid;
 
 static float const *speed_min;
+static Thread *stab_tp = NULL;
 
 /*
  ******************************************************************************
@@ -194,16 +195,16 @@ Thread* StabInit(void){
   xtrackPid.iMin   = ValueSearch("XTRACK_iMin");
   xtrackPid.iMax   = ValueSearch("XTRACK_iMax");
 
-  Thread *tp = NULL;
-
-  tp = chThdCreateStatic(StabThreadWA, sizeof(StabThreadWA),
+  stab_tp = chThdCreateStatic(StabThreadWA, sizeof(StabThreadWA),
                          CONTROLLER_THREADS_PRIO,
                          StabThread,
                          NULL);
-  if (tp == NULL)
-    chDbgPanic("Can not allocate memory");
-
-  return tp;
+  if (stab_tp == NULL){
+    chDbgPanic("can not allocate memory");
+    return NULL;
+  }
+  else
+    return stab_tp;
 }
 
 /**
