@@ -23,6 +23,8 @@ extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static uint8_t rxbuf[TMP75_RX_DEPTH];
+static uint8_t txbuf[TMP75_TX_DEPTH];
 
 /*
  *******************************************************************************
@@ -39,13 +41,6 @@ static WORKING_AREA(PollTmp75ThreadWA, 256);
 static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("PollTmp75");
   (void)arg;
-  uint8_t rxbuf[TMP75_RX_DEPTH];
-  uint8_t txbuf[TMP75_TX_DEPTH];
-
-  txbuf[0] = 0b00000001; // point to Configuration Register
-  /* enable autoshutdown, to reduce auto warmup of sensor */
-  txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
-  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
 
   while (TRUE) {
     txbuf[0] = 1; // point to Configuration Register
@@ -96,6 +91,11 @@ R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.*/
 
 void init_tmp75(void){
+  txbuf[0] = 0b00000001; // point to Configuration Register
+  /* enable autoshutdown, to reduce auto warmup of sensor */
+  txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
+  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),
           I2C_THREADS_PRIO,

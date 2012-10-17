@@ -32,8 +32,7 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
-//#define CORTEX_VTOR_INIT                0xC0000
-//#define CORTEX_USE_FPU                  TRUE
+#define CORTEX_VTOR_INIT                0xC0000
 #define CORTEX_ENABLE_WFI_IDLE          FALSE
 
 /*===========================================================================*/
