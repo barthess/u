@@ -76,11 +76,11 @@ void SensorsInit(void){
   ADCInit_local();
 
   /* start different I2C sensors */
-  init_mma8451(&mma8451_sem);
-  init_tmp75();
-  init_max1236();
-  init_mag3110(&mag3110_sem);
-  init_bmp085(&bmp085_sem);
+//  init_mma8451(&mma8451_sem);
+//  init_tmp75();
+//  init_max1236();
+//  init_mag3110(&mag3110_sem);
+//  init_bmp085(&bmp085_sem);
   init_itg3200(&itg3200_sem, &imu_sem);
 
   ImuInit(&imu_sem);

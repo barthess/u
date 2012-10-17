@@ -21,6 +21,7 @@ Giovanni
 
 // TODO: add autotests for I2C sensors
 // TODO: logrotate functionality and log compression
+// TODO: cli to format, ls, rm
 
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.

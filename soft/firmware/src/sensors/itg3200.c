@@ -142,6 +142,7 @@ static msg_t PollGyroThread(void *semp){
       chDbgAssert(retry > 0, "PollGyroThread(), #1",
           "probably no interrupts from gyro");
     }
+    //chThdSleepMilliseconds(1);
     txbuf[0] = GYRO_OUT_DATA;     // register address
     i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
     sort_rxbuff(rxbuf);
@@ -231,7 +232,7 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
-          I2C_THREADS_PRIO + 2,
+          GYRO_THREADS_PRIO,
           PollGyroThread,
           itg3200_semp);
   chThdSleepMilliseconds(2);

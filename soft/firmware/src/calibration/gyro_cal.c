@@ -108,7 +108,7 @@ Thread* GyroCalStart(void){
 
   GyroCal_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(GyroCalThreadWA),
-                            NORMALPRIO,
+                            GYRO_THREADS_PRIO - 1,
                             GyroCalThread,
                             NULL);
   if (GyroCal_tp == NULL){

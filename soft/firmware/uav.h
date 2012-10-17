@@ -80,6 +80,7 @@
 /******************************************************************
  * приоритеты для потоков */
 #define I2C_THREADS_PRIO          (NORMALPRIO + 5)
+#define GYRO_THREADS_PRIO         (I2C_THREADS_PRIO + 2)
 #define TIMEKEEPER_THREAD_PRIO    (I2C_THREADS_PRIO - 1)
 #define LINK_THREADS_PRIO         (NORMALPRIO - 5)
 #define CONTROLLER_THREADS_PRIO   (NORMALPRIO)
