@@ -32,8 +32,8 @@ extern const mavlink_system_t mavlink_system_struct;
  */
 static uint32_t const *bat_cap;       /* battery capacitance in A*mS */
 static uint32_t const *bat_fill;      /* battery filling in A*mS */
-static uint32_t const *adc_I_b;    // коэффициент пересчета из условных единиц в амперы для саломёта -- 37, для машинки -- 1912
-static uint32_t const *adc_I_k;  // смещение нуля датчика тока в единицах АЦП
+static uint32_t const *adc_I_b;
+static uint32_t const *adc_I_k;
 static uint32_t const *adc_sv_gain;   /* secondary voltage gain */
 static uint32_t const *adc_mv_gain;   /* main voltage gain */
 

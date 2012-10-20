@@ -150,9 +150,9 @@ static msg_t MagCalThread(void *arg){
 
   /* all points got. Calculate sphere */
   SolveSphere(&S, P);
-  *(int32_t *)(ValueSearch("MAG_xoffset")) = floorf(S.c[0]);
-  *(int32_t *)(ValueSearch("MAG_yoffset")) = floorf(S.c[1]);
-  *(int32_t *)(ValueSearch("MAG_zoffset")) = floorf(S.c[2]);
+  *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
+  *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
+  *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
   mavlink_dbg_print(0, "MAG: calibration finished");
 
 TERMINATE:
