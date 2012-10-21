@@ -134,11 +134,11 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
   mavlink_msg_to_send_buffer(recordbuf + TIME_LEN, &mavlink_msgbuf_log);
   memcpy(recordbuf, &timestamp, TIME_LEN);
   fs_buf = bufferize(recordbuf, RECORD_LEN);
-#else
+#else /* MAVLINK_LOG_FORMAT */
   uint16_t len = 0;
   len = mavlink_msg_to_send_buffer(recordbuf, &mavlink_msgbuf_log);
   fs_buf = bufferize(recordbuf, len);
-#endif
+#endif /* MAVLINK_LOG_FORMAT */
 
   if (fs_buf != NULL){
     err = f_write(Log, fs_buf, BUFF_SIZE, (void *)&bytes_written);

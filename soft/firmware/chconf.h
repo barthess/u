@@ -34,6 +34,7 @@
 
 #define CORTEX_VTOR_INIT                0xC0000
 #define CORTEX_ENABLE_WFI_IDLE          FALSE
+//#define CORTEX_PRIORITY_SYSTICK         2
 
 /*===========================================================================*/
 /* Kernel parameters.                                                        */
@@ -108,7 +109,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_OPTIMIZE_SPEED) || defined(__DOXYGEN__)
-#define CH_OPTIMIZE_SPEED               TRUE
+#define CH_OPTIMIZE_SPEED               FALSE
 #endif
 
 /*===========================================================================*/
@@ -167,7 +168,7 @@
  * @note    Requires @p CH_USE_SEMAPHORES.
  */
 #if !defined(CH_USE_SEMSW) || defined(__DOXYGEN__)
-#define CH_USE_SEMSW                    TRUE
+#define CH_USE_SEMSW                    FALSE
 #endif
 
 /**
@@ -177,7 +178,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_USE_MUTEXES) || defined(__DOXYGEN__)
-#define CH_USE_MUTEXES                  FALSE
+#define CH_USE_MUTEXES                  TRUE
 #endif
 
 /**

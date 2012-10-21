@@ -9,6 +9,7 @@
  ******************************************************************************
  */
 #define itg3200addr   0b1101000
+#define GYRO_TIMEOUT  MS2ST(50)
 
 /*
  ******************************************************************************
@@ -114,7 +115,7 @@ static void process_gyro_data(void){
  *
  */
 static void sort_rxbuff(uint8_t *rxbuf){
-  raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
+  //raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
   raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
   raw_data.zgyro      = complement2signed(rxbuf[6], rxbuf[7]);
@@ -136,11 +137,10 @@ static msg_t PollGyroThread(void *semp){
   const uint32_t decimator = 0b11;
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, TIME_INFINITE);
+    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, GYRO_TIMEOUT);
     if (sem_status != RDY_OK){
       retry--;
-      chDbgAssert(retry > 0, "PollGyroThread(), #1",
-          "probably no interrupts from gyro");
+      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
     //chThdSleepMilliseconds(1);
     txbuf[0] = GYRO_OUT_DATA;     // register address
@@ -154,7 +154,7 @@ static msg_t PollGyroThread(void *semp){
       gyro_stat_update();
     }
     else{ /* thread collected all needed data and termintaed itself */
-      if (cal_tp != NULL && cal_tp->p_state == THD_STATE_FINAL){
+      if ((cal_tp != NULL) && (cal_tp->p_state == THD_STATE_FINAL)){
         chThdWait(cal_tp);
         cal_tp = NULL;
       }
@@ -211,31 +211,28 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
-  while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
-  chThdSleepMilliseconds(55);
+  i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0);
+  chThdSleepMilliseconds(60);
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 1; /* select clock source */
-  while (i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
-  chThdSleepMilliseconds(2);
+  i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0);
+  chThdSleepMilliseconds(5);
 
   txbuf[0] = GYRO_SMPLRT_DIV;
   txbuf[1] = 9; /* sample rate. Approximatelly (1000 / (9 + 1)) = 100Hz*/
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота среза внутреннего фильтра */
   //txbuf[3] = 0b00110001; /* configure and enable interrupts */
   txbuf[3] = 0b00010001; /* configure and enable interrupts */
-  while (i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0) != RDY_OK)
-    ;
+  i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0);
 
-  chThdSleepMilliseconds(2);
+  /**/
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
+          //I2C_THREADS_PRIO,
           GYRO_THREADS_PRIO,
           PollGyroThread,
           itg3200_semp);
-  chThdSleepMilliseconds(2);
 
   /* fireup calibration */
   setGlobalFlag(GlobalFlags.gyro_cal);

@@ -180,6 +180,12 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   chSysUnlockFromIsr();
 }
 
+static void pvd_cb(EXTDriver *extp, expchannel_t channel){
+  (void)extp;
+  (void)channel;
+  //chDbgPanic("");
+}
+
 /**
  *
  */
@@ -201,7 +207,7 @@ static const EXTConfig extcfg = {
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOE, mma8451_int2_cb},//15
-    {EXT_CH_MODE_DISABLED, NULL},//PVD
+    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART, pvd_cb},//PVD
     {EXT_CH_MODE_RISING_EDGE, rtcalarm_cb},// RTC alarms
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},

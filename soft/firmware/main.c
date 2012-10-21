@@ -20,8 +20,8 @@ Giovanni
 */
 
 // TODO: add autotests for I2C sensors
-// TODO: logrotate functionality and log compression
-// TODO: cli to format, ls, rm
+// TODO: log compressed format
+// TODO: cli for format, ls, rm
 
 // TODO: rewrite stab code in general case using aviation formulae.
 // TODO: probably migrate from float32 to double in coordinate calculations.
@@ -96,7 +96,7 @@ int main(void) {
   chBSemInit(&rtc_sem, TRUE);
   chBSemInit(&servo_updated_sem, TRUE);
 
-  //chThdSleepMilliseconds(200);
+  chThdSleepMilliseconds(200);
 
   /* give power to all needys */
   pwr5v_power_on();

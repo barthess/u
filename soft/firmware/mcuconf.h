@@ -38,7 +38,7 @@
  * HAL driver system settings.
  */
 #define STM32_NO_INIT                       FALSE
-#define STM32_PLS                           STM32_PLS_LEV0
+#define STM32_PLS                           STM32_PLS_LEV7
 #define STM32_PVD_ENABLE                    TRUE
 #define STM32_HSI_ENABLED                   TRUE
 #define STM32_LSI_ENABLED                   FALSE
@@ -47,10 +47,10 @@
 #define STM32_CLOCK48_REQUIRED              TRUE
 #define STM32_SW                            STM32_SW_PLL
 #define STM32_PLLSRC                        STM32_PLLSRC_HSE
-#include "PLL_96MHz.h"
+#include "PLL_168MHz.h"
 #define STM32_HPRE                          STM32_HPRE_DIV1
-#define STM32_PPRE1                         STM32_PPRE1_DIV4
-#define STM32_PPRE2                         STM32_PPRE2_DIV2
+#define STM32_PPRE1                         STM32_PPRE1_DIV4//prew 4
+#define STM32_PPRE2                         STM32_PPRE2_DIV2//prew 2
 #define STM32_RTCSEL                        STM32_RTCSEL_LSE
 #define STM32_RTCPRE_VALUE                  8
 #define STM32_MCO1SEL                       STM32_MCO1SEL_HSI
@@ -76,10 +76,10 @@
 #define STM32_ADC_ADC1_DMA_PRIORITY         0
 #define STM32_ADC_ADC2_DMA_PRIORITY         0
 #define STM32_ADC_ADC3_DMA_PRIORITY         0
-#define STM32_ADC_IRQ_PRIORITY              15
-#define STM32_ADC_ADC1_DMA_IRQ_PRIORITY     15
-#define STM32_ADC_ADC2_DMA_IRQ_PRIORITY     15
-#define STM32_ADC_ADC3_DMA_IRQ_PRIORITY     15
+#define STM32_ADC_IRQ_PRIORITY              12
+#define STM32_ADC_ADC1_DMA_IRQ_PRIORITY     12
+#define STM32_ADC_ADC2_DMA_IRQ_PRIORITY     12
+#define STM32_ADC_ADC3_DMA_IRQ_PRIORITY     12
 
 /*
  * CAN driver system settings.
@@ -96,7 +96,7 @@
 #define STM32_EXT_EXTI3_IRQ_PRIORITY        10
 #define STM32_EXT_EXTI4_IRQ_PRIORITY        10
 #define STM32_EXT_EXTI5_9_IRQ_PRIORITY      10
-#define STM32_EXT_EXTI10_15_IRQ_PRIORITY    7 // gyroscope
+#define STM32_EXT_EXTI10_15_IRQ_PRIORITY    10 // gyroscope
 #define STM32_EXT_EXTI16_IRQ_PRIORITY       10
 #define STM32_EXT_EXTI17_IRQ_PRIORITY       15 // RTC alarm
 #define STM32_EXT_EXTI18_IRQ_PRIORITY       10

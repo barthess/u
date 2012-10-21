@@ -21,6 +21,8 @@
 /* interface #2 */
 static const I2CConfig i2cfg2 = {
     OPMODE_I2C,
+//    350000,
+//    FAST_DUTY_CYCLE_2,
     400000,
     FAST_DUTY_CYCLE_2,
 //    100000,

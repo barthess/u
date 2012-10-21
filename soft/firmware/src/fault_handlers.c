@@ -167,6 +167,12 @@ void Vector28(void) {
 void MemManageVector(void) {
   my_fault();
 }
+volatile uint32_t rcc_cir = 0;
+void NMIVector(void) {
+  rcc_cir = RCC->CIR;
+  my_fault();
+  (void)rcc_cir;
+}
 void BusFaultVector(void) {
   my_fault();
 }

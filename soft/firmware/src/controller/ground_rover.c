@@ -118,7 +118,8 @@ void loiter_ground_rover(void){
  */
 float calc_ground_rover_speed(uint32_t rtt){
 
-  uint32_t uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
+  uint32_t uS = 0;
+  uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
 
   if (uS == 0)/* prevent division by zero */
     return 3;
