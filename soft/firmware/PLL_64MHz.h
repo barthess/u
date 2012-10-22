@@ -4,3 +4,4 @@
 #define STM32_PLLQ_VALUE                    2
 
 #define STM32_VOS                           STM32_VOS_LOW
+//SYS_CLK = ((in / M) * N) / P
