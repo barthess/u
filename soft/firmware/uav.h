@@ -19,7 +19,7 @@
 #include "controller.h"
 #include "dcm_cli.h"
 #include "dsp.h"
-#include "eeprom.h"
+#include "eeprom_file.h"
 #include "exti_local.h"
 #include "fixed_wing.h"
 #include "geometry.h"

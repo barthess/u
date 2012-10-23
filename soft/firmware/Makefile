@@ -30,7 +30,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = no
+  USE_VERBOSE_COMPILE = yes
 endif
 
 #
@@ -141,7 +141,8 @@ CSRC = $(PORTSRC) \
        src/link/link_sortin.c \
        src/link/tlm_sender.c \
        src/eeprom/24aa.c \
-       src/eeprom/eeprom.c \
+       src/eeprom/eeprom_file.c \
+       src/eeprom/eeprom_block.c \
        src/eeprom/eeprom_testsuit.c \
        src/controller/controller.c \
        src/controller/ground_rover.c \
@@ -234,10 +235,10 @@ MCU  = cortex-m4 -lm
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-
-CC   = ccache $(TRGT)gcc
-CPPC = ccache $(TRGT)g++
-#CC   = $(TRGT)gcc
-#CPPC = $(TRGT)g++
+#CC   = ccache $(TRGT)gcc
+#CPPC = ccache $(TRGT)g++
+CC   = $(TRGT)gcc
+CPPC = $(TRGT)g++
 #TRGT = ""
 #CC   = $(TRGT)clang
 #CPPC = $(TRGT)clang++

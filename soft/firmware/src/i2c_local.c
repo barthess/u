@@ -1,5 +1,7 @@
 #include "uav.h"
 
+#include "eeprom_block.h"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -33,6 +35,19 @@ static const I2CConfig i2cfg2 = {
 
 static i2cflags_t flags;
 
+
+
+static I2CEeepromBlockDevice bd;
+static const I2CEepromConfig i2c_eeprom_cfg = {
+    65536,
+    &I2CD2,
+    MS2ST(20),
+    0b1010000,
+    128,
+};
+
+
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -42,6 +57,9 @@ static i2cflags_t flags;
  *
  */
 void I2CInitLocal(void){
+
+  I2CEepromBlockInit(&bd, &i2c_eeprom_cfg);
+
   i2cStart(&I2CD2, &i2cfg2);
   ParametersInit(); /* read parameters from EEPROM via I2C*/
 }
