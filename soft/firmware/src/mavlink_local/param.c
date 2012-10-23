@@ -24,6 +24,9 @@
  * EXTERNS
  ******************************************************************************
  */
+
+EepromFileStream EepromSettingsFile;
+
 extern GlobalFlags_t GlobalFlags;
 extern Mailbox mavlink_param_set_mb;
 extern Mailbox tolink_mb;
@@ -227,6 +230,20 @@ const GlobalParam_t GlobalParam[] = {
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+
+static uint8_t eeprom_buf[EEPROM_TX_DEPTH];
+
+static const I2CEepromFileConfig eeprom_settings_cfg = {
+  &EEPROM_I2CD,
+  EEPROM_SETTINGS_START,
+  EEPROM_SETTINGS_END,
+  EEPROM_SIZE,
+  EEPROM_PAGE_SIZE,
+  EEPROM_I2C_ADDR,
+  MS2ST(EEPROM_WRITE_TIME_MS),
+  FALSE,
+  eeprom_buf,
+};
 
 /*
  *******************************************************************************
@@ -546,6 +563,9 @@ void ParametersInit(void){
   len += sizeof(GlobalParam[0].valuep);
   if (OnboardParamCount * len > EEPROM_SETTINGS_SIZE)
     chDbgPanic("not enough space in EEPROM settings slice");
+
+  /* open EEPROM region as file */
+  EepromFileOpen(&EepromSettingsFile, &eeprom_settings_cfg);
 
   /* read data from eeprom to memory mapped structure */
   load_params_from_eeprom();

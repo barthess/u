@@ -19,7 +19,7 @@
 #include "controller.h"
 #include "dcm_cli.h"
 #include "dsp.h"
-#include "eeprom_file.h"
+#include "eeprom.h"
 #include "exti_local.h"
 #include "fixed_wing.h"
 #include "geometry.h"
@@ -148,18 +148,27 @@ typedef struct GlobalFlags_t{
 #endif
 
 
-/******************************************************************
-* data offsets and sizes in eeprom "file" */
+/******************************************************************/
+#define EEPROM_PAGE_SIZE      128         /* page size in bytes. Consult datasheet. */
+#define EEPROM_SIZE           65536       /* total amount of memory in bytes */
+#define EEPROM_I2CD           I2CD2       /* ChibiOS I2C driver used to communicate with EEPROM */
+#define EEPROM_I2C_ADDR       0b1010000   /* EEPROM address on bus */
+#define EEPROM_WRITE_TIME_MS  20          /* time to write one page in mS. Consult datasheet! */
+#define EEPROM_TX_DEPTH       (EEPROM_PAGE_SIZE + 2)/* temporal transmit buffer depth for eeprom driver */
+
+/* region for settings file */
 #define EEPROM_SETTINGS_START         8192
 #define EEPROM_SETTINGS_SIZE          4096
+#define EEPROM_SETTINGS_END           (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
 
-/* waypoints count saved here */
-#define EEPROM_MISSION_WP_CNT_OFFSET  (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
+/* region for waypoints file */
+#define EEPROM_MISSION_WP_CNT_OFFSET  EEPROM_SETTINGS_END
 /* size in byte of waypoint count variable */
 #define EEPROM_MISSION_WP_CNT_SIZE    2
 /* actual waypoints offset */
 #define EEPROM_MISSION_START          (EEPROM_MISSION_WP_CNT_OFFSET + EEPROM_MISSION_WP_CNT_SIZE)
 #define EEPROM_MISSION_SIZE           (8192 - EEPROM_MISSION_WP_CNT_SIZE)
+#define EEPROM_MISSION_END            (EEPROM_MISSION_START + EEPROM_MISSION_SIZE)
 
 /******************************************************************
 * дефайны для модема */

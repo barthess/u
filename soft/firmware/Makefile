@@ -6,7 +6,7 @@
 # Compiler options here.
 ifeq ($(USE_OPT),)
   #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
+  USE_OPT = -O1 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
   #USE_OPT = -O0 -ggdb -fomit-frame-pointer -std=gnu99
   #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
   #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
@@ -30,7 +30,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = yes
+  USE_VERBOSE_COMPILE = no
 endif
 
 #
@@ -140,9 +140,7 @@ CSRC = $(PORTSRC) \
        src/link/link_sortout.c \
        src/link/link_sortin.c \
        src/link/tlm_sender.c \
-       src/eeprom/24aa.c \
-       src/eeprom/eeprom_file.c \
-       src/eeprom/eeprom_block.c \
+       src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
        src/controller/controller.c \
        src/controller/ground_rover.c \
@@ -235,10 +233,10 @@ MCU  = cortex-m4 -lm
 
 #TRGT = arm-elf-
 TRGT = arm-none-eabi-
-#CC   = ccache $(TRGT)gcc
-#CPPC = ccache $(TRGT)g++
-CC   = $(TRGT)gcc
-CPPC = $(TRGT)g++
+CC   = ccache $(TRGT)gcc
+CPPC = ccache $(TRGT)g++
+#CC   = $(TRGT)gcc
+#CPPC = $(TRGT)g++
 #TRGT = ""
 #CC   = $(TRGT)clang
 #CPPC = $(TRGT)clang++

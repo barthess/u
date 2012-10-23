@@ -55,9 +55,6 @@ struct tm gps_timp;
 /* some global flags */
 GlobalFlags_t GlobalFlags;
 
-/* EEPROM "file" */
-EepromFileStream EepromFile;
-
 /* heap for some threads */
 MemoryHeap ThdHeap;
 static uint8_t link_thd_buf[THREAD_HEAP_SIZE + sizeof(stkalign_t)];
@@ -105,8 +102,6 @@ int main(void) {
   xbee_sleep_clear();
 
   chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
-
-  EepromOpen(&EepromFile);
 
   MavlinkDbgPrintInit();
   MsgInit();

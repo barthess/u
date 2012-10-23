@@ -17,7 +17,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern EepromFileStream EepromFile;
+extern EepromFileStream EepromSettingsFile;
 extern GlobalParam_t GlobalParam[];
 extern int32_t OnboardParamCount;
 
@@ -50,12 +50,12 @@ bool_t load_params_from_eeprom(void){
   uint32_t status = 0;
   uint32_t v = 0;
 
-  chFileStreamSeek(&EepromFile, EEPROM_SETTINGS_START);
+  chFileStreamSeek(&EepromSettingsFile, 0);
 
   for (i = 0; i < OnboardParamCount; i++){
 
     /* reade field from EEPROM and check number of red bytes */
-    status = chFileStreamRead(&EepromFile, eeprombuf, sizeof(eeprombuf));
+    status = chFileStreamRead(&EepromSettingsFile, eeprombuf, sizeof(eeprombuf));
     if (status < sizeof(eeprombuf)){
       chDbgPanic("");
       return PARAM_FAILED;
@@ -63,12 +63,12 @@ bool_t load_params_from_eeprom(void){
 
     /* search value by key and set it if found */
     index = key_index_search((char *)eeprombuf);
-      if (index != -1){
-        v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
-            eeprombuf[PARAM_ID_SIZE + 1] << 16 |
-            eeprombuf[PARAM_ID_SIZE + 2] << 8 |
-            eeprombuf[PARAM_ID_SIZE + 3];
-      }
+    if (index != -1){
+      v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
+          eeprombuf[PARAM_ID_SIZE + 1] << 16 |
+          eeprombuf[PARAM_ID_SIZE + 2] << 8 |
+          eeprombuf[PARAM_ID_SIZE + 3];
+    }
 
     /* check value acceptability and set it */
     set_global_param(&v, &(GlobalParam[i]));
@@ -84,9 +84,7 @@ bool_t save_params_to_eeprom(void){
   uint32_t status = 0;
   uint32_t v = 0;
 
-  chFileStreamSeek(&EepromFile, EEPROM_SETTINGS_START);
-  if (chFileStreamGetPosition(&EepromFile) != EEPROM_SETTINGS_START)
-    chDbgPanic("seek failed");
+  chFileStreamSeek(&EepromSettingsFile, 0);
 
   for (i = 0; i < OnboardParamCount; i++){
 
@@ -102,14 +100,14 @@ bool_t save_params_to_eeprom(void){
     eeprombuf[PARAM_ID_SIZE + 2] = (v >> 8)  & 0xFF;
     eeprombuf[PARAM_ID_SIZE + 3] = (v >> 0)  & 0xFF;
 
-    status = chFileStreamWrite(&EepromFile, eeprombuf, sizeof(eeprombuf));
+    status = chFileStreamWrite(&EepromSettingsFile, eeprombuf, sizeof(eeprombuf));
     if (status < sizeof(eeprombuf))
       chDbgPanic("write failed");
 
     /* check written data */
-    chFileStreamSeek(&EepromFile, chFileStreamGetPosition(&EepromFile) - sizeof(eeprombuf));
+    chFileStreamSeek(&EepromSettingsFile, chFileStreamGetPosition(&EepromSettingsFile) - sizeof(eeprombuf));
     uint8_t tmpbuf[sizeof(eeprombuf)];
-    status = chFileStreamRead(&EepromFile, tmpbuf, sizeof(tmpbuf));
+    status = chFileStreamRead(&EepromSettingsFile, tmpbuf, sizeof(tmpbuf));
     if (memcmp(tmpbuf, eeprombuf, (PARAM_ID_SIZE + sizeof(v))) != 0)
       chDbgPanic("veryfication failed");
 

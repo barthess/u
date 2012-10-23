@@ -31,6 +31,7 @@
  * EXTERNS
  ******************************************************************************
  */
+EepromFileStream EepromWaypointFile;
 
 /*
  ******************************************************************************
@@ -44,6 +45,19 @@
  ******************************************************************************
  */
 //static mavlink_wpm_storage_t wpm;
+static uint8_t eeprom_buf[EEPROM_TX_DEPTH];
+
+static const I2CEepromFileConfig eeprom_waypoint_cfg = {
+  &EEPROM_I2CD,
+  EEPROM_MISSION_WP_CNT_OFFSET,
+  EEPROM_MISSION_END,
+  EEPROM_SIZE,
+  EEPROM_PAGE_SIZE,
+  EEPROM_I2C_ADDR,
+  MS2ST(EEPROM_WRITE_TIME_MS),
+  FALSE,
+  eeprom_buf,
+};
 
 /*
  ******************************************************************************
@@ -78,6 +92,8 @@ void _mavlink_wpm_init(void){
 
 void MavlinkWpmInit(void){
   _mavlink_wpm_init();
+    /* open EEPROM region as file */
+  EepromFileOpen(&EepromWaypointFile, &eeprom_waypoint_cfg);
 }
 
 
