@@ -76,6 +76,8 @@
 #define GPSSD   SD1
 #define SHELLSD LINKSD
 
+/* build test suit for EEPROM abstraction layer */
+#define USE_EEPROM_TEST_SUIT    TRUE
 
 /******************************************************************
  * приоритеты для потоков */

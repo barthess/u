@@ -5,6 +5,10 @@
 
 #include "uav.h"
 
+#if USE_EEPROM_TEST_SUIT
+#include "eeprom_testsuit.h"
+#endif
+
 /*
  ******************************************************************************
  * DEFINES
@@ -53,6 +57,9 @@ static const ShellCmd_t chibiutils[] = {
     {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
     {"uname",     &uname_clicmd,      "'info' alias"},
     {"wps",       &wps_clicmd,        "simple waypoint interface"},
+    #if USE_EEPROM_TEST_SUIT
+    {"eepromtest",&eepromtest_clicmd, "run EEPROM testsuit. Uses lots of RAM"},
+    #endif
     {NULL,        NULL,               NULL}/* end marker */
 };
 
@@ -149,13 +156,14 @@ static char ** complete(int argc, const char * const * argv)
  *
  */
 static void sigint (void){
-  cli_print("^C pressed. Exiting...");
   if (current_cmd_tp != NULL){
+    cli_print("^C pressed. Exiting...");
     chThdTerminate(current_cmd_tp);
     chThdWait(current_cmd_tp);
     current_cmd_tp = NULL;
+    cli_print("--> Done. Press 'Enter' to return to shell");
   }
-  cli_print("--> Done. Press 'Enter' to return to shell");
+  cli_println("");
 }
 
 /**
