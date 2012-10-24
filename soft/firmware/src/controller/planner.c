@@ -280,10 +280,8 @@ Thread* PlannerInit(void){
                         PlannerThread,
                         NULL);
 
-  if (planner_tp == NULL){
+  if (planner_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return planner_tp;
+
+  return planner_tp;
 }

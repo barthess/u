@@ -245,11 +245,9 @@ Thread *ControllerGroundRoverInit(void){
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
                             NULL);
-  if (groundrover_tp == NULL){
+  if (groundrover_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return groundrover_tp;
+
+  return groundrover_tp;
 }
 

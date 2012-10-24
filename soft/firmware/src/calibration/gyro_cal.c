@@ -111,10 +111,8 @@ Thread* GyroCalStart(void){
                             GYRO_THREADS_PRIO - 1,
                             GyroCalThread,
                             NULL);
-  if (GyroCal_tp == NULL){
+  if (GyroCal_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return GyroCal_tp;
+
+  return GyroCal_tp;
 }

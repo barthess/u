@@ -89,10 +89,8 @@ Thread *ControllerFixedWingInit(void){
                             CONTROLLER_THREADS_PRIO,
                             ControllerThread,
                             NULL);
-  if (fixedwing_tp == NULL){
+  if (fixedwing_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return fixedwing_tp;
+
+  return NULL;
 }

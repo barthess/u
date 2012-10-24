@@ -120,12 +120,9 @@ Thread* dcm_clicmd(int argc, const char * const * argv){
                     NORMALPRIO,
                     DcmPrintTread,
                     NULL);
-    if (dcm_clicmd_tp == NULL){
+    if (dcm_clicmd_tp == NULL)
       chDbgPanic("can not allocate memory");
-      return NULL;
-    }
-    else
-      return dcm_clicmd_tp;
+    return dcm_clicmd_tp;
   }
   else
     _dcm_cli_help();

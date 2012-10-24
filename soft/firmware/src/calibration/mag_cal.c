@@ -188,10 +188,8 @@ Thread* MagCalStart(void){
                             NORMALPRIO,
                             MagCalThread,
                             NULL);
-  if (mag_cal_tp == NULL){
+  if (mag_cal_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return mag_cal_tp;
+
+  return mag_cal_tp;
 }

@@ -199,12 +199,10 @@ Thread* StabInit(void){
                          CONTROLLER_THREADS_PRIO,
                          StabThread,
                          NULL);
-  if (stab_tp == NULL){
+  if (stab_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return stab_tp;
+
+  return stab_tp;
 }
 
 /**

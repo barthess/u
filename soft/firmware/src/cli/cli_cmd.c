@@ -90,12 +90,10 @@ Thread* loop_clicmd(int argc, const char * const * argv){
                                   LoopCmdThread,
                                   NULL);
 
-  if (loop_clicmd_tp == NULL){
+  if (loop_clicmd_tp == NULL)
     chDbgPanic("can not allocate memory");
-    return NULL;
-  }
-  else
-    return loop_clicmd_tp;
+
+  return loop_clicmd_tp;
 }
 
 /**

@@ -53,10 +53,8 @@ static const ShellCmd_t chibiutils[] = {
     {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
     {"uname",     &uname_clicmd,      "'info' alias"},
     {"wps",       &wps_clicmd,        "simple waypoint interface"},
-    {NULL, NULL, NULL}/* end marker */
+    {NULL,        NULL,               NULL}/* end marker */
 };
-
-static SerialDriver *shell_sdp;
 
 // array for comletion
 static char *compl_world[_NUM_OF_CMD + 1];
@@ -66,6 +64,9 @@ static Thread *current_cmd_tp = NULL;
 
 /* pointer to shell thread */
 static Thread *shell_tp = NULL;
+
+/* serial interface for shell */
+static SerialDriver *shell_sdp;
 
 /*
  *******************************************************************************
