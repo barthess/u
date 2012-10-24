@@ -34,7 +34,8 @@ static Thread *loop_clicmd_tp;
 /**
  *
  */
-Thread* clear_clicmd(int argc, const char * const * argv){
+Thread* clear_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
   cli_print("\033[2J");    // ESC seq for clear entire screen
@@ -45,9 +46,10 @@ Thread* clear_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* echo_clicmd(int argc, const char * const * argv){
-  int i = 0;
+Thread* echo_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
 
+  int i = 0;
   while (i < argc)
     cli_print(argv[i++]);
 
@@ -80,7 +82,8 @@ static msg_t LoopCmdThread(void *arg){
 /**
  *
  */
-Thread* loop_clicmd(int argc, const char * const * argv){
+Thread* loop_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
 
@@ -99,7 +102,8 @@ Thread* loop_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* reboot_clicmd(int argc, const char * const * argv){
+Thread* reboot_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argv;
   (void)argc;
   cli_print("System going to reboot now...\r\n");
@@ -111,7 +115,8 @@ Thread* reboot_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* sleep_clicmd(int argc, const char * const * argv){
+Thread* sleep_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argv;
   (void)argc;
 
@@ -129,7 +134,8 @@ Thread* sleep_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* selftest_clicmd(int argc, const char * const * argv){
+Thread* selftest_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argv;
   (void)argc;
 
@@ -140,7 +146,8 @@ Thread* selftest_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* uname_clicmd(int argc, const char * const * argv){
+Thread* uname_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
 
@@ -192,7 +199,8 @@ Thread* uname_clicmd(int argc, const char * const * argv){
 /**
  *
  */
-Thread* ps_clicmd(int argc, const char * const * argv){
+Thread* ps_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
   Thread *curr = NULL;

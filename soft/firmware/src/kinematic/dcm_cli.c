@@ -23,6 +23,7 @@ extern MemoryHeap ThdHeap;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static Thread *dcm_clicmd_tp = NULL;
 
 /*
  ******************************************************************************
@@ -42,8 +43,8 @@ extern MemoryHeap ThdHeap;
  *
  */
 static WORKING_AREA(DcmPrintTreadWA, 1024);
-static msg_t DcmPrintTread(void *arg){
-  (void)arg;
+static msg_t DcmPrintTread(void *sdp){
+  (void)sdp;
   chRegSetThreadName("DcmPrint");
 
   const int n = 74;
@@ -104,11 +105,10 @@ static void _dcm_cli_help(void){
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-static Thread *dcm_clicmd_tp = NULL;
 /**
  * Working with parameters from CLI.
  */
-Thread* dcm_clicmd(int argc, const char * const * argv){
+Thread* dcm_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   (void)argv;
   (void)argc;
 
@@ -119,7 +119,7 @@ Thread* dcm_clicmd(int argc, const char * const * argv){
                     sizeof(DcmPrintTreadWA),
                     NORMALPRIO,
                     DcmPrintTread,
-                    NULL);
+                    sdp);
     if (dcm_clicmd_tp == NULL)
       chDbgPanic("can not allocate memory");
     return dcm_clicmd_tp;

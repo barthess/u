@@ -10,18 +10,18 @@ typedef struct ShellCmd_t ShellCmd_t;
  * Fucnction executing command job.
  * @return    Pointer to created thread. Must be NULL if no thread crated.
  */
-typedef Thread* (*cmdfunction_t)(int argc, const char * const * argv);
+typedef Thread* (*cmdfunction_t)(int argc, const char * const * argv, SerialDriver *sdp);
 
 /**
  *
  */
 struct ShellCmd_t{
   /**
-   * Printable command name. Must be zero terminated string
+   * Printable command name. Must be zero terminated string without spaces
    */
   char *name;
   /**
-   * Function binded to command
+   * Function bounded to command
    */
   const cmdfunction_t func;
   /**

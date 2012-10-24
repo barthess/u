@@ -24,8 +24,8 @@ extern MemoryHeap ThdHeap;
  * PROTOTYPES
  *******************************************************************************
  */
-static Thread* logout_cmd(int argc, const char * const * argv);
-static Thread* help_clicmd(int argc, const char * const * argv);
+static Thread* logout_cmd(int argc, const char * const * argv, SerialDriver *sdp);
+static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sdp);
 
 /*
  ******************************************************************************
@@ -66,7 +66,7 @@ static Thread *current_cmd_tp = NULL;
 static Thread *shell_tp = NULL;
 
 /* serial interface for shell */
-static SerialDriver *shell_sdp;
+static SerialDriver *ShellSDp;
 
 /*
  *******************************************************************************
@@ -103,9 +103,9 @@ static int execute (int argc, const char * const * argv){
   }
   else{
     if (argc > 1)
-      current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1]);
+      current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1], ShellSDp);
     else
-      current_cmd_tp = chibiutils[i].func(0, NULL);
+      current_cmd_tp = chibiutils[i].func(0, NULL, ShellSDp);
   }
   return 0;
 }
@@ -166,7 +166,7 @@ static msg_t ShellThread(void *arg){
   chRegSetThreadName("Shell");
 
   /* init static pointer for serial driver with received pointer */
-  shell_sdp = (SerialDriver *)arg;
+  ShellSDp = (SerialDriver *)arg;
 
   // create and init microrl object
   microrl_t microrl_shell;
@@ -188,7 +188,7 @@ static msg_t ShellThread(void *arg){
 
   while (!chThdShouldTerminate()){
     // put received char from stdin to microrl lib
-    msg_t c = sdGetTimeout(shell_sdp, MS2ST(50));
+    msg_t c = sdGetTimeout(ShellSDp, MS2ST(50));
     if (c != Q_TIMEOUT)
       microrl_insert_char(&microrl_shell, (char)c);
 
@@ -212,7 +212,8 @@ static msg_t ShellThread(void *arg){
 /**
  *
  */
-static Thread* logout_cmd(int argc, const char * const * argv){
+static Thread* logout_cmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
 
@@ -224,7 +225,8 @@ static Thread* logout_cmd(int argc, const char * const * argv){
 /**
  *
  */
-static Thread* help_clicmd(int argc, const char * const * argv){
+static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
   (void)argc;
   (void)argv;
 
@@ -256,7 +258,7 @@ static Thread* help_clicmd(int argc, const char * const * argv){
 void cli_print(const char *str){
   int i = 0;
   while (str[i] != 0) {
-    sdPut(shell_sdp, str[i]);
+    sdPut(ShellSDp, str[i]);
     i++;
   }
 }
@@ -273,14 +275,14 @@ void cli_println(const char *str){
  * Convenience function
  */
 void cli_put(char chr){
-  sdPut(shell_sdp, chr);
+  sdPut(ShellSDp, chr);
 }
 
 /**
  * Read routine
  */
 char get_char (void){
-  return sdGet(shell_sdp);
+  return sdGet(ShellSDp);
 }
 
 /**

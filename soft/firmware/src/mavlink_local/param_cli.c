@@ -161,7 +161,9 @@ static void _param_cli_help(void){
 /**
  * Working with parameters from CLI.
  */
-Thread* param_clicmd(int argc, const char * const * argv){
+Thread* param_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
+
   int32_t i = -1;
   param_status_t status;
 

@@ -64,7 +64,8 @@ static void _cal_cli_mag(void){
 /**
  *
  */
-Thread* cal_clicmd(int argc, const char * const * argv){
+Thread* cal_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
 
   /* no arguments */
   if (argc == 0)

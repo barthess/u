@@ -133,7 +133,8 @@ void _servo_cli_ground_rover(const char * const * argv){
 /**
  * Working with parameters from CLI.
  */
-Thread* servo_clicmd(int argc, const char * const * argv){
+Thread* servo_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
+  (void)sdp;
 
   /* no arguments */
   if (argc == 0)

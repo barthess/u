@@ -197,9 +197,9 @@ void _storm_abort(Thread* th_pull[]){
 
 /* Главный тред. */
 static WORKING_AREA(StormTreadWA, 512);
-static msg_t StormTread(void *arg){
+static msg_t StormTread(void *sdp){
   chRegSetThreadName("IRQ_Storm");
-  (void)arg;
+  (void)sdp;
   unsigned i;
   gptcnt_t interval, threshold, worst;
   Mailbox _mb[NUM_THREADS];
@@ -328,7 +328,7 @@ static msg_t StormTread(void *arg){
 /**
  *
  */
-Thread* IRQStormStart(void){
+Thread* IRQStormStart(SerialDriver *sdp){
   gptStart(&IRQSTROM_GPTD1, &gpt1cfg);
   gptStart(&IRQSTROM_GPTD2, &gpt2cfg);
 
@@ -336,7 +336,7 @@ Thread* IRQStormStart(void){
                              sizeof(StormTreadWA),
                              NORMALPRIO,
                              StormTread,
-                             NULL);
+                             sdp);
   if (irqstorm_tp == NULL)
     chDbgPanic("Can not allocate memory");
 
@@ -346,10 +346,10 @@ Thread* IRQStormStart(void){
 /**
  *
  */
-Thread* irqstorm_clicmd(int argc, const char * const * argv){
+Thread* irqstorm_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   (void)argv;
   (void)argc;
 
-  return IRQStormStart();
+  return IRQStormStart(sdp);
 }
 

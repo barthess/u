@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "uav.h"
+#include "chprintf.h"
 
 /*
  ******************************************************************************
@@ -35,15 +36,16 @@ static Thread *sensor_tp;
  *
  */
 static WORKING_AREA(SensorsCmdThreadWA, 512);
-static msg_t SensorsCmdThread(void *arg){
+static msg_t SensorsCmdThread(void *sdp){
   chRegSetThreadName("SensorsCmd");
-  (void)arg;
-  const int n = 32;
-  char str[n];
+
+//  const int n = 32;
+//  char str[n];
 
   while (!chThdShouldTerminate()){
-    snprintf(str, n, "%u mA\r\n", (unsigned int)comp_data.main_current);
-    cli_print(str);
+    chprintf((BaseSequentialStream *)sdp, "%u mA\r\n", (unsigned int)comp_data.main_current);
+//    snprintf(str, n, "%u mA\r\n", (unsigned int)comp_data.main_current);
+//    cli_print(str);
     chThdSleepMilliseconds(100);
   }
 
@@ -54,7 +56,7 @@ static msg_t SensorsCmdThread(void *arg){
 /**
  *
  */
-Thread* sensors_clicmd(int argc, const char * const * argv){
+Thread* sensors_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   (void)argc;
   (void)argv;
 
@@ -62,7 +64,7 @@ Thread* sensors_clicmd(int argc, const char * const * argv){
                                   sizeof(SensorsCmdThreadWA),
                                   CMD_THREADS_PRIO - 1,
                                   SensorsCmdThread,
-                                  NULL);
+                                  sdp);
   if (sensor_tp == NULL)
     chDbgPanic("Can not allocate memory");
 
