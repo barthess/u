@@ -163,7 +163,6 @@ static void sigint (void){
     current_cmd_tp = NULL;
     cli_print("--> Done. Press 'Enter' to return to shell");
   }
-  cli_println("");
 }
 
 /**
