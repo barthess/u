@@ -93,6 +93,10 @@ int main(void) {
   chBSemInit(&rtc_sem, TRUE);
   chBSemInit(&servo_updated_sem, TRUE);
 
+  /* clear soft resets counter */
+  if (was_padreset())
+    bkpSoftResetCnt = 0;
+
   if (was_softreset() || was_padreset())
     chThdSleepMilliseconds(1);
   else

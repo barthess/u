@@ -84,6 +84,7 @@ static msg_t SanityControlThread(void *arg) {
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
     chThdSleep(led_flash_time);
     mavlink_sys_status_struct.load = get_cpu_load();
+    mavlink_sys_status_struct.errors_count1 = bkpSoftResetCnt;
 
     if (GlobalFlags.sighalt){
       palClearPad(GPIOB, GPIOB_LED_B);

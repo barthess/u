@@ -1,19 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "sensors.h"
-#include "message.h"
-
-#include "imu.h"
-#include "gps.h"
-#include "adc_local.h"
-#include "exti_local.h"
-#include "itg3200.h"
-#include "mma8451.h"
-#include "tmp75.h"
-#include "max1236.h"
-#include "bmp085.h"
-#include "mag3110.h"
+#include "uav.h"
 
 /*
  ******************************************************************************
@@ -28,6 +16,7 @@
  */
 RawData raw_data;
 CompensatedData comp_data;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -64,6 +53,8 @@ BinarySemaphore imu_sem__;
  *******************************************************************************
  */
 void SensorsInit(void){
+
+  chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 
   chBSemInit(&mag3110_sem,  TRUE);
   chBSemInit(&mma8451_sem,  TRUE);

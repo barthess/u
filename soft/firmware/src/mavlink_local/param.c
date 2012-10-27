@@ -465,6 +465,8 @@ static msg_t ParametersThread(void *arg){
 int32_t key_index_search(const char* key){
   int32_t i = 0;
 
+  chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
+
   for (i = 0; i < OnboardParamCount; i++){
     if (strcmp(key, GlobalParam[i].name) == 0)
       return i;
@@ -473,7 +475,7 @@ int32_t key_index_search(const char* key){
 }
 
 /**
- * Return pointer to value.
+ * Return pointer to value. Hi level function.
  */
 void *ValueSearch(const char *str){
   int32_t i = -1;
@@ -515,6 +517,8 @@ param_status_t set_global_param(void *value, const GlobalParam_t *param){
  *
  */
 void ParametersInit(void){
+
+  chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 
   int32_t i = 0;
   int32_t n = 0;
@@ -580,4 +584,6 @@ void ParametersInit(void){
           LINK_THREADS_PRIO + 1,
           ParametersThread,
           NULL);
+
+  setGlobalFlag(GlobalFlags.parameters_got);
 }
