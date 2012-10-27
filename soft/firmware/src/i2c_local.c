@@ -44,7 +44,6 @@ static i2cflags_t flags;
 void I2CInitLocal(void){
   i2cStart(&I2CD2, &i2cfg2);
   setGlobalFlag(GlobalFlags.i2c_ready);
-  ParametersInit(); /* read parameters from EEPROM via I2C*/
 }
 
 /**

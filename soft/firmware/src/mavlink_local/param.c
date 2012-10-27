@@ -465,8 +465,6 @@ static msg_t ParametersThread(void *arg){
 int32_t key_index_search(const char* key){
   int32_t i = 0;
 
-  chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
-
   for (i = 0; i < OnboardParamCount; i++){
     if (strcmp(key, GlobalParam[i].name) == 0)
       return i;
@@ -479,6 +477,8 @@ int32_t key_index_search(const char* key){
  */
 void *ValueSearch(const char *str){
   int32_t i = -1;
+
+  chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
 
   i = key_index_search(str);
   if (i == -1){

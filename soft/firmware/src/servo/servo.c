@@ -14,6 +14,7 @@
 extern GlobalParam_t GlobalParam[];
 extern mavlink_system_t mavlink_system_struct;
 extern BinarySemaphore servo_updated_sem;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -234,6 +235,7 @@ void ServoCarThrustSet(uint8_t angle){
  */
 void ServoInit(void){
 
+  chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
   servoblock_index = key_index_search("SERVO_1_min");
   if (servoblock_index == -1)
     chDbgPanic("key not found");

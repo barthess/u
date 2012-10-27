@@ -19,6 +19,9 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
+// TODO: save calibration values in bkp and eeprom for faster startup after panic recovery
+// TODO: save mission data in bkp for recovery if panic occured during mission
+
 // TODO: add autotests for I2C sensors
 // TODO: log compressed format
 // TODO: cli for format, ls, rm
@@ -114,11 +117,12 @@ int main(void) {
   MsgInit();
   SanityControlInit();
   I2CInitLocal();     /* also starts EEPROM and load global parameters from it */
-  MavInit();          /* mavlink constants initialization must be called after I2C init */
+  ParametersInit();   /* read parameters from EEPROM via I2C*/
+  MavInit();          /* mavlink constants initialization must be called after parameters init */
   ControllerInit();   /* must be started only after loading of parameters */
   LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
-  SensorsInit();      /* sensors use I2C */
+  SensorsInit();      /* Note. Sensors use I2C */
   PwrMgmtInit();
   TlmSenderInit();
   MavCmdInitLocal();
