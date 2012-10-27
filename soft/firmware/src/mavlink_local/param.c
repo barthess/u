@@ -1,5 +1,6 @@
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 
 #include "uav.h"
 
@@ -220,8 +221,13 @@ const GlobalParam_t GlobalParam[] = {
   {"XTRACK_iMin",     {.f32 = -10000.0},   &gp_val[122],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
   {"XTRACK_iMax",     {.f32 = -10000.0},   &gp_val[123],   {.f32 = 10000.0},    MAVLINK_TYPE_FLOAT, NULL},
 
+  /**** Variables for debugging purposes ****/
+  {"DBG_reserved0",   {.u32 = 1},          &gp_val[124],   {.u32 = 10000},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"DBG_reserved1",   {.u32 = 0},          &gp_val[125],   {.u32 = 10000},      MAVLINK_TYPE_UINT32_T, NULL},
+  {"DBG_reserved2",   {.u32 = 0},          &gp_val[126],   {.u32 = 10000},      MAVLINK_TYPE_UINT32_T, NULL},
+
   /**** fake field with 14 symbols name ****/
-  {"param_end_mark",  {.u32 = 1},          &gp_val[124],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T, "Fake parameter with maximum name length"},
+  {"param_end_mark",  {.u32 = 1},          &gp_val[127],   {.u32 = 1224},       MAVLINK_TYPE_UINT32_T, "Fake parameter with maximum name length"},
 };
 
 

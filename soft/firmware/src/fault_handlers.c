@@ -11,7 +11,7 @@
  * EXTERNS
  ******************************************************************************
  */
-volatile uint32_t fake;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
@@ -39,6 +39,7 @@ volatile unsigned long _AFSR ;
 volatile unsigned long _BFAR ;
 volatile unsigned long _MMAR ;
 volatile unsigned long _SCB_SHCSR;
+volatile uint32_t fake;
 
 /*
  ******************************************************************************
@@ -125,10 +126,10 @@ void HardFaultVector(void)
     );
 }
 
-
-
-
-void my_fault(void){
+/**
+ * Stub
+ */
+static void uav_hardfault_handler(void){
   while (TRUE){
     fake++;
   }
@@ -140,43 +141,59 @@ void my_fault(void){
  ******************************************************************************
  */
 
+/**
+ * If system runs enough amount of time that perform soft reset instead of
+ * halting in panic.
+ *
+ * TODO: save statck and registers in nonvolatile memory.
+ */
+void uav_panic_handler(void){
+
+  /* under debugging control we must allways halt system */
+  if (is_under_debugger())
+    return;
+
+  if (GlobalFlags.allow_softreset)
+    NVIC_SystemReset();
+}
+
 void DebugMonitorVector(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void Vector34(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void PendSVVector(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void Vector1C(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void Vector20(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void Vector24(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void Vector28(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 //void HardFaultVector(void) {
 //  my_fault();
 //}
 void MemManageVector(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 volatile uint32_t rcc_cir = 0;
 void NMIVector(void) {
   rcc_cir = RCC->CIR;
-  my_fault();
+  uav_hardfault_handler();
   (void)rcc_cir;
 }
 void BusFaultVector(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 void UsageFaultVector(void) {
-  my_fault();
+  uav_hardfault_handler();
 }
 

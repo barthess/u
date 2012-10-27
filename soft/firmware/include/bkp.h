@@ -10,6 +10,7 @@ uint32_t bkpGetGpsLatitude(void);
 void bkpSaveGpsAltitude(uint32_t n);
 uint32_t bkpGetGpsAltitude(void);
 
-#define bkpOdometer RTC->BKP3R
+#define bkpOdometer       RTC->BKP3R
+#define bkpSoftResetCnt   RTC->BKP4R
 
 #endif /* BKP_H_ */

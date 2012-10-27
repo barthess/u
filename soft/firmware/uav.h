@@ -70,14 +70,19 @@
 /* Heap size for dynamic thread creation */
 #define THREAD_HEAP_SIZE    (1024 * 5)
 
-/******************************************************************
+/*******************************************************************
  * humanreadable names of serial drivers */
 #define LINKSD  SD2
 #define GPSSD   SD1
 #define SHELLSD LINKSD
 
-/* build test suit for EEPROM abstraction layer */
+/******************************************************************
+ * build test suit for EEPROM abstraction layer */
 #define USE_EEPROM_TEST_SUIT    FALSE
+
+/******************************************************************
+ * Disarm halting on panic and changing it to soft reset after this amount of time */
+#define HALT_DISARM_TMO_SEC     30
 
 /******************************************************************
  * приоритеты для потоков */
@@ -93,22 +98,54 @@
 /******************************************************************
  * global bool flags */
 typedef struct GlobalFlags_t{
+  //0
+  uint32_t allow_softreset:1; /* system performs soft reset instead of halting in panic */
   uint32_t gyro_cal:1;
   uint32_t accel_cal:1;
   uint32_t mag_cal:1;
+  //4
   uint32_t eeprom_failed:1;
   uint32_t tlm_link_ready:1;
   uint32_t modem_ready:1;
   uint32_t logger_ready:1;
+  //8
   uint32_t sighalt:1;
   uint32_t mag_data_ready:1;
   uint32_t mission_takeoff:1;
   uint32_t mission_loiter:1;
+  //12
   uint32_t mission_abort:1;
+  uint32_t stub1:1;
+  uint32_t stub2:1;
+  uint32_t stub3:1;
+  //16
+  uint32_t stub4:1;
+  uint32_t stub5:1;
+  uint32_t stub6:1;
+  uint32_t stub7:1;
+  //20
+  uint32_t stub8:1;
+  uint32_t stub9:1;
+  uint32_t stuba:1;
+  uint32_t stubb:1;
+  //24
+  uint32_t stubc:1;
+  uint32_t stubd:1;
+  uint32_t stube:1;
+  uint32_t stubf:1;
+  //28
+  uint32_t stubg:1;
+  uint32_t stubh:1;
+  uint32_t stubi:1;
+  uint32_t stubj:1;
 }GlobalFlags_t;
 
-#define setGlobalFlag(flag)   {chSysLock(); flag = 1; chSysUnlock();}
-#define clearGlobalFlag(flag) {chSysLock(); flag = 0; chSysUnlock();}
+//
+#define setGlobalFlagI(flag)    do{chDbgCheckClassI(); flag = 1;}while(0)
+#define clearGlobalFlagI(flag)  do{chDbgCheckClassI(); flag = 0;}while(0)
+
+#define setGlobalFlag(flag)     do{chSysLock(); setGlobalFlagI(flag);   chSysUnlock();}while(0)
+#define clearGlobalFlag(flag)   do{chSysLock(); clearGlobalFlagI(flag); chSysUnlock();}while(0)
 
 /******************************************************************/
 /* "init daemon" events */

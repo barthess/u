@@ -499,8 +499,9 @@
  *          the system is halted.
  */
 #if !defined(SYSTEM_HALT_HOOK) || defined(__DOXYGEN__)
+#include "fault_handlers.h"
 #define SYSTEM_HALT_HOOK() {                                                \
-  /* System halt code here.*/                                               \
+    uav_panic_handler();                                                     \
 }
 #endif
 

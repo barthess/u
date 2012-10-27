@@ -17,8 +17,7 @@ extern mavlink_sys_status_t   mavlink_sys_status_struct;
  * DEFINES
  ******************************************************************************
  */
-#define HEART_BEAT_PERIOD   1000
-#define LED_FLASH_TIME      50
+#define HEART_BEAT_PERIOD   MS2ST(1000)
 
 /*
  ******************************************************************************
@@ -35,6 +34,12 @@ static uint32_t last_idle_ticks = 0;
 static BinarySemaphore blink_sem;
 static uint32_t BlinkCnt = 0;
 static systime_t offtime = 10, ontime = 10;
+
+/* timer for RPM counting */
+static VirtualTimer haltdisarm_vt;
+
+/* how much time led is ON during one period */
+static systime_t led_flash_time;
 
 /*
  *******************************************************************************
@@ -62,7 +67,7 @@ static msg_t SanityControlThread(void *arg) {
 
   while (TRUE) {
     palSetPad(GPIOB, GPIOB_LED_B);
-    chThdSleepMilliseconds(HEART_BEAT_PERIOD - LED_FLASH_TIME);
+    chThdSleep(HEART_BEAT_PERIOD - led_flash_time);
 
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
@@ -77,7 +82,7 @@ static msg_t SanityControlThread(void *arg) {
     log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleepMilliseconds(LED_FLASH_TIME);
+    chThdSleep(led_flash_time);
     mavlink_sys_status_struct.load = get_cpu_load();
 
     if (GlobalFlags.sighalt){
@@ -111,12 +116,55 @@ static msg_t RedBlinkThread(void *arg) {
   return 0;
 }
 
+/**
+ * Disarm halting on panic and changing it to soft reset.
+ * Note. This functions is for using only in case of emergency in autonomouse flight.
+ */
+static void haltdisarm_vt_cb(void *par){
+  (void)par;
+  chSysLockFromIsr();
+  setGlobalFlagI(GlobalFlags.allow_softreset);
+  chSysUnlockFromIsr();
+}
 
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
+/**
+ *
+ */
+void SanityControlInit(void){
+
+  if (was_softreset())
+    led_flash_time = MS2ST(850);  /* error flash time */
+  else
+    led_flash_time = MS2ST(50);   /* normal flash time */
+
+  chBSemInit(&blink_sem,  TRUE);
+  IdleThread_p = chSysGetIdleThread();
+  chThdCreateStatic(SanityControlThreadWA,
+          sizeof(SanityControlThreadWA),
+          NORMALPRIO,
+          SanityControlThread,
+          NULL);
+  chThdCreateStatic(RedBlinkThreadWA,
+          sizeof(RedBlinkThreadWA),
+          NORMALPRIO - 10,
+          RedBlinkThread,
+          NULL);
+
+  /* start virtual timer for panic halt disarmig */
+  chSysLock();
+  chVTSetI(&haltdisarm_vt, S2ST(HALT_DISARM_TMO_SEC), &haltdisarm_vt_cb, NULL);
+  chSysUnlock();
+
+  /* write "message" to log */
+  if (was_softreset())
+    bkpSoftResetCnt++;
+}
+
 /**
  * Schedule blink sequence.
  * [in] count of blinks and time intervals in sytem ticks
@@ -140,29 +188,6 @@ void SheduleBlink(uint32_t cnt, uint32_t on, uint32_t off){
 }
 
 /**
- *
- */
-void SanityControlInit(void){
-
-  chBSemInit(&blink_sem,  TRUE);
-
-  IdleThread_p = chSysGetIdleThread();
-
-
-  chThdCreateStatic(SanityControlThreadWA,
-          sizeof(SanityControlThreadWA),
-          NORMALPRIO,
-          SanityControlThread,
-          NULL);
-
-  chThdCreateStatic(RedBlinkThreadWA,
-          sizeof(RedBlinkThreadWA),
-          NORMALPRIO - 10,
-          RedBlinkThread,
-          NULL);
-}
-
-/**
  * Рассчитывает загрузку проца.
  * Возвращает десятые доли процента.
  */
@@ -183,7 +208,4 @@ uint16_t get_cpu_load(void){
 
   return ((s - i) * 1000) / s;
 }
-
-
-
 

@@ -53,7 +53,7 @@ BinarySemaphore servo_updated_sem;
 struct tm gps_timp;
 
 /* some global flags */
-GlobalFlags_t GlobalFlags;
+GlobalFlags_t GlobalFlags = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 /* heap for some threads */
 MemoryHeap ThdHeap;
@@ -93,7 +93,10 @@ int main(void) {
   chBSemInit(&rtc_sem, TRUE);
   chBSemInit(&servo_updated_sem, TRUE);
 
-  chThdSleepMilliseconds(200);
+  if (was_softreset() || was_padreset())
+    chThdSleepMilliseconds(1);
+  else
+    chThdSleepMilliseconds(100);
 
   /* give power to all needys */
   pwr5v_power_on();
@@ -116,6 +119,8 @@ int main(void) {
   TlmSenderInit();
   MavCmdInitLocal();
   StorageInit();
+
+  clear_reset_flags();
 
   while (TRUE){
     chThdSleepMilliseconds(666);

@@ -155,12 +155,18 @@ static MAVLINK_WPM_STATES mission_request_list_handler(Mail* mailp){
  * Perform waypoint checking
  */
 static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
-  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED))
+  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Unsupported frame");
     return MAV_MISSION_UNSUPPORTED_FRAME;
-  if (wp->seq != seq)
+  }
+  if (wp->seq != seq){
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Invalid sequence");
     return MAV_MISSION_INVALID_SEQUENCE;
-  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS)
+  }
+  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Not enough target radius");
     return MAV_MISSION_INVALID_PARAM1;
+  }
 
   /* no errors found */
   return MAV_MISSION_ACCEPTED;

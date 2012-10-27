@@ -61,7 +61,9 @@ msg_t mavlink_dbg_print(uint8_t severity, const char *text){
   msg_t status = RDY_RESET;
 
   if (GlobalFlags.tlm_link_ready){
+    /* wait untill message be processed by mavlink sender */
     status = chBSemWaitTimeout(&dbg_sem, DBG_PRINT_TMO);
+    /* in case of timeout just clear semaphore */
     if (status != RDY_OK){
       chBSemSignal(&dbg_sem);
       return status;

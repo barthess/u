@@ -157,7 +157,7 @@ CSRC = $(PORTSRC) \
        src/message.c \
        src/pwr_mgmt.c \
        src/fault_handlers.c \
-
+       
 DSPSRC = cortex_dsp
 #CSRC += $(DSPSRC)/arm_common_tables.c \
 #		$(DSPSRC)/arm_sqrt_q31.c \

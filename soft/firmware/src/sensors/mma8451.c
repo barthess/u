@@ -166,13 +166,6 @@ void init_mma8451(BinarySemaphore *mma8451_semp){
 
   // TODO: run autodiagnostic
 
-  #if CH_DBG_ENABLE_ASSERTS
-    // clear bufers. Just to be safe.
-    uint32_t i = 0;
-    for (i = 0; i < ACCEL_TX_DEPTH; i++){txbuf[i] = 0x55;}
-    for (i = 0; i < ACCEL_RX_DEPTH; i++){rxbuf[i] = 0x55;}
-  #endif
-
   txbuf[0] = ACCEL_WHOAMI;
   i2c_transmit(mma8451addr, txbuf, 1, rxbuf, 1);
   chDbgAssert(rxbuf[0] == ACCEL_WHOAMI_VALUE, "init_mma8451(), #1",
