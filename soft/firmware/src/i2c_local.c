@@ -56,7 +56,8 @@ msg_t i2c_transmit(i2caddr_t addr, const uint8_t *txbuf, size_t txbytes,
   status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   flags = i2cGetErrors(&I2CD2);
-  chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
+  chDbgAssert((status == RDY_OK) && (flags == I2CD_NO_ERROR),
+              "i2c_transmit(), #1", "error in driver");
 //  if (status == RDY_TIMEOUT){
 //    i2cStop(&I2CD2);
 //    chThdSleepMilliseconds(1);
@@ -77,7 +78,8 @@ msg_t i2c_receive(i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes){
   status = i2cMasterReceiveTimeout(&I2CD2, addr, rxbuf, rxbytes, MS2ST(6));
   i2cReleaseBus(&I2CD2);
   flags = i2cGetErrors(&I2CD2);
-  chDbgAssert(status == RDY_OK, "i2c_transmit(), #1", "error in driver");
+  chDbgAssert((status == RDY_OK) && (flags == I2CD_NO_ERROR),
+              "i2c_transmit(), #1", "error in driver");
 //  if (status == RDY_TIMEOUT){
 //    i2cStop(&I2CD2);
 //    chThdSleepMilliseconds(1);

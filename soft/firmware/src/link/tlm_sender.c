@@ -238,7 +238,7 @@ static void update_tlm_data(void){
 /**
  *
  */
-static WORKING_AREA(TlmSenderThreadWA, 96);
+static WORKING_AREA(TlmSenderThreadWA, 112);
 static msg_t TlmSenderThread(void *arg) {
   chRegSetThreadName("TLM_Scheduler");
   (void)arg;

@@ -47,7 +47,7 @@ static systime_t offtime = 10, ontime = 10;
 /**
  * посылает heartbeat пакеты и моргает светодиодиком
  */
-static WORKING_AREA(SanityControlThreadWA, 128);
+static WORKING_AREA(SanityControlThreadWA, 80);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;

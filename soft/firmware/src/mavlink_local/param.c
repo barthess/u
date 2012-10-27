@@ -241,7 +241,6 @@ static const I2CEepromFileConfig eeprom_settings_cfg = {
   EEPROM_PAGE_SIZE,
   EEPROM_I2C_ADDR,
   MS2ST(EEPROM_WRITE_TIME_MS),
-  FALSE,
   eeprom_buf,
 };
 

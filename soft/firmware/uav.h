@@ -77,7 +77,7 @@
 #define SHELLSD LINKSD
 
 /* build test suit for EEPROM abstraction layer */
-#define USE_EEPROM_TEST_SUIT    TRUE
+#define USE_EEPROM_TEST_SUIT    FALSE
 
 /******************************************************************
  * приоритеты для потоков */

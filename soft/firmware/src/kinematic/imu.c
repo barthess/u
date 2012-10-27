@@ -93,7 +93,7 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
 /**
  *
  */
-static WORKING_AREA(waImu, 512);
+static WORKING_AREA(waImu, 400);
 static msg_t Imu(void *semp) {
   chRegSetThreadName("IMU");
 
