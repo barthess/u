@@ -192,13 +192,17 @@ static void __hard_init_short(void){
  *
  */
 static void __hard_init_full(void){
-    // TODO: get WHOAMI run autodiagnostic
+
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
     uint32_t i = 0;
     for (i = 0; i < GYRO_TX_DEPTH; i++){txbuf[i] = 0x55;}
     for (i = 0; i < GYRO_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif
+
+  txbuf[0] = GYRO_WHOAMI;
+  i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 2);
+  chDbgCheck(rxbuf[0] != (itg3200addr >> 1), "Wrong whoami respose");
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
