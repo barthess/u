@@ -30,9 +30,9 @@ static uint8_t rxbuf[ACCEL_RX_DEPTH];
 static uint8_t txbuf[ACCEL_TX_DEPTH];
 
 /* указатели в структуре с параметрами */
-static int32_t const  *xoffset, *yoffset, *zoffset;
-static int32_t const  *xpol,    *ypol,    *zpol;
-static uint32_t const *xsens,   *ysens,   *zsens;
+static int32_t  const *xoffset,   *yoffset,   *zoffset;
+static int32_t  const *xpol,      *ypol,      *zpol;
+static uint32_t const *xsens,     *ysens,     *zsens;
 static uint32_t const *still_thr;
 
 static bool_t DeviceStill = FALSE;
@@ -79,7 +79,6 @@ static void process_accel_data(uint8_t *rxbuf){
   else
     DeviceStill = FALSE;
 
-  /* there is no need of correcting of placement. Just get milli g */
   mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
   mavlink_raw_imu_struct.yacc = raw_data.yacc * *ypol;
   mavlink_raw_imu_struct.zacc = raw_data.zacc * *zpol;
@@ -182,7 +181,6 @@ static void __hard_init_full(void){
   //txbuf[1] = 0b11001; //100Hz, normal noice, active
   //txbuf[1] = 0b100101; //50Hz, low noice, active
   i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0);
-  chThdSleepMilliseconds(2);
 }
 
 /*
@@ -207,7 +205,6 @@ void init_mma8451(BinarySemaphore *mma8451_semp){
           I2C_THREADS_PRIO,
           PollAccelThread,
           mma8451_semp);
-  chThdSleepMilliseconds(1);
 }
 
 /**

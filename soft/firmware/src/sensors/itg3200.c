@@ -142,7 +142,6 @@ static msg_t PollGyroThread(void *semp){
       retry--;
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
-    //chThdSleepMilliseconds(1);
     txbuf[0] = GYRO_OUT_DATA;     // register address
     i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
     sort_rxbuff(rxbuf);
@@ -200,14 +199,15 @@ static void __hard_init_full(void){
     for (i = 0; i < GYRO_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif
 
-  txbuf[0] = GYRO_WHOAMI;
-  i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 2);
-  chDbgCheck((rxbuf[0] >> 1) == GYRO_WHOAMI_VAL, "Wrong whoami respose");
-
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
   i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0);
   chThdSleepMilliseconds(60);
+
+//  txbuf[0] = GYRO_WHOAMI;
+//  i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 2);
+//  chDbgCheck((rxbuf[0] >> 1) == GYRO_WHOAMI_VAL, "Wrong whoami respose");
+//  chThdSleepMilliseconds(5);
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 1; /* select clock source */

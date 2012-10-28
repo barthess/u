@@ -12,6 +12,8 @@
 
 
 /* slave specific addresses */
+#define MAG_WHOAMI      0x07
+#define MAG_WHOAMI_VAL  0xC4
 #define MAG_OUT_DATA    0x01
 #define MAG_CTRL_REG1   0x10
 #define MAG_CTRL_REG2   0x11

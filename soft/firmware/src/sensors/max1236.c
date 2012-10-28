@@ -103,6 +103,7 @@ static void __hard_init_short(void){
  *
  */
 static void __hard_init_full(void){
+
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
     uint32_t i = 0;
@@ -112,7 +113,6 @@ static void __hard_init_full(void){
 
   txbuf[0] = 0b11110011;
   txbuf[1] = 0b00000101;
-
   i2c_transmit(max1236addr, txbuf, 2, rxbuf, 0);
 }
 
@@ -138,6 +138,5 @@ void init_max1236(void){
           I2C_THREADS_PRIO,
           PollMax1236Thread,
           NULL);
-  chThdSleepMilliseconds(1);
 }
 

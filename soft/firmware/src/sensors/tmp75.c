@@ -118,7 +118,4 @@ void init_tmp75(void){
           I2C_THREADS_PRIO,
           PollTmp75Thread,
           NULL);
-  chThdSleepMilliseconds(1);
 }
-
-#undef I2CDtmp75

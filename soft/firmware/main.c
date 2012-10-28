@@ -22,7 +22,6 @@ Giovanni
 // TODO: save calibration values in bkp and eeprom for faster startup after panic recovery
 // TODO: save mission data in bkp for recovery if panic occured during mission
 // TODO: save and load gyro period from bkp
-// TODO: remove small pauses after i2c sensors thread starts
 
 // TODO: add autotests for I2C sensors
 // TODO: log compressed format
@@ -99,7 +98,7 @@ int main(void) {
   chBSemInit(&servo_updated_sem, TRUE);
 
   /* clear soft resets counter */
-  if (was_padreset())
+  if (!was_softreset())
     bkpSoftResetCnt = 0;
 
   if (was_softreset() || was_padreset())

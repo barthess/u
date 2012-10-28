@@ -168,8 +168,8 @@ static void __hard_init_short(void){
  *
  */
 static void __hard_init_full(void){
-  // TODO: сначала вообще убедиться, что девайс отвечает путем запроса его WHOAMI
-  // TODO: запустить в нем самодиагностику
+
+  // TODO: self diagnostic
 
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
@@ -178,6 +178,10 @@ static void __hard_init_full(void){
     for (i = 0; i < MAG_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif
 
+  txbuf[0] = MAG_WHOAMI;
+  i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 2);
+  chDbgCheck(rxbuf[0] == MAG_WHOAMI_VAL, "Wrong whoami respose");
+
   /* Except for STANDBY mode selection, the device must be in STANDBY mode
    to change any of the fields within CTRL_REG1 (0x10). */
   txbuf[0] = MAG_CTRL_REG1; // register address
@@ -185,9 +189,9 @@ static void __hard_init_full(void){
   //txbuf[1] = 0b11001;    // 10 Hz, 8 samples
   txbuf[1] = 0b1001;       // 40 Hz, 2 samples
   i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
+  chThdSleepMilliseconds(2);
 
   /* произведём сервисный сброс датчика */
-  chThdSleepMilliseconds(2);
   txbuf[0] = MAG_CTRL_REG2;
   txbuf[1] = MAG_RST;
   i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
@@ -210,14 +214,11 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   else
     __hard_init_short();
 
-  chThdSleepMilliseconds(2);
   chThdCreateStatic(PollMagThreadWA,
           sizeof(PollMagThreadWA),
           I2C_THREADS_PRIO,
           PollMagThread,
           mag3110_semp);
-
-  chThdSleepMilliseconds(1);
 }
 
 
