@@ -202,7 +202,7 @@ static void __hard_init_full(void){
 
   txbuf[0] = GYRO_WHOAMI;
   i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 2);
-  chDbgCheck(rxbuf[0] != (itg3200addr >> 1), "Wrong whoami respose");
+  chDbgCheck((rxbuf[0] >> 1) == GYRO_WHOAMI_VAL, "Wrong whoami respose");
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
