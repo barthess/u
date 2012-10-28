@@ -27,6 +27,7 @@
  */
 
 EepromFileStream EepromSettingsFile;
+BinarySemaphore SettingsFile_sem;
 
 extern GlobalFlags_t GlobalFlags;
 extern Mailbox mavlink_param_set_mb;
@@ -574,6 +575,7 @@ void ParametersInit(void){
     chDbgPanic("not enough space in EEPROM settings slice");
 
   /* open EEPROM region as file */
+  chBSemInit(&SettingsFile_sem, FALSE);
   EepromFileOpen(&EepromSettingsFile, &eeprom_settings_cfg);
 
   /* read data from eeprom to memory mapped structure */

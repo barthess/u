@@ -129,6 +129,8 @@ int main(void) {
 
   clear_reset_flags();
 
+  save_param_to_eeprom("DBG_reserved0");
+
   while (TRUE){
     chThdSleepMilliseconds(666);
   }

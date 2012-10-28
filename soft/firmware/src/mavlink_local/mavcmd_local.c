@@ -106,7 +106,7 @@ static enum MAV_RESULT cmd_preflight_storage_handler(mavlink_command_long_t *cl)
   if (cl->param1 == 0)
     status = load_params_from_eeprom();
   else if (cl->param1 == 1)
-    status = save_params_to_eeprom();
+    status = save_all_params_to_eeprom();
 
   if (status != CH_SUCCESS)
     return MAV_RESULT_FAILED;

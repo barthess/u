@@ -181,7 +181,7 @@ Thread* param_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
       _param_cli_help();
     else if (strcmp(*argv, "save") == 0){
       cli_print("Please wait. Saving to EEPROM... ");
-      save_params_to_eeprom();
+      save_all_params_to_eeprom();
       cli_println("Done.");
     }
     else{

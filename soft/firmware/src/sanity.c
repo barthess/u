@@ -52,7 +52,7 @@ static systime_t led_flash_time;
 /**
  * посылает heartbeat пакеты и моргает светодиодиком
  */
-static WORKING_AREA(SanityControlThreadWA, 80);
+static WORKING_AREA(SanityControlThreadWA, 128);
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
@@ -99,7 +99,7 @@ static msg_t SanityControlThread(void *arg) {
 /**
  * Blinker thread for red LED.
  */
-static WORKING_AREA(RedBlinkThreadWA, 48);
+static WORKING_AREA(RedBlinkThreadWA, 64);
 static msg_t RedBlinkThread(void *arg) {
   chRegSetThreadName("RedBlink");
   (void)arg;
