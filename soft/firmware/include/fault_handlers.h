@@ -4,12 +4,18 @@
 /**
  * evaluates to TRUE if system boots after soft reset cause by SYSRESETREQ
  */
-#define was_softreset()      (((RCC)->CSR) & RCC_CSR_SFTRSTF)
+#define was_softreset()     (((RCC)->CSR) & RCC_CSR_SFTRSTF)
 
 /**
  * evaluates to TRUE if system boots after reset by power pad
  */
 #define was_padreset()      (((RCC)->CSR) & RCC_CSR_PADRSTF)
+
+/**
+ * Determine need of full initialization procedure logic
+ */
+//#define need_full_init()    (((RCC)->CSR) & (RCC_CSR_SFTRSTF || RCC_CSR_PADRSTF))
+#define need_full_init()    (((RCC)->CSR) & RCC_CSR_SFTRSTF)
 
 /**
  * clear all reset flags

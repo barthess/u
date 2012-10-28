@@ -68,6 +68,22 @@ static msg_t PollTmp75Thread(void *arg){
   return 0;
 }
 
+/**
+ *
+ */
+static void __hard_init_short(void){
+}
+
+/**
+ *
+ */
+static void __hard_init_full(void){
+  txbuf[0] = 0b00000001; // point to Configuration Register
+  /* enable autoshutdown, to reduce auto warmup of sensor */
+  txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
+  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+}
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -91,10 +107,11 @@ R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.*/
 
 void init_tmp75(void){
-  txbuf[0] = 0b00000001; // point to Configuration Register
-  /* enable autoshutdown, to reduce auto warmup of sensor */
-  txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
-  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),

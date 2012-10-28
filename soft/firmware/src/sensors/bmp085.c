@@ -208,16 +208,10 @@ static msg_t PollBaroThread(void *arg){
   return 0;
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
+/**
+ *
  */
-void init_bmp085(BinarySemaphore *bmp085_semp){
-
-  flen_pres_stat = ValueSearch("FLEN_pres_stat");
-  flen_climb     = ValueSearch("FLEN_climb");
-
+static void __hard_init_short(void){
   /* get calibration coefficients from sensor */
   txbuf[0] = 0xAA;
   i2c_transmit(bmp085addr, txbuf, 1, rxbuf, 22);
@@ -233,6 +227,32 @@ void init_bmp085(BinarySemaphore *bmp085_semp){
   mb  = (rxbuf[16] << 8) + rxbuf[17];
   mc  = (rxbuf[18] << 8) + rxbuf[19];
   md  = (rxbuf[20] << 8) + rxbuf[21];
+}
+
+/**
+ *
+ */
+static void __hard_init_full(void){
+  __hard_init_short();
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+/**
+ *
+ */
+void init_bmp085(BinarySemaphore *bmp085_semp){
+
+  flen_pres_stat = ValueSearch("FLEN_pres_stat");
+  flen_climb     = ValueSearch("FLEN_climb");
+
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   /**/
   chThdSleepMilliseconds(2);

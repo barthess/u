@@ -172,7 +172,7 @@ static msg_t PollGyroThread(void *semp){
 /**
  *  perform searching of indexes
  */
-static void search_indexes(void){
+static void __search_indexes(void){
   xsens   = ValueSearch("GYRO_xsens");
   ysens   = ValueSearch("GYRO_ysens");
   zsens   = ValueSearch("GYRO_zsens");
@@ -182,26 +182,17 @@ static void search_indexes(void){
   zerocnt = ValueSearch("GYRO_zerocnt");
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
+/**
+ *
  */
+static void __hard_init_short(void){
+}
 
 /**
  *
  */
-void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
-
-  imusync_semp = imu_semp;
-
-  // обнуление инкрементальных сумм
-  comp_data.xgyro_angle = 0;
-  comp_data.ygyro_angle = 0;
-  comp_data.zgyro_angle = 0;
-
-  search_indexes();
-
+static void __hard_init_full(void){
+    // TODO: get WHOAMI run autodiagnostic
   #if CH_DBG_ENABLE_ASSERTS
     // clear bufers. Just to be safe.
     uint32_t i = 0;
@@ -225,6 +216,31 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   //txbuf[3] = 0b00110001; /* configure and enable interrupts */
   txbuf[3] = 0b00010001; /* configure and enable interrupts */
   i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0);
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+/**
+ *
+ */
+void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
+
+  imusync_semp = imu_semp;
+
+  // обнуление инкрементальных сумм
+  comp_data.xgyro_angle = 0;
+  comp_data.ygyro_angle = 0;
+  comp_data.zgyro_angle = 0;
+
+  __search_indexes();
+
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   /**/
   chThdCreateStatic(PollGyroThreadWA,

@@ -122,7 +122,7 @@ static msg_t PollAccelThread(void *semp){
 /**
  *
  */
-static void search_indexes(void){
+static void __search_indexes(void){
   xoffset   = ValueSearch("ACC_xoffset");
   yoffset   = ValueSearch("ACC_yoffset");
   zoffset   = ValueSearch("ACC_zoffset");
@@ -135,33 +135,17 @@ static void search_indexes(void){
   still_thr = ValueSearch("IMU_still_thr");
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
 /**
  *
  */
-bool_t is_device_still(void){
-  return DeviceStill;
-}
-
-/**
- * Raise still flag
- */
-void device_still_clear(void){
-  DeviceStill = TRUE;
+static void __hard_init_short(void){
 }
 
 /**
  *
  */
-void init_mma8451(BinarySemaphore *mma8451_semp){
-
-  search_indexes();
-
-  /* Помни о том, что большинство конфигурационных регистров нельзя менять
+static void __hard_init_full(void){
+    /* Помни о том, что большинство конфигурационных регистров нельзя менять
    в активном режиме, надо сначала свалить девайс в STANDBY. */
 
   // TODO: run autodiagnostic
@@ -199,6 +183,24 @@ void init_mma8451(BinarySemaphore *mma8451_semp){
   //txbuf[1] = 0b100101; //50Hz, low noice, active
   i2c_transmit(mma8451addr, txbuf, 2, rxbuf, 0);
   chThdSleepMilliseconds(2);
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+/**
+ *
+ */
+void init_mma8451(BinarySemaphore *mma8451_semp){
+
+  __search_indexes();
+
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   chThdCreateStatic(PollAccelThreadWA,
           sizeof(PollAccelThreadWA),
@@ -208,4 +210,16 @@ void init_mma8451(BinarySemaphore *mma8451_semp){
   chThdSleepMilliseconds(1);
 }
 
+/**
+ *
+ */
+bool_t is_device_still(void){
+  return DeviceStill;
+}
 
+/**
+ * Raise still flag
+ */
+void device_still_clear(void){
+  DeviceStill = TRUE;
+}

@@ -146,7 +146,7 @@ static void check_and_clean_overdose(void){
 /**
  *
  */
-static void search_indexes(void){
+static void __search_indexes(void){
   xoffset = ValueSearch("MAG_xoffset");
   yoffset = ValueSearch("MAG_yoffset");
   zoffset = ValueSearch("MAG_zoffset");
@@ -158,15 +158,16 @@ static void search_indexes(void){
   zsens   = ValueSearch("MAG_zsens");
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
+/**
+ *
  */
-void init_mag3110(BinarySemaphore *mag3110_semp){
+static void __hard_init_short(void){
+}
 
-  search_indexes();
-
+/**
+ *
+ */
+static void __hard_init_full(void){
   // TODO: сначала вообще убедиться, что девайс отвечает путем запроса его WHOAMI
   // TODO: запустить в нем самодиагностику
 
@@ -183,15 +184,31 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
   /* выводим из спящего режима, настраиваем чувствительность */
   //txbuf[1] = 0b11001;    // 10 Hz, 8 samples
   txbuf[1] = 0b1001;       // 40 Hz, 2 samples
-  while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
+  i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
 
   /* произведём сервисный сброс датчика */
   chThdSleepMilliseconds(2);
   txbuf[0] = MAG_CTRL_REG2;
   txbuf[1] = MAG_RST;
-  while(i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
+  i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
+}
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+/**
+ *
+ */
+void init_mag3110(BinarySemaphore *mag3110_semp){
+
+  __search_indexes();
+
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   chThdSleepMilliseconds(2);
   chThdCreateStatic(PollMagThreadWA,

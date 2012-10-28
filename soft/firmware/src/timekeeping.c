@@ -139,7 +139,7 @@ systime_t GetTimeInterval(systime_t *last){
 /**
  * Command to handle RTC.
  */
-Thread* date_cmd(int argc, const char * const * argv, SerialDriver *sdp){
+Thread* date_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   (void)sdp;
 
   struct tm timp;

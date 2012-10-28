@@ -93,12 +93,34 @@ static msg_t PollMax1236Thread(void *arg) {
   return 0;
 }
 
+/**
+ *
+ */
+static void __hard_init_short(void){
+}
+
+/**
+ *
+ */
+static void __hard_init_full(void){
+  #if CH_DBG_ENABLE_ASSERTS
+    // clear bufers. Just to be safe.
+    uint32_t i = 0;
+    for (i = 0; i < MAX1236_TX_DEPTH; i++){txbuf[i] = 0x55;}
+    for (i = 0; i < MAX1236_RX_DEPTH; i++){rxbuf[i] = 0x55;}
+  #endif
+
+  txbuf[0] = 0b11110011;
+  txbuf[1] = 0b00000101;
+
+  i2c_transmit(max1236addr, txbuf, 2, rxbuf, 0);
+}
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-
 /**
  * see datasheet on page 13 how to initialize ADC
  */
@@ -106,18 +128,10 @@ void init_max1236(void){
 
   flen_pres_dyn = ValueSearch("FLEN_pres_dyn");
 
-#if CH_DBG_ENABLE_ASSERTS
-  // clear bufers. Just to be safe.
-  uint32_t i = 0;
-  for (i = 0; i < MAX1236_TX_DEPTH; i++){txbuf[i] = 0x55;}
-  for (i = 0; i < MAX1236_RX_DEPTH; i++){rxbuf[i] = 0x55;}
-#endif
-
-  txbuf[0] = 0b11110011;
-  txbuf[1] = 0b00000101;
-
-  while(i2c_transmit(max1236addr, txbuf, 2, rxbuf, 0) != RDY_OK)
-    ;
+  if (need_full_init())
+    __hard_init_full();
+  else
+    __hard_init_short();
 
   chThdCreateStatic(PollMax1236ThreadWA,
           sizeof(PollMax1236ThreadWA),

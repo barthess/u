@@ -40,7 +40,7 @@ static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sd
 static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
     {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
-    {"date",      &date_cmd,          "print and set current date"},
+    {"date",      &date_clicmd,       "print and set current date"},
     {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
     {"echo",      &echo_clicmd,       "echo it's input to terminal"},
     {"help",      &help_clicmd,       "this message"},
