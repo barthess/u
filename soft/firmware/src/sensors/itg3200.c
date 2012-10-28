@@ -124,7 +124,7 @@ static void sort_rxbuff(uint8_t *rxbuf){
 /**
  * Поток для опроса хероскопа
  */
-static WORKING_AREA(PollGyroThreadWA, 192);
+static WORKING_AREA(PollGyroThreadWA, 256);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 

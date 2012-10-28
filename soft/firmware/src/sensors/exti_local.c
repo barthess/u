@@ -282,8 +282,3 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
 void ExtiEnablePps(void){
   extChannelEnable(&EXTD1, 0);
 }
-
-
-
-
-

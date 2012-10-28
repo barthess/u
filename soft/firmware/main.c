@@ -21,9 +21,7 @@ Giovanni
 
 // TODO: save calibration values in bkp and eeprom for faster startup after panic recovery
 // TODO: save mission data in bkp for recovery if panic occured during mission
-// TODO: save and load gyro period from bkp
 
-// TODO: add autotests for I2C sensors
 // TODO: log compressed format
 // TODO: cli for format, ls, rm
 

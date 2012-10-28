@@ -96,7 +96,7 @@ static void process_accel_data(uint8_t *rxbuf){
 /**
  *
  */
-static WORKING_AREA(PollAccelThreadWA, 216);
+static WORKING_AREA(PollAccelThreadWA, 256);
 static msg_t PollAccelThread(void *semp){
   chRegSetThreadName("PollAccel");
 

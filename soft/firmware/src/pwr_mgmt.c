@@ -81,7 +81,7 @@ static uint32_t get_comp_main_current(uint16_t raw){
 /*
  * Process ADC data.
  */
-static WORKING_AREA(PowerKeeperThreadWA, 64);
+static WORKING_AREA(PowerKeeperThreadWA, 96);
 static msg_t PowerKeeperThread(void *arg){
   chRegSetThreadName("PowerKeeper");
   (void)arg;

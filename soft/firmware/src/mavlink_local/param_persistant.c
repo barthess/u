@@ -77,7 +77,7 @@ bool_t load_params_from_eeprom(void){
 }
 
 /**
- *
+ * Save all parameter to EEPROM
  */
 bool_t save_params_to_eeprom(void){
   int32_t i;
@@ -115,7 +115,7 @@ bool_t save_params_to_eeprom(void){
   }
 
   palSetPad(GPIOB, GPIOB_LED_R);
-  return 0;
+  return PARAM_SUCCESS;
 }
 
 

@@ -58,7 +58,7 @@ static void process_magentometer_data(uint8_t *rxbuf);
 /**
  * Поток для опроса магнитометра
  */
-static WORKING_AREA(PollMagThreadWA, 200);
+static WORKING_AREA(PollMagThreadWA, 256);
 static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
 
