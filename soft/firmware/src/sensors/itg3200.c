@@ -22,7 +22,7 @@ extern CompensatedData comp_data;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 
-uint32_t imu_update_period = 10000; /* close to real value (10mS) */
+uint32_t GyroUpdatePeriodUs; /* uS */
 
 /*
  ******************************************************************************
@@ -65,7 +65,7 @@ static float calc_gyro_rate(int32_t raw, float sens){
  * Получение приращения угла исходя из угловой скорости и временем между выборками
  */
 static float get_degrees(float raw){
-  float t = (float)imu_update_period / 1000000.0;
+  float t = (float)GyroUpdatePeriodUs / 1000000.0;
   return raw * ((t * 180) / PI);
 }
 
@@ -231,6 +231,9 @@ static void __hard_init_full(void){
  *
  */
 void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
+
+  /* set close to real value. It can be updated later using EXTI module */
+  GyroUpdatePeriodUs = 10000;
 
   imusync_semp = imu_semp;
 

@@ -26,7 +26,10 @@
  * EXTERNS
  ******************************************************************************
  */
-extern uint32_t imu_update_period;
+#if !GYRO_UPDATE_PERIOD_HARDCODED
+extern uint32_t GyroUpdatePeriodUs;
+#endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
+
 extern BinarySemaphore rtc_sem;
 //extern mavlink_system_t mavlink_system_struct;
 extern Mailbox speedometer_mb;
@@ -46,11 +49,14 @@ BinarySemaphore *itg3200_semp = NULL;
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
 
+#if !GYRO_UPDATE_PERIOD_HARDCODED
 /* флаг, означающий надо ли измерять частоту получения сэмплов */
 static int32_t itg3200_period_measured = -100; /* -100 означает, что надо пропустить 100 первых сэмплов */
-
 /* для измерения периода получения сэмплов с гироскопа */
 static TimeMeasurement itg3200_tmup;
+#endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
+
+/* for tachometer measure */
 static TimeMeasurement tacho_tmup;
 
 /*
@@ -165,16 +171,18 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   (void)channel;
   chSysLockFromIsr();
 
+#if !GYRO_UPDATE_PERIOD_HARDCODED
   if (itg3200_period_measured < 2){
     if (itg3200_period_measured == 0){
       tmStartMeasurement(&itg3200_tmup);
     }
     else if(itg3200_period_measured == 1){
       tmStopMeasurement(&itg3200_tmup);
-      imu_update_period = RTT2US(itg3200_tmup.last);
+      GyroUpdatePeriodUs = RTT2US(itg3200_tmup.last);
     }
     itg3200_period_measured++;
   }
+#endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
   chBSemSignalI(itg3200_semp);
   chSysUnlockFromIsr();
@@ -259,7 +267,10 @@ void ExtiInitLocal(BinarySemaphore *mag3110_sem,
   starttacho_vt();
   chSysUnlock();
 
+#if !GYRO_UPDATE_PERIOD_HARDCODED
   tmObjectInit(&itg3200_tmup);
+#endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
+
   tmObjectInit(&tacho_tmup);
 
   extStart(&EXTD1, &extcfg);

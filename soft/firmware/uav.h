@@ -87,6 +87,10 @@
 #define HALT_DISARM_TMO_SEC     30
 
 /******************************************************************
+ * use hardcoded value instead of measured */
+#define GYRO_UPDATE_PERIOD_HARDCODED     TRUE
+
+/******************************************************************
  * приоритеты для потоков */
 #define I2C_THREADS_PRIO          (NORMALPRIO + 5)
 #define GYRO_THREADS_PRIO         (I2C_THREADS_PRIO + 2)

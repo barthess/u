@@ -17,7 +17,7 @@
  */
 extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_attitude_struct;
-extern uint32_t imu_update_period;
+extern uint32_t GyroUpdatePeriodUs;
 
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
@@ -105,9 +105,9 @@ static msg_t Imu(void *semp) {
   const uint32_t decimator = 0b11;
 
   /* wait until giro sampling time measured */
-  while (imu_update_period == 0)
+  while (GyroUpdatePeriodUs == 0)
     chThdSleepMilliseconds(10);
-  interval = (((float)imu_update_period)/1000000.0);
+  interval = (((float)GyroUpdatePeriodUs)/1000000.0);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(100));
