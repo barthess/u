@@ -109,7 +109,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
       save_param_to_eeprom("GYRO_x_zerosum");
       save_param_to_eeprom("GYRO_y_zerosum");
       save_param_to_eeprom("GYRO_z_zerosum");
-      /* just to be safe because it can be changed manually from QGC */
+      /* just to be safe. Because it can be changed manually from QGC */
       save_param_to_eeprom("GYRO_zerocnt");
 
       mavlink_system_struct.state = MAV_STATE_STANDBY;

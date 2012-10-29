@@ -19,7 +19,7 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
-// TODO: save calibration values in bkp and eeprom for faster startup after panic recovery
+// TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: save mission data in bkp for recovery if panic occured during mission
 
 // TODO: log compressed format

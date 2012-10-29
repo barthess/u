@@ -73,17 +73,12 @@ static float get_degrees(float raw){
 static void process_gyro_data(void){
   int32_t gyroX, gyroY, gyroZ;
 
-  /* NOTE!!!
-   * Now we must correct placement of gyro on PCB.
-   * In our case we need to swap just x and y axis */
-  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt;
-  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt;
-  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt;
-
-  /* and advance to zero offsets */
-  gyroX -= *x_zerosum;
-  gyroY -= *y_zerosum;
-  gyroZ -= *z_zerosum;
+  /* NOTE!!! This next 3 lines of code looks like mistake but it is NOT!
+   * We must correct placement of gyro on PCB.
+   * In our case we need to swap just X and Y axis */
+  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt - *y_zerosum;
+  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt - *x_zerosum;
+  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt - *z_zerosum;
 
   /* adjust rotation direction */
   gyroX *= *xpol;
