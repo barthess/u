@@ -32,11 +32,10 @@ Giovanni
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
-// TODO: Power brown out handler (using ADC comparator?) for sync/umout SDC.
-// TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
+// TODO: Power brown out handler (using ADC comparator on power supply pin?) for sync/umout SDC.
 // TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
-// TODO: WDT with backup domain for fuckups investigation.
+// TODO: WDT?.
 
 #include "uav.h"
 
