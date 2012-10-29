@@ -14,7 +14,7 @@
  */
 extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
-extern MemoryHeap ThdHeap;
+extern CompensatedData comp_data;
 extern mavlink_system_t mavlink_system_struct;
 
 /*
@@ -28,8 +28,12 @@ extern mavlink_system_t mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static BinarySemaphore gyro_cal_sem;
-static Thread* GyroCal_tp;
+static gyrocalstate_t gyrocalstate;
+
+static int32_t  *x_zerosum, *y_zerosum, *z_zerosum;
+static uint32_t const *zerocount;
+
+static uint32_t SamplesCnt;
 
 /*
  ******************************************************************************
@@ -39,52 +43,90 @@ static Thread* GyroCal_tp;
  ******************************************************************************
  */
 
-/*
+/**
+ * For initilize calibration you must set global flag "gyro_cal"
+ *
  * Blinking -- device is not still
  * Light without blinking -- collecting statistics
+ *
+ * Return FALSE if nothing to do, otherwise - TRUE
  */
-static WORKING_AREA(GyroCalThreadWA, 256);
-static msg_t GyroCalThread(void *arg){
-  chRegSetThreadName("GyroCal");
-  (void)arg;
+bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
 
-  uint32_t const *zerocount = ValueSearch("GYRO_zerocnt");
-  uint32_t SamplesCnt = *zerocount;
-  msg_t sem_status = RDY_OK;
+  switch(gyrocalstate){
 
-  /**/
-  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+  /* wait for "gyro_cal" flag */
+  case GYROCAL_READY:
+    if (GlobalFlags.gyro_cal != 1)
+      return GYRO_STAT_UNCHANGED;
+    else
+      gyrocalstate = GYROCAL_WAIT_FOR_STILL;
+    break;
 
-  /* main loop */
-  while(SamplesCnt){
-    sem_status = chBSemWaitTimeout(&gyro_cal_sem, MS2ST(50));
-    if (sem_status == RDY_OK){
-      if(is_device_still()){
-        raw_data.xgyro_zero_sum += raw_data.xgyro;
-        raw_data.ygyro_zero_sum += raw_data.ygyro;
-        raw_data.zgyro_zero_sum += raw_data.zgyro;
-        SamplesCnt--;
-        SheduleBlink(3, MS2ST(20), MS2ST(1));
-      }
-      else{
-        /* clear all collected statistics */
-        raw_data.xgyro_zero_sum = 0;
-        raw_data.ygyro_zero_sum = 0;
-        raw_data.zgyro_zero_sum = 0;
-        SamplesCnt = *zerocount;
-        device_still_clear();
-        SheduleBlink(3, MS2ST(20), MS2ST(100));
-      }
+
+  /* wait for stillness and clear statistics every non still cycle */
+  case GYROCAL_WAIT_FOR_STILL:
+    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+
+    /* clear all collected statistics */
+    raw_data.xgyro_zero_sum = 0;
+    raw_data.ygyro_zero_sum = 0;
+    raw_data.zgyro_zero_sum = 0;
+    SamplesCnt = *zerocount;
+
+    device_still_clear();
+    SheduleBlink(3, MS2ST(20), MS2ST(100));
+
+    gyrocalstate = GYROCAL_COLLECTING;
+    break;
+
+  /* collecting samples in sums */
+  case GYROCAL_COLLECTING:
+    if(is_device_still()){
+      raw_data.xgyro_zero_sum += x;
+      raw_data.ygyro_zero_sum += y;
+      raw_data.zgyro_zero_sum += z;
+      SamplesCnt--;
+      SheduleBlink(3, MS2ST(20), MS2ST(1));
     }
-    /* sigterm handler */
-    if (chThdShouldTerminate())
+    else{
+      gyrocalstate = GYROCAL_WAIT_FOR_STILL;
       break;
+    }
+
+    if (SamplesCnt == 0){  /* Collecting done. */
+      clearGlobalFlag(GlobalFlags.gyro_cal);
+      chSysLock();
+      *x_zerosum = raw_data.xgyro_zero_sum;
+      *y_zerosum = raw_data.ygyro_zero_sum;
+      *z_zerosum = raw_data.zgyro_zero_sum;
+      comp_data.xgyro_angle   = 0;
+      comp_data.ygyro_angle   = 0;
+      comp_data.zgyro_angle   = 0;
+      chSysUnlock();
+
+      /* store in EEPROM for fast boot */
+      save_param_to_eeprom("GYRO_x_zerosum");
+      save_param_to_eeprom("GYRO_y_zerosum");
+      save_param_to_eeprom("GYRO_z_zerosum");
+      /* just to be safe because it can be changed manually from QGC */
+      save_param_to_eeprom("GYRO_zerocnt");
+
+      mavlink_system_struct.state = MAV_STATE_STANDBY;
+      gyrocalstate = GYROCAL_READY;
+    }
+    break;
+
+  /* error traps */
+  case GYROCAL_UNINIT:
+    chDbgPanic("Gyro calibrator uninitialized");
+    break;
+  default:
+    chDbgPanic("Wrong case");
+    break;
   }
 
-  mavlink_system_struct.state = MAV_STATE_STANDBY;
-  clearGlobalFlag(GlobalFlags.gyro_cal);
-  chThdExit(0);
-  return 0;
+  return GYRO_STAT_UPDATED;
 }
 
 
@@ -93,26 +135,20 @@ static msg_t GyroCalThread(void *arg){
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-/**
- * Syncronization functions
- */
-void gyro_stat_update(void){
-  chBSemSignal(&gyro_cal_sem);
-}
 
 /**
  *
  */
-Thread* GyroCalStart(void){
-  chBSemInit(&gyro_cal_sem,  TRUE);
+void GyroCalInit(void){
+  gyrocalstate = GYROCAL_UNINIT;
 
-  GyroCal_tp = chThdCreateFromHeap(&ThdHeap,
-                            sizeof(GyroCalThreadWA),
-                            GYRO_THREADS_PRIO - 1,
-                            GyroCalThread,
-                            NULL);
-  if (GyroCal_tp == NULL)
-    chDbgPanic("can not allocate memory");
+  zerocount = ValueSearch("GYRO_zerocnt");
+  x_zerosum = ValueSearch("GYRO_x_zerosum");
+  y_zerosum = ValueSearch("GYRO_y_zerosum");
+  z_zerosum = ValueSearch("GYRO_z_zerosum");
 
-  return GyroCal_tp;
+  gyrocalstate = GYROCAL_READY;
 }
+
+
+

@@ -112,18 +112,19 @@ const GlobalParam_t GlobalParam[] = {
   {"GYRO_xpol",       {.i32 = -1},         &gp_val[37],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   {"GYRO_ypol",       {.i32 = -1},         &gp_val[38],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
   {"GYRO_zpol",       {.i32 = -1},         &gp_val[39],    {.i32 = 1},          MAVLINK_TYPE_INT32_T, NULL},
-  /* sample count for zeroing */
-  {"GYRO_zerocnt",    {.u32 = 0},          &gp_val[40],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
-  {"GYRO_reserv1",    {.u32 = 0},          &gp_val[41],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
-  {"GYRO_reserv2",    {.u32 = 0},          &gp_val[42],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, NULL},
+
+  {"GYRO_zerocnt",    {.u32 = 0},          &gp_val[40],    {.u32 = 16384},      MAVLINK_TYPE_UINT32_T, "sample count for zeroing using accumulated sums"},
+  {"GYRO_x_zerosum",  {.i32 = -20000000},  &gp_val[41],    {.i32 = 20000000},   MAVLINK_TYPE_INT32_T, "accumulated sum X"},
+  {"GYRO_y_zerosum",  {.i32 = -20000000},  &gp_val[42],    {.i32 = 20000000},   MAVLINK_TYPE_INT32_T, "accumulated sum Y"},
+  {"GYRO_z_zerosum",  {.i32 = -20000000},  &gp_val[43],    {.i32 = 20000000},   MAVLINK_TYPE_INT32_T, "accumulated sum Z"},
+
+  {"GYRO_reserved2",  {.i32 = -20000000},  &gp_val[44],    {.i32 = 20000000},   MAVLINK_TYPE_INT32_T, NULL},
+  {"GYRO_reserved3",  {.i32 = -20000000},  &gp_val[45],    {.i32 = 20000000},   MAVLINK_TYPE_INT32_T, NULL},
 
   /**** PMU - pressure measurement unit ****/
   // coefficients for thermal compensation
-  {"PMU_reserved1",   {.i32 = -2000000},   &gp_val[43],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
-  {"PMU_reserved2",   {.i32 = -2000000},   &gp_val[44],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
-  {"PMU_reserved3",   {.i32 = -2000000},   &gp_val[45],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
-  {"PMU_reserved4",   {.i32 = -2000000},   &gp_val[46],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
-  {"PMU_reserved5",   {.i32 = -2000000},   &gp_val[47],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved0",   {.i32 = -2000000},   &gp_val[46],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
+  {"PMU_reserved1",   {.i32 = -2000000},   &gp_val[47],    {.i32 = 2000000},    MAVLINK_TYPE_INT32_T, NULL},
 
   /**** ADC coefficients ****/
   {"ADC_car_I_k",     {.i32 = -1000000},   &gp_val[48],    {.i32 = 1000000},    MAVLINK_TYPE_INT32_T, "k coefficient for calculation from ADC values to uA using formulae y=kx+b\nfor ground rover"},
@@ -549,7 +550,7 @@ void ParametersInit(void){
     void *vp = GlobalParam[i].valuep;
     for (n = i+1; n < OnboardParamCount; n++){
       if (vp == GlobalParam[n].valuep)
-        chDbgPanic("detected two pointers pointing to single parameter");
+        chDbgPanic("Duplicate indexes detected");
     }
   }
 
