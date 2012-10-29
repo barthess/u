@@ -145,18 +145,22 @@ static void uav_hardfault_handler(void){
  * If system runs enough amount of time that perform soft reset instead of
  * halting in panic.
  *
- * TODO: save statck and registers in nonvolatile memory.
+ * TODO: save statck and registers and panic message in nonvolatile memory.
  */
 void uav_panic_handler(void){
 
   /* under debugging control we must allways halt system */
-  if (is_under_debugger())
-    return;
+  if (is_under_debugger()){
+    __asm("BKPT #0\n") ; // Break into the debugger
+  }
 
   if (GlobalFlags.allow_softreset)
     NVIC_SystemReset();
 }
 
+/**
+ *
+ */
 void DebugMonitorVector(void) {
   uav_hardfault_handler();
 }
