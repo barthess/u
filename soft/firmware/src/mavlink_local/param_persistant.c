@@ -58,13 +58,14 @@ bool_t load_params_from_eeprom(void){
   int32_t  index = -1;
   uint32_t status = 0;
   uint32_t v = 0;
+  bool_t   need_update_eeprom = FALSE;
 
   acquire_settings_file();
   chFileStreamSeek(&EepromSettingsFile, 0);
 
   for (i = 0; i < OnboardParamCount; i++){
 
-    /* reade field from EEPROM and check number of red bytes */
+    /* read field from EEPROM and check number of red bytes */
     status = chFileStreamRead(&EepromSettingsFile, eeprombuf, PARAM_RECORD_SIZE);
     if (status < PARAM_RECORD_SIZE){
       chDbgPanic("");
@@ -73,18 +74,29 @@ bool_t load_params_from_eeprom(void){
 
     /* search value by key and set it if found */
     index = key_index_search((char *)eeprombuf);
-    if (index != -1){
+    if (index != -1){   /* OK, this parameter early present in EEPROM */
       v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
           eeprombuf[PARAM_ID_SIZE + 1] << 16 |
-          eeprombuf[PARAM_ID_SIZE + 2] << 8 |
+          eeprombuf[PARAM_ID_SIZE + 2] << 8  |
           eeprombuf[PARAM_ID_SIZE + 3];
+    }
+    else{
+      /* there is not such parameter in EEPROM. Possible reason - parameter
+       * structure been changed. To correctly fix this we just need to
+       * save structure to EEPROM after loading of all parameters. Lets raise
+       * flag to do that in the end. */
+      need_update_eeprom = TRUE;
     }
 
     /* check value acceptability and set it */
     set_global_param(&v, &(GlobalParam[i]));
   }
-
   release_settings_file();
+
+  /* refresh EEPROM data */
+  if (need_update_eeprom)
+    save_all_params_to_eeprom();
+
   return PARAM_SUCCESS;
 }
 

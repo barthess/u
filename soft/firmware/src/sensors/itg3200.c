@@ -32,12 +32,10 @@ uint32_t GyroUpdatePeriodUs; /* uS */
 static uint8_t rxbuf[GYRO_RX_DEPTH];
 static uint8_t txbuf[GYRO_TX_DEPTH];
 
-/* количество сэмплов для усреднения */
-//static uint32_t SamplesCnt;
-
 /* указатели на коэффициенты */
-static float  const   *xsens, *ysens, *zsens;
-static int32_t  const *xpol,  *ypol,  *zpol;
+static float    const *xsens,     *ysens,     *zsens;
+static int32_t  const *xpol,      *ypol,      *zpol;
+static int32_t  const *x_zerosum, *y_zerosum, *z_zerosum;
 static uint32_t const *zerocnt;
 
 /* семафор для синхронизации инерциалки с хероскопом */
@@ -75,10 +73,12 @@ static float get_degrees(float raw){
 static void process_gyro_data(void){
   int32_t gyroX, gyroY, gyroZ;
 
-  /* correct placement (we need to swap just x and y axis) and advance to zero offset */
-  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt - raw_data.ygyro_zero_sum;
-  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt - raw_data.xgyro_zero_sum;
-  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt - raw_data.zgyro_zero_sum;
+  /* NOTE!!! This next 3 lines of code looks like mistake but it is NOT!
+   * We must correct placement of gyro on PCB.
+   * In our case we need to swap just X and Y axis */
+  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt - *y_zerosum;
+  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt - *x_zerosum;
+  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt - *z_zerosum;
 
   /* adjust rotation direction */
   gyroX *= *xpol;
@@ -124,13 +124,12 @@ static void sort_rxbuff(uint8_t *rxbuf){
 /**
  * Поток для опроса хероскопа
  */
-static WORKING_AREA(PollGyroThreadWA, 256);
+static WORKING_AREA(PollGyroThreadWA, 384);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
-  Thread *cal_tp = NULL;
 
   /* variables for regulate log writing frequency */
   uint32_t i = 0;
@@ -144,29 +143,21 @@ static msg_t PollGyroThread(void *semp){
     }
     txbuf[0] = GYRO_OUT_DATA;     // register address
     i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
-    sort_rxbuff(rxbuf);
 
-    /* decide to fork or collect terminated calibration thread */
-    if (GlobalFlags.gyro_cal){
-      if (cal_tp == NULL)
-        cal_tp = GyroCalStart();
-      gyro_stat_update();
-    }
-    else{ /* thread collected all needed data and termintaed itself */
-      if ((cal_tp != NULL) && (cal_tp->p_state == THD_STATE_FINAL)){
-        chThdWait(cal_tp);
-        cal_tp = NULL;
-      }
-      process_gyro_data();
-      chBSemSignal(imusync_semp);/* say to IMU "we have fresh data "*/
-      log_write_schedule(MAVLINK_MSG_ID_RAW_IMU, &i, decimator);
-      i--; /* trick to avoid having one more variable for decimating */
-      log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU, &i, decimator);
-    }
+    /* process data */
+    sort_rxbuff(rxbuf);
+    process_gyro_data();
+    if (gyro_stat_update(raw_data.xgyro, raw_data.ygyro, raw_data.zgyro) ==
+                                                          GYRO_STAT_UNCHANGED)
+      chBSemSignal(imusync_semp);/* say IMU "we have fresh data "*/
+
+    /**/
+    log_write_schedule(MAVLINK_MSG_ID_RAW_IMU, &i, decimator);
+    i--; /* trick to avoid having one more variable for decimating */
+    log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU, &i, decimator);
   }
   return 0;
 }
-
 
 /**
  *  perform searching of indexes
@@ -175,10 +166,15 @@ static void __search_indexes(void){
   xsens   = ValueSearch("GYRO_xsens");
   ysens   = ValueSearch("GYRO_ysens");
   zsens   = ValueSearch("GYRO_zsens");
+
   xpol    = ValueSearch("GYRO_xpol");
   ypol    = ValueSearch("GYRO_ypol");
   zpol    = ValueSearch("GYRO_zpol");
-  zerocnt = ValueSearch("GYRO_zerocnt");
+
+  zerocnt   = ValueSearch("GYRO_zerocnt");
+  x_zerosum = ValueSearch("GYRO_x_zerosum");
+  y_zerosum = ValueSearch("GYRO_y_zerosum");
+  z_zerosum = ValueSearch("GYRO_z_zerosum");
 }
 
 /**
@@ -249,15 +245,16 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   else
     __hard_init_short();
 
+  /* schedule calibration */
+  GyroCalInit();
+  if (need_full_init())
+    setGlobalFlag(GlobalFlags.gyro_cal);
+
   /**/
   chThdCreateStatic(PollGyroThreadWA,
           sizeof(PollGyroThreadWA),
-          //I2C_THREADS_PRIO,
-          GYRO_THREADS_PRIO,
+          I2C_THREADS_PRIO,
           PollGyroThread,
           itg3200_semp);
-
-  /* fireup calibration */
-  setGlobalFlag(GlobalFlags.gyro_cal);
 }
 

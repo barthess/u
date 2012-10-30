@@ -19,7 +19,7 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
-// TODO: save calibration values in bkp and eeprom for faster startup after panic recovery
+// TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: save mission data in bkp for recovery if panic occured during mission
 
 // TODO: log compressed format
@@ -32,11 +32,10 @@ Giovanni
 
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
-// TODO: Power brown out handler (using ADC comparator?) for sync/umout SDC.
-// TODO: Events on differnt subsystems failures (gyro_failed, gps_failed, etc.)
+// TODO: Power brown out handler (using ADC comparator on power supply pin?) for sync/umout SDC.
 // TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
-// TODO: WDT with backup domain for fuckups investigation.
+// TODO: WDT?.
 
 #include "uav.h"
 

@@ -121,9 +121,9 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.hdg = HDG_UNKNOWN;
 
   /* установим последние достоверные кординаты */
-  mavlink_global_position_int_struct.lat = bkpGetGpsLatitude();
-  mavlink_global_position_int_struct.lon = bkpGetGpsLongitude();
-  mavlink_global_position_int_struct.alt = bkpGetGpsAltitude();
+  mavlink_global_position_int_struct.lat = bkpGpsLatitude;
+  mavlink_global_position_int_struct.lon = bkpGpsLongitude;
+  mavlink_global_position_int_struct.alt = bkpGpsAltitude;
 
   while(TRUE){
 
@@ -240,9 +240,9 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     global_pos_struct->alt = gps_altitude * 10;
 
     /* сохраним координаты на будущее */
-    bkpSaveGpsLatitude(global_pos_struct->lat);
-    bkpSaveGpsLongitude(global_pos_struct->lon);
-    bkpSaveGpsAltitude(global_pos_struct->alt);
+    bkpGpsLatitude  = global_pos_struct->lat;
+    bkpGpsLongitude = global_pos_struct->lon;
+    bkpGpsAltitude  = global_pos_struct->alt;
 
     raw_data.gps_valid = TRUE;
 
@@ -259,9 +259,9 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     raw_data.gps_satellites = 0;
 
     /* отправим последние достоверные кординаты */
-    global_pos_struct->lat = bkpGetGpsLatitude();
-    global_pos_struct->lon = bkpGetGpsLongitude();
-    global_pos_struct->alt = bkpGetGpsAltitude();
+    global_pos_struct->lat = bkpGpsLatitude;
+    global_pos_struct->lon = bkpGpsLongitude;
+    global_pos_struct->alt = bkpGpsAltitude;
 	}
 
   log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
