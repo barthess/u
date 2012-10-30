@@ -7,6 +7,7 @@
  */
 extern GlobalFlags_t GlobalFlags;
 extern Mailbox tolink_mb;
+extern uint32_t LastResetFlags;
 
 extern mavlink_system_t       mavlink_system_struct;
 extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
@@ -81,8 +82,10 @@ static msg_t SanityControlThread(void *arg) {
     palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
     chThdSleep(led_flash_time);
     mavlink_sys_status_struct.load = get_cpu_load();
+    /* how many times device was soft resetted */
     mavlink_sys_status_struct.errors_count1 = bkpSoftResetCnt;
-
+    /* reset flags */
+    mavlink_sys_status_struct.errors_count2 = LastResetFlags >> 24;
     if (GlobalFlags.sighalt){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);
@@ -123,14 +126,22 @@ static msg_t RedBlinkThread(void *arg) {
  *
  */
 void SanityControlInit(void){
+  chBSemInit(&blink_sem,  TRUE);
+  IdleThread_p = chSysGetIdleThread();
 
+  /* setup blinker timings */
   if (was_softreset())
-    led_flash_time = MS2ST(850);  /* error flash time */
+    led_flash_time = MS2ST(900);  /* error flash time */
   else
     led_flash_time = MS2ST(50);   /* normal flash time */
 
-  chBSemInit(&blink_sem,  TRUE);
-  IdleThread_p = chSysGetIdleThread();
+  /* write soft reset event to "log" and clean it in case of pad reset */
+  if (was_softreset())
+    bkpSoftResetCnt++;
+//  if (was_padreset())
+//    bkpSoftResetCnt = 0;
+
+  /**/
   chThdCreateStatic(SanityControlThreadWA,
           sizeof(SanityControlThreadWA),
           NORMALPRIO,
@@ -141,10 +152,6 @@ void SanityControlInit(void){
           NORMALPRIO - 10,
           RedBlinkThread,
           NULL);
-
-  /* write "message" to log */
-  if (was_softreset())
-    bkpSoftResetCnt++;
 }
 
 /**

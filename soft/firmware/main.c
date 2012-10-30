@@ -20,6 +20,7 @@ Giovanni
 */
 
 // TODO: save DCM in bkp for faster startup after panic recovery
+// TODO: params in bkp
 // TODO: save mission data in bkp for recovery if panic occured during mission
 
 // TODO: log compressed format
@@ -35,7 +36,7 @@ Giovanni
 // TODO: Power brown out handler (using ADC comparator on power supply pin?) for sync/umout SDC.
 // TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
 // TODO: Rewrite XBee code for use DMA.
-// TODO: WDT?.
+// TODO: WDT?
 
 #include "uav.h"
 
@@ -63,8 +64,11 @@ static uint8_t link_thd_buf[THREAD_HEAP_SIZE + sizeof(stkalign_t)];
 /**/
 uint8_t currWpFrame = MAV_FRAME_GLOBAL;
 
-/**/
+/* new waypoint number for overwrite current */
 uint16_t WpSeqNew = 0;
+
+/* save here flags before clear them from MCU register */
+uint32_t LastResetFlags;
 
 /*
  ******************************************************************************
@@ -81,19 +85,14 @@ uint16_t WpSeqNew = 0;
  */
 
 int main(void) {
+  halInit();
+  chSysInit();
 
   /* enable softreset on panic */
   setGlobalFlag(GlobalFlags.allow_softreset);
 
-  halInit();
-  chSysInit();
-
   chBSemInit(&rtc_sem, TRUE);
   chBSemInit(&servo_updated_sem, TRUE);
-
-  /* clear soft resets counter */
-  if (!was_softreset())
-    bkpSoftResetCnt = 0;
 
   if (was_softreset() || was_padreset()){
     chThdSleepMilliseconds(1);
@@ -124,6 +123,8 @@ int main(void) {
   MavCmdInitLocal();
   StorageInit();
 
+  /**/
+  LastResetFlags = RCC->CSR;
   clear_reset_flags();
 
   while (TRUE){

@@ -19,8 +19,10 @@
 extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
 extern CompensatedData comp_data;
+
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
+extern mavlink_system_t mavlink_system_struct;
 
 uint32_t GyroUpdatePeriodUs; /* uS */
 
@@ -249,6 +251,8 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
   GyroCalInit();
   if (need_full_init())
     setGlobalFlag(GlobalFlags.gyro_cal);
+  else
+    mavlink_system_struct.state = MAV_STATE_STANDBY;
 
   /**/
   chThdCreateStatic(PollGyroThreadWA,

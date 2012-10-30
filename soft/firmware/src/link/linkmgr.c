@@ -38,7 +38,7 @@ static uint32_t const *sh_enable;
 /**
  * Track changes of sh_enable flag and fork appropriate threads
  */
-static WORKING_AREA(LinkMgrThreadWA, 96);
+static WORKING_AREA(LinkMgrThreadWA, 128);
 static msg_t LinkMgrThread(void *arg){
   chRegSetThreadName("LinkManager");
 
