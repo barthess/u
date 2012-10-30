@@ -20,8 +20,9 @@
 /**
  * Determine need of full initialization procedure logic
  */
-//#define need_full_init()    (!(((RCC)->CSR) & (RCC_CSR_SFTRSTF || RCC_CSR_PADRSTF)))
-#define need_full_init()      (!(((RCC)->CSR) & RCC_CSR_SFTRSTF))
+#define NEED_FULL_INIT_MASK   (RCC_CSR_PADRSTF & RCC_CSR_SFTRSTF)
+//#define need_full_init()    (!(was_softreset() || was_padreset()))
+#define need_full_init()    (!(was_softreset()))
 
 /**
  * clear all reset flags

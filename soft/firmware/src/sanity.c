@@ -35,9 +35,6 @@ static BinarySemaphore blink_sem;
 static uint32_t BlinkCnt = 0;
 static systime_t offtime = 10, ontime = 10;
 
-/* timer for RPM counting */
-static VirtualTimer haltdisarm_vt;
-
 /* how much time led is ON during one period */
 static systime_t led_flash_time;
 
@@ -117,17 +114,6 @@ static msg_t RedBlinkThread(void *arg) {
   return 0;
 }
 
-/**
- * Disarm halting on panic and changing it to soft reset.
- * Note. This functions is for using only in case of emergency in autonomouse flight.
- */
-static void haltdisarm_vt_cb(void *par){
-  (void)par;
-  chSysLockFromIsr();
-  setGlobalFlagI(GlobalFlags.allow_softreset);
-  chSysUnlockFromIsr();
-}
-
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -155,11 +141,6 @@ void SanityControlInit(void){
           NORMALPRIO - 10,
           RedBlinkThread,
           NULL);
-
-  /* start virtual timer for panic halt disarmig */
-  chSysLock();
-  chVTSetI(&haltdisarm_vt, S2ST(HALT_DISARM_TMO_SEC), &haltdisarm_vt_cb, NULL);
-  chSysUnlock();
 
   /* write "message" to log */
   if (was_softreset())

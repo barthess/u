@@ -82,11 +82,8 @@ uint16_t WpSeqNew = 0;
 
 int main(void) {
 
-//  nvicEnableVector(DebugMonitor_IRQn, CORTEX_PRIORITY_MASK(STM32_I2C_I2C1_IRQ_PRIORITY - 2));
-//  nvicEnableVector(PendSV_IRQn, CORTEX_PRIORITY_MASK(STM32_I2C_I2C1_IRQ_PRIORITY - 2));
-//  nvicEnableVector(BusFault_IRQn, CORTEX_PRIORITY_MASK(STM32_I2C_I2C1_IRQ_PRIORITY - 2));
-//  nvicEnableVector(UsageFault_IRQn, CORTEX_PRIORITY_MASK(STM32_I2C_I2C1_IRQ_PRIORITY - 2));
-//  nvicEnableVector(MemoryManagement_IRQn, CORTEX_PRIORITY_MASK(STM32_I2C_I2C1_IRQ_PRIORITY - 2));
+  /* enable softreset on panic */
+  setGlobalFlag(GlobalFlags.allow_softreset);
 
   halInit();
   chSysInit();
@@ -98,8 +95,9 @@ int main(void) {
   if (!was_softreset())
     bkpSoftResetCnt = 0;
 
-  if (was_softreset() || was_padreset())
+  if (was_softreset() || was_padreset()){
     chThdSleepMilliseconds(1);
+  }
   else
     chThdSleepMilliseconds(100);
 
@@ -114,21 +112,19 @@ int main(void) {
   MavlinkDbgPrintInit();
   MsgInit();
   SanityControlInit();
-  I2CInitLocal();     /* also starts EEPROM and load global parameters from it */
+  I2CInitLocal();
   ParametersInit();   /* read parameters from EEPROM via I2C*/
   MavInit();          /* mavlink constants initialization must be called after parameters init */
   ControllerInit();   /* must be started only after loading of parameters */
   LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
-  SensorsInit();      /* Note. Sensors use I2C */
+  SensorsInit();      /* Note. Sensors depends on I2C */
   PwrMgmtInit();
   TlmSenderInit();
   MavCmdInitLocal();
   StorageInit();
 
   clear_reset_flags();
-
-  save_param_to_eeprom("DBG_reserved0");
 
   while (TRUE){
     chThdSleepMilliseconds(666);
