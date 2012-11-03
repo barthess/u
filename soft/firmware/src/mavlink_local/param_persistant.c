@@ -50,15 +50,16 @@ static uint8_t eeprombuf[PARAM_RECORD_SIZE];
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
+
 /**
- *
+ * Load parameters from EEPROM to "registry"
  */
 bool_t load_params_from_eeprom(void){
   int32_t  i = 0;
   int32_t  index = -1;
   uint32_t status = 0;
   uint32_t v = 0;
-  bool_t   need_update_eeprom = FALSE;
+  bool_t   need_eeprom_update = FALSE;
 
   acquire_settings_file();
   chFileStreamSeek(&EepromSettingsFile, 0);
@@ -74,18 +75,22 @@ bool_t load_params_from_eeprom(void){
 
     /* search value by key and set it if found */
     index = key_index_search((char *)eeprombuf);
-    if (index != -1){   /* OK, this parameter early present in EEPROM */
+    if (index != -1){   /* OK, this parameter already presents in EEPROM */
       v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
           eeprombuf[PARAM_ID_SIZE + 1] << 16 |
           eeprombuf[PARAM_ID_SIZE + 2] << 8  |
           eeprombuf[PARAM_ID_SIZE + 3];
     }
     else{
-      /* there is not such parameter in EEPROM. Possible reason - parameter
-       * structure been changed. To correctly fix this we just need to
-       * save structure to EEPROM after loading of all parameters.
-       * To do that in the end raise flag. */
-      need_update_eeprom = TRUE;
+      /* there is not such parameter in EEPROM. Possible reasons:
+       * 1) parameter "registry" has been changed.
+       * 2) this is very first run of device with totally empty EEPROM
+       * To correctly fix this situation we just need to
+       * save structure to EEPROM after loading of all parameters to RAM.
+       */
+      need_eeprom_update = TRUE;
+      /* load default value */
+      v = GlobalParam[i].def.u32;
     }
 
     /* check value acceptability and set it */
@@ -94,7 +99,7 @@ bool_t load_params_from_eeprom(void){
   release_settings_file();
 
   /* refresh EEPROM data */
-  if (need_update_eeprom)
+  if (need_eeprom_update)
     save_all_params_to_eeprom();
 
   return PARAM_SUCCESS;

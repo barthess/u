@@ -18,7 +18,7 @@ typedef enum {
   PARAM_OK = 1,
   PARAM_NOT_CHANGED = 2,  /* parameter allready contain this value */
   PARAM_CLAMPED = 3,      /* value claped to limits */
-  PARAM_INCONSISTENT = 4, /* NaN or INF */
+  PARAM_INCONSISTENT = 4, /* NaN or INF or something else bad value */
   PARAM_WRONG_TYPE = 5,   /* unsuppoerted parameter type */
 } param_status_t;
 
@@ -42,17 +42,28 @@ typedef param_status_t (*checkfunction_t)(void *value, const GlobalParam_t *para
  * Global parameter
  */
 struct GlobalParam_t{
+  /**
+   * Name of parameter
+   */
   const char            *name;
-  const floatint        min;
+  const floatint        min;        /* allowed min */
   const floatint        def;        /* default */
-  const floatint        max;
+  const floatint        max;        /* allowed max*/
+  /**
+   * Pointer to value stored in RAM
+   */
   floatint              *valuep;
   /**
-   * Checker function. Set to NULL for automatic usage of
-   * default "put in range" function.
+   * Checker function. Set to NULL for usage of default "put in range" function.
    */
   const checkfunction_t func;
+  /**
+   * Parameter type like defined in mavlink headers.
+   */
   const uint8_t         param_type;
+  /**
+   * Help string. Set to NULL if unused.
+   */
   const char            *help;
 };
 

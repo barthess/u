@@ -30,8 +30,6 @@ Giovanni
  *   010
  *   001
  * using not multiplication and additions but switch-case */
-// TODO: load defaults at very first run.
-
 
 // TODO: default values for params. Code generator for param struct.
 // TODO: log compressed format
