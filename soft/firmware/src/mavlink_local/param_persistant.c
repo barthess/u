@@ -83,8 +83,8 @@ bool_t load_params_from_eeprom(void){
     else{
       /* there is not such parameter in EEPROM. Possible reason - parameter
        * structure been changed. To correctly fix this we just need to
-       * save structure to EEPROM after loading of all parameters. Lets raise
-       * flag to do that in the end. */
+       * save structure to EEPROM after loading of all parameters.
+       * To do that in the end raise flag. */
       need_update_eeprom = TRUE;
     }
 
