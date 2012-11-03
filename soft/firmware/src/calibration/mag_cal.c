@@ -6,7 +6,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define NEW_POSITION_THRESHOLD 30000
+#define NEW_POSITION_THRESHOLD 175
 
 /*
  ******************************************************************************
@@ -59,6 +59,7 @@ static msg_t wait_new_position(void){
     delta  = (prevx - raw_data.xmag) * (prevx - raw_data.xmag);
     delta += (prevy - raw_data.ymag) * (prevy - raw_data.ymag);
     delta += (prevz - raw_data.zmag) * (prevz - raw_data.zmag);
+    delta = isqrt(delta);
     retry--;
     if (retry == 0){
       mavlink_dbg_print(MAV_SEVERITY_WARNING, "MAG: no new position. Calibration interrupted");

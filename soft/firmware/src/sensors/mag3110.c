@@ -37,6 +37,7 @@ static uint8_t txbuf[MAG_TX_DEPTH];
 static float          *xsens,   *ysens,   *zsens;
 static int32_t        *xoffset, *yoffset, *zoffset;
 static int32_t const  *xpol,    *ypol,    *zpol;
+static uint32_t const *swapmtrx;
 
 /*
  ******************************************************************************
@@ -147,15 +148,16 @@ static void check_and_clean_overdose(void){
  *
  */
 static void __search_indexes(void){
-  xoffset = ValueSearch("MAG_xoffset");
-  yoffset = ValueSearch("MAG_yoffset");
-  zoffset = ValueSearch("MAG_zoffset");
-  xpol    = ValueSearch("MAG_xpol");
-  ypol    = ValueSearch("MAG_ypol");
-  zpol    = ValueSearch("MAG_zpol");
-  xsens   = ValueSearch("MAG_xsens");
-  ysens   = ValueSearch("MAG_ysens");
-  zsens   = ValueSearch("MAG_zsens");
+  xoffset   = ValueSearch("MAG_xoffset");
+  yoffset   = ValueSearch("MAG_yoffset");
+  zoffset   = ValueSearch("MAG_zoffset");
+  xpol      = ValueSearch("MAG_xpol");
+  ypol      = ValueSearch("MAG_ypol");
+  zpol      = ValueSearch("MAG_zpol");
+  xsens     = ValueSearch("MAG_xsens");
+  ysens     = ValueSearch("MAG_ysens");
+  zsens     = ValueSearch("MAG_zsens");
+  swapmtrx  = ValueSearch("MAG_swapmtrx");
 }
 
 /**

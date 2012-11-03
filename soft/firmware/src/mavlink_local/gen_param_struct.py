@@ -131,7 +131,7 @@ param = [
 ("SERVO_car_dz",    1,         16,   64,        "u", "NULL","NULL"),
 
 #/* intervals between sending different data (mS) */
-("T_raw_imu",       SEND_MIN, 0, SEND_MAX, "u", "sendtmo","Interval of sending this data in milliseconds.\nSet to 19 to switch it off"),
+("T_raw_imu",       SEND_MIN, 0, SEND_MAX, "u", "sendtmo","Interval of sending this data in milliseconds.\\nSet it to 0 for disabling"),
 ("T_raw_press",     SEND_MIN, 0, SEND_MAX, "u", "sendtmo","Timeout help here"),
 ("T_scal_imu",      SEND_MIN, 0, SEND_MAX, "u", "sendtmo","NULL"),
 ("T_scal_press",    SEND_MIN, 0, SEND_MAX, "u", "sendtmo","NULL"),
@@ -161,7 +161,7 @@ param = [
 ("FLEN_reserved4",  0,      6,      30,     "u", "NULL",    "NULL"),
 
 #/*  */
-("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "NULL",    "Multiply odometer pulses count by this coefficient to get\ntrip in meters. Coarse value is 0.05555555"),
+("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "NULL",    "Multiply odometer pulses count by this coefficient to get\\ntrip in meters. Coarse value is 0.05555555"),
 #/**** pid coefficients for speed control ****/
 ("SPD_iGain",       -1.0,   0,      1.0,    "f", "NULL",    "NULL"),
 ("SPD_pGain",       -200.0, 0,      200.0,  "f", "NULL",    "NULL"),

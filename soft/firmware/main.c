@@ -24,7 +24,6 @@ Giovanni
 // TODO: gyro update period in bkp
 // TODO: save mission data in bkp for recovery if panic occured during mission
 
-// TODO: default values for params. Code generator for param struct.
 // TODO: log compressed format
 // TODO: cli for format, ls, rm
 
