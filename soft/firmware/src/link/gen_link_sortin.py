@@ -17,9 +17,14 @@ names = [
         ("mission_set_current", "mission_mail",         "mission_mb"),
         ]
 
+print "// Atomatically generated code. Do not edit it.\n"
+print """
+bool_t sort_input_messages(mavlink_message_t *msg){
+  msg_t status = RDY_OK;
+  switch(msg->msgid){"""
+
 for i in names:
     print(
-    "  /* automatically generated handler */\n"
     "  case MAVLINK_MSG_ID_" + str.upper(i[0]) + ":\n"
     "    mavlink_msg_" + i[0] + "_decode(msg, &mavlink_" + i[0] + "_struct);\n"
     "    if (mavlink_" + i[0] + "_struct.target_system != mavlink_system_struct.sysid)\n"
@@ -31,6 +36,14 @@ for i in names:
     "      return LINK_FAILED;\n"
     "    else\n"
     "      return LINK_SUCCESS;\n"
-    "    break;\n"
+    "    break;"
     )
 
+print"""
+  case MAVLINK_MSG_ID_HEARTBEAT:
+    break;
+  default:
+    break;
+  }
+  return LINK_SUCCESS;
+}"""
