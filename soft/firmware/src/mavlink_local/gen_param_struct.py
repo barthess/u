@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# array with values in RAM
+# C name of array with values in RAM
 arr = "gp_val"
 
 SERVO_MIN   = 1000
@@ -45,7 +45,7 @@ param = [
 ("MAG_declinate",   -90,    7,      90,     "i", "NULL",    "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
 # /* count of samples to zero calibration */
 ("MAG_zerocnt",     256,    512,    4096,   "u", "NULL",    "NULL"),
-("MAG_reserved1",   0,      0,      4096,   "u", "NULL",    "NULL"),
+("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 ("MAG_reserved2",   0,      0,      4096,   "u", "NULL",    "NULL"),
 
 #/**** accelerometer ****/
@@ -58,10 +58,10 @@ param = [
 ("ACC_ysens",       3000,   8192,   17000,  "u", "NULL",    "NULL"),
 ("ACC_zsens",       3000,   8192,   17000,  "u", "NULL",    "NULL"),
 #/* axis polarities. Relative to device axis  */
-("ACC_xpol",        -1,     1,      1,      "i", "NULL",    "NULL"),
-("ACC_ypol",        -1,     1,      1,      "i", "NULL",    "NULL"),
-("ACC_zpol",        -1,     1,      1,      "i", "NULL",    "NULL"),
-("ACC_reserved1",   -1,     1,      1,      "i", "NULL",    "NULL"),
+("ACC_xpol",        -1,     1,      1,      "i", "polarity","NULL"),
+("ACC_ypol",        -1,     1,      1,      "i", "polarity","NULL"),
+("ACC_zpol",        -1,     1,      1,      "i", "polarity","NULL"),
+("ACC_sortmtrx",    0, 0b100010001, 1,      "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 ("ACC_reserved2",   -1,     1,      1,      "i", "NULL",    "NULL"),
 
 #/* Gyroscope */
@@ -70,16 +70,16 @@ param = [
 ("GYRO_ysens",      7.0,    14.375, 30.0,   "f", "NULL",    "NULL"),
 ("GYRO_zsens",      7.0,    14.375, 30.0,   "f", "NULL",    "NULL"),
 #/* polarities */
-("GYRO_xpol",       -1,     1,      1,      "i", "NULL",    "NULL"),
-("GYRO_ypol",       -1,     1,      1,      "i", "NULL",    "NULL"),
-("GYRO_zpol",       -1,     1,      1,      "i", "NULL",    "NULL"),
+("GYRO_xpol",       -1,     1,      1,      "i", "polarity","NULL"),
+("GYRO_ypol",       -1,     1,      1,      "i", "polarity","NULL"),
+("GYRO_zpol",       -1,     1,      1,      "i", "polarity","NULL"),
 
 ("GYRO_zerocnt",    0,      2048,   16384,  "u", "NULL",    "Sample count for zeroing using accumulated sums"),
 ("GYRO_x_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum X"),
 ("GYRO_y_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Y"),
 ("GYRO_z_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Z"),
+("GYRO_sortmtrx",   0,  0b100010001, 1,     "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 
-("GYRO_reserved2",  -20000000, 0, 20000000, "i", "NULL",    "NULL"),
 ("GYRO_reserved3",  -20000000, 0, 20000000, "i", "NULL",    "NULL"),
 
 #/**** PMU - pressure measurement unit ****/
@@ -88,14 +88,14 @@ param = [
 ("PMU_reserved1",   -2000000, 0, 2000000,   "i", "NULL",    "NULL"),
 
 #/**** ADC coefficients ****/
-("ADC_car_I_k",     -1000000, 0, 1000000,   "i", "NULL",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\nfor ground rover"),
-("ADC_car_I_b",     -1000000, 0, 1000000,   "i", "NULL",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\nfor ground rover"),
+("ADC_car_I_k",     -1000000, 0, 1000000,   "i", "NULL",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor ground rover"),
+("ADC_car_I_b",     -1000000, 0, 1000000,   "i", "NULL",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor ground rover"),
 #// secondary voltage. на столько надо умножить, чтобы получить uV
 ("ADC_SV_gain",     0,      0,      122400, "u", "NULL",    "NULL"),
 #// main voltage. на столько надо умножить, чтобы получить uV
 ("ADC_MV_gain",     0,      0,      122400, "u", "NULL",    "NULL"),
-("ADC_plane_I_k",   -1000000, 0, 1000000,   "i", "NULL",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\nfor fixed wing"),
-("ADC_plane_I_b",   -1000000, 0, 1000000,   "i", "NULL",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\nfor fixed wing"),
+("ADC_plane_I_k",   -1000000, 0, 1000000,   "i", "NULL",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor fixed wing"),
+("ADC_plane_I_b",   -1000000, 0, 1000000,   "i", "NULL",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor fixed wing"),
 
 #/**** Bttery parameters ****/
 ("BAT_cap",         0,      3000,   11000,  "u", "NULL",    "Battery capacitance (mAh)"),
@@ -175,7 +175,7 @@ param = [
 ("HEAD_iMin",       -10000.0, 0, 10000.0,   "f", "NULL",    "NULL"),
 ("HEAD_iMax",       -10000.0, 0, 10000.0,   "f", "NULL",    "NULL"),
 #/* device's speed limits */
-("SPD_speed_min",   0.0,     0,      60.0,   "f", "NULL",    "NULL"),
+("SPD_speed_min",   0.0,    0,      60.0,   "f", "NULL",    "NULL"),
 ("SPD_speed_max",   0.0,    0,      60.0,   "f", "NULL",    "NULL"),
 #/**** pid coefficients for cross track correction ****/
 ("XTRACK_iGain",    -1.0,   0,      1.0,    "f", "NULL",    "NULL"),

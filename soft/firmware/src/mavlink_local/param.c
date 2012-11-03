@@ -21,6 +21,7 @@
  */
 static param_status_t _polarity_param_checker(void *value, const GlobalParam_t *param);
 static param_status_t _sendtmo_param_checker(void *value, const GlobalParam_t *param);
+static param_status_t _sortmtrx_param_checker(void *value, const GlobalParam_t *param);
 
 /*
  ******************************************************************************
@@ -68,21 +69,58 @@ static const I2CEepromFileConfig eeprom_settings_cfg = {
  *******************************************************************************
  */
 
+static bool_t __is_sortmtrx_good(uint32_t v){
+  uint32_t p0 = (v & 0b111);
+  uint32_t p1 = (v & 0b111000) >> 3;
+  uint32_t p2 = (v & 0b111000000) >> 6;
+
+  if (((p0 | p1 | p2) == 0b111) && ((p0 & p1 & p2) == 0))
+    return TRUE;
+  else
+    return FALSE;
+}
+static param_status_t _sortmtrx_param_checker(void *value, const GlobalParam_t *param){
+  uint32_t v = param->valuep->u32;
+  if ( ! __is_sortmtrx_good(v))
+    param->valuep->u32 = param->def.u32;
+
+  v = *(uint32_t*)value;
+
+  if (v == param->valuep->u32)
+    return PARAM_NOT_CHANGED;
+
+  if (__is_sortmtrx_good(v)){
+    param->valuep->u32 = v;
+    return PARAM_OK;
+  }
+  else{
+    return PARAM_INCONSISTENT;
+  }
+}
+
 /**
  * Polarity accessibility checker.
  * Value must be 1 OR -1.
  * Only write and emit changes if there is actually a difference
  */
+static bool_t __is_polarity_good(int32_t v){
+  if ((v == 1) || (v == -1))
+    return TRUE;
+  else
+    return FALSE;
+}
 static param_status_t _polarity_param_checker(void *value, const GlobalParam_t *param){
-  int32_t v = *(int32_t*)value;
 
-  /**/
-  if ( ! ((v == 1) || (v == -1)))
-    return PARAM_INCONSISTENT;
+  int32_t v = param->valuep->i32;
+  if ( ! __is_polarity_good(v))
+    param->valuep->i32 = param->def.i32;
 
-  /**/
+  v = *(int32_t*)value;
   if (param->valuep->i32 == v)
     return PARAM_NOT_CHANGED;
+
+  if ( ! __is_polarity_good(v))
+    return PARAM_INCONSISTENT;
   else
     param->valuep->i32 = v;
 
@@ -401,8 +439,9 @@ param_status_t set_global_param(void *value, const GlobalParam_t *param){
  */
 void ParametersInit(void){
 
-  (void)_sendtmo_param_checker;   /*warning supressor */
-  (void)_polarity_param_checker;  /*warning supressor */
+//  (void)_sendtmo_param_checker;   /*warning supressor */
+//  (void)_polarity_param_checker;  /*warning supressor */
+//  (void)_sortmtrx_param_checker;  /*warning supressor */
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 

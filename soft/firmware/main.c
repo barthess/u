@@ -24,13 +24,6 @@ Giovanni
 // TODO: gyro update period in bkp
 // TODO: save mission data in bkp for recovery if panic occured during mission
 
-/* TODO: matrix for swap sensors' measured data like:
- * 0b100010001 ==
- *   100
- *   010
- *   001
- * using not multiplication and additions but switch-case */
-
 // TODO: default values for params. Code generator for param struct.
 // TODO: log compressed format
 // TODO: cli for format, ls, rm

@@ -53,13 +53,6 @@ struct RawData{
   int32_t xgyro_zero_sum;
   int32_t ygyro_zero_sum;
   int32_t zgyro_zero_sum;
-  /* данные с гироскопа. Эти оси не обязаны совпадать с осями платы автопилота,
-   * они содержат показания из регистров датчика в том порядке, в котором
-   * вычитываются */
-  int16_t xgyro;
-  int16_t ygyro;
-  int16_t zgyro;
-  int16_t gyro_temp;
   // значения с внешнего АЦП
   uint16_t pressure_dynamic;
   uint16_t altitude_sonar;

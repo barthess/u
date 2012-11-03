@@ -17,7 +17,6 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern RawData raw_data;
 extern CompensatedData comp_data;
 
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
@@ -38,7 +37,7 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
 static float    const *xsens,     *ysens,     *zsens;
 static int32_t  const *xpol,      *ypol,      *zpol;
 static int32_t  const *x_zerosum, *y_zerosum, *z_zerosum;
-static uint32_t const *zerocnt;
+static uint32_t const *zerocnt,   *sortmtrx;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
@@ -72,31 +71,41 @@ static float get_degrees(float raw){
 /**
  *
  */
-static void process_gyro_data(void){
-  int32_t gyroX, gyroY, gyroZ;
+static void process_gyro_data(uint8_t *rxbuf){
+  int32_t rawgyro[3];
+  int32_t gyro[3];
+  bool_t  status;
 
-  /* NOTE!!! This next 3 lines of code looks like mistake but it is NOT!
-   * We must correct placement of gyro on PCB.
-   * In our case we need to swap just X and Y axis */
-  gyroX = ((int32_t)raw_data.ygyro) * *zerocnt - *y_zerosum;
-  gyroY = ((int32_t)raw_data.xgyro) * *zerocnt - *x_zerosum;
-  gyroZ = ((int32_t)raw_data.zgyro) * *zerocnt - *z_zerosum;
+  //rawgyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
+  rawgyro[0] = complement2signed(rxbuf[2], rxbuf[3]);
+  rawgyro[1] = complement2signed(rxbuf[4], rxbuf[5]);
+  rawgyro[2] = complement2signed(rxbuf[6], rxbuf[7]);
+
+  sorti_3values(rawgyro, gyro, *sortmtrx);
+
+  /* update statistic for zeros */
+  status = gyro_stat_update(gyro[0], gyro[1], gyro[2]);
+
+  /* correct zero offset */
+  gyro[0] = gyro[0] * *zerocnt - *x_zerosum;
+  gyro[1] = gyro[1] * *zerocnt - *y_zerosum;
+  gyro[2] = gyro[2] * *zerocnt - *z_zerosum;
 
   /* adjust rotation direction */
-  gyroX *= *xpol;
-  gyroY *= *ypol;
-  gyroZ *= *zpol;
+  gyro[0] *= *xpol;
+  gyro[1] *= *ypol;
+  gyro[2] *= *zpol;
 
   /* fill debug struct */
-  mavlink_raw_imu_struct.xgyro = gyroX;
-  mavlink_raw_imu_struct.ygyro = gyroY;
-  mavlink_raw_imu_struct.zgyro = gyroZ;
+  mavlink_raw_imu_struct.xgyro = gyro[0];
+  mavlink_raw_imu_struct.ygyro = gyro[1];
+  mavlink_raw_imu_struct.zgyro = gyro[2];
   mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular velocity in rad/sec */
-  comp_data.xgyro = calc_gyro_rate(gyroX, *xsens);
-  comp_data.ygyro = calc_gyro_rate(gyroY, *ysens);
-  comp_data.zgyro = calc_gyro_rate(gyroZ, *zsens);
+  comp_data.xgyro = calc_gyro_rate(gyro[0], *xsens);
+  comp_data.ygyro = calc_gyro_rate(gyro[1], *ysens);
+  comp_data.zgyro = calc_gyro_rate(gyro[2], *zsens);
 
   /* calc summary angle for debug purpose */
   comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
@@ -111,16 +120,9 @@ static void process_gyro_data(void){
   mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
   mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
   mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
-}
 
-/**
- *
- */
-static void sort_rxbuff(uint8_t *rxbuf){
-  //raw_data.gyro_temp  = complement2signed(rxbuf[0], rxbuf[1]);
-  raw_data.xgyro      = complement2signed(rxbuf[2], rxbuf[3]);
-  raw_data.ygyro      = complement2signed(rxbuf[4], rxbuf[5]);
-  raw_data.zgyro      = complement2signed(rxbuf[6], rxbuf[7]);
+  if (status == GYRO_STAT_UNCHANGED)
+    chBSemSignal(imusync_semp);/* say IMU "Hey, we have fresh data!"*/
 }
 
 /**
@@ -143,17 +145,9 @@ static msg_t PollGyroThread(void *semp){
       retry--;
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
-    txbuf[0] = GYRO_OUT_DATA;     // register address
+    txbuf[0] = GYRO_OUT_DATA;
     i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
-
-    /* process data */
-    sort_rxbuff(rxbuf);
-    process_gyro_data();
-    if (gyro_stat_update(raw_data.xgyro, raw_data.ygyro, raw_data.zgyro) ==
-                                                          GYRO_STAT_UNCHANGED)
-      chBSemSignal(imusync_semp);/* say IMU "we have fresh data "*/
-
-    /**/
+    process_gyro_data(rxbuf);
     log_write_schedule(MAVLINK_MSG_ID_RAW_IMU, &i, decimator);
     i--; /* trick to avoid having one more variable for decimating */
     log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU, &i, decimator);
@@ -162,18 +156,19 @@ static msg_t PollGyroThread(void *semp){
 }
 
 /**
- *  perform searching of indexes
+ *
  */
 static void __search_indexes(void){
-  xsens   = ValueSearch("GYRO_xsens");
-  ysens   = ValueSearch("GYRO_ysens");
-  zsens   = ValueSearch("GYRO_zsens");
+  xsens     = ValueSearch("GYRO_xsens");
+  ysens     = ValueSearch("GYRO_ysens");
+  zsens     = ValueSearch("GYRO_zsens");
 
-  xpol    = ValueSearch("GYRO_xpol");
-  ypol    = ValueSearch("GYRO_ypol");
-  zpol    = ValueSearch("GYRO_zpol");
+  xpol      = ValueSearch("GYRO_xpol");
+  ypol      = ValueSearch("GYRO_ypol");
+  zpol      = ValueSearch("GYRO_zpol");
 
   zerocnt   = ValueSearch("GYRO_zerocnt");
+  sortmtrx  = ValueSearch("GYRO_sortmtrx");
   x_zerosum = ValueSearch("GYRO_x_zerosum");
   y_zerosum = ValueSearch("GYRO_y_zerosum");
   z_zerosum = ValueSearch("GYRO_z_zerosum");

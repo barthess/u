@@ -19,4 +19,8 @@ int16_t complement2signed(uint8_t msb, uint8_t lsb);
 
 uint32_t isqrt(uint32_t x);
 
+void sortf_3values(float *in, float *out, uint32_t sortmatrix);
+void sortu_3values(uint32_t *in, uint32_t *out, uint32_t sortmatrix);
+void sorti_3values(int32_t *in, int32_t *out, uint32_t sortmatrix);
+
 #endif /* MISC_H_ */
