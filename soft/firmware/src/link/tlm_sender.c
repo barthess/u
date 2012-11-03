@@ -200,7 +200,7 @@ static time_t get_sleep_time(void){
   t = Registy[0].next_dealine; /* just take first available */
   i = 0;
   while (i < TLM_REGISTRY_LEN){
-    /* determine how much to sleep and refresh deadlines in structure */
+    /* determine how much to sleep */
     if (t > Registy[i].next_dealine)
       t = Registy[i].next_dealine;
     i++;
@@ -243,7 +243,8 @@ static msg_t TlmSenderThread(void *arg) {
   chRegSetThreadName("TLM_Scheduler");
   (void)arg;
 
-  time_t t; /* milliseconds to sleep to next deadline */
+  time_t t = 5; /* milliseconds to sleep to next deadline */
+  refresh_deadlines(t);
 
   while TRUE{ /* main infinite cycle */
     t = get_sleep_time();
