@@ -75,7 +75,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
     SamplesCnt = *zerocount;
 
     device_still_clear();
-    SheduleBlink(3, MS2ST(20), MS2ST(100));
+    SheduleRedBlink(3, MS2ST(20), MS2ST(100));
 
     gyrocalstate = GYROCAL_COLLECTING;
     break;
@@ -87,7 +87,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
       raw_data.ygyro_zero_sum += y;
       raw_data.zgyro_zero_sum += z;
       SamplesCnt--;
-      SheduleBlink(3, MS2ST(20), MS2ST(1));
+      SheduleRedBlink(3, MS2ST(20), MS2ST(1));
     }
     else{
       gyrocalstate = GYROCAL_WAIT_FOR_STILL;

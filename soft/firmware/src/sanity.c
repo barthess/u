@@ -20,6 +20,10 @@ extern mavlink_sys_status_t   mavlink_sys_status_struct;
  */
 #define HEART_BEAT_PERIOD   MS2ST(1000)
 
+/* how much time led is ON during flash */
+#define BLUE_LED_ON_TIME    MS2ST(50)
+#define BLUE_LED_OFF_TIME   MS2ST(100)
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -36,8 +40,7 @@ static BinarySemaphore blink_sem;
 static uint32_t BlinkCnt = 0;
 static systime_t offtime = 10, ontime = 10;
 
-/* how much time led is ON during one period */
-static systime_t led_flash_time;
+static uint32_t BlinksCount;
 
 /*
  *******************************************************************************
@@ -46,6 +49,17 @@ static systime_t led_flash_time;
  *******************************************************************************
  *******************************************************************************
  */
+
+static void blue_blinker(void){
+  uint32_t n = BlinksCount;
+  while (n > 0){
+    palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
+    chThdSleep(BLUE_LED_ON_TIME);
+    palSetPad(GPIOB, GPIOB_LED_B);
+    chThdSleep(BLUE_LED_OFF_TIME);
+    n--;
+  }
+}
 
 /**
  * посылает heartbeat пакеты и моргает светодиодиком
@@ -57,15 +71,14 @@ static msg_t SanityControlThread(void *arg) {
 
   BinarySemaphore sanity_sem;     /* to sync with tlm sender */
   chBSemInit(&sanity_sem, FALSE); /* semaphore is not taken */
-
   Mail heartbeat_mail = {NULL, MAVLINK_MSG_ID_HEARTBEAT, &sanity_sem};
-
   mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
   mavlink_heartbeat_struct.custom_mode = 0;
 
+  systime_t t = chTimeNow();
+
   while (TRUE) {
-    palSetPad(GPIOB, GPIOB_LED_B);
-    chThdSleep(HEART_BEAT_PERIOD - led_flash_time);
+    t += HEART_BEAT_PERIOD;
 
     /* fill data fields and send struct to message box */
     chBSemWaitTimeout(&sanity_sem, MS2ST(1));
@@ -77,10 +90,9 @@ static msg_t SanityControlThread(void *arg) {
       chMBPost(&tolink_mb, (msg_t)&heartbeat_mail, TIME_IMMEDIATE);
     }
     chBSemSignal(&sanity_sem);
+
     log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
-    palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleep(led_flash_time);
     mavlink_sys_status_struct.load = get_cpu_load();
     /* how many times device was soft resetted */
     mavlink_sys_status_struct.errors_count1 = bkpSoftResetCnt;
@@ -92,6 +104,9 @@ static msg_t SanityControlThread(void *arg) {
       xbee_reset_assert();
       chThdExit(RDY_OK);
     }
+
+    blue_blinker();
+    chThdSleepUntil(t);
   }
   return 0;
 }
@@ -129,17 +144,14 @@ void SanityControlInit(void){
   chBSemInit(&blink_sem,  TRUE);
   IdleThread_p = chSysGetIdleThread();
 
-  /* setup blinker timings */
   if (was_softreset())
-    led_flash_time = MS2ST(900);  /* error flash time */
+    BlinksCount = 4;
   else
-    led_flash_time = MS2ST(50);   /* normal flash time */
+    BlinksCount = 1;
 
   /* write soft reset event to "log" and clean it in case of pad reset */
   if (was_softreset())
     bkpSoftResetCnt++;
-//  if (was_padreset())
-//    bkpSoftResetCnt = 0;
 
   /**/
   chThdCreateStatic(SanityControlThreadWA,
@@ -158,7 +170,7 @@ void SanityControlInit(void){
  * Schedule blink sequence.
  * [in] count of blinks and time intervals in sytem ticks
  */
-void SheduleBlink(uint32_t cnt, uint32_t on, uint32_t off){
+void SheduleRedBlink(uint32_t cnt, uint32_t on, uint32_t off){
   const systime_t max = MS2ST(500);
 
   chSysLock()

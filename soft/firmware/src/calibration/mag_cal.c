@@ -118,12 +118,12 @@ static msg_t MagCalThread(void *arg){
           MagSumY += raw_data.ymag;
           MagSumZ += raw_data.zmag;
           SamplesCnt--;
-          SheduleBlink(3, MS2ST(100), MS2ST(1));
+          SheduleRedBlink(3, MS2ST(100), MS2ST(1));
         }
         else{
           /* clear all collected statistics */
           clear_state();
-          SheduleBlink(3, MS2ST(20), MS2ST(100));
+          SheduleRedBlink(3, MS2ST(20), MS2ST(100));
         }
       }
       /* sigterm handler */
@@ -141,7 +141,7 @@ static msg_t MagCalThread(void *arg){
 
     /* signal to user that we has got point and device must be turned in new position */
     if (CurrentPoint < 4){
-      SheduleBlink(30000, MS2ST(500), MS2ST(500));
+      SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
       wait_status = wait_new_position();
       if (wait_status != RDY_OK)
         goto TERMINATE;
@@ -158,7 +158,7 @@ static msg_t MagCalThread(void *arg){
 TERMINATE:
   clearGlobalFlag(GlobalFlags.mag_cal);
   mavlink_system_struct.state = MAV_STATE_STANDBY;
-  SheduleBlink(10, MS2ST(100), MS2ST(100));
+  SheduleRedBlink(10, MS2ST(100), MS2ST(100));
   chThdExit(0);
   return 0;
 }
