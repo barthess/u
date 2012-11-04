@@ -151,7 +151,7 @@ CSRC = $(PORTSRC) \
        src/controller/wp_local.c \
        src/controller/wp_global.c \
        src/math/sphere.c \
-       src/math/misc.c \
+       src/math/misc_math.c \
        src/math/geometry.c \
        src/math/dsp.c \
        src/message.c \

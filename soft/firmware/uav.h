@@ -42,7 +42,7 @@
 #include "max1236.h"
 #include "message.h"
 #include "microsd.h"
-#include "misc.h"
+#include "misc_math.h"
 #include "mma8451.h"
 #include "param.h"
 #include "param_cli.h"
