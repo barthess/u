@@ -1,4 +1,3 @@
-#include <math.h>
 #include "uav.h"
 
 /*
@@ -13,7 +12,6 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern RawData raw_data;
 extern CompensatedData comp_data;
 extern mavlink_system_t mavlink_system_struct;
 
@@ -33,7 +31,11 @@ static gyrocalstate_t gyrocalstate;
 static int32_t  *x_zerosum, *y_zerosum, *z_zerosum;
 static uint32_t const *zerocount;
 
+/* how many points remains to collect for full statistic */
 static uint32_t SamplesCnt;
+
+/* collecte sums for zero offset correction */
+static int32_t ZeroSum[3];
 
 /*
  ******************************************************************************
@@ -69,9 +71,9 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
     mavlink_system_struct.state = MAV_STATE_CALIBRATING;
 
     /* clear all collected statistics */
-    raw_data.xgyro_zero_sum = 0;
-    raw_data.ygyro_zero_sum = 0;
-    raw_data.zgyro_zero_sum = 0;
+    ZeroSum[0] = 0;
+    ZeroSum[1] = 0;
+    ZeroSum[2] = 0;
     SamplesCnt = *zerocount;
 
     device_still_clear();
@@ -83,9 +85,9 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
   /* collecting samples in sums */
   case GYROCAL_COLLECTING:
     if(is_device_still()){
-      raw_data.xgyro_zero_sum += x;
-      raw_data.ygyro_zero_sum += y;
-      raw_data.zgyro_zero_sum += z;
+      ZeroSum[0] += x;
+      ZeroSum[1] += y;
+      ZeroSum[2] += z;
       SamplesCnt--;
       SheduleRedBlink(3, MS2ST(20), MS2ST(1));
     }
@@ -97,12 +99,12 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
     if (SamplesCnt == 0){  /* Collecting done. */
       clearGlobalFlag(GlobalFlags.gyro_cal);
       chSysLock();
-      *x_zerosum = raw_data.xgyro_zero_sum;
-      *y_zerosum = raw_data.ygyro_zero_sum;
-      *z_zerosum = raw_data.zgyro_zero_sum;
-      comp_data.xgyro_angle   = 0;
-      comp_data.ygyro_angle   = 0;
-      comp_data.zgyro_angle   = 0;
+      *x_zerosum = ZeroSum[0];
+      *y_zerosum = ZeroSum[1];
+      *z_zerosum = ZeroSum[2];
+      comp_data.xgyro_angle = 0;
+      comp_data.ygyro_angle = 0;
+      comp_data.zgyro_angle = 0;
       chSysUnlock();
 
       /* store in EEPROM for fast boot */
@@ -141,7 +143,9 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
  */
 void GyroCalInit(void){
   gyrocalstate = GYROCAL_UNINIT;
-
+  ZeroSum[0] = 0;
+  ZeroSum[1] = 0;
+  ZeroSum[2] = 0;
   zerocount = ValueSearch("GYRO_zerocnt");
   x_zerosum = ValueSearch("GYRO_x_zerosum");
   y_zerosum = ValueSearch("GYRO_y_zerosum");

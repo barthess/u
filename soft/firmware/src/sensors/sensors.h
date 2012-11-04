@@ -49,10 +49,6 @@ struct CompensatedData{
  */
 typedef struct RawData RawData;
 struct RawData{
-  /* смещения нулей гироскопа, посчитанные во время выставки.*/
-  int32_t xgyro_zero_sum;
-  int32_t ygyro_zero_sum;
-  int32_t zgyro_zero_sum;
   // значения с внешнего АЦП
   uint16_t pressure_dynamic;
   uint16_t altitude_sonar;
