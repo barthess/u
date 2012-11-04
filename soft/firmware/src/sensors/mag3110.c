@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <math.h>
 
 #include "uav.h"
@@ -36,8 +35,6 @@ static int32_t  const *xoffset, *yoffset, *zoffset;
 static int32_t  const *xpol,    *ypol,    *zpol;
 static uint32_t const *sortmtrx;
 
-static int32_t Mag[3];
-
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -72,6 +69,7 @@ static void check_and_clean_overdose(int32_t *data){
  */
 static void process_magentometer_data(uint8_t *rxbuf){
   int32_t raw[3];
+  int32_t Mag[3];
 
   /**/
   raw[0] = complement2signed(rxbuf[0], rxbuf[1]);

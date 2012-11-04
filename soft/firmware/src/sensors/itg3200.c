@@ -72,40 +72,40 @@ static float get_degrees(float raw){
  *
  */
 static void process_gyro_data(uint8_t *rxbuf){
-  int32_t rawgyro[3];
-  int32_t gyro[3];
+  int32_t raw[3];
+  int32_t Gyro[3];
   bool_t  status;
 
   //rawgyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
-  rawgyro[0] = complement2signed(rxbuf[2], rxbuf[3]);
-  rawgyro[1] = complement2signed(rxbuf[4], rxbuf[5]);
-  rawgyro[2] = complement2signed(rxbuf[6], rxbuf[7]);
+  raw[0] = complement2signed(rxbuf[2], rxbuf[3]);
+  raw[1] = complement2signed(rxbuf[4], rxbuf[5]);
+  raw[2] = complement2signed(rxbuf[6], rxbuf[7]);
 
-  sorti_3values(rawgyro, gyro, *sortmtrx);
+  sorti_3values(raw, Gyro, *sortmtrx);
 
   /* update statistic for zeros */
-  status = gyro_stat_update(gyro[0], gyro[1], gyro[2]);
+  status = gyro_stat_update(Gyro);
 
   /* correct zero offset */
-  gyro[0] = gyro[0] * *zerocnt - *x_zerosum;
-  gyro[1] = gyro[1] * *zerocnt - *y_zerosum;
-  gyro[2] = gyro[2] * *zerocnt - *z_zerosum;
+  Gyro[0] = Gyro[0] * *zerocnt - *x_zerosum;
+  Gyro[1] = Gyro[1] * *zerocnt - *y_zerosum;
+  Gyro[2] = Gyro[2] * *zerocnt - *z_zerosum;
 
   /* adjust rotation direction */
-  gyro[0] *= *xpol;
-  gyro[1] *= *ypol;
-  gyro[2] *= *zpol;
+  Gyro[0] *= *xpol;
+  Gyro[1] *= *ypol;
+  Gyro[2] *= *zpol;
 
   /* fill debug struct */
-  mavlink_raw_imu_struct.xgyro = gyro[0];
-  mavlink_raw_imu_struct.ygyro = gyro[1];
-  mavlink_raw_imu_struct.zgyro = gyro[2];
+  mavlink_raw_imu_struct.xgyro = Gyro[0];
+  mavlink_raw_imu_struct.ygyro = Gyro[1];
+  mavlink_raw_imu_struct.zgyro = Gyro[2];
   mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular velocity in rad/sec */
-  comp_data.xgyro = calc_gyro_rate(gyro[0], *xsens);
-  comp_data.ygyro = calc_gyro_rate(gyro[1], *ysens);
-  comp_data.zgyro = calc_gyro_rate(gyro[2], *zsens);
+  comp_data.xgyro = calc_gyro_rate(Gyro[0], *xsens);
+  comp_data.ygyro = calc_gyro_rate(Gyro[1], *ysens);
+  comp_data.zgyro = calc_gyro_rate(Gyro[2], *zsens);
 
   /* calc summary angle for debug purpose */
   comp_data.xgyro_angle += get_degrees(comp_data.xgyro);

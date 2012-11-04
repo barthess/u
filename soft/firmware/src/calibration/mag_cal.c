@@ -15,11 +15,9 @@
  */
 typedef enum {
   MAGCAL_UNINIT = 0,            /**< Not initialized.           */
-  MAGCAL_WAIT_FOR_STILL = 1,    /**< Wait device stillness.                     */
   MAGCAL_COLLECTING = 2,        /**< Collecting statistic.      */
   MAGCAL_READY = 3,             /**< Statistic collected. Ready for new run.     */
   MAGCAL_WAIT_NEW_POS = 4,  /**< Wait for new position .                     */
-  MAGCAL_SOLVING_SPHERE = 5,    /**<                                          */
 } magcalstate_t;
 
 /*

@@ -5,6 +5,15 @@
  * DEFINES
  ******************************************************************************
  */
+/**
+ * @brief   State machine possible states.
+ */
+typedef enum {
+  GYROCAL_UNINIT = 0,         /**< Not initialized.           */
+  GYROCAL_WAIT_FOR_STILL = 1, /**< Wait device stillness.                     */
+  GYROCAL_COLLECTING = 2,     /**< Collecting statistic.      */
+  GYROCAL_READY = 3,          /**< Statistic collected. Ready for new run.     */
+} gyrocalstate_t;
 
 /*
  ******************************************************************************
@@ -26,15 +35,6 @@ extern mavlink_system_t mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/**
- * @brief   State machine possible states.
- */
-typedef enum {
-  GYROCAL_UNINIT = 0,         /**< Not initialized.           */
-  GYROCAL_WAIT_FOR_STILL = 1, /**< Wait device stillness.                     */
-  GYROCAL_COLLECTING = 2,     /**< Collecting statistic.      */
-  GYROCAL_READY = 3,          /**< Statistic collected. Ready for new run.     */
-} gyrocalstate_t;
 
 static gyrocalstate_t gyrocalstate;
 
@@ -63,7 +63,7 @@ static int32_t ZeroSum[3];
  *
  * Return FALSE if nothing to do, otherwise - TRUE
  */
-bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
+bool_t gyro_stat_update(int32_t *data){
 
   switch(gyrocalstate){
 
@@ -95,9 +95,9 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
   /* collecting samples in sums */
   case GYROCAL_COLLECTING:
     if(IsDeviceStill()){
-      ZeroSum[0] += x;
-      ZeroSum[1] += y;
-      ZeroSum[2] += z;
+      ZeroSum[0] += data[0];
+      ZeroSum[1] += data[1];
+      ZeroSum[2] += data[2];
       SamplesCnt--;
       SheduleRedBlink(3, MS2ST(20), MS2ST(1));
     }
