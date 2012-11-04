@@ -15,9 +15,9 @@
  */
 typedef enum {
   MAGCAL_UNINIT = 0,            /**< Not initialized.           */
-  MAGCAL_COLLECTING = 2,        /**< Collecting statistic.      */
-  MAGCAL_READY = 3,             /**< Statistic collected. Ready for new run.     */
-  MAGCAL_WAIT_NEW_POS = 4,  /**< Wait for new position .                     */
+  MAGCAL_COLLECTING = 1,        /**< Collecting statistic.      */
+  MAGCAL_READY = 2,             /**< Statistic collected. Ready for new run.     */
+  MAGCAL_WAIT_NEW_POS = 3,      /**< Wait for new position .                     */
 } magcalstate_t;
 
 /*
