@@ -18,7 +18,7 @@ param = [
 ("SYS_mavtype",     0,      10,     16,     "u", "NULL",    "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
 ("SH_enable",       0,      0,      1,      "u", "NULL",    "Set to 1 to switch off telemetry sending and enabling shell."),
 
-("IMU_still_thr",   100,    10000,  100000, "u", "NULL",    "Stillness threshold of device during calibration (milli g).\\n If acceleration delta less than this value that device is still"),
+("IMU_still_thr",   100,    10000,  100000, "u", "NULL",    "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
 
 #/* veights of different components */
 ("IMU_accweight",   0.0,    0.005,  0.1,    "f", "NULL",    "NULL"),
@@ -54,9 +54,9 @@ param = [
 ("ACC_yoffset",     -100,   0,      100,    "i", "NULL",    "NULL"),
 ("ACC_zoffset",     -100,   0,      100,    "i", "NULL",    "NULL"),
 #/* sens LSB/g, nominals: 4096, 8192, 16384 ****/
-("ACC_xsens",       3000,   8192,   17000,  "u", "NULL",    "NULL"),
-("ACC_ysens",       3000,   8192,   17000,  "u", "NULL",    "NULL"),
-("ACC_zsens",       3000,   8192,   17000,  "u", "NULL",    "NULL"),
+("ACC_xsens",       3000,   8192,   17000,  "u", "NULL",    "sens LSB/g, nominals: 4096, 8192, 16384"),
+("ACC_ysens",       3000,   8192,   17000,  "u", "NULL",    "sens LSB/g, nominals: 4096, 8192, 16384"),
+("ACC_zsens",       3000,   8192,   17000,  "u", "NULL",    "sens LSB/g, nominals: 4096, 8192, 16384"),
 #/* axis polarities. Relative to device axis  */
 ("ACC_xpol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("ACC_ypol",        -1,     1,      1,      "i", "polarity","NULL"),

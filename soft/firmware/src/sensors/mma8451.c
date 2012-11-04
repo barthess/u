@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "uav.h"
 
 /*
@@ -18,7 +16,6 @@
 extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
-extern RawData raw_data;
 extern CompensatedData comp_data;
 
 /*
@@ -33,12 +30,12 @@ static uint8_t txbuf[ACCEL_TX_DEPTH];
 static int32_t  const *xoffset,   *yoffset,   *zoffset;
 static int32_t  const *xpol,      *ypol,      *zpol;
 static uint32_t const *xsens,     *ysens,     *zsens;
-static uint32_t const *still_thr;
+static uint32_t const *still_thr, *sortmtrx;
 
 static bool_t DeviceStill = FALSE;
 
-/* variable to check still device or not */
-static int16_t prev_xacc = 0, prev_yacc = 0, prev_zacc = 0;
+static int32_t Acc[3];
+static int32_t prevAcc[3];/* variable to check still device or not */
 
 /*
  *******************************************************************************
@@ -47,47 +44,57 @@ static int16_t prev_xacc = 0, prev_yacc = 0, prev_zacc = 0;
  *******************************************************************************
  *******************************************************************************
  */
+/**
+ * only determine acceleration delta and compare it to threshold in
+ * calibration mode. In normal mode just presume that deivece is moving
+ */
+bool_t __is_device_still(int32_t *prevAcc, int32_t *Acc){
+  uint32_t delta = 0;
+
+  if (GlobalFlags.gyro_cal || GlobalFlags.mag_cal){
+    for (uint32_t i = 0; i < 3; i++){
+      delta += (prevAcc[i] - Acc[i]) * (prevAcc[i] - Acc[i]);
+    }
+    delta  = isqrt(delta);
+    delta  = (delta * 1000000) / *xsens; // get acceleration delta in micro g
+    if (delta < *still_thr)
+      return TRUE;
+  }
+
+  return FALSE;
+}
 
 /**
  *
  */
 static void process_accel_data(uint8_t *rxbuf){
-  uint32_t delta;
 
   /* save previouse values */
   if (!DeviceStill){
-    prev_xacc = raw_data.xacc;
-    prev_yacc = raw_data.yacc;
-    prev_zacc = raw_data.zacc;
+    for (uint32_t i = 0; i < 3; i++)
+      prevAcc[i] = Acc[i];
   }
 
-  raw_data.xacc = complement2signed(rxbuf[1], rxbuf[2]);
-  raw_data.yacc = complement2signed(rxbuf[3], rxbuf[4]);
-  raw_data.zacc = complement2signed(rxbuf[5], rxbuf[6]);
+  int32_t  raw[3];
+  raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
+  raw[1] = complement2signed(rxbuf[3], rxbuf[4]);
+  raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
+  sorti_3values(raw, Acc, *sortmtrx);
 
-  /* only determine acceleration delta and compare it to threshold in
-   * calibration mode. In normal mode just presume that deivece is moving */
-  if (GlobalFlags.gyro_cal || GlobalFlags.mag_cal){
-    delta  = (prev_xacc - raw_data.xacc) * (prev_xacc - raw_data.xacc);
-    delta += (prev_yacc - raw_data.yacc) * (prev_yacc - raw_data.yacc);
-    delta += (prev_zacc - raw_data.zacc) * (prev_zacc - raw_data.zacc);
-    delta = isqrt(delta);
-    delta = (delta * ACCEL_SENS * 1000000) >> 16; // get acceleration delta in milli g
-    if (delta > *still_thr)
-      DeviceStill = FALSE;
-  }
-  else
-    DeviceStill = FALSE;
+  Acc[0] *= *xpol;
+  Acc[1] *= *ypol;
+  Acc[2] *= *zpol;
 
-  mavlink_raw_imu_struct.xacc = raw_data.xacc * *xpol;
-  mavlink_raw_imu_struct.yacc = raw_data.yacc * *ypol;
-  mavlink_raw_imu_struct.zacc = raw_data.zacc * *zpol;
+  DeviceStill = __is_device_still(prevAcc, Acc);
 
-  comp_data.xacc = (1000 * (((int32_t)raw_data.xacc) * *xpol + *xoffset)) / *xsens;
-  comp_data.yacc = (1000 * (((int32_t)raw_data.yacc) * *ypol + *yoffset)) / *ysens;
-  comp_data.zacc = (1000 * (((int32_t)raw_data.zacc) * *zpol + *zoffset)) / *zsens;
+  comp_data.xacc = (1000 * (Acc[0] + *xoffset)) / *xsens;
+  comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
+  comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
 
-  /* fill scaled debug struct */
+  /* fill scaled debug structures */
+  mavlink_raw_imu_struct.xacc = Acc[0];
+  mavlink_raw_imu_struct.yacc = Acc[1];
+  mavlink_raw_imu_struct.zacc = Acc[2];
   mavlink_scaled_imu_struct.xacc = comp_data.xacc;
   mavlink_scaled_imu_struct.yacc = comp_data.yacc;
   mavlink_scaled_imu_struct.zacc = comp_data.zacc;
@@ -122,15 +129,20 @@ static msg_t PollAccelThread(void *semp){
  *
  */
 static void __search_indexes(void){
+  sortmtrx  = ValueSearch("ACC_sortmtrx");
+
   xoffset   = ValueSearch("ACC_xoffset");
   yoffset   = ValueSearch("ACC_yoffset");
   zoffset   = ValueSearch("ACC_zoffset");
+
   xpol      = ValueSearch("ACC_xpol");
   ypol      = ValueSearch("ACC_ypol");
   zpol      = ValueSearch("ACC_zpol");
+
   xsens     = ValueSearch("ACC_xsens");
   ysens     = ValueSearch("ACC_ysens");
   zsens     = ValueSearch("ACC_zsens");
+
   still_thr = ValueSearch("IMU_still_thr");
 }
 

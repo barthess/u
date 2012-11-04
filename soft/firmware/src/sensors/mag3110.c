@@ -157,7 +157,7 @@ static void __search_indexes(void){
   xsens     = ValueSearch("MAG_xsens");
   ysens     = ValueSearch("MAG_ysens");
   zsens     = ValueSearch("MAG_zsens");
-  swapmtrx  = ValueSearch("MAG_swapmtrx");
+  swapmtrx  = ValueSearch("MAG_sortmtrx");
 }
 
 /**
