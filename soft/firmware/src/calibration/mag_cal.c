@@ -28,6 +28,9 @@ typedef enum {
 extern GlobalFlags_t GlobalFlags;
 extern mavlink_system_t mavlink_system_struct;
 
+/* how many ticks needed for calculate sphere */
+volatile uint32_t sphere_time;
+
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -40,11 +43,11 @@ extern mavlink_system_t mavlink_system_struct;
  ******************************************************************************
  */
 
-static magcalstate_t magcalstate;
+static magcalstate_t magcalstate = MAGCAL_UNINIT;
 
-static uint32_t const *zerocount;
+static int32_t const *zerocount;
 static int32_t MagSum[3];
-static uint32_t SamplesCnt;
+static int32_t SamplesCnt;
 
 /* empty sphere to store results */
 static Sphere S = {{0,0,0}, 0};
@@ -58,7 +61,11 @@ static int32_t P[4][3]={{0, 0, 0},
 /* current collecting point */
 static uint32_t CurrentPoint;
 
+/* deadline for waiting new position */
 static systime_t position_deadline;
+
+/* for measuring of sphere calculation time */
+static TimeMeasurement sphere_tmup;
 
 /*
  ******************************************************************************
@@ -108,7 +115,7 @@ static bool_t __is_new_position(int32_t *data){
   for (uint32_t n = 0; n < 3; n++)
     delta += (P[i][n] - data[n]) * (P[i][n] - data[n]);
 
-  delta = isqrt(delta);
+  delta = sqrti(delta);
 
   if (delta > NEW_POSITION_THRESHOLD)
     return TRUE;
@@ -147,19 +154,28 @@ bool_t mag_stat_update(int32_t *data){
       P[CurrentPoint][1] = MagSum[1] / *zerocount;
       P[CurrentPoint][2] = MagSum[2] / *zerocount;
       CurrentPoint++;
-    }
-    if (CurrentPoint == 4){
-      SolveSphere(&S, P);
-      *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
-      *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
-      *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
-      mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
-      SheduleRedBlink(10, MS2ST(100), MS2ST(100));
-    }
-    else{
-      mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: waiting for new position");
-      magcalstate = MAGCAL_WAIT_NEW_POS;
-      SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
+
+      if (CurrentPoint == 4){
+        tmStartMeasurement(&sphere_tmup);
+        SolveSphere(&S, P);
+        tmStopMeasurement(&sphere_tmup);
+        sphere_time = sphere_tmup.last;
+
+        *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
+        *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
+        *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
+
+        mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
+        mavlink_system_struct.state = MAV_STATE_STANDBY;
+        clearGlobalFlag(GlobalFlags.mag_cal);
+        magcalstate = MAGCAL_READY;
+        SheduleRedBlink(10, MS2ST(100), MS2ST(100));
+      }
+      else{
+        mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: waiting for new position");
+        magcalstate = MAGCAL_WAIT_NEW_POS;
+        SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
+      }
     }
     break;
 
@@ -178,6 +194,7 @@ bool_t mag_stat_update(int32_t *data){
       magcalstate = MAGCAL_READY;
       SheduleRedBlink(3, MS2ST(20), MS2ST(100));/* to cansel blinking */
     }
+    __clear_state();
     break;
 
 
@@ -206,6 +223,8 @@ void MagCalInit(void){
   magcalstate = MAGCAL_UNINIT;
 
   zerocount = ValueSearch("MAG_zerocnt");
+
+  tmObjectInit(&sphere_tmup);
 
   magcalstate = MAGCAL_READY;
 }

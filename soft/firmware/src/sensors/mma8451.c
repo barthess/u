@@ -56,7 +56,7 @@ void __is_device_still(int32_t *prevAcc, int32_t *Acc){
   for (uint32_t i = 0; i < 3; i++){
     delta += (prevAcc[i] - Acc[i]) * (prevAcc[i] - Acc[i]);
   }
-  delta  = isqrt(delta);
+  delta  = sqrti(delta);
   delta  = (delta * 1000000) / *xsens; // get acceleration delta in micro g
   if (delta > *still_thr){
     chSysLock();
@@ -79,6 +79,10 @@ static void process_accel_data(uint8_t *rxbuf){
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
   sorti_3values(raw, Acc, *sortmtrx);
 
+  mavlink_raw_imu_struct.xacc = Acc[0];
+  mavlink_raw_imu_struct.yacc = Acc[1];
+  mavlink_raw_imu_struct.zacc = Acc[2];
+
   Acc[0] *= *xpol;
   Acc[1] *= *ypol;
   Acc[2] *= *zpol;
@@ -89,10 +93,6 @@ static void process_accel_data(uint8_t *rxbuf){
   comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
   comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
 
-  /* fill scaled debug structures */
-  mavlink_raw_imu_struct.xacc = Acc[0];
-  mavlink_raw_imu_struct.yacc = Acc[1];
-  mavlink_raw_imu_struct.zacc = Acc[2];
   mavlink_scaled_imu_struct.xacc = comp_data.xacc;
   mavlink_scaled_imu_struct.yacc = comp_data.yacc;
   mavlink_scaled_imu_struct.zacc = comp_data.zacc;

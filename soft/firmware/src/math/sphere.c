@@ -38,10 +38,9 @@
  */
 
 //  Recursive definition of determinate using expansion by minors.
-float determinant(float a[4][4], uint32_t n)
+static float determinant(float a[4][4], uint32_t n)
 {
-  uint32_t i, j, j1, j2, q;
-  int32_t k = 1;
+  uint32_t i, j, j1, j2;
   float d = 0;
   float m[4][4] = {{0,0,0,0},
                    {0,0,0,0},
@@ -63,16 +62,8 @@ float determinant(float a[4][4], uint32_t n)
         }
       }
 
-      // calculate pow(-1, j1)
-      k = 1;
-      q = j1;
-      while (q){
-        k *= -1;
-        q--;
-      }
-
       // recursive call of determinant
-      d += k * a[0][j1] * determinant(m, n-1);
+      d += powi(-1, j1) * a[0][j1] * determinant(m, n-1);
       //d = d + powf(-1, j1)*a[0][j1]*determinant(m, n-1);
     }
   }
@@ -87,9 +78,15 @@ float determinant(float a[4][4], uint32_t n)
  */
 
 /**
- *  Calculate center and radius of sphere given four points
- *  P[in]   four points of sphere organized as 2d array
- *  *S[out] calculated sphere.
+ * Calculate center and radius of sphere given four points
+ * P[in]   four points of sphere organized as 2d array
+ * *S[out] calculated sphere.
+ *
+ * How fast is it? All results in core ticks:
+ * o0 - 108136
+ * o2 - 80360
+ * o0 - 73561 fpu
+ * o2 - 38309 fpu
  */
 void SolveSphere(Sphere *S, int32_t P[4][3]){
   uint32_t i;
@@ -144,9 +141,9 @@ void SolveSphere(Sphere *S, int32_t P[4][3]){
     chDbgPanic("Not a sphere");
   }
   else {
-    S->c[0] =  0.5 * (m12 / m11);                     // center of sphere
-    S->c[1] = -0.5 * (m13 / m11);
-    S->c[2] =  0.5 * (m14 / m11);
+    S->c[0] =  0.5f * (m12 / m11);
+    S->c[1] = -0.5f * (m13 / m11);
+    S->c[2] =  0.5f * (m14 / m11);
     S->r    = sqrtf(S->c[0]*S->c[0] + S->c[1]*S->c[1] + S->c[2]*S->c[2] - m15/m11);
   }
 }

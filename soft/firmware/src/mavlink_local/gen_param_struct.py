@@ -44,7 +44,7 @@ param = [
 # /* declination in degrees */
 ("MAG_declinate",   -90,    7,      90,     "i", "NULL",    "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
 # /* count of samples to zero calibration */
-("MAG_zerocnt",     256,    512,    4096,   "u", "NULL",    "NULL"),
+("MAG_zerocnt",     256,    512,    4096,   "i", "NULL",    "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 ("MAG_reserved2",   0,      0,      4096,   "u", "NULL",    "NULL"),
 
@@ -74,7 +74,7 @@ param = [
 ("GYRO_ypol",       -1,     1,      1,      "i", "polarity","NULL"),
 ("GYRO_zpol",       -1,     1,      1,      "i", "polarity","NULL"),
 
-("GYRO_zerocnt",    0,      2048,   16384,  "u", "NULL",    "Sample count for zeroing using accumulated sums"),
+("GYRO_zerocnt",    512,    2048,   16384,  "i", "NULL",    "Sample count for zeroing using accumulated sums"),
 ("GYRO_x_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum X"),
 ("GYRO_y_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Y"),
 ("GYRO_z_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Z"),

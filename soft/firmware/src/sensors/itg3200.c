@@ -36,8 +36,8 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
 /* указатели на коэффициенты */
 static float    const *xsens,     *ysens,     *zsens;
 static int32_t  const *xpol,      *ypol,      *zpol;
-static int32_t  const *x_zerosum, *y_zerosum, *z_zerosum;
-static uint32_t const *zerocnt,   *sortmtrx;
+static int32_t  const *x_zerosum, *y_zerosum, *z_zerosum, *zerocnt;
+static uint32_t const *sortmtrx;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
@@ -83,6 +83,12 @@ static void process_gyro_data(uint8_t *rxbuf){
 
   sorti_3values(raw, Gyro, *sortmtrx);
 
+  /* fill debug struct */
+  mavlink_raw_imu_struct.xgyro = Gyro[0];
+  mavlink_raw_imu_struct.ygyro = Gyro[1];
+  mavlink_raw_imu_struct.zgyro = Gyro[2];
+  mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+
   /* update statistic for zeros */
   status = gyro_stat_update(Gyro);
 
@@ -95,12 +101,6 @@ static void process_gyro_data(uint8_t *rxbuf){
   Gyro[0] *= *xpol;
   Gyro[1] *= *ypol;
   Gyro[2] *= *zpol;
-
-  /* fill debug struct */
-  mavlink_raw_imu_struct.xgyro = Gyro[0];
-  mavlink_raw_imu_struct.ygyro = Gyro[1];
-  mavlink_raw_imu_struct.zgyro = Gyro[2];
-  mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular velocity in rad/sec */
   comp_data.xgyro = calc_gyro_rate(Gyro[0], *xsens);

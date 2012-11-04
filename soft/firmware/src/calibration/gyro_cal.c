@@ -39,7 +39,7 @@ extern mavlink_system_t mavlink_system_struct;
 static gyrocalstate_t gyrocalstate;
 
 static int32_t  *x_zerosum, *y_zerosum, *z_zerosum;
-static uint32_t const *zerocount;
+static int32_t const *zerocount;
 
 /* how many points remains to collect for full statistic */
 static uint32_t SamplesCnt;

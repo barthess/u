@@ -77,23 +77,19 @@ static void process_magentometer_data(uint8_t *rxbuf){
   raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
   sorti_3values(raw, Mag, *sortmtrx);
 
-  /* overdose? */
-  check_and_clean_overdose(Mag);
-
-  Mag[0] *= *xpol;
-  Mag[1] *= *ypol;
-  Mag[2] *= *zpol;
-  mag_stat_update(Mag);
-
-  /* fill debug structs */
   mavlink_raw_imu_struct.xmag = Mag[0];
   mavlink_raw_imu_struct.ymag = Mag[1];
   mavlink_raw_imu_struct.zmag = Mag[2];
 
+  /* overdose? */
+  check_and_clean_overdose(Mag);
+
+  mag_stat_update(Mag);
+
   /* Sensitivity is 0.1uT/LSB */
-  mavlink_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * roundf(*xsens * 100.0f);
-  mavlink_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * roundf(*ysens * 100.0f);
-  mavlink_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * roundf(*zsens * 100.0f);
+  mavlink_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * *xpol * roundf(*xsens * 100.0f);
+  mavlink_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * *ypol * roundf(*ysens * 100.0f);
+  mavlink_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * *zpol * roundf(*zsens * 100.0f);
   comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
   comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
   comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
@@ -102,7 +98,7 @@ static void process_magentometer_data(uint8_t *rxbuf){
 /**
  * Поток для опроса магнитометра
  */
-static WORKING_AREA(PollMagThreadWA, 256);
+static WORKING_AREA(PollMagThreadWA, 512);
 static msg_t PollMagThread(void *semp){
   chRegSetThreadName("PollMag");
 
@@ -204,6 +200,8 @@ void init_mag3110(BinarySemaphore *mag3110_semp){
     __hard_init_full();
   else
     __hard_init_short();
+
+  MagCalInit();
 
   chThdCreateStatic(PollMagThreadWA,
           sizeof(PollMagThreadWA),

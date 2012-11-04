@@ -99,7 +99,7 @@ overall function result.
 
 /* But the following algorithm is many times faster, even when you have
  * hardware multiplication and division. */
-uint32_t isqrt(uint32_t x){
+uint32_t sqrti(uint32_t x){
   uint32_t op, res, one;
 
   op = x;
@@ -118,6 +118,21 @@ uint32_t isqrt(uint32_t x){
     one >>= 2; /* div by 4 */
   }
   return res;
+}
+
+/**
+ * Integer power function.
+ */
+int32_t powi(int32_t base, uint32_t exp){
+  if (exp == 0)
+    return 1;
+  else{
+    while (exp > 0){
+      base *= base;
+      exp--;
+    }
+    return base;
+  }
 }
 
 /* mod(a, 2*pi) is the remainder you get when you divide a by 2*pi;
