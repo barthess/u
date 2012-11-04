@@ -26,6 +26,16 @@ extern mavlink_system_t mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+/**
+ * @brief   State machine possible states.
+ */
+typedef enum {
+  GYROCAL_UNINIT = 0,         /**< Not initialized.           */
+  GYROCAL_WAIT_FOR_STILL = 1, /**< Wait device stillness.                     */
+  GYROCAL_COLLECTING = 2,     /**< Collecting statistic.      */
+  GYROCAL_READY = 3,          /**< Statistic collected. Ready for new run.     */
+} gyrocalstate_t;
+
 static gyrocalstate_t gyrocalstate;
 
 static int32_t  *x_zerosum, *y_zerosum, *z_zerosum;
@@ -76,7 +86,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
     ZeroSum[2] = 0;
     SamplesCnt = *zerocount;
 
-    device_still_clear();
+    DeviceStillSet();
     SheduleRedBlink(3, MS2ST(20), MS2ST(100));
 
     gyrocalstate = GYROCAL_COLLECTING;
@@ -84,7 +94,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
 
   /* collecting samples in sums */
   case GYROCAL_COLLECTING:
-    if(is_device_still()){
+    if(IsDeviceStill()){
       ZeroSum[0] += x;
       ZeroSum[1] += y;
       ZeroSum[2] += z;
@@ -143,6 +153,7 @@ bool_t gyro_stat_update(int32_t x, int32_t y, int32_t z){
  */
 void GyroCalInit(void){
   gyrocalstate = GYROCAL_UNINIT;
+
   ZeroSum[0] = 0;
   ZeroSum[1] = 0;
   ZeroSum[2] = 0;

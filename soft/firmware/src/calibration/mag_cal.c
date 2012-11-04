@@ -6,7 +6,21 @@
  * DEFINES
  ******************************************************************************
  */
-#define NEW_POSITION_THRESHOLD 175
+
+#define NEW_POSITION_THRESHOLD  175
+#define NEW_POSITION_TMO_SEC    60
+
+/**
+ * @brief   State machine possible states.
+ */
+typedef enum {
+  MAGCAL_UNINIT = 0,            /**< Not initialized.           */
+  MAGCAL_WAIT_FOR_STILL = 1,    /**< Wait device stillness.                     */
+  MAGCAL_COLLECTING = 2,        /**< Collecting statistic.      */
+  MAGCAL_READY = 3,             /**< Statistic collected. Ready for new run.     */
+  MAGCAL_WAIT_NEW_POS = 4,  /**< Wait for new position .                     */
+  MAGCAL_SOLVING_SPHERE = 5,    /**<                                          */
+} magcalstate_t;
 
 /*
  ******************************************************************************
@@ -14,8 +28,6 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern RawData raw_data;
-extern MemoryHeap ThdHeap;
 extern mavlink_system_t mavlink_system_struct;
 
 /*
@@ -29,8 +41,26 @@ extern mavlink_system_t mavlink_system_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Thread *mag_cal_tp;
-static BinarySemaphore mag_cal_sem;
+
+static magcalstate_t magcalstate;
+
+static uint32_t const *zerocount;
+static int32_t MagSum[3];
+static uint32_t SamplesCnt;
+
+/* empty sphere to store results */
+static Sphere S = {{0,0,0}, 0};
+
+/* collected points of sphere */
+static int32_t P[4][3]={{0, 0, 0},
+                        {0, 0, 0},
+                        {0, 0, 0},
+                        {0, 0, 0}};
+
+/* current collecting point */
+static uint32_t CurrentPoint;
+
+static systime_t position_deadline;
 
 /*
  ******************************************************************************
@@ -40,157 +70,151 @@ static BinarySemaphore mag_cal_sem;
  ******************************************************************************
  */
 /**
- * You must turn device in new position
- */
-static msg_t wait_new_position(void){
-  int16_t prevx, prevy, prevz;
-  uint32_t delta = 0;
-  const uint32_t tmo = 200;
-  const uint32_t overall_tmo = 60000;
-  uint32_t retry = overall_tmo / tmo;
-
-  prevx = raw_data.xmag;
-  prevy = raw_data.ymag;
-  prevz = raw_data.zmag;
-
-  mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: wait new position");
-
-  while (delta < NEW_POSITION_THRESHOLD){
-    delta  = (prevx - raw_data.xmag) * (prevx - raw_data.xmag);
-    delta += (prevy - raw_data.ymag) * (prevy - raw_data.ymag);
-    delta += (prevz - raw_data.zmag) * (prevz - raw_data.zmag);
-    delta = isqrt(delta);
-    retry--;
-    if (retry == 0){
-      mavlink_dbg_print(MAV_SEVERITY_WARNING, "MAG: no new position. Calibration interrupted");
-      return RDY_RESET;
-    }
-    chThdSleepMilliseconds(tmo);
-  }
-  mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: new position is OK");
-  return RDY_OK;
-}
-
-/* test matrix */
-//  int32_t P[4][3]={{2572, -2819, -1864},
-//                   {2393, -2990, -1864},
-//                   {2320, -2701, -1867},
-//                   {2423, -2800, -1907}};
-
-#define clear_state() do{\
-  SamplesCnt = *zerocount;\
-  MagSumX = 0;\
-  MagSumY = 0;\
-  MagSumZ = 0;\
-  device_still_clear();\
-}while(0)
-
-/**
  *
  */
-static WORKING_AREA(MagCalThreadWA, 512);
-static msg_t MagCalThread(void *arg){
-  chRegSetThreadName("MagCal");
-  (void)arg;
-
-  int32_t const *zerocount = ValueSearch("MAG_zerocnt");
-  uint32_t CurrentPoint = 0;
-  uint32_t SamplesCnt = *zerocount;
-  int32_t MagSumX = 0, MagSumY = 0, MagSumZ = 0;
-  msg_t sem_status = RDY_OK;
-  msg_t wait_status = RDY_RESET;
-  Sphere S = {{0,0,0}, 0};
-  int32_t P[4][3]={{0, 0, 0},
-                   {0, 0, 0},
-                   {0, 0, 0},
-                   {0, 0, 0}};
-
-  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
-  mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: start calibration");
-  clear_state();
-
-  /* main loop */
-  while(CurrentPoint < 4){
-    while(SamplesCnt){
-      sem_status = chBSemWaitTimeout(&mag_cal_sem, MS2ST(200));
-      if (sem_status == RDY_OK){
-        if(is_device_still()){
-          MagSumX += raw_data.xmag;
-          MagSumY += raw_data.ymag;
-          MagSumZ += raw_data.zmag;
-          SamplesCnt--;
-          SheduleRedBlink(3, MS2ST(100), MS2ST(1));
-        }
-        else{
-          /* clear all collected statistics */
-          clear_state();
-          SheduleRedBlink(3, MS2ST(20), MS2ST(100));
-        }
-      }
-      /* sigterm handler */
-      if (chThdShouldTerminate())
-        goto TERMINATE;
-    }
-
-    /* store collected point and go to next step */
-    P[CurrentPoint][0] = MagSumX / *zerocount;
-    P[CurrentPoint][1] = MagSumY / *zerocount;
-    P[CurrentPoint][2] = MagSumZ / *zerocount;
-    mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: point collected");
-    clear_state();
-    CurrentPoint++;
-
-    /* signal to user that we has got point and device must be turned in new position */
-    if (CurrentPoint < 4){
-      SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
-      wait_status = wait_new_position();
-      if (wait_status != RDY_OK)
-        goto TERMINATE;
-    }
-  }
-
-  /* all points got. Calculate sphere */
-  SolveSphere(&S, P);
-  *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
-  *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
-  *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
-  mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
-
-TERMINATE:
-  clearGlobalFlag(GlobalFlags.mag_cal);
-  mavlink_system_struct.state = MAV_STATE_STANDBY;
-  SheduleRedBlink(10, MS2ST(100), MS2ST(100));
-  chThdExit(0);
-  return 0;
+static void __clear_state(void){
+  SamplesCnt = *zerocount;
+  MagSum[0] = 0;
+  MagSum[1] = 0;
+  MagSum[2] = 0;
+  DeviceStillSet();
 }
 
+/**
+ * Return TRUE when full point statistic collected
+ */
+static bool_t __update_point(int32_t *data){
+  if(IsDeviceStill()){
+    MagSum[0] += data[0];
+    MagSum[1] += data[1];
+    MagSum[2] += data[2];
+    SamplesCnt--;
+    SheduleRedBlink(3, MS2ST(20), MS2ST(1));
+  }
+  else
+    __clear_state();
+
+  if (SamplesCnt == 0)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+/**
+ * Return TRUE if device was turned to new position
+ */
+static bool_t __is_new_position(int32_t *data){
+  uint32_t delta = 0;
+  uint32_t i = CurrentPoint - 1;
+
+  for (uint32_t n = 0; n < 3; n++)
+    delta += (P[i][n] - data[n]) * (P[i][n] - data[n]);
+
+  delta = isqrt(delta);
+
+  if (delta > NEW_POSITION_THRESHOLD)
+    return TRUE;
+  else
+    return FALSE;
+}
+
+
+/**
+ * Syncronization functions for statistics update.
+ */
+bool_t mag_stat_update(int32_t *data){
+  bool_t point_status = FALSE;
+
+  switch(magcalstate){
+  /* wait for "mag_cal" flag */
+  case MAGCAL_READY:
+    if (GlobalFlags.mag_cal != 1)
+      return MAG_STAT_UNCHANGED;
+    else{
+      mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+      mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: start calibration");
+      CurrentPoint = 0;
+      __clear_state();
+      magcalstate = MAGCAL_COLLECTING;
+    }
+    break;
+
+
+  /* collecting samples in sums */
+  case MAGCAL_COLLECTING:
+    point_status = __update_point(data);
+    if (point_status == TRUE){
+      position_deadline = chTimeNow() + S2ST(NEW_POSITION_TMO_SEC);
+      P[CurrentPoint][0] = MagSum[0] / *zerocount;
+      P[CurrentPoint][1] = MagSum[1] / *zerocount;
+      P[CurrentPoint][2] = MagSum[2] / *zerocount;
+      CurrentPoint++;
+    }
+    if (CurrentPoint == 4){
+      SolveSphere(&S, P);
+      *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
+      *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
+      *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
+      mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
+      SheduleRedBlink(10, MS2ST(100), MS2ST(100));
+    }
+    else{
+      mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: waiting for new position");
+      magcalstate = MAGCAL_WAIT_NEW_POS;
+      SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
+    }
+    break;
+
+
+  /* wait until device be turned in position */
+  case MAGCAL_WAIT_NEW_POS:
+    point_status = __is_new_position(data);
+    if (point_status == TRUE){
+      mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: new position is OK");
+      magcalstate = MAGCAL_COLLECTING;          /* collect next point */
+    }
+    else if (chTimeNow() > position_deadline){  /* device have not been turned in new position */
+      mavlink_dbg_print(MAV_SEVERITY_WARNING,
+      "MAG: no new position. Calibration interrupted");
+      clearGlobalFlag(GlobalFlags.mag_cal);
+      magcalstate = MAGCAL_READY;
+      SheduleRedBlink(3, MS2ST(20), MS2ST(100));/* to cansel blinking */
+    }
+    break;
+
+
+  /* error traps */
+  case MAGCAL_UNINIT:
+    chDbgPanic("Gyro calibrator uninitialized");
+    break;
+  default:
+    chDbgPanic("Wrong case");
+    break;
+  }
+
+  return GYRO_STAT_UPDATED;
+}
 
 /*
  ******************************************************************************
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-/**
- * Syncronization functions for statistics update.
- */
-void mag_stat_update(void){
-  chBSemSignal(&mag_cal_sem);
-}
 
 /**
  *
  */
-Thread* MagCalStart(void){
-  chBSemInit(&mag_cal_sem,  TRUE);
+void MagCalInit(void){
+  magcalstate = MAGCAL_UNINIT;
 
-  mag_cal_tp = NULL;
-  mag_cal_tp = chThdCreateFromHeap(&ThdHeap,
-                            sizeof(MagCalThreadWA),
-                            NORMALPRIO,
-                            MagCalThread,
-                            NULL);
-  if (mag_cal_tp == NULL)
-    chDbgPanic("can not allocate memory");
+  zerocount = ValueSearch("MAG_zerocnt");
 
-  return mag_cal_tp;
+  magcalstate = MAGCAL_READY;
 }
+
+
+/* test matrix */
+//  int32_t P[4][3]={{2572, -2819, -1864},
+//                   {2393, -2990, -1864},
+//                   {2320, -2701, -1867},
+//                   {2423, -2800, -1907}};

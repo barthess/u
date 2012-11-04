@@ -70,7 +70,7 @@ static msg_t LoopCmdThread(void *arg){
     int n = 16;
     char str[n];
 
-    snprintf(str, n, "%i\r\n", raw_data.zmag);
+    snprintf(str, n, "%i\r\n", raw_data.temp_tmp75);
     cli_print(str);
     chThdSleepMilliseconds(25);
   }

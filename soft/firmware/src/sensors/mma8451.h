@@ -27,8 +27,8 @@
 #define ACCEL_XYZ_DATA_CFG 0x0E
 
 
-bool_t is_device_still(void);
-void device_still_clear(void);
+bool_t IsDeviceStill(void);
+void DeviceStillSet(void);
 void init_mma8451(BinarySemaphore *mma8451_semp);
 
 

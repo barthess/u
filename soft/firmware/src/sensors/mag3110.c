@@ -8,10 +8,8 @@
  * DEFINES
  ******************************************************************************
  */
-#define mag3110addr 0b0001110
-#define mag3110sens 0.1F /* uT/LSB */
-#define OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
-#define ERR_VAL     -32700  /* это значение является символом ошибки чтения */
+#define mag3110addr     0b0001110
+#define MAG_OVERDOSE    ((uint16_t)25000) // предел, после которого надо ресетить датчик
 
 /*
  ******************************************************************************
@@ -21,7 +19,6 @@
 extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
-extern RawData raw_data;
 extern CompensatedData comp_data;
 
 /*
@@ -34,19 +31,18 @@ static uint8_t rxbuf[MAG_RX_DEPTH];
 static uint8_t txbuf[MAG_TX_DEPTH];
 
 /* указатели в структуре с параметрами */
-static float          *xsens,   *ysens,   *zsens;
-static int32_t        *xoffset, *yoffset, *zoffset;
-static int32_t const  *xpol,    *ypol,    *zpol;
-static uint32_t const *swapmtrx;
+static float    const *xsens,   *ysens,   *zsens;
+static int32_t  const *xoffset, *yoffset, *zoffset;
+static int32_t  const *xpol,    *ypol,    *zpol;
+static uint32_t const *sortmtrx;
+
+static int32_t Mag[3];
 
 /*
  ******************************************************************************
  * PROTOTYPES
  ******************************************************************************
  */
-//static void raise_error_flags(void);
-static void check_and_clean_overdose(void);
-static void process_magentometer_data(uint8_t *rxbuf);
 
 /*
  *******************************************************************************
@@ -57,6 +53,55 @@ static void process_magentometer_data(uint8_t *rxbuf);
  */
 
 /**
+ * если датчик передознулся - надо произвести сброс. В принципе, можно
+ * в датчике настроить авторесет на каждое измерение, но
+ * это как-то не элегантно.
+ */
+static void check_and_clean_overdose(int32_t *data){
+  if (abs(data[0]) > MAG_OVERDOSE ||
+      abs(data[1]) > MAG_OVERDOSE ||
+      abs(data[2]) > MAG_OVERDOSE){
+    txbuf[0] = MAG_CTRL_REG2;
+    txbuf[1] = MAG_RST;
+    i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
+  }
+}
+
+/**
+ * Раскладывает полученные данные по структурам, при необходимости масштабирует.
+ */
+static void process_magentometer_data(uint8_t *rxbuf){
+  int32_t raw[3];
+
+  /**/
+  raw[0] = complement2signed(rxbuf[0], rxbuf[1]);
+  raw[1] = complement2signed(rxbuf[2], rxbuf[3]);
+  raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
+  sorti_3values(raw, Mag, *sortmtrx);
+
+  /* overdose? */
+  check_and_clean_overdose(Mag);
+
+  Mag[0] *= *xpol;
+  Mag[1] *= *ypol;
+  Mag[2] *= *zpol;
+  mag_stat_update(Mag);
+
+  /* fill debug structs */
+  mavlink_raw_imu_struct.xmag = Mag[0];
+  mavlink_raw_imu_struct.ymag = Mag[1];
+  mavlink_raw_imu_struct.zmag = Mag[2];
+
+  /* Sensitivity is 0.1uT/LSB */
+  mavlink_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * roundf(*xsens * 100.0f);
+  mavlink_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * roundf(*ysens * 100.0f);
+  mavlink_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * roundf(*zsens * 100.0f);
+  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
+  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
+  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
+}
+
+/**
  * Поток для опроса магнитометра
  */
 static WORKING_AREA(PollMagThreadWA, 256);
@@ -65,7 +110,6 @@ static msg_t PollMagThread(void *semp){
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
-  Thread *cal_tp = NULL;
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку
@@ -84,64 +128,8 @@ static msg_t PollMagThread(void *semp){
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
     setGlobalFlag(GlobalFlags.mag_data_ready);
-
-    /* decide to fork or collect terminated calibration thread */
-    if (GlobalFlags.mag_cal){
-      if (cal_tp == NULL)
-        cal_tp = MagCalStart();
-      mag_stat_update();
-    }
-    else{ /* thread collected all needed data and termintaed itself */
-      if (cal_tp != NULL && cal_tp->p_state == THD_STATE_FINAL){
-        chThdWait(cal_tp);
-        cal_tp = NULL;
-      }
-    }
-
-    /* overdose? */
-    check_and_clean_overdose();
   }
   return 0;
-}
-
-/**
- * Раскладывает полученные данные по структурам, при необходимости масштабирует.
- */
-static void process_magentometer_data(uint8_t *rxbuf){
-
-  /**/
-  raw_data.xmag = complement2signed(rxbuf[0], rxbuf[1]);
-  raw_data.ymag = complement2signed(rxbuf[2], rxbuf[3]);
-  raw_data.zmag = complement2signed(rxbuf[4], rxbuf[5]);
-
-  /* fill debug structs */
-  mavlink_raw_imu_struct.xmag = raw_data.xmag;
-  mavlink_raw_imu_struct.ymag = raw_data.ymag;
-  mavlink_raw_imu_struct.zmag = raw_data.zmag;
-
-  mavlink_scaled_imu_struct.xmag = (raw_data.xmag - *xoffset) * *xpol * roundf(*xsens * 100.0f);
-  mavlink_scaled_imu_struct.ymag = (raw_data.ymag - *yoffset) * *ypol * roundf(*ysens * 100.0f);
-  mavlink_scaled_imu_struct.zmag = (raw_data.zmag - *zoffset) * *zpol * roundf(*zsens * 100.0f);
-
-  /* Sensitivity is 0.1uT/LSB */
-  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
-  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
-  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
-}
-
-/**
- * если датчик передознулся - надо произвести сброс. В принципе, можно
- * в датчике настроить авторесет на каждое измерение, но
- * это как-то не элегантно.
- */
-static void check_and_clean_overdose(void){
-  if (abs(raw_data.xmag) > OVERDOSE ||
-      abs(raw_data.ymag) > OVERDOSE ||
-      abs(raw_data.zmag) > OVERDOSE){
-    txbuf[0] = MAG_CTRL_REG2;
-    txbuf[1] = MAG_RST;
-    i2c_transmit(mag3110addr, txbuf, 2, rxbuf, 0);
-  }
 }
 
 /**
@@ -151,13 +139,16 @@ static void __search_indexes(void){
   xoffset   = ValueSearch("MAG_xoffset");
   yoffset   = ValueSearch("MAG_yoffset");
   zoffset   = ValueSearch("MAG_zoffset");
+
   xpol      = ValueSearch("MAG_xpol");
   ypol      = ValueSearch("MAG_ypol");
   zpol      = ValueSearch("MAG_zpol");
+
   xsens     = ValueSearch("MAG_xsens");
   ysens     = ValueSearch("MAG_ysens");
   zsens     = ValueSearch("MAG_zsens");
-  swapmtrx  = ValueSearch("MAG_sortmtrx");
+
+  sortmtrx  = ValueSearch("MAG_sortmtrx");
 }
 
 /**

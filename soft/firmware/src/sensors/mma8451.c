@@ -13,7 +13,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
 extern CompensatedData comp_data;
@@ -34,8 +33,8 @@ static uint32_t const *still_thr, *sortmtrx;
 
 static bool_t DeviceStill = FALSE;
 
-static int32_t Acc[3];
-static int32_t prevAcc[3];/* variable to check still device or not */
+static int32_t Acc[3] = {0,0,0};
+static int32_t prevAcc[3] = {0,0,0};/* variable to check still device or not */
 
 /*
  *******************************************************************************
@@ -44,36 +43,35 @@ static int32_t prevAcc[3];/* variable to check still device or not */
  *******************************************************************************
  *******************************************************************************
  */
+
 /**
- * only determine acceleration delta and compare it to threshold in
- * calibration mode. In normal mode just presume that deivece is moving
+ * Функция может только СБРОСИТЬ флаг неподвижности, взводить его нужно вручную.
  */
-bool_t __is_device_still(int32_t *prevAcc, int32_t *Acc){
+void __is_device_still(int32_t *prevAcc, int32_t *Acc){
   uint32_t delta = 0;
 
-  if (GlobalFlags.gyro_cal || GlobalFlags.mag_cal){
-    for (uint32_t i = 0; i < 3; i++){
-      delta += (prevAcc[i] - Acc[i]) * (prevAcc[i] - Acc[i]);
-    }
-    delta  = isqrt(delta);
-    delta  = (delta * 1000000) / *xsens; // get acceleration delta in micro g
-    if (delta < *still_thr)
-      return TRUE;
-  }
+  if (!DeviceStill)
+    return;
 
-  return FALSE;
+  for (uint32_t i = 0; i < 3; i++){
+    delta += (prevAcc[i] - Acc[i]) * (prevAcc[i] - Acc[i]);
+  }
+  delta  = isqrt(delta);
+  delta  = (delta * 1000000) / *xsens; // get acceleration delta in micro g
+  if (delta > *still_thr){
+    chSysLock();
+    DeviceStill = FALSE;
+    chSysUnlock();
+  }
 }
 
 /**
  *
  */
 static void process_accel_data(uint8_t *rxbuf){
-
   /* save previouse values */
-  if (!DeviceStill){
-    for (uint32_t i = 0; i < 3; i++)
-      prevAcc[i] = Acc[i];
-  }
+  for (uint32_t i = 0; i < 3; i++)
+    prevAcc[i] = Acc[i];
 
   int32_t  raw[3];
   raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
@@ -85,7 +83,7 @@ static void process_accel_data(uint8_t *rxbuf){
   Acc[1] *= *ypol;
   Acc[2] *= *zpol;
 
-  DeviceStill = __is_device_still(prevAcc, Acc);
+  __is_device_still(prevAcc, Acc);
 
   comp_data.xacc = (1000 * (Acc[0] + *xoffset)) / *xsens;
   comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
@@ -115,7 +113,7 @@ static msg_t PollAccelThread(void *semp){
     if (sem_status != RDY_OK){
       retry--;
       chDbgAssert(retry > 0, "PollAccelThread(), #1",
-          "probably no interrupts from accelerometer");
+      "probably no interrupts from accelerometer");
     }
 
     txbuf[0] = ACCEL_STATUS;
@@ -222,13 +220,17 @@ void init_mma8451(BinarySemaphore *mma8451_semp){
 /**
  *
  */
-bool_t is_device_still(void){
+bool_t IsDeviceStill(void){
   return DeviceStill;
 }
 
 /**
  * Raise still flag
  */
-void device_still_clear(void){
+void DeviceStillSet(void){
+  chSysLock();
   DeviceStill = TRUE;
+  chSysUnlock();
 }
+
+

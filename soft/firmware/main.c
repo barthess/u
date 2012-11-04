@@ -19,6 +19,10 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
+
+// TODO: is it need device_still_clear(void)???
+// TODO: rename is_device_still() to IsDeviceStill()
+
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp
 // TODO: gyro update period in bkp
