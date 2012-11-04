@@ -142,9 +142,6 @@ static void uav_hardfault_handler(void){
  */
 
 /**
- * If system runs enough amount of time that perform soft reset instead of
- * halting in panic.
- *
  * TODO: save statck and registers and panic message in nonvolatile memory.
  */
 void uav_panic_handler(void){

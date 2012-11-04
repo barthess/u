@@ -56,7 +56,10 @@ BinarySemaphore servo_updated_sem;
 struct tm gps_timp;
 
 /* some global flags */
-GlobalFlags_t GlobalFlags = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+GlobalFlags_t GlobalFlags = {0,0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,0};
 
 /* heap for some threads */
 MemoryHeap ThdHeap;
