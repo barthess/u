@@ -20,9 +20,6 @@ Giovanni
 */
 
 
-// TODO: is it need device_still_clear(void)???
-// TODO: rename is_device_still() to IsDeviceStill()
-
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp
 // TODO: gyro update period in bkp
