@@ -124,15 +124,12 @@ uint32_t sqrti(uint32_t x){
  * Integer power function.
  */
 int32_t powi(int32_t base, uint32_t exp){
-  if (exp == 0)
-    return 1;
-  else{
-    while (exp > 0){
-      base *= base;
-      exp--;
-    }
-    return base;
+  int32_t result = 1;
+  while (exp > 0){
+    result *= base;
+    exp--;
   }
+  return result;
 }
 
 /* mod(a, 2*pi) is the remainder you get when you divide a by 2*pi;
