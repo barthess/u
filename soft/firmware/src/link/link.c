@@ -23,7 +23,6 @@
  */
 extern Mailbox tolink_mb;
 extern MemoryHeap ThdHeap;
-extern mavlink_status_t mavlink_status_struct;
 extern GlobalFlags_t GlobalFlags;
 
 /*
@@ -34,6 +33,9 @@ extern GlobalFlags_t GlobalFlags;
 /* pointers to spawned threads */
 static Thread *linkout_tp = NULL;
 static Thread *linkin_tp  = NULL;
+
+/* need only during parsing */
+static mavlink_status_t                mavlink_status_struct;
 
 /*
  *******************************************************************************

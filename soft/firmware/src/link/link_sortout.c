@@ -5,6 +5,7 @@ Do not edit it manually.
 */
 
 #include "uav.h"
+#include "link_sortout.h"
 
 /*
  ******************************************************************************
