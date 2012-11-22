@@ -7,7 +7,6 @@
 
 /* mavlink includes */
 #include "mavlink.h"
-#include "common.h"
 
 /* uav includes */
 #include "adc_local.h"
