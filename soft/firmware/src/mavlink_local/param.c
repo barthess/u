@@ -12,8 +12,6 @@
 #define PARAM_CONFIRM_TMO   MS2ST(1000)
 #define PARAM_POST_TMO      MS2ST(50)
 
-#define Timeout_help ("Interval of sending this data in milliseconds.\nSet to 19 to switch it off")
-
 /*
  ******************************************************************************
  * PROTOTYPES
