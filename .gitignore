@@ -3,3 +3,5 @@
 *~
 openocd.log
 .settings
+.cproject
+.project
