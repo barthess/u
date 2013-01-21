@@ -15,6 +15,7 @@
  */
 extern GlobalParam_t GlobalParam[];
 extern uint32_t OnboardParamCount;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  ******************************************************************************
