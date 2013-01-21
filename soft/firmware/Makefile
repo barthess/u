@@ -155,6 +155,7 @@ CSRC = $(PORTSRC) \
        src/math/geometry.c \
        src/math/dsp.c \
        src/message.c \
+       src/message_evt.c \
        src/pwr_mgmt.c \
        src/fault_handlers.c \
        
