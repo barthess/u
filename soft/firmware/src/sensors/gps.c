@@ -50,9 +50,12 @@ including, the "$" and "*".
 extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern Mailbox tolink_mb;
-extern mavlink_global_position_int_t mavlink_global_position_int_struct;
-extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
+
+extern mavlink_global_position_int_t  mavlink_global_position_int_struct;
+extern mavlink_vfr_hud_t              mavlink_vfr_hud_struct;
+
+extern EventSource event_mavlink_out_global_position_int;
+
 extern struct tm gps_timp;
 
 float LongitudeScale = 0;
@@ -110,9 +113,6 @@ static msg_t gpsRxThread(void *arg){
   BinarySemaphore gps_sem;
   chBSemInit(&gps_sem, FALSE);
 
-  /* сообщение для менеджера связи */
-  Mail gps_mail = {NULL, MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL};
-
   mavlink_global_position_int_struct.time_boot_ms = 0;
   mavlink_global_position_int_struct.relative_alt = 0;
   mavlink_global_position_int_struct.vx = 0;
@@ -120,7 +120,7 @@ static msg_t gpsRxThread(void *arg){
   mavlink_global_position_int_struct.vz = 0;
   mavlink_global_position_int_struct.hdg = HDG_UNKNOWN;
 
-  /* установим последние достоверные кординаты */
+  /* load last good coordinates */
   mavlink_global_position_int_struct.lat = bkpGpsLatitude;
   mavlink_global_position_int_struct.lon = bkpGpsLongitude;
   mavlink_global_position_int_struct.alt = bkpGpsAltitude;
@@ -131,8 +131,7 @@ EMPTY:
     if (n >= 2 && GlobalFlags.tlm_link_ready){
       chBSemWaitTimeout(&gps_sem, MS2ST(1));
       mavlink_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
-      gps_mail.payload = &mavlink_global_position_int_struct;
-      chMBPost(&tolink_mb, (msg_t)&gps_mail, TIME_IMMEDIATE);
+      chEvtBroadcastFlags(&event_mavlink_out_global_position_int, EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT);
       chBSemSignal(&gps_sem);
       n = 0;
     }

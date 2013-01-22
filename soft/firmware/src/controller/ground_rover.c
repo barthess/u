@@ -17,8 +17,15 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
+
+extern EventSource event_mavlink_in_manual_control;
+extern EventSource event_mavlink_in_set_mode;
+extern EventSource event_mavlink_in_mission_set_current;
+
+extern mavlink_manual_control_t mavlink_manual_control;
+extern mavlink_set_mode_t mavlink_set_mode;
+extern mavlink_mission_set_current_t mavlink_mission_set_current;
 
 /*
  ******************************************************************************
@@ -68,29 +75,38 @@ static msg_t ControllerThread(void* arg){
   chRegSetThreadName("Ground_rover");
   (void)arg;
 
-  Mail* mailp = NULL;
-  msg_t tmp = 0;
-  msg_t status = 0;
+  while(GlobalFlags.messaging_ready == 0)
+  chThdSleepMilliseconds(50);
 
-  while (TRUE) {
-    status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
-    if (status == RDY_OK){
-      mailp = (Mail*)tmp;
+  eventmask_t evt = 0;
+  struct EventListener el_manual_control;
+  struct EventListener el_set_mode;
+  struct EventListener el_mission_set_current;
+  chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,     EVMSK_MAVLINK_IN_MANUAL_CONTROL);
+  chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,           EVMSK_MAVLINK_IN_SET_MODE);
+  chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
 
-      switch(mailp->invoice){
-      case MAVLINK_MSG_ID_MANUAL_CONTROL:
-        manual_control_handler(mailp->payload);
+  while (!chThdShouldTerminate()) {
+    evt = chEvtWaitOne(EVMSK_MAVLINK_IN_MANUAL_CONTROL | EVMSK_MAVLINK_IN_SET_MODE | EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
+
+    switch (evt){
+      case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
+        manual_control_handler(&mavlink_manual_control);
         break;
-      case MAVLINK_MSG_ID_SET_MODE:
-        set_mode_handler(mailp->payload);
+      case EVMSK_MAVLINK_IN_SET_MODE:
+        set_mode_handler(&mavlink_set_mode);
         break;
-      case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
-        set_current_wp_handler(mailp->payload);
+      case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
+        set_current_wp_handler(&mavlink_mission_set_current);
         break;
-      }
-      ReleaseMail(mailp);
     }
   }
+
+  chEvtUnregister(&event_mavlink_in_manual_control,       &el_manual_control);
+  chEvtUnregister(&event_mavlink_in_set_mode,             &el_set_mode);
+  chEvtUnregister(&event_mavlink_in_mission_set_current,  &el_mission_set_current);
+
+  chThdExit(0);
   return 0;
 }
 

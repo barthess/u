@@ -39,6 +39,7 @@
 #include "mavcmd_local.h"
 #include "mavlink_dbg.h"
 #include "max1236.h"
+#include "memfunc.h"
 #include "message.h"
 #include "microsd.h"
 #include "misc_math.h"

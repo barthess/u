@@ -1,15 +1,5 @@
 #include "uav.h"
 
-#include "link_sortin.h"
-#include "link_sortout.h"
-
-/**
- * This code performs:
- * - receiving and sending of packages via UART
- * - decoding and encoding of packages
- * - passing and receiving of decoded messages
- */
-
 /*
  ******************************************************************************
  * DEFINES
@@ -21,7 +11,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox tolink_mb;
 extern MemoryHeap ThdHeap;
 extern GlobalFlags_t GlobalFlags;
 
@@ -52,28 +41,13 @@ static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
 
-  /* Variable for storing message. One for all because messages processed
-   * one by one. */
-  mavlink_message_t mavlink_msgbuf;
-
-  /* output buffer for sending data */
-  uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
-  uint16_t len = 0;
-  Mail *mailp;
-  msg_t tmp = 0;
-
   while (!chThdShouldTerminate()) {
-    if (chMBFetch(&tolink_mb, &tmp, MS2ST(200)) == RDY_OK){
-      mailp = (Mail*)tmp;
-      sort_output_mail(mailp, &mavlink_msgbuf);
-      len = mavlink_msg_to_send_buffer(sendbuf, &mavlink_msgbuf);
-      sdWrite((SerialDriver *)sdp, sendbuf, len);
-    }
+    chThdSleepMilliseconds(200);
+    // process_in_here
   }
 
   /* try correctly stop thread */
   chThdSleepMilliseconds(200);
-  PurgeUavMailbox(&tolink_mb);
   chThdExit(0);
   return 0;
 }
@@ -112,26 +86,6 @@ static msg_t LinkInThread(void *sdp){
  */
 
 /**
- * Purge message queue correctly notifying writer threads.
- * @note  Do not use it often because it can
- *        lock system during log period of time.
- */
-void PurgeUavMailbox(Mailbox *mbp){
-  msg_t tmp;
-  Mail *mail;
-
-  chSysLock();
-  while (chMBGetUsedCountI(mbp) != 0){
-    chMBFetch(mbp, &tmp, TIME_IMMEDIATE);
-    mail = (Mail *)tmp;
-    mail->payload = NULL;
-    if (mail->semp != NULL)
-      chBSemSignalI(mail->semp);
-  }
-  chSysUnlock();
-}
-
-/**
  * Kills previously spawned threads
  */
 void KillMavlinkThreads(void){
@@ -148,13 +102,6 @@ void KillMavlinkThreads(void){
  * Create telemetry link threads
  */
 void SpawnMavlinkThreads(SerialDriver *sdp){
-
-//  PurgeUavMailbox(&manual_control_mb);
-//  PurgeUavMailbox(&autopilot_mb);
-//  PurgeUavMailbox(&tolink_mb);
-//  PurgeUavMailbox(&toservo_mb);
-//  PurgeUavMailbox(&param_mb);
-//  PurgeUavMailbox(&mavlinkcmd_mb);
 
   linkout_tp = chThdCreateFromHeap(&ThdHeap,
                             sizeof(LinkOutThreadWA),
@@ -174,8 +121,4 @@ void SpawnMavlinkThreads(SerialDriver *sdp){
 
   setGlobalFlag(GlobalFlags.tlm_link_ready);
 }
-
-
-
-
 

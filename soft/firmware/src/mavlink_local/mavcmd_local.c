@@ -14,17 +14,16 @@
  */
 extern GlobalFlags_t GlobalFlags;
 extern Mailbox mavlink_command_long_mb;
-extern Mailbox tolink_mb;
-extern mavlink_system_t mavlink_system_struct;
+extern EventSource event_mavlink_out_command_ack;
 
-mavlink_command_ack_t mavlink_command_ack_struct;
+extern mavlink_system_t mavlink_system_struct;
+extern mavlink_command_ack_t mavlink_command_ack_struct;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
 
 /*
  *******************************************************************************
@@ -40,8 +39,8 @@ static Mail command_ack_mail = {NULL, MAVLINK_MSG_ID_COMMAND_ACK, NULL};
 static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
   mavlink_command_ack_struct.result = result;
   mavlink_command_ack_struct.command = cmd;
-  command_ack_mail.payload = &mavlink_command_ack_struct;
-  chMBPost(&tolink_mb, (msg_t)&command_ack_mail, CONFIRM_TMO);
+
+  chEvtBroadcastFlags(&event_mavlink_out_command_ack, EVMSK_MAVLINK_OUT_COMMAND_ACK);
 }
 
 /**
@@ -208,14 +207,32 @@ static msg_t CmdThread(void* arg){
   (void)arg;
   msg_t tmp = 0;
   msg_t status = 0;
-  Mail *input_mail = NULL;
+
+  //process_in_here
+
+
+
+
+  //Mail *input_mail = NULL;
+
+
+
 
   while (TRUE) {
     status = chMBFetch(&mavlink_command_long_mb, &tmp, TIME_INFINITE);
     (void)status;
-    input_mail = (Mail*)tmp;
-    process_cmd(input_mail->payload);
-    ReleaseMail(input_mail);
+
+
+
+
+//    input_mail = (Mail*)tmp;
+//    process_cmd(input_mail->payload);
+//    ReleaseMail(input_mail);
+
+
+
+
+
   }
 
   return 0;

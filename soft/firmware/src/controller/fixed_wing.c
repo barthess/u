@@ -16,8 +16,9 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox controller_mb;
 extern MemoryHeap ThdHeap;
+extern EventSource event_mavlink_in_manual_control;
+extern mavlink_manual_control_t mavlink_manual_control;
 
 /*
  ******************************************************************************
@@ -34,6 +35,10 @@ static Thread *fixedwing_tp = NULL;
  *******************************************************************************
  */
 
+static void manual_control_handler(mavlink_manual_control_t *mavlink_manual_control){
+  (void)mavlink_manual_control;
+}
+
 /**
  *
  */
@@ -42,27 +47,25 @@ static msg_t ControllerThread(void* arg){
   chRegSetThreadName("Fixed_wing");
   (void)arg;
 
-  msg_t tmp = 0;
-  msg_t status = 0;
-  Mail* mailp = NULL;
-  mavlink_manual_control_t *mavlink_manual_control_struct = NULL;
+  eventmask_t evt = 0;
+  struct EventListener el_manual_control;
+  chEvtRegisterMask(&event_mavlink_in_manual_control, &el_manual_control, EVMSK_MAVLINK_IN_MANUAL_CONTROL);
 
-  while (TRUE) {
-    status = chMBFetch(&controller_mb, &tmp, CONTROLLER_TMO);
-    if (status == RDY_OK){
-      mailp = (Mail*)tmp;
-      mavlink_manual_control_struct = mailp->payload;
-      ReleaseMail(mailp);
-    }
-    else{
-      /* testing values */
-      Servo4Set(0);
-      Servo5Set(64);
-      Servo6Set(128);
-      Servo7Set(255);
+  while (!chThdShouldTerminate()) {
+    evt = chEvtWaitOne(EVMSK_MAVLINK_IN_MANUAL_CONTROL);
+
+    switch (evt){
+      case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
+        manual_control_handler(&mavlink_manual_control);
+        break;
+      default:
+        break;
     }
   }
-  (void)mavlink_manual_control_struct;
+
+  chEvtUnregister(&event_mavlink_in_manual_control,       &el_manual_control);
+
+  chThdExit(0);
   return 0;
 }
 

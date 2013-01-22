@@ -1,6 +1,7 @@
-#include <stdio.h>
+#include <string.h>
 
-#include "uav.h"
+#include "ch.h"
+#include "hal.h"
 
 /*
  ******************************************************************************
@@ -13,8 +14,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_statustext_t mavlink_statustext_struct;
-extern EventSource event_mavlink_out_statustext;
 
 /*
  ******************************************************************************
@@ -43,21 +42,22 @@ extern EventSource event_mavlink_out_statustext;
  */
 
 /**
- * Send debug message.
+ * @brief Thread safe variant of memcpy function.
  *
- * severity[in]   severity of message
- * text[in]       text to send
+ * @param[in] dest  destination pointer
+ * @param[in] src   source pointer
+ * @param[in] len   size of transaction
+ * @param[in] try   number of trys, minimum 1
  *
- * return         message posting status
+ * @return  status of operation
  */
-void mavlink_dbg_print(uint8_t severity, const char *text){
-  uint32_t n = sizeof(mavlink_statustext_struct.text);
+bool_t memcpy_ts(void *dest, const void *src, size_t len, uint32_t try){
+  do{
+    memcpy(dest, src, len);
+  }while ((0 != memcmp(dest, src, len)) && ((try--) > 0));
 
-  mavlink_statustext_struct.severity = severity;
-  memset(mavlink_statustext_struct.text, 0, n);
-  memcpy(mavlink_statustext_struct.text, text, n);
-
-  chEvtBroadcastFlags(&event_mavlink_out_statustext, EVMSK_MAVLINK_OUT_STATUSTEXT);
+  if (try > 0)
+    return CH_SUCCESS;
+  else
+    return CH_FAILED;
 }
-
-

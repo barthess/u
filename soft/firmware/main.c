@@ -20,6 +20,14 @@ Giovanni
 */
 
 
+/*
+ * TODO:
+ * check all "process_in_here" "process_out_here" markers */
+// TODO: fix data logging to work in event driven cases
+
+
+
+
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp
 // TODO: gyro update period in bkp
@@ -113,7 +121,6 @@ int main(void) {
 
   chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
-  MavlinkDbgPrintInit();
   MsgInit();
   SanityControlInit();
   I2CInitLocal();
