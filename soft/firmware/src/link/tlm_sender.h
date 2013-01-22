@@ -1,23 +1,6 @@
-#ifndef MAVSENDER2_H_
-#define MAVSENDER2_H_
-
-
-
-typedef struct tlm_registry_t tlm_registry_t;
-
-/* sendinf function */
-typedef bool_t (*send_t)(void);
-
-struct tlm_registry_t
-{
-  /* how much to sleep */
-  uint16_t next_dealine;
-  /* pointer to period value in global parameters structure */
-  uint32_t const *sleepperiod;
-  /* sending function */
-  const send_t sender;
-};
+#ifndef TLM_SENDER_H_
+#define TLM_SENDER_H_
 
 void TlmSenderInit(void);
 
-#endif /* MAVSENDER2_H_ */
+#endif /* TLM_SENDER_H_ */
