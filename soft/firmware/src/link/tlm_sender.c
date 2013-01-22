@@ -28,7 +28,7 @@ extern mavlink_sys_status_t             mavlink_sys_status_struct;
 extern mavlink_global_position_int_t    mavlink_global_position_int_struct;
 extern mavlink_attitude_t               mavlink_attitude_struct;
 extern mavlink_scaled_pressure_t        mavlink_scaled_pressure_struct;
-extern mavlink_vfr_hud_t                mavlink_vfr_hud_struct; /* воздушная и земляная скорости */
+extern mavlink_vfr_hud_t                mavlink_vfr_hud_struct;
 extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
 extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
 
@@ -92,7 +92,7 @@ static msg_t TlmSenderThread(void *arg) {
   time_t t = 5; /* milliseconds to sleep to next deadline */
   refresh_deadlines(t);
 
-  while TRUE{ /* main infinite cycle */
+  while (!chThdShouldTerminate()){
     t = get_sleep_time();
     chThdSleepMilliseconds(t);
     update_tlm_data();
