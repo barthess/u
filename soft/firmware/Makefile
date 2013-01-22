@@ -137,6 +137,7 @@ CSRC = $(PORTSRC) \
        src/link/linkmgr.c \
        src/link/link.c \
        src/link/link_packer.c \
+       src/link/link_unpacker.c \
        src/link/mavlink_dbg.c \
        src/link/tlm_sender.c \
        src/eeprom/eeprom.c \

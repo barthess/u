@@ -26,9 +26,6 @@ extern GlobalFlags_t GlobalFlags;
 static Thread *linkout_tp = NULL;
 static Thread *linkin_tp  = NULL;
 
-/* need only during parsing */
-static mavlink_status_t                mavlink_status_struct;
-
 /*
  *******************************************************************************
  *******************************************************************************
@@ -43,9 +40,7 @@ static mavlink_status_t                mavlink_status_struct;
 static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
-
   PackCycle(sdp);
-
   chThdExit(0);
   return 0;
 }
@@ -56,9 +51,7 @@ static msg_t LinkOutThread(void *sdp){
 static WORKING_AREA(LinkInThreadWA, 512);
 static msg_t LinkInThread(void *sdp){
   chRegSetThreadName("MAVLinkIn");
-
-  //UnpackCycle(sdp);
-
+  UnpackCycle(sdp);
   chThdExit(0);
   return 0;
 }
