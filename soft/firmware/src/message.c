@@ -39,6 +39,8 @@ mavlink_manual_control_t        mavlink_manual_control_struct;
 mavlink_set_mode_t              mavlink_set_mode_struct;
 mavlink_param_set_t             mavlink_param_set_struct;
 mavlink_param_request_read_t    mavlink_param_request_read_struct;
+mavlink_command_long_t          mavlink_command_long_struct;
+mavlink_param_request_list_t    mavlink_param_request_list_struct;
 
 mavlink_mission_count_t         mavlink_mission_count_struct;
 mavlink_mission_item_t          mavlink_mission_item_struct;
@@ -46,8 +48,6 @@ mavlink_mission_request_t       mavlink_mission_request_struct;
 mavlink_mission_ack_t           mavlink_mission_ack_struct;
 mavlink_mission_clear_all_t     mavlink_mission_clear_all_struct;
 mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
-mavlink_mission_current_t       mavlink_mission_current_struct;
-mavlink_mission_item_reached_t  mavlink_mission_item_reached_struct;
 mavlink_mission_current_t       mavlink_mission_current_struct;
 mavlink_mission_item_reached_t  mavlink_mission_item_reached_struct;
 
@@ -77,7 +77,6 @@ EventSource event_mavlink_out_vfr_hud;
 EventSource event_mavlink_out_global_position_int;
 EventSource event_mavlink_out_attitude;
 
-
 EventSource event_mavlink_in_command_long;
 EventSource event_mavlink_in_param_set;
 EventSource event_mavlink_in_param_request_list;
@@ -88,6 +87,8 @@ EventSource event_mavlink_in_mission_set_current;
 EventSource event_mavlink_in_mission_request_list;
 EventSource event_mavlink_in_mission_count;
 EventSource event_mavlink_in_mission_clear_all;
+EventSource event_mavlink_in_mission_item;
+EventSource event_mavlink_in_mission_request;
 
 /*
  ******************************************************************************
@@ -152,6 +153,8 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_in_mission_request_list);
   chEvtInit(&event_mavlink_in_mission_count);
   chEvtInit(&event_mavlink_in_mission_clear_all);
+  chEvtInit(&event_mavlink_in_mission_item);
+  chEvtInit(&event_mavlink_in_mission_request);
 
   setGlobalFlag(GlobalFlags.messaging_ready);
 

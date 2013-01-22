@@ -35,6 +35,8 @@
 #define EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST               (1UL << 27)
 #define EVMSK_MAVLINK_IN_MISSION_COUNT                      (1UL << 28)
 #define EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL                  (1UL << 29)
+#define EVMSK_MAVLINK_IN_MISSION_ITEM                       (1UL << 30)
+#define EVMSK_MAVLINK_IN_MISSION_REQUEST                    (1UL << 31)
 
 /* other events */
 #define EVMSK_GPS_TIME_GOT                                  (1UL << 0)
