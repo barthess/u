@@ -219,7 +219,8 @@ static msg_t CmdThread(void* arg){
 
 
   while (TRUE) {
-    status = chMBFetch(&mavlink_command_long_mb, &tmp, TIME_INFINITE);
+    chThdSleepMilliseconds(100);
+    //status = chMBFetch(&mavlink_command_long_mb, &tmp, TIME_INFINITE);
     (void)status;
 
 

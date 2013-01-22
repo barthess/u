@@ -23,9 +23,9 @@ extern EventSource event_mavlink_in_manual_control;
 extern EventSource event_mavlink_in_set_mode;
 extern EventSource event_mavlink_in_mission_set_current;
 
-extern mavlink_manual_control_t mavlink_manual_control;
-extern mavlink_set_mode_t mavlink_set_mode;
-extern mavlink_mission_set_current_t mavlink_mission_set_current;
+extern mavlink_manual_control_t mavlink_manual_control_struct;
+extern mavlink_set_mode_t mavlink_set_mode_struct;
+extern mavlink_mission_set_current_t mavlink_mission_set_current_struct;
 
 /*
  ******************************************************************************
@@ -91,13 +91,13 @@ static msg_t ControllerThread(void* arg){
 
     switch (evt){
       case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
-        manual_control_handler(&mavlink_manual_control);
+        manual_control_handler(&mavlink_manual_control_struct);
         break;
       case EVMSK_MAVLINK_IN_SET_MODE:
-        set_mode_handler(&mavlink_set_mode);
+        set_mode_handler(&mavlink_set_mode_struct);
         break;
       case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
-        set_current_wp_handler(&mavlink_mission_set_current);
+        set_current_wp_handler(&mavlink_mission_set_current_struct);
         break;
     }
   }

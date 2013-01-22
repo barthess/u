@@ -22,7 +22,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox logwriter_mb;
 extern GlobalFlags_t GlobalFlags;
 
 /*
@@ -222,20 +221,19 @@ NOT_READY:
   /* main write cycle
    * This writer waits msg_t with mavlink message ID. Based on that ID it
    * will pack extern mavlink struct with proper packing function. */
-  chMBReset(&logwriter_mb); /* just to be safe */
   setGlobalFlag(GlobalFlags.logger_ready);
   while (TRUE){
     /* wait ID */
-    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
-      if (!sdcIsCardInserted(&SDCD1)){
-        clearGlobalFlag(GlobalFlags.logger_ready);
-        remove_handler();
-        chMBReset(&logwriter_mb);
-        goto NOT_READY;
-      }
-      err = WriteLog(&Log, id, &fresh_data);
-      err_check();
-    }
+    //process_in_here
+//    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
+//      if (!sdcIsCardInserted(&SDCD1)){
+//        clearGlobalFlag(GlobalFlags.logger_ready);
+//        remove_handler();
+//        goto NOT_READY;
+//      }
+//      err = WriteLog(&Log, id, &fresh_data);
+//      err_check();
+//    }
 
     err = fs_sync(&Log);
     err_check();

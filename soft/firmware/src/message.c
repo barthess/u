@@ -13,8 +13,43 @@
  */
 extern GlobalFlags_t GlobalFlags;
 
+/* */
+Mailbox speedometer_mb;
+msg_t speedometer_mb_buf[1];
+
 /* variable for storing system state */
 mavlink_system_t                mavlink_system_struct;
+
+/* mavlink messages */
+mavlink_raw_imu_t               mavlink_raw_imu_struct;
+mavlink_scaled_imu_t            mavlink_scaled_imu_struct;
+mavlink_raw_pressure_t          mavlink_raw_pressure_struct;
+mavlink_scaled_pressure_t       mavlink_scaled_pressure_struct;
+mavlink_sys_status_t            mavlink_sys_status_struct;
+mavlink_vfr_hud_t               mavlink_vfr_hud_struct;
+mavlink_global_position_int_t   mavlink_global_position_int_struct;
+mavlink_attitude_t              mavlink_attitude_struct;
+mavlink_heartbeat_t             mavlink_heartbeat_struct;
+mavlink_param_value_t           mavlink_param_value_struct;
+mavlink_gps_raw_int_t           mavlink_gps_raw_int_struct;
+mavlink_local_position_ned_t    mavlink_local_position_ned_struct;
+mavlink_nav_controller_output_t mavlink_nav_controller_output_struct;
+mavlink_statustext_t            mavlink_statustext_struct;
+mavlink_manual_control_t        mavlink_manual_control_struct;
+mavlink_set_mode_t              mavlink_set_mode_struct;
+mavlink_param_set_t             mavlink_param_set_struct;
+mavlink_param_request_read_t    mavlink_param_request_read_struct;
+
+mavlink_mission_count_t         mavlink_mission_count_struct;
+mavlink_mission_item_t          mavlink_mission_item_struct;
+mavlink_mission_request_t       mavlink_mission_request_struct;
+mavlink_mission_ack_t           mavlink_mission_ack_struct;
+mavlink_mission_clear_all_t     mavlink_mission_clear_all_struct;
+mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
+mavlink_mission_current_t       mavlink_mission_current_struct;
+mavlink_mission_item_reached_t  mavlink_mission_item_reached_struct;
+mavlink_mission_current_t       mavlink_mission_current_struct;
+mavlink_mission_item_reached_t  mavlink_mission_item_reached_struct;
 
 /**
  * @brief   Event sources.
@@ -33,6 +68,15 @@ EventSource event_mavlink_out_param_value;
 EventSource event_mavlink_out_mission_ack;
 EventSource event_mavlink_out_mission_current;
 EventSource event_mavlink_out_mission_item_reached;
+EventSource event_mavlink_out_raw_imu;
+EventSource event_mavlink_out_scaled_imu;
+EventSource event_mavlink_out_raw_pressure;
+EventSource event_mavlink_out_scaled_pressure;
+EventSource event_mavlink_out_sys_status;
+EventSource event_mavlink_out_vfr_hud;
+EventSource event_mavlink_out_global_position_int;
+EventSource event_mavlink_out_attitude;
+
 
 EventSource event_mavlink_in_command_long;
 EventSource event_mavlink_in_param_set;
@@ -89,6 +133,14 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_out_mission_ack);
   chEvtInit(&event_mavlink_out_mission_current);
   chEvtInit(&event_mavlink_out_mission_item_reached);
+  chEvtInit(&event_mavlink_out_raw_imu);
+  chEvtInit(&event_mavlink_out_scaled_imu);
+  chEvtInit(&event_mavlink_out_raw_pressure);
+  chEvtInit(&event_mavlink_out_scaled_pressure);
+  chEvtInit(&event_mavlink_out_sys_status);
+  chEvtInit(&event_mavlink_out_vfr_hud);
+  chEvtInit(&event_mavlink_out_global_position_int);
+  chEvtInit(&event_mavlink_out_attitude);
 
   chEvtInit(&event_mavlink_in_command_long);
   chEvtInit(&event_mavlink_in_param_set);
@@ -102,6 +154,10 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_in_mission_clear_all);
 
   setGlobalFlag(GlobalFlags.messaging_ready);
+
+  chMBInit(&speedometer_mb,
+    speedometer_mb_buf,
+    (sizeof(speedometer_mb_buf)/sizeof(msg_t)));
 }
 
 /**

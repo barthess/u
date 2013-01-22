@@ -1,5 +1,8 @@
 #include "uav.h"
 
+#include "link_packer.h"
+#include "link_unpacker.h"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -41,17 +44,11 @@ static WORKING_AREA(LinkOutThreadWA, 1024);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
 
-  while (!chThdShouldTerminate()) {
-    chThdSleepMilliseconds(200);
-    // process_in_here
-  }
+  PackCycle(sdp);
 
-  /* try correctly stop thread */
-  chThdSleepMilliseconds(200);
   chThdExit(0);
   return 0;
 }
-
 
 /**
  * Parse input data.
@@ -60,20 +57,7 @@ static WORKING_AREA(LinkInThreadWA, 512);
 static msg_t LinkInThread(void *sdp){
   chRegSetThreadName("MAVLinkIn");
 
-  mavlink_message_t msg;
-  msg_t c = 0;
-
-  while (!chThdShouldTerminate()) {
-    // Try to get a new message
-    c = sdGetTimeout((SerialDriver *)sdp, MS2ST(200));
-    if (c != Q_TIMEOUT){
-      if (mavlink_parse_char(MAVLINK_COMM_0, (uint8_t)c, &msg, &mavlink_status_struct)) {
-        if (msg.sysid == GROUND_STATION_ID){ /* message from our ground station */
-          sort_input_messages(&msg);
-        }
-      }
-    }
-  }
+  //UnpackCycle(sdp);
 
   chThdExit(0);
   return 0;

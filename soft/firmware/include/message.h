@@ -17,6 +17,12 @@
 #define EVMSK_MAVLINK_OUT_MISSION_ACK                       (1UL << 10)
 #define EVMSK_MAVLINK_OUT_MISSION_CURRENT                   (1UL << 11)
 #define EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED              (1UL << 12)
+#define EVMSK_MAVLINK_OUT_RAW_IMU                           (1UL << 13)
+#define EVMSK_MAVLINK_OUT_SCALED_IMU                        (1UL << 14)
+#define EVMSK_MAVLINK_OUT_RAW_PRESSURE                      (1UL << 15)
+#define EVMSK_MAVLINK_OUT_SCALED_PRESSURE                   (1UL << 16)
+#define EVMSK_MAVLINK_OUT_VFR_HUD                           (1UL << 17)
+#define EVMSK_MAVLINK_OUT_ATTITUDE                          (1UL << 18)
 
 /* input messages events */
 #define EVMSK_MAVLINK_IN_PARAM_SET                          (1UL << 20)
