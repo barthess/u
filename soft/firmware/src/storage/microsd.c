@@ -181,7 +181,7 @@ static FRESULT fs_sync(FIL *Log){
  * Если произошла ошибка - просто тушится
  * поток логгера, потому что исправить всё равно ничего нельзя.
  */
-static WORKING_AREA(SdThreadWA, 1536);
+static WORKING_AREA(SdThreadWA, 2048);
 static msg_t SdThread(void *arg){
   chRegSetThreadName("MicroSD");
   (void)arg;

@@ -29,7 +29,9 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalFlags_t      GlobalFlags;
+extern GlobalFlags_t GlobalFlags;
+extern Mailbox logwriter_mb;
+extern mavlink_system_t mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -46,10 +48,6 @@ static uint8_t* CurrentBuffer = b0;
 
 /* offset in current buffer */
 static uint32_t offset = 0;
-
-/* some buffers for mavlink handling */
-static mavlink_message_t mavlink_msgbuf_log;
-static uint8_t recordbuf[RECORD_LEN];
 
 /*
  ******************************************************************************
@@ -120,8 +118,11 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
   uint8_t *fs_buf;
   FRESULT err = FR_OK;
 
-  #warning "write coder here"
-  //mavencoder(id, mavlink_system_struct.sysid, &mavlink_msgbuf_log);
+  /* some buffers for mavlink handling */
+  mavlink_message_t mavlink_msgbuf_log;
+  uint8_t recordbuf[RECORD_LEN];
+
+  mavencoder(id, mavlink_system_struct.sysid, recordbuf, &mavlink_msgbuf_log);
 
 #if MAVLINK_LOG_FORMAT
 #if CH_DBG_ENABLE_CHECKS
