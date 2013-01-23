@@ -88,7 +88,7 @@ static bool_t wait_answer_tmo(uint8_t evt_id, bool_t retry){
   else
     retry_cnt = 1;
 
-  /* prevent from wrong IDs */
+  /* block all unhandled IDs */
   if (evt_id != EVMSK_MAVLINK_IN_MISSION_REQUEST)
     chDbgPanic("ID not handled");
 
@@ -151,7 +151,7 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
     status = wait_answer_tmo(EVMSK_MAVLINK_IN_MISSION_REQUEST, TRUE);
 
   if (status == CH_SUCCESS){
-    /* start receiving cycle */
+    /* start slow receiving cycle */
     return mission_item_request_handler();
   }
   else
