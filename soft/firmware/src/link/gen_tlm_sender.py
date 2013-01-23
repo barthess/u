@@ -83,7 +83,7 @@ static msg_t TlmSenderThread(void *arg) {
 
 thd_foot = """
   while (!chThdShouldTerminate()){
-    chThdSleepMilliseconds(500);
+    chThdSleepMilliseconds(50);
   }
 
   chThdExit(0);

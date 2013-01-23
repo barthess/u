@@ -47,8 +47,6 @@ extern EventSource event_mavlink_out_statustext;
  *
  * severity[in]   severity of message
  * text[in]       text to send
- *
- * return         message posting status
  */
 void mavlink_dbg_print(uint8_t severity, const char *text){
   uint32_t n = sizeof(mavlink_statustext_struct.text);

@@ -30,7 +30,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = no
+  USE_VERBOSE_COMPILE = yes
 endif
 
 #
@@ -233,15 +233,15 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 MCU  = cortex-m4 -lm
 #MCU  = cortex-m3 -lm
 
-#TRGT = arm-elf-
 TRGT = arm-none-eabi-
-CC   = ccache $(TRGT)gcc
-CPPC = ccache $(TRGT)g++
-#CC   = $(TRGT)gcc
-#CPPC = $(TRGT)g++
-#TRGT = ""
-#CC   = $(TRGT)clang
-#CPPC = $(TRGT)clang++
+
+ifeq ($(shell uname -o),Linux)
+	CC   = ccache $(TRGT)gcc
+	CPPC = ccache $(TRGT)g++
+else
+	CC   = $(TRGT)gcc
+	CPPC = $(TRGT)g++	
+endif
 
 # Enable loading with g++ only if you need C++ runtime support.
 # NOTE: You can use C++ even without C++ support if you are careful. C++
