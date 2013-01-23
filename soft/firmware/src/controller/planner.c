@@ -274,7 +274,6 @@ static msg_t PlannerThread(void* arg){
   chEvtUnregister(&event_mavlink_in_mission_request_list, &el_mission_request_list);
   chEvtUnregister(&event_mavlink_in_mission_count,        &el_mission_count);
   chEvtUnregister(&event_mavlink_in_mission_clear_all,    &el_mission_clear_all);
-
   chThdExit(0);
   return 0;
 }
