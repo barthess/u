@@ -25,6 +25,13 @@ extern EventSource event_mavlink_out_heartbeat;
 #define BLUE_LED_ON_TIME    MS2ST(50)
 #define BLUE_LED_OFF_TIME   MS2ST(100)
 
+#define SYS_STATUS_3D_GYRO    ((uint32_t)1 << 0) /* for stub */
+#define SYS_STATUS_3D_ACCEL   ((uint32_t)1 << 1) /* for stub */
+#define SYS_STATUS_3D_MAG     ((uint32_t)1 << 2) /* for stub */
+#define SYS_STATUS_ABS_PRES   ((uint32_t)1 << 3) /* for stub */
+#define SYS_STATUS_DIFF_PRES  ((uint32_t)1 << 4) /* for stub */
+#define SYS_STATUS_GPS        ((uint32_t)1 << 5) /* for stub */
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -84,6 +91,13 @@ static msg_t SanityControlThread(void *arg) {
       mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
       mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
       chEvtBroadcastFlags(&event_mavlink_out_heartbeat, EVMSK_MAVLINK_OUT_HEARTBEAT);
+
+      /* stub */
+      mavlink_sys_status_struct.onboard_control_sensors_present = (
+              SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
+              SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
+      mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
+      mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
     }
 
     log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
