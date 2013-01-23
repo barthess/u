@@ -75,7 +75,7 @@ def gen(arr):
     for i in arr:
         f.write("    case EVMSK_MAVLINK_OUT_" + str.upper(i) + ":\n")
         f.write("      memcpy_ts(sendbuf, &mavlink_" + i + "_struct, sizeof(mavlink_" + i +"_struct), 4);\n")
-        f.write("      mavlink_msg_" + i + "_encode(mavlink_system_struct.sysid, 20, &mavlink_message_struct, (mavlink_" + i + "_t *)sendbuf);\n")
+        f.write("      mavlink_msg_" + i + "_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_" + i + "_t *)sendbuf);\n")
         f.write("      break;\n\n")
     foot(f, arr)
     f.close()

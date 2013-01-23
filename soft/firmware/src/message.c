@@ -15,7 +15,7 @@ extern GlobalFlags_t GlobalFlags;
 
 /* */
 Mailbox speedometer_mb;
-msg_t speedometer_mb_buf[1];
+Mailbox logwriter_mb;
 
 /* variable for storing system state */
 mavlink_system_t                mavlink_system_struct;
@@ -95,6 +95,8 @@ EventSource event_mavlink_in_mission_request;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static msg_t speedometer_mb_buf[1];
+static msg_t logwriter_mb_buf[4];
 
 /*
  ******************************************************************************
@@ -161,6 +163,9 @@ void MsgInit(void){
   chMBInit(&speedometer_mb,
     speedometer_mb_buf,
     (sizeof(speedometer_mb_buf)/sizeof(msg_t)));
+  chMBInit(&logwriter_mb,
+    logwriter_mb_buf,
+    (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 }
 
 /**

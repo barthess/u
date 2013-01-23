@@ -184,6 +184,7 @@ static msg_t TlmSenderThread(void *arg) {
 
   chSysUnlock();
 
+
   while (!chThdShouldTerminate()){
     chThdSleepMilliseconds(50);
   }
