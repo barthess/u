@@ -75,7 +75,7 @@ static void mission_clear_all(void){
  *
  */
 static bool_t send_with_tmo(bool_t retry){
-    //process_in_here
+#warning "process_in_here"
 
 //  msg_t status = RDY_RESET;
 //  msg_t msg = 0;
@@ -106,7 +106,7 @@ static bool_t send_with_tmo(bool_t retry){
  *
  */
 static MAVLINK_WPM_STATES mission_item_request_handler(mavlink_mission_request_t *mavlink_mission_request_struct){
-    //process_in_here
+#warning "process_in_here"
 
 //
 //  mavlink_mission_request_t *mr;
@@ -137,7 +137,7 @@ static MAVLINK_WPM_STATES mission_item_request_handler(mavlink_mission_request_t
  * Handle mission request list message.
  */
 static MAVLINK_WPM_STATES mission_request_list_handler(void){
-  //process_in_here
+#warning "process_in_here"
 
 //  mavlink_mission_count_struct.count = get_waypoint_count();
 //  mavlink_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
@@ -181,7 +181,7 @@ static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
  * Save waypoints in EEPROM
  */
 static bool_t mission_count_handler(void){
-      //process_in_here
+#warning "process_in_here"
 
 //  mavlink_mission_count_t *mc = mailp->payload;
 //  uint16_t waypoint_cnt = mc->count;

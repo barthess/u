@@ -41,6 +41,7 @@ mavlink_param_set_t             mavlink_param_set_struct;
 mavlink_param_request_read_t    mavlink_param_request_read_struct;
 mavlink_command_long_t          mavlink_command_long_struct;
 mavlink_param_request_list_t    mavlink_param_request_list_struct;
+mavlink_command_ack_t           mavlink_command_ack_struct;
 
 mavlink_mission_count_t         mavlink_mission_count_struct;
 mavlink_mission_item_t          mavlink_mission_item_struct;

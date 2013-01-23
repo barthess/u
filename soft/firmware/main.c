@@ -22,9 +22,7 @@ Giovanni
 
 /*
  * TODO:
- * check all "process_in_here" "process_out_here" markers */
-// TODO: fix data logging to work in event driven cases (using mailboxing of packet IDs)
-
+ * check all "process_in_here" markers */
 
 
 

@@ -124,7 +124,7 @@ def gen(names):
         f.write("static void " +i[0]+ "_vtcb(void *par){\n")
         f.write("  (void)par;\n")
         f.write("  chSysLockFromIsr();\n")
-        f.write("  chEvtBroadcastFlags(&event_mavlink_out_" +i[1]+ ", EVMSK_MAVLINK_OUT_" +str.upper(i[1])+ ");\n")
+        f.write("  chEvtBroadcastFlagsI(&event_mavlink_out_" +i[1]+ ", EVMSK_MAVLINK_OUT_" +str.upper(i[1])+ ");\n")
         f.write("  if (*" +i[0]+ " != SEND_OFF) // self restarting only if sending for this parameter not disabled\n")
         f.write("    start_" +i[0]+ "_vt();\n")
         f.write("  chSysUnlockFromIsr();\n}\n\n")

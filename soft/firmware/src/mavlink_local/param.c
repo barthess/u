@@ -12,7 +12,7 @@
 #define PARAM_CONFIRM_TMO   MS2ST(1000)
 #define PARAM_POST_TMO      MS2ST(50)
 
-#define SEND_VALUE_PAUSE    MS2ST(100)
+#define SEND_VALUE_PAUSE    MS2ST(50)
 
 /*
  ******************************************************************************
@@ -445,9 +445,9 @@ param_status_t set_global_param(void *value, const GlobalParam_t *param){
  */
 void ParametersInit(void){
 
-//  (void)_sendtmo_param_checker;   /*warning supressor */
-//  (void)_polarity_param_checker;  /*warning supressor */
-//  (void)_sortmtrx_param_checker;  /*warning supressor */
+  (void)_sendtmo_param_checker;   /*warning supressor */
+  (void)_polarity_param_checker;  /*warning supressor */
+  (void)_sortmtrx_param_checker;  /*warning supressor */
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 

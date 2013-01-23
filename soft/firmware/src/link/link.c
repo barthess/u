@@ -37,7 +37,7 @@ static Thread *linkin_tp  = NULL;
 /**
  *
  */
-static WORKING_AREA(LinkOutThreadWA, 1024);
+static WORKING_AREA(LinkOutThreadWA, 1536);
 static msg_t LinkOutThread(void *sdp){
   chRegSetThreadName("MAVLinkOut");
   PackCycle(sdp);

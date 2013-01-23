@@ -13,11 +13,13 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern Mailbox mavlink_command_long_mb;
+
 extern EventSource event_mavlink_out_command_ack;
+extern EventSource event_mavlink_in_command_long;
 
 extern mavlink_system_t mavlink_system_struct;
 extern mavlink_command_ack_t mavlink_command_ack_struct;
+extern mavlink_command_long_t mavlink_command_long_struct;
 
 /*
  ******************************************************************************
@@ -134,7 +136,6 @@ static enum MAV_RESULT cmd_do_set_mode_handler(mavlink_command_long_t *cl){
   return MAV_RESULT_DENIED;
 }
 
-
 /**
  * parsing and execution of commands from ground
  */
@@ -205,37 +206,20 @@ static WORKING_AREA(CmdThreadWA, 512);
 static msg_t CmdThread(void* arg){
   chRegSetThreadName("MAVCommand");
   (void)arg;
-  msg_t tmp = 0;
-  msg_t status = 0;
+  eventmask_t evt = 0;
 
-  //process_in_here
+  struct EventListener el_command_long;
+  chEvtRegisterMask(&event_mavlink_in_command_long, &el_command_long, EVMSK_MAVLINK_IN_COMMAND_LONG);
 
-
-
-
-  //Mail *input_mail = NULL;
-
-
-
-
-  while (TRUE) {
-    chThdSleepMilliseconds(100);
-    //status = chMBFetch(&mavlink_command_long_mb, &tmp, TIME_INFINITE);
-    (void)status;
-
-
-
-
-//    input_mail = (Mail*)tmp;
-//    process_cmd(input_mail->payload);
-//    ReleaseMail(input_mail);
-
-
-
-
-
+  while(!chThdShouldTerminate()){
+    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG, MS2ST(50));
+    if (evt == EVMSK_MAVLINK_IN_COMMAND_LONG){
+      process_cmd(&mavlink_command_long_struct);
+    }
   }
 
+  chEvtUnregister(&event_mavlink_in_command_long, &el_command_long);
+  chThdExit(0);
   return 0;
 }
 

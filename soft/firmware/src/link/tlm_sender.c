@@ -71,7 +71,7 @@ static VirtualTimer vfr_hud_vt;
 static void raw_imu_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_raw_imu, EVMSK_MAVLINK_OUT_RAW_IMU);
+  chEvtBroadcastFlagsI(&event_mavlink_out_raw_imu, EVMSK_MAVLINK_OUT_RAW_IMU);
   if (*raw_imu != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_raw_imu_vt();
   chSysUnlockFromIsr();
@@ -80,7 +80,7 @@ static void raw_imu_vtcb(void *par){
 static void scal_imu_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_scaled_imu, EVMSK_MAVLINK_OUT_SCALED_IMU);
+  chEvtBroadcastFlagsI(&event_mavlink_out_scaled_imu, EVMSK_MAVLINK_OUT_SCALED_IMU);
   if (*scal_imu != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_scal_imu_vt();
   chSysUnlockFromIsr();
@@ -89,7 +89,7 @@ static void scal_imu_vtcb(void *par){
 static void raw_press_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_raw_pressure, EVMSK_MAVLINK_OUT_RAW_PRESSURE);
+  chEvtBroadcastFlagsI(&event_mavlink_out_raw_pressure, EVMSK_MAVLINK_OUT_RAW_PRESSURE);
   if (*raw_press != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_raw_press_vt();
   chSysUnlockFromIsr();
@@ -98,7 +98,7 @@ static void raw_press_vtcb(void *par){
 static void sys_status_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_sys_status, EVMSK_MAVLINK_OUT_SYS_STATUS);
+  chEvtBroadcastFlagsI(&event_mavlink_out_sys_status, EVMSK_MAVLINK_OUT_SYS_STATUS);
   if (*sys_status != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_sys_status_vt();
   chSysUnlockFromIsr();
@@ -107,7 +107,7 @@ static void sys_status_vtcb(void *par){
 static void gps_int_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_global_position_int, EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT);
+  chEvtBroadcastFlagsI(&event_mavlink_out_global_position_int, EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT);
   if (*gps_int != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_gps_int_vt();
   chSysUnlockFromIsr();
@@ -116,7 +116,7 @@ static void gps_int_vtcb(void *par){
 static void attitude_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_attitude, EVMSK_MAVLINK_OUT_ATTITUDE);
+  chEvtBroadcastFlagsI(&event_mavlink_out_attitude, EVMSK_MAVLINK_OUT_ATTITUDE);
   if (*attitude != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_attitude_vt();
   chSysUnlockFromIsr();
@@ -125,7 +125,7 @@ static void attitude_vtcb(void *par){
 static void scal_press_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_scaled_pressure, EVMSK_MAVLINK_OUT_SCALED_PRESSURE);
+  chEvtBroadcastFlagsI(&event_mavlink_out_scaled_pressure, EVMSK_MAVLINK_OUT_SCALED_PRESSURE);
   if (*scal_press != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_scal_press_vt();
   chSysUnlockFromIsr();
@@ -134,7 +134,7 @@ static void scal_press_vtcb(void *par){
 static void vfr_hud_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
-  chEvtBroadcastFlags(&event_mavlink_out_vfr_hud, EVMSK_MAVLINK_OUT_VFR_HUD);
+  chEvtBroadcastFlagsI(&event_mavlink_out_vfr_hud, EVMSK_MAVLINK_OUT_VFR_HUD);
   if (*vfr_hud != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_vfr_hud_vt();
   chSysUnlockFromIsr();
