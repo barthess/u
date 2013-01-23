@@ -120,7 +120,7 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
   uint8_t *fs_buf;
   FRESULT err = FR_OK;
 
-  // process_in_here
+  #warning "write coder here"
   //mavencoder(id, mavlink_system_struct.sysid, &mavlink_msgbuf_log);
 
 #if MAVLINK_LOG_FORMAT
@@ -157,19 +157,13 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
  */
 void log_write_schedule(uint8_t id, uint32_t *i, uint32_t decimator) {
   if (GlobalFlags.logger_ready){
-
-
-    //process_in_here
-//    if (i == NULL){
-//      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
-//      return;
-//    }
-//    else if ((*i & decimator) == decimator)
-//      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
-//    (*i)++;
-
-
-
+    if (i == NULL){
+      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
+      return;
+    }
+    else if ((*i & decimator) == decimator)
+      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
+    (*i)++;
   }
 }
 

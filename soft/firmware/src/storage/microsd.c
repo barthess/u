@@ -23,6 +23,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern Mailbox logwriter_mb;
 
 /*
  ******************************************************************************
@@ -224,16 +225,15 @@ NOT_READY:
   setGlobalFlag(GlobalFlags.logger_ready);
   while (TRUE){
     /* wait ID */
-    //process_in_here
-//    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
-//      if (!sdcIsCardInserted(&SDCD1)){
-//        clearGlobalFlag(GlobalFlags.logger_ready);
-//        remove_handler();
-//        goto NOT_READY;
-//      }
-//      err = WriteLog(&Log, id, &fresh_data);
-//      err_check();
-//    }
+    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
+      if (!sdcIsCardInserted(&SDCD1)){
+        clearGlobalFlag(GlobalFlags.logger_ready);
+        remove_handler();
+        goto NOT_READY;
+      }
+      err = WriteLog(&Log, id, &fresh_data);
+      err_check();
+    }
 
     err = fs_sync(&Log);
     err_check();
