@@ -9,7 +9,6 @@
 #define PLANNER_STANDBY_TMO   MS2ST(20) /* poll inbox period waiting message from ground */
 #define PLANNER_RETRY_CNT     5
 #define PLANNER_RETRY_TMO     MS2ST(1000)
-#define PLANNER_POST_TMO      MS2ST(2000)
 
 #define TARGET_RADIUS         param2  /* dirty fix to correspond QGC not mavlink lib */
 #define MIN_TARGET_RADIUS     5       /* minimal allowed waypoint radius */
@@ -23,10 +22,13 @@ extern GlobalFlags_t GlobalFlags;
 extern mavlink_mission_count_t    mavlink_mission_count_struct;
 extern mavlink_mission_item_t     mavlink_mission_item_struct;
 extern mavlink_mission_request_t  mavlink_mission_request_struct;
+extern mavlink_mission_request_t  mavlink_mission_request_list_struct;
 extern mavlink_mission_ack_t      mavlink_mission_ack_struct;
 
 extern EventSource event_mavlink_in_mission_request_list;
+extern EventSource event_mavlink_in_mission_request;
 extern EventSource event_mavlink_in_mission_count;
+extern EventSource event_mavlink_out_mission_count;
 extern EventSource event_mavlink_in_mission_clear_all;
 extern EventSource event_mavlink_out_mission_ack;
 
@@ -74,38 +76,37 @@ static void mission_clear_all(void){
 /**
  *
  */
-static bool_t send_with_tmo(bool_t retry){
-#warning "process_in_here"
+static bool_t wait_answer_tmo(uint8_t evt_id, bool_t retry){
+  uint32_t retry_cnt;
+  eventmask_t evt = 0;
 
-//  msg_t status = RDY_RESET;
-//  msg_t msg = 0;
-//  uint32_t retry_cnt;
-//
-//  if (retry)
-//    retry_cnt = PLANNER_RETRY_CNT;
-//  else
-//    retry_cnt = 1;
-//
-//  while(retry_cnt > 0){
-//    status = chMBPost(&tolink_mb, (msg_t)outmailp, PLANNER_POST_TMO);
-//    if (status != RDY_OK)
-//      chDbgPanic("time is out");
-//
-//    /* wait any data */
-//    status = chMBFetch(&mission_mb, &msg, PLANNER_RETRY_TMO);
-//    if (status == RDY_OK){
-//      return (Mail*)msg;
-//    }
-//    else
-//      retry_cnt--;
-//  }
-//  return NULL;
+  struct EventListener el_mission_request;
+  chEvtRegisterMask(&event_mavlink_in_mission_request, &el_mission_request, EVMSK_MAVLINK_IN_MISSION_REQUEST);
+
+  if (retry)
+    retry_cnt = PLANNER_RETRY_CNT;
+  else
+    retry_cnt = 1;
+
+  /* prevent from wrong IDs */
+  if (evt_id != EVMSK_MAVLINK_IN_MISSION_REQUEST)
+    chDbgPanic("ID not handled");
+
+  while(retry_cnt > 0){
+    /* wait answer */
+    evt = chEvtWaitOneTimeout(evt_id, PLANNER_RETRY_TMO);
+    if (evt == evt_id)
+      return CH_SUCCESS;
+    else
+      retry_cnt--;
+  }
+  return CH_FAILED;
 }
 
 /**
  *
  */
-static MAVLINK_WPM_STATES mission_item_request_handler(mavlink_mission_request_t *mavlink_mission_request_struct){
+static MAVLINK_WPM_STATES mission_item_request_handler(void){
 #warning "process_in_here"
 
 //
@@ -137,23 +138,24 @@ static MAVLINK_WPM_STATES mission_item_request_handler(mavlink_mission_request_t
  * Handle mission request list message.
  */
 static MAVLINK_WPM_STATES mission_request_list_handler(void){
-#warning "process_in_here"
 
-//  mavlink_mission_count_struct.count = get_waypoint_count();
-//  mavlink_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-//  mavlink_mission_count_struct.target_system = GROUND_STATION_ID;
-//  mission_out_mail.payload = &mavlink_mission_count_struct;
-//  mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_COUNT;
-//
-//  if (mavlink_mission_count_struct.count == 0)
-//    mailp = send_with_tmo(&mission_out_mail, FALSE);
-//  else
-//    mailp = send_with_tmo(&mission_out_mail, TRUE);
-//
-//  if (mailp != NULL)
-//    return mission_item_request_handler(mailp);
-//  else
-//    return MAVLINK_WPM_STATE_IDLE;
+  bool_t status = CH_FAILED;
+
+  mavlink_mission_count_struct.count = get_waypoint_count();
+  mavlink_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+  mavlink_mission_count_struct.target_system = GROUND_STATION_ID;
+
+  chEvtBroadcastFlags(&event_mavlink_out_mission_count, EVMSK_MAVLINK_OUT_MISSION_COUNT);
+
+  if (mavlink_mission_count_struct.count != 0)
+    status = wait_answer_tmo(EVMSK_MAVLINK_IN_MISSION_REQUEST, TRUE);
+
+  if (status == CH_SUCCESS){
+    /* start receiving cycle */
+    return mission_item_request_handler();
+  }
+  else
+    return MAVLINK_WPM_STATE_IDLE;
 }
 
 /**

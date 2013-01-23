@@ -23,6 +23,7 @@
 #define EVMSK_MAVLINK_OUT_SCALED_PRESSURE                   (1UL << 16)
 #define EVMSK_MAVLINK_OUT_VFR_HUD                           (1UL << 17)
 #define EVMSK_MAVLINK_OUT_ATTITUDE                          (1UL << 18)
+#define EVMSK_MAVLINK_OUT_MISSION_COUNT                     (1UL << 19)
 
 /* input messages events */
 #define EVMSK_MAVLINK_IN_PARAM_SET                          (1UL << 20)

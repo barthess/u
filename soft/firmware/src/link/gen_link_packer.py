@@ -13,6 +13,7 @@ names = [
     "heartbeat",
     "param_value",
     "statustext",
+    "mission_count",
     ]
 
 def head(f):

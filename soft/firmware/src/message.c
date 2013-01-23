@@ -77,6 +77,7 @@ EventSource event_mavlink_out_sys_status;
 EventSource event_mavlink_out_vfr_hud;
 EventSource event_mavlink_out_global_position_int;
 EventSource event_mavlink_out_attitude;
+EventSource event_mavlink_out_mission_count;  // it has input counterpart
 
 EventSource event_mavlink_in_command_long;
 EventSource event_mavlink_in_param_set;
@@ -84,9 +85,9 @@ EventSource event_mavlink_in_param_request_list;
 EventSource event_mavlink_in_param_request_read;
 EventSource event_mavlink_in_manual_control;
 EventSource event_mavlink_in_set_mode;
+EventSource event_mavlink_in_mission_count;   // it has output counterpart
 EventSource event_mavlink_in_mission_set_current;
 EventSource event_mavlink_in_mission_request_list;
-EventSource event_mavlink_in_mission_count;
 EventSource event_mavlink_in_mission_clear_all;
 EventSource event_mavlink_in_mission_item;
 EventSource event_mavlink_in_mission_request;
@@ -145,6 +146,7 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_out_vfr_hud);
   chEvtInit(&event_mavlink_out_global_position_int);
   chEvtInit(&event_mavlink_out_attitude);
+  chEvtInit(&event_mavlink_out_mission_count);
 
   chEvtInit(&event_mavlink_in_command_long);
   chEvtInit(&event_mavlink_in_param_set);
@@ -153,7 +155,6 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_in_manual_control);
   chEvtInit(&event_mavlink_in_set_mode);
   chEvtInit(&event_mavlink_in_mission_set_current);
-  chEvtInit(&event_mavlink_in_mission_request_list);
   chEvtInit(&event_mavlink_in_mission_count);
   chEvtInit(&event_mavlink_in_mission_clear_all);
   chEvtInit(&event_mavlink_in_mission_item);
