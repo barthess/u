@@ -9,6 +9,8 @@ names = [
     "mission_request",
     "mission_clear_all",
     "mission_set_current",
+    "mission_request_list",
+    "mission_ack",
     ]
 
 

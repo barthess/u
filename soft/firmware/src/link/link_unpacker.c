@@ -16,6 +16,8 @@ extern mavlink_mission_item_t mavlink_mission_item_struct;
 extern mavlink_mission_request_t mavlink_mission_request_struct;
 extern mavlink_mission_clear_all_t mavlink_mission_clear_all_struct;
 extern mavlink_mission_set_current_t mavlink_mission_set_current_struct;
+extern mavlink_mission_request_list_t mavlink_mission_request_list_struct;
+extern mavlink_mission_ack_t mavlink_mission_ack_struct;
 
 extern EventSource event_mavlink_in_command_long;
 extern EventSource event_mavlink_in_param_request_read;
@@ -25,6 +27,8 @@ extern EventSource event_mavlink_in_mission_item;
 extern EventSource event_mavlink_in_mission_request;
 extern EventSource event_mavlink_in_mission_clear_all;
 extern EventSource event_mavlink_in_mission_set_current;
+extern EventSource event_mavlink_in_mission_request_list;
+extern EventSource event_mavlink_in_mission_ack;
 
 
 
@@ -90,6 +94,18 @@ void UnpackCycle(SerialDriver *sdp){
           mavlink_msg_mission_set_current_decode(&msg, &mavlink_mission_set_current_struct);
           if (mavlink_mission_set_current_struct.target_system == mavlink_system_struct.sysid)
             chEvtBroadcastFlags(&event_mavlink_in_mission_set_current, EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
+          break;
+
+        case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+          mavlink_msg_mission_request_list_decode(&msg, &mavlink_mission_request_list_struct);
+          if (mavlink_mission_request_list_struct.target_system == mavlink_system_struct.sysid)
+            chEvtBroadcastFlags(&event_mavlink_in_mission_request_list, EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST);
+          break;
+
+        case MAVLINK_MSG_ID_MISSION_ACK:
+          mavlink_msg_mission_ack_decode(&msg, &mavlink_mission_ack_struct);
+          if (mavlink_mission_ack_struct.target_system == mavlink_system_struct.sysid)
+            chEvtBroadcastFlags(&event_mavlink_in_mission_ack, EVMSK_MAVLINK_IN_MISSION_ACK);
           break;
 
 

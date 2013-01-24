@@ -46,6 +46,7 @@ mavlink_command_ack_t           mavlink_command_ack_struct;
 mavlink_mission_count_t         mavlink_mission_count_struct;
 mavlink_mission_item_t          mavlink_mission_item_struct;
 mavlink_mission_request_t       mavlink_mission_request_struct;
+mavlink_mission_request_list_t  mavlink_mission_request_list_struct;
 mavlink_mission_ack_t           mavlink_mission_ack_struct;
 mavlink_mission_clear_all_t     mavlink_mission_clear_all_struct;
 mavlink_mission_set_current_t   mavlink_mission_set_current_struct;
@@ -66,9 +67,6 @@ EventSource event_mavlink_out_statustext;
 EventSource event_mavlink_out_command_ack;
 EventSource event_mavlink_out_rc_channels_raw;
 EventSource event_mavlink_out_param_value;
-EventSource event_mavlink_out_mission_ack;
-EventSource event_mavlink_out_mission_current;
-EventSource event_mavlink_out_mission_item_reached;
 EventSource event_mavlink_out_raw_imu;
 EventSource event_mavlink_out_scaled_imu;
 EventSource event_mavlink_out_raw_pressure;
@@ -77,9 +75,12 @@ EventSource event_mavlink_out_sys_status;
 EventSource event_mavlink_out_vfr_hud;
 EventSource event_mavlink_out_global_position_int;
 EventSource event_mavlink_out_attitude;
+EventSource event_mavlink_out_mission_current;
+EventSource event_mavlink_out_mission_item_reached;
 EventSource event_mavlink_out_mission_count;  // it has input counterpart
 EventSource event_mavlink_out_mission_item; // it has input counterpart
 EventSource event_mavlink_out_mission_request;// it has input counterpart
+EventSource event_mavlink_out_mission_ack;// it has input counterpart
 
 EventSource event_mavlink_in_command_long;
 EventSource event_mavlink_in_param_set;
@@ -93,6 +94,7 @@ EventSource event_mavlink_in_mission_clear_all;
 EventSource event_mavlink_in_mission_count;   // it has output counterpart
 EventSource event_mavlink_in_mission_item; // it has output counterpart
 EventSource event_mavlink_in_mission_request;// it has output counterpart
+EventSource event_mavlink_in_mission_ack;// it has output counterpart
 
 /*
  ******************************************************************************
@@ -137,9 +139,6 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_out_param_value);
   chEvtInit(&event_mavlink_out_command_ack);
   chEvtInit(&event_mavlink_out_rc_channels_raw);
-  chEvtInit(&event_mavlink_out_mission_ack);
-  chEvtInit(&event_mavlink_out_mission_current);
-  chEvtInit(&event_mavlink_out_mission_item_reached);
   chEvtInit(&event_mavlink_out_raw_imu);
   chEvtInit(&event_mavlink_out_scaled_imu);
   chEvtInit(&event_mavlink_out_raw_pressure);
@@ -151,6 +150,9 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_out_mission_count);
   chEvtInit(&event_mavlink_out_mission_item);
   chEvtInit(&event_mavlink_out_mission_request);
+  chEvtInit(&event_mavlink_out_mission_current);
+  chEvtInit(&event_mavlink_out_mission_item_reached);
+  chEvtInit(&event_mavlink_out_mission_ack);
 
   chEvtInit(&event_mavlink_in_command_long);
   chEvtInit(&event_mavlink_in_param_set);
@@ -163,6 +165,8 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_in_mission_clear_all);
   chEvtInit(&event_mavlink_in_mission_item);
   chEvtInit(&event_mavlink_in_mission_request);
+  chEvtInit(&event_mavlink_in_mission_request_list);
+  chEvtInit(&event_mavlink_in_mission_ack);
 
   setGlobalFlag(GlobalFlags.messaging_ready);
 
