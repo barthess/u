@@ -22,6 +22,7 @@ names = [
 def head(f):
     f.write("""
 #include "uav.h"
+#include <stdio.h>
 
 extern mavlink_system_t mavlink_system_struct;
 
@@ -33,6 +34,10 @@ extern GlobalFlags_t GlobalFlags;
 def foot(f,  arr):
     f.write("""
     default: // probably timeout
+      if (evt != 0){
+        snprintf(dbg_string, sizeof(dbg_string), "%s%d", "OUT_MSG: can not handle ID ", (int)evt);
+        mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_string);
+      }
       continue;
       break;
     }
@@ -66,6 +71,7 @@ def gen(arr):
     f.write("  mavlink_message_t mavlink_message_struct;\n")
     f.write("  uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];\n")
     f.write("  uint16_t len = 0;\n")
+    f.write("  char dbg_string[52];\n")
     f.write("  while (!chThdShouldTerminate()) {\n")
 
     st = ""

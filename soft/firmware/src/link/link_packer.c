@@ -4,6 +4,7 @@ src/link/gen_link_packer.py
 Do not edit it manually. 
 */
 #include "uav.h"
+#include <stdio.h>
 
 extern mavlink_system_t mavlink_system_struct;
 
@@ -111,6 +112,7 @@ void PackCycle(SerialDriver *sdp){
   mavlink_message_t mavlink_message_struct;
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
+  char dbg_string[52];
   while (!chThdShouldTerminate()) {
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM | EVMSK_MAVLINK_OUT_MISSION_ACK | EVMSK_MAVLINK_OUT_MISSION_REQUEST, MS2ST(50));
     switch(evt){
@@ -196,6 +198,10 @@ void PackCycle(SerialDriver *sdp){
 
 
     default: // probably timeout
+      if (evt != 0){
+        snprintf(dbg_string, sizeof(dbg_string), "%s%d", "OUT_MSG: can not handle ID ", (int)evt);
+        mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_string);
+      }
       continue;
       break;
     }

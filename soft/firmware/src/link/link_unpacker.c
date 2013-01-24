@@ -4,6 +4,7 @@ src/link/gen_link_unpacker.py
 Do not edit it manually. 
 */
 #include "uav.h"
+#include <stdio.h>
 
 extern GlobalFlags_t GlobalFlags;
 
@@ -43,6 +44,7 @@ void UnpackCycle(SerialDriver *sdp){
   mavlink_message_t msg;
   mavlink_status_t status;
   msg_t c = 0;
+  char dbg_string[52];
 
   while(GlobalFlags.messaging_ready == 0)
     chThdSleepMilliseconds(50);
@@ -126,6 +128,8 @@ void UnpackCycle(SerialDriver *sdp){
 
 
         default:
+          snprintf(dbg_string, sizeof(dbg_string), "%s%d", "IN_MSG: can not handle ID ", msg.msgid);
+          mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_string);
           break;
         }
       }

@@ -17,6 +17,7 @@ names = [
 
 head = """
 #include "uav.h"
+#include <stdio.h>
 
 extern GlobalFlags_t GlobalFlags;
 
@@ -25,6 +26,8 @@ extern mavlink_system_t mavlink_system_struct;
 
 foot = """
         default:
+          snprintf(dbg_string, sizeof(dbg_string), "%s%d", "IN_MSG: can not handle ID ", msg.msgid);
+          mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_string);
           break;
         }
       }
@@ -41,6 +44,7 @@ void UnpackCycle(SerialDriver *sdp){
   mavlink_message_t msg;
   mavlink_status_t status;
   msg_t c = 0;
+  char dbg_string[52];
 
   while(GlobalFlags.messaging_ready == 0)
     chThdSleepMilliseconds(50);
