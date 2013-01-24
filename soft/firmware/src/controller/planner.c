@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "uav.h"
 
 /*
@@ -22,7 +24,6 @@ extern GlobalFlags_t GlobalFlags;
 extern mavlink_mission_count_t        mavlink_mission_count_struct;
 extern mavlink_mission_item_t         mavlink_mission_item_struct;
 extern mavlink_mission_request_t      mavlink_mission_request_struct;
-//extern mavlink_mission_request_list_t mavlink_mission_request_list_struct;
 extern mavlink_mission_ack_t          mavlink_mission_ack_struct;
 
 extern EventSource event_mavlink_in_mission_clear_all;
@@ -50,6 +51,7 @@ extern EventSource event_mavlink_out_mission_ack;
  */
 static Thread *planner_tp = NULL;
 static uint16_t waypoint_cnt = 0;
+static char dbg_str[64];
 
 /*
  ******************************************************************************
@@ -203,15 +205,21 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
  */
 static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
   if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Unsupported frame");
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+                                "PLANNER: Unsupported frame #", (int)wp->seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
     return MAV_MISSION_UNSUPPORTED_FRAME;
   }
   if (wp->seq != seq){
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Invalid sequence");
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
+                        "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
     return MAV_MISSION_INVALID_SEQUENCE;
   }
   if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, "PLANNER: Not enough target radius");
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+                         "PLANNER: Not enough target radius #", (int)wp->seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
     return MAV_MISSION_INVALID_PARAM1;
   }
 
@@ -273,7 +281,7 @@ EXIT:
  * Planner thread.
  * process mission commands from ground
  */
-static WORKING_AREA(PlannerThreadWA, 512);
+static WORKING_AREA(PlannerThreadWA, 768);
 static msg_t PlannerThread(void* arg){
   chRegSetThreadName("Planner");
   (void)arg;
