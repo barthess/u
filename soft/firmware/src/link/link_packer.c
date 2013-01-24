@@ -51,6 +51,12 @@ extern EventSource event_mavlink_out_mission_count;
 extern mavlink_mission_item_t mavlink_mission_item_struct;
 extern EventSource event_mavlink_out_mission_item;
 
+extern mavlink_mission_ack_t mavlink_mission_ack_struct;
+extern EventSource event_mavlink_out_mission_ack;
+
+extern mavlink_mission_request_t mavlink_mission_request_struct;
+extern EventSource event_mavlink_out_mission_request;
+
 
 void PackCycle(SerialDriver *sdp){
   struct EventListener el_gps_raw_int;
@@ -95,12 +101,18 @@ void PackCycle(SerialDriver *sdp){
   struct EventListener el_mission_item;
   chEvtRegisterMask(&event_mavlink_out_mission_item, &el_mission_item, EVMSK_MAVLINK_OUT_MISSION_ITEM);
 
+  struct EventListener el_mission_ack;
+  chEvtRegisterMask(&event_mavlink_out_mission_ack, &el_mission_ack, EVMSK_MAVLINK_OUT_MISSION_ACK);
+
+  struct EventListener el_mission_request;
+  chEvtRegisterMask(&event_mavlink_out_mission_request, &el_mission_request, EVMSK_MAVLINK_OUT_MISSION_REQUEST);
+
   eventmask_t evt = 0;
   mavlink_message_t mavlink_message_struct;
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
   while (!chThdShouldTerminate()) {
-    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM, MS2ST(50));
+    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM | EVMSK_MAVLINK_OUT_MISSION_ACK | EVMSK_MAVLINK_OUT_MISSION_REQUEST, MS2ST(50));
     switch(evt){
     case EVMSK_MAVLINK_OUT_GPS_RAW_INT:
       memcpy_ts(sendbuf, &mavlink_gps_raw_int_struct, sizeof(mavlink_gps_raw_int_struct), 4);
@@ -172,6 +184,16 @@ void PackCycle(SerialDriver *sdp){
       mavlink_msg_mission_item_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_item_t *)sendbuf);
       break;
 
+    case EVMSK_MAVLINK_OUT_MISSION_ACK:
+      memcpy_ts(sendbuf, &mavlink_mission_ack_struct, sizeof(mavlink_mission_ack_struct), 4);
+      mavlink_msg_mission_ack_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_ack_t *)sendbuf);
+      break;
+
+    case EVMSK_MAVLINK_OUT_MISSION_REQUEST:
+      memcpy_ts(sendbuf, &mavlink_mission_request_struct, sizeof(mavlink_mission_request_struct), 4);
+      mavlink_msg_mission_request_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_request_t *)sendbuf);
+      break;
+
 
     default: // probably timeout
       continue;
@@ -197,4 +219,6 @@ void PackCycle(SerialDriver *sdp){
   chEvtUnregister(&event_mavlink_out_statustext, &el_statustext);
   chEvtUnregister(&event_mavlink_out_mission_count, &el_mission_count);
   chEvtUnregister(&event_mavlink_out_mission_item, &el_mission_item);
+  chEvtUnregister(&event_mavlink_out_mission_ack, &el_mission_ack);
+  chEvtUnregister(&event_mavlink_out_mission_request, &el_mission_request);
 }

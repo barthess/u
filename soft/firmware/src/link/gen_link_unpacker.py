@@ -2,17 +2,18 @@
 
 names = [
     "command_long",
-    "param_request_read",
-    "param_request_list",
     "param_set",
-    "mission_item",
-    "mission_request",
-    "mission_clear_all",
+    "param_request_list",
+    "param_request_read",
+    "set_mode",
     "mission_set_current",
     "mission_request_list",
+    "mission_clear_all",
+    "mission_count",
+    "mission_item",
+    "mission_request",
     "mission_ack",
     ]
-
 
 head = """
 #include "uav.h"

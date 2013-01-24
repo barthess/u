@@ -20,8 +20,8 @@ Giovanni
 */
 
 #warning "FIXME: после отключения присылки данных включить их некому. Надо допилить поток управления"
-#warning "get_waypoint_count(void) must seek back to last used point"
-#warning "save_waypoint_count(uint16_t cnt) must seek back to last used point"
+
+// TODO: from unpacker and packer routines say "can not handle this message ID"
 
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp

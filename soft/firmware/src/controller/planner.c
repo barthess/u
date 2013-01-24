@@ -49,7 +49,7 @@ extern EventSource event_mavlink_out_mission_ack;
  ******************************************************************************
  */
 static Thread *planner_tp = NULL;
-static uint16_t wp_cnt = 0;
+static uint16_t waypoint_cnt = 0;
 
 /*
  ******************************************************************************
@@ -145,7 +145,7 @@ static MAVLINK_WPM_STATES mission_item_request_handler(void){
 
   // NOTE: first mission request already received
   do{
-    if (mavlink_mission_request_struct.seq >= wp_cnt) // prevent EEPROM overflow
+    if (mavlink_mission_request_struct.seq >= waypoint_cnt) // prevent EEPROM overflow
       return MAVLINK_WPM_STATE_IDLE;
 
     get_waypoint_from_eeprom(mavlink_mission_request_struct.seq, &mavlink_mission_item_struct);
@@ -176,8 +176,8 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
 
   eventmask_t status = 0;
 
-  wp_cnt = get_waypoint_count();
-  mavlink_mission_count_struct.count = wp_cnt;
+  waypoint_cnt = get_waypoint_count();
+  mavlink_mission_count_struct.count = waypoint_cnt;
   mavlink_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
   mavlink_mission_count_struct.target_system = GROUND_STATION_ID;
 
@@ -223,49 +223,49 @@ static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
  * Save waypoints in EEPROM
  */
 static bool_t mission_count_handler(void){
-#warning "rewrite me"
+  eventmask_t status = 0;
 
-//  mavlink_mission_count_t *mc = mailp->payload;
-//  uint16_t waypoint_cnt = mc->count;
-//  mavlink_mission_request_struct.seq = 0;
-//  mavlink_mission_item_t *wp = NULL;
-//  uint8_t type = MAV_MISSION_ERROR;
-//
-//  /* check available space */
-//  if (waypoint_cnt * sizeof(mavlink_mission_item_t) > EEPROM_MISSION_SIZE){
-//    send_ack(MAV_MISSION_NO_SPACE);
-//    return MAVLINK_WPM_STATE_IDLE;
-//  }
-//
-//  /* start transaction from clean state to be safer */
-//  save_waypoint_count(0);
-//
-//  /* save waypoints one by one */
-//  do{
-//    mavlink_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-//    mavlink_mission_request_struct.target_system = GROUND_STATION_ID;
-//    mission_out_mail.payload = &mavlink_mission_request_struct;
-//    mission_out_mail.invoice = MAVLINK_MSG_ID_MISSION_REQUEST;
-//
-//    /* send request to ground */
-//    mailp = send_with_tmo(&mission_out_mail, TRUE);
-//
-//    /* wait waypoint */
-//    if ((mailp != NULL) && (mailp->invoice == MAVLINK_MSG_ID_MISSION_ITEM)){
-//      wp = mailp->payload;
-//      type = check_wp(wp, mavlink_mission_request_struct.seq);
-//      if (type != MAV_MISSION_ACCEPTED)
-//        break;
-//      save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, wp);
-//      mavlink_mission_request_struct.seq++;
-//    }
-//    else
-//      break;
-//  }while(mavlink_mission_request_struct.seq < waypoint_cnt);
-//
-//  /* save waypoint count in eeprom only in the end of transaction */
-//  save_waypoint_count(mavlink_mission_request_struct.seq);
-//  send_ack(type);
+  waypoint_cnt = mavlink_mission_count_struct.count;
+
+  mavlink_mission_request_struct.seq = 0;
+  uint8_t type = MAV_MISSION_ERROR;
+
+  /* check available space */
+  if (waypoint_cnt * sizeof(mavlink_mission_item_t) > EEPROM_MISSION_SIZE){
+    send_ack(MAV_MISSION_NO_SPACE);
+    return MAVLINK_WPM_STATE_IDLE;
+  }
+
+  /* start transaction from clean state to be safer */
+  save_waypoint_count(0);
+
+  /* save waypoints one by one */
+  do{
+    mavlink_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    mavlink_mission_request_struct.target_system = GROUND_STATION_ID;
+
+    /* send request to ground */
+    status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_REQUEST,
+                               EVMSK_MAVLINK_IN_MISSION_ITEM,
+                               PLANNER_RETRY_CNT);
+    /* handle answer */
+    if (status == EVMSK_MAVLINK_IN_MISSION_ITEM){
+      type = check_wp(&mavlink_mission_item_struct, mavlink_mission_request_struct.seq);
+      if (type != MAV_MISSION_ACCEPTED)
+        goto EXIT;
+      else{
+        save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, &mavlink_mission_item_struct);
+        mavlink_mission_request_struct.seq++;
+      }
+    }
+    else
+      goto EXIT;
+  }while(mavlink_mission_request_struct.seq < waypoint_cnt);
+
+  /* save waypoint count in eeprom only in the very end of transaction */
+  save_waypoint_count(mavlink_mission_request_struct.seq);
+EXIT:
+  send_ack(type);
   return MAVLINK_WPM_STATE_IDLE;
 }
 
@@ -315,6 +315,7 @@ static msg_t PlannerThread(void* arg){
       break;
 
     case EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL:
+      /* ground wants erase all wps */
       mission_clear_all();
       break;
 

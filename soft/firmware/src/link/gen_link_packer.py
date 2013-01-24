@@ -15,6 +15,8 @@ names = [
     "statustext",
     "mission_count",
     "mission_item",
+    "mission_ack",
+    "mission_request",
     ]
 
 def head(f):
