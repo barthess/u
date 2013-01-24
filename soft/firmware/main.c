@@ -19,9 +19,8 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
-#warning "FIXME: после отключения присылки данных включить их некому. Надо допилить поток управления"
-
 // TODO: from unpacker and packer routines say "can not handle this message ID"
+// TODO: from wps routines say what WP has wrong parameters and can be handled
 
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp

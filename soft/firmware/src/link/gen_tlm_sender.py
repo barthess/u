@@ -82,10 +82,6 @@ static msg_t TlmSenderThread(void *arg) {
 """
 
 thd_foot = """
-  while (!chThdShouldTerminate()){
-    chThdSleepMilliseconds(50);
-  }
-
   chThdExit(0);
   return 0;
 }
@@ -117,6 +113,9 @@ def gen(names):
     for i in names:
         f.write("static VirtualTimer " +i[0]+ "_vt;\n")
     f.write("\n")
+    for i in names:
+        f.write("static uint32_t " +i[0]+ "_cached = SEND_OFF;\n")
+    f.write("\n")
 
     # local functions
     f.write(local_func_sep)
@@ -125,6 +124,7 @@ def gen(names):
         f.write("  (void)par;\n")
         f.write("  chSysLockFromIsr();\n")
         f.write("  chEvtBroadcastFlagsI(&event_mavlink_out_" +i[1]+ ", EVMSK_MAVLINK_OUT_" +str.upper(i[1])+ ");\n")
+        f.write("  "+i[0]+"_cached = *"+i[0]+";\n")
         f.write("  if (*" +i[0]+ " != SEND_OFF) // self restarting only if sending for this parameter not disabled\n")
         f.write("    start_" +i[0]+ "_vt();\n")
         f.write("  chSysUnlockFromIsr();\n}\n\n")
@@ -135,12 +135,18 @@ def gen(names):
         f.write("  " +i[0]+ " = ValueSearch(\"T_" +i[0]+ "\");\n")
     f.write("\n")
 
-    f.write("  chSysLock();\n\n")
+    # cycle
+    f.write("  do{\n")
     for i in names:
-        f.write("  if (*" +i[0]+ " != SEND_OFF)\n")
-        f.write("    start_" +i[0]+ "_vt();\n")
+        f.write("    if (("+i[0]+"_cached == SEND_OFF) && (*"+i[0]+" != SEND_OFF)){\n")
+        f.write("      chSysLock();\n")
+        f.write("      "+i[0]+"_cached = *"+i[0]+";\n")
+        f.write("      start_"+i[0]+"_vt();\n")
+        f.write("      chSysUnlock();\n")
+        f.write("    }\n\n")
 
-    f.write("\n  chSysUnlock();\n\n")
+    f.write("    chThdSleepMilliseconds(100);\n")
+    f.write("  }while (!chThdShouldTerminate());\n")
     f.write(thd_foot)
 
     # footer

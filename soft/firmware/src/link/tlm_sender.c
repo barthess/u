@@ -60,6 +60,15 @@ static VirtualTimer attitude_vt;
 static VirtualTimer scal_press_vt;
 static VirtualTimer vfr_hud_vt;
 
+static uint32_t raw_imu_cached = SEND_OFF;
+static uint32_t scal_imu_cached = SEND_OFF;
+static uint32_t raw_press_cached = SEND_OFF;
+static uint32_t sys_status_cached = SEND_OFF;
+static uint32_t gps_int_cached = SEND_OFF;
+static uint32_t attitude_cached = SEND_OFF;
+static uint32_t scal_press_cached = SEND_OFF;
+static uint32_t vfr_hud_cached = SEND_OFF;
+
 
 /*
  *******************************************************************************
@@ -72,6 +81,7 @@ static void raw_imu_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_raw_imu, EVMSK_MAVLINK_OUT_RAW_IMU);
+  raw_imu_cached = *raw_imu;
   if (*raw_imu != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_raw_imu_vt();
   chSysUnlockFromIsr();
@@ -81,6 +91,7 @@ static void scal_imu_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_scaled_imu, EVMSK_MAVLINK_OUT_SCALED_IMU);
+  scal_imu_cached = *scal_imu;
   if (*scal_imu != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_scal_imu_vt();
   chSysUnlockFromIsr();
@@ -90,6 +101,7 @@ static void raw_press_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_raw_pressure, EVMSK_MAVLINK_OUT_RAW_PRESSURE);
+  raw_press_cached = *raw_press;
   if (*raw_press != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_raw_press_vt();
   chSysUnlockFromIsr();
@@ -99,6 +111,7 @@ static void sys_status_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_sys_status, EVMSK_MAVLINK_OUT_SYS_STATUS);
+  sys_status_cached = *sys_status;
   if (*sys_status != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_sys_status_vt();
   chSysUnlockFromIsr();
@@ -108,6 +121,7 @@ static void gps_int_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_global_position_int, EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT);
+  gps_int_cached = *gps_int;
   if (*gps_int != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_gps_int_vt();
   chSysUnlockFromIsr();
@@ -117,6 +131,7 @@ static void attitude_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_attitude, EVMSK_MAVLINK_OUT_ATTITUDE);
+  attitude_cached = *attitude;
   if (*attitude != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_attitude_vt();
   chSysUnlockFromIsr();
@@ -126,6 +141,7 @@ static void scal_press_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_scaled_pressure, EVMSK_MAVLINK_OUT_SCALED_PRESSURE);
+  scal_press_cached = *scal_press;
   if (*scal_press != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_scal_press_vt();
   chSysUnlockFromIsr();
@@ -135,6 +151,7 @@ static void vfr_hud_vtcb(void *par){
   (void)par;
   chSysLockFromIsr();
   chEvtBroadcastFlagsI(&event_mavlink_out_vfr_hud, EVMSK_MAVLINK_OUT_VFR_HUD);
+  vfr_hud_cached = *vfr_hud;
   if (*vfr_hud != SEND_OFF) // self restarting only if sending for this parameter not disabled
     start_vfr_hud_vt();
   chSysUnlockFromIsr();
@@ -163,31 +180,65 @@ static msg_t TlmSenderThread(void *arg) {
   scal_press = ValueSearch("T_scal_press");
   vfr_hud = ValueSearch("T_vfr_hud");
 
-  chSysLock();
+  do{
+    if ((raw_imu_cached == SEND_OFF) && (*raw_imu != SEND_OFF)){
+      chSysLock();
+      raw_imu_cached = *raw_imu;
+      start_raw_imu_vt();
+      chSysUnlock();
+    }
 
-  if (*raw_imu != SEND_OFF)
-    start_raw_imu_vt();
-  if (*scal_imu != SEND_OFF)
-    start_scal_imu_vt();
-  if (*raw_press != SEND_OFF)
-    start_raw_press_vt();
-  if (*sys_status != SEND_OFF)
-    start_sys_status_vt();
-  if (*gps_int != SEND_OFF)
-    start_gps_int_vt();
-  if (*attitude != SEND_OFF)
-    start_attitude_vt();
-  if (*scal_press != SEND_OFF)
-    start_scal_press_vt();
-  if (*vfr_hud != SEND_OFF)
-    start_vfr_hud_vt();
+    if ((scal_imu_cached == SEND_OFF) && (*scal_imu != SEND_OFF)){
+      chSysLock();
+      scal_imu_cached = *scal_imu;
+      start_scal_imu_vt();
+      chSysUnlock();
+    }
 
-  chSysUnlock();
+    if ((raw_press_cached == SEND_OFF) && (*raw_press != SEND_OFF)){
+      chSysLock();
+      raw_press_cached = *raw_press;
+      start_raw_press_vt();
+      chSysUnlock();
+    }
 
+    if ((sys_status_cached == SEND_OFF) && (*sys_status != SEND_OFF)){
+      chSysLock();
+      sys_status_cached = *sys_status;
+      start_sys_status_vt();
+      chSysUnlock();
+    }
 
-  while (!chThdShouldTerminate()){
-    chThdSleepMilliseconds(50);
-  }
+    if ((gps_int_cached == SEND_OFF) && (*gps_int != SEND_OFF)){
+      chSysLock();
+      gps_int_cached = *gps_int;
+      start_gps_int_vt();
+      chSysUnlock();
+    }
+
+    if ((attitude_cached == SEND_OFF) && (*attitude != SEND_OFF)){
+      chSysLock();
+      attitude_cached = *attitude;
+      start_attitude_vt();
+      chSysUnlock();
+    }
+
+    if ((scal_press_cached == SEND_OFF) && (*scal_press != SEND_OFF)){
+      chSysLock();
+      scal_press_cached = *scal_press;
+      start_scal_press_vt();
+      chSysUnlock();
+    }
+
+    if ((vfr_hud_cached == SEND_OFF) && (*vfr_hud != SEND_OFF)){
+      chSysLock();
+      vfr_hud_cached = *vfr_hud;
+      start_vfr_hud_vt();
+      chSysUnlock();
+    }
+
+    chThdSleepMilliseconds(100);
+  }while (!chThdShouldTerminate());
 
   chThdExit(0);
   return 0;
