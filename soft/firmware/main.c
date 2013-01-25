@@ -19,8 +19,6 @@ The safest way to initialize peripherals like USART and I2C is the following (I2
 Giovanni
 */
 
-// TODO: from wps routines say what WP has wrong parameters and can not be handled
-
 // TODO: save DCM in bkp for faster startup after panic recovery
 // TODO: params in bkp
 // TODO: gyro update period in bkp
@@ -37,7 +35,7 @@ Giovanni
 // TODO: speed autosetting
 // TODO: combine barometer and accelerometer in one filter.
 // TODO: Power brown out handler (using ADC comparator on power supply pin?) for sync/umout SDC.
-// TODO: One more point in dynamic pressure thermal compensation algorithm (at 60 celsius)
+// TODO: One more point in dynamic pressure thermal compensation algorithm (at +60 celsius)
 // TODO: Rewrite XBee code for use DMA.
 // TODO: WDT?
 
