@@ -251,7 +251,7 @@ static bool_t mission_count_handler(void){
   save_waypoint_count(0);
 
   /* delete from "queue" probably stored old message */
-  chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, MS2ST(10));
+  chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, MS2ST(1));
 
   /* save waypoints one by one */
   do{
