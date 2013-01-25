@@ -54,12 +54,12 @@ def gen(arr):
     head(f)
 
     for i in arr:
-        f.write("extern mavlink_" + i + "_t mavlink_" + i + "_struct;\n")
+        f.write("extern mavlink_" + i + "_t mavlink_out_" + i + "_struct;\n")
 
     f.write(func_header)
     for i in arr:
         f.write("  case MAVLINK_MSG_ID_" + str.upper(i) + ":\n")
-        f.write("    memcpy_ts(threadsafe_buf, &mavlink_" + i + "_struct, sizeof(mavlink_" + i +"_struct), 4);\n")
+        f.write("    memcpy_ts(threadsafe_buf, &mavlink_out_" + i + "_struct, sizeof(mavlink_out_" + i +"_struct), 4);\n")
         f.write("    mavlink_msg_" + i + "_encode(system_id, MAV_COMP_ID_ALL, msg, (mavlink_" + i + "_t *)threadsafe_buf);\n")
         f.write("    break;\n\n")
 

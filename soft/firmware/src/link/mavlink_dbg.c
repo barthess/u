@@ -13,7 +13,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_statustext_t mavlink_statustext_struct;
+extern mavlink_statustext_t mavlink_out_statustext_struct;
 extern EventSource event_mavlink_out_statustext;
 
 /*
@@ -49,11 +49,11 @@ extern EventSource event_mavlink_out_statustext;
  * text[in]       text to send
  */
 void mavlink_dbg_print(uint8_t severity, const char *text){
-  uint32_t n = sizeof(mavlink_statustext_struct.text);
+  uint32_t n = sizeof(mavlink_out_statustext_struct.text);
 
-  mavlink_statustext_struct.severity = severity;
-  memset(mavlink_statustext_struct.text, 0, n);
-  memcpy(mavlink_statustext_struct.text, text, n);
+  mavlink_out_statustext_struct.severity = severity;
+  memset(mavlink_out_statustext_struct.text, 0, n);
+  memcpy(mavlink_out_statustext_struct.text, text, n);
 
   chEvtBroadcastFlags(&event_mavlink_out_statustext, EVMSK_MAVLINK_OUT_STATUSTEXT);
 }

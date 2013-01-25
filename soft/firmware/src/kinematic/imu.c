@@ -16,7 +16,7 @@
  ******************************************************************************
  */
 extern CompensatedData comp_data;
-extern mavlink_attitude_t mavlink_attitude_struct;
+extern mavlink_attitude_t mavlink_out_attitude_struct;
 extern uint32_t GyroUpdatePeriodUs;
 
 float dcmEst[3][3] = {{1,0,0},
@@ -123,7 +123,7 @@ static msg_t Imu(void *semp) {
                 comp_data.zmag,
                 interval);
 
-      get_attitude(&mavlink_attitude_struct);
+      get_attitude(&mavlink_out_attitude_struct);
       log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
     }
   }

@@ -9,8 +9,9 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern mavlink_sys_status_t mavlink_sys_status_struct;
+
 extern const mavlink_system_t mavlink_system_struct;
+extern mavlink_sys_status_t mavlink_out_sys_status_struct;
 
 /*
  ******************************************************************************
@@ -109,11 +110,11 @@ static msg_t PowerKeeperThread(void *arg){
      */
     tmp = raw_data.battery_consumed / (36 * *bat_cap);
     if (tmp < start_bat_fill)
-      mavlink_sys_status_struct.battery_remaining = start_bat_fill - tmp;
+      mavlink_out_sys_status_struct.battery_remaining = start_bat_fill - tmp;
     else
-      mavlink_sys_status_struct.battery_remaining = 0;
-    mavlink_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
-    mavlink_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
+      mavlink_out_sys_status_struct.battery_remaining = 0;
+    mavlink_out_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
+    mavlink_out_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
     log_write_schedule(MAVLINK_MSG_ID_SYS_STATUS, NULL, 0);
 
     chThdSleepUntil(time);

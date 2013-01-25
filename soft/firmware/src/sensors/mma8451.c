@@ -13,8 +13,8 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
-extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
+extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
 
 /*
@@ -79,9 +79,9 @@ static void process_accel_data(uint8_t *rxbuf){
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
   sorti_3values(raw, Acc, *sortmtrx);
 
-  mavlink_raw_imu_struct.xacc = Acc[0];
-  mavlink_raw_imu_struct.yacc = Acc[1];
-  mavlink_raw_imu_struct.zacc = Acc[2];
+  mavlink_out_raw_imu_struct.xacc = Acc[0];
+  mavlink_out_raw_imu_struct.yacc = Acc[1];
+  mavlink_out_raw_imu_struct.zacc = Acc[2];
 
   Acc[0] *= *xpol;
   Acc[1] *= *ypol;
@@ -93,9 +93,9 @@ static void process_accel_data(uint8_t *rxbuf){
   comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
   comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
 
-  mavlink_scaled_imu_struct.xacc = comp_data.xacc;
-  mavlink_scaled_imu_struct.yacc = comp_data.yacc;
-  mavlink_scaled_imu_struct.zacc = comp_data.zacc;
+  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
+  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
+  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
 }
 
 /**

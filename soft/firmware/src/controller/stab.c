@@ -29,12 +29,12 @@
  ******************************************************************************
  */
 extern GlobalFlags_t      GlobalFlags;
-extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
 
-extern mavlink_local_position_ned_t     mavlink_local_position_ned_struct;
-extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
-extern mavlink_vfr_hud_t                mavlink_vfr_hud_struct;
 extern mavlink_system_t                 mavlink_system_struct;
+
+extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
+extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
+extern mavlink_vfr_hud_t                mavlink_out_vfr_hud_struct;
 
 extern uint8_t currWpFrame;
 extern uint16_t WpSeqNew;
@@ -93,22 +93,22 @@ static msg_t StabThread(void* arg){
   uint16_t wp_cnt;
 
 WAIT_NEW_MISSION:
-  mavlink_nav_controller_output_struct.nav_roll       = 0;
-  mavlink_nav_controller_output_struct.nav_pitch      = 0;
-  mavlink_nav_controller_output_struct.alt_error      = 0;
-  mavlink_nav_controller_output_struct.aspd_error     = 0;
-  mavlink_nav_controller_output_struct.wp_dist        = 0;
-  mavlink_nav_controller_output_struct.nav_bearing    = 0;
-  mavlink_nav_controller_output_struct.target_bearing = 0;
-  mavlink_nav_controller_output_struct.xtrack_error   = 0;
+  mavlink_out_nav_controller_output_struct.nav_roll       = 0;
+  mavlink_out_nav_controller_output_struct.nav_pitch      = 0;
+  mavlink_out_nav_controller_output_struct.alt_error      = 0;
+  mavlink_out_nav_controller_output_struct.aspd_error     = 0;
+  mavlink_out_nav_controller_output_struct.wp_dist        = 0;
+  mavlink_out_nav_controller_output_struct.nav_bearing    = 0;
+  mavlink_out_nav_controller_output_struct.target_bearing = 0;
+  mavlink_out_nav_controller_output_struct.xtrack_error   = 0;
 
-  mavlink_local_position_ned_struct.x  = 0;
-  mavlink_local_position_ned_struct.y  = 0;
-  mavlink_local_position_ned_struct.z  = 0;
-  mavlink_local_position_ned_struct.vx = 0;
-  mavlink_local_position_ned_struct.vy = 0;
-  mavlink_local_position_ned_struct.vz = 0;
-  mavlink_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
+  mavlink_out_local_position_ned_struct.x  = 0;
+  mavlink_out_local_position_ned_struct.y  = 0;
+  mavlink_out_local_position_ned_struct.z  = 0;
+  mavlink_out_local_position_ned_struct.vx = 0;
+  mavlink_out_local_position_ned_struct.vy = 0;
+  mavlink_out_local_position_ned_struct.vz = 0;
+  mavlink_out_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
 
   clearGlobalFlag(GlobalFlags.mission_abort);
   clearGlobalFlag(GlobalFlags.mission_takeoff);
@@ -246,8 +246,8 @@ void pid_keep_speed(float current, float desired){
 
   impact = UpdatePID(&speedPid, desired - current, current);
 
-  mavlink_vfr_hud_struct.groundspeed = current;
-  mavlink_nav_controller_output_struct.aspd_error = desired - current;
+  mavlink_out_vfr_hud_struct.groundspeed = current;
+  mavlink_out_nav_controller_output_struct.aspd_error = desired - current;
 
   /* this check need because we can not get direction */
   if (impact < 0)

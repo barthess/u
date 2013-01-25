@@ -16,8 +16,8 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
-extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
+extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
 
 /*
@@ -77,9 +77,9 @@ static void process_magentometer_data(uint8_t *rxbuf){
   raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
   sorti_3values(raw, Mag, *sortmtrx);
 
-  mavlink_raw_imu_struct.xmag = Mag[0];
-  mavlink_raw_imu_struct.ymag = Mag[1];
-  mavlink_raw_imu_struct.zmag = Mag[2];
+  mavlink_out_raw_imu_struct.xmag = Mag[0];
+  mavlink_out_raw_imu_struct.ymag = Mag[1];
+  mavlink_out_raw_imu_struct.zmag = Mag[2];
 
   /* overdose? */
   check_and_clean_overdose(Mag);
@@ -87,12 +87,12 @@ static void process_magentometer_data(uint8_t *rxbuf){
   mag_stat_update(Mag);
 
   /* Sensitivity is 0.1uT/LSB */
-  mavlink_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * *xpol * roundf(*xsens * 100.0f);
-  mavlink_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * *ypol * roundf(*ysens * 100.0f);
-  mavlink_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * *zpol * roundf(*zsens * 100.0f);
-  comp_data.xmag = (float)(mavlink_scaled_imu_struct.xmag);
-  comp_data.ymag = (float)(mavlink_scaled_imu_struct.ymag);
-  comp_data.zmag = (float)(mavlink_scaled_imu_struct.zmag);
+  mavlink_out_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * *xpol * roundf(*xsens * 100.0f);
+  mavlink_out_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * *ypol * roundf(*ysens * 100.0f);
+  mavlink_out_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * *zpol * roundf(*zsens * 100.0f);
+  comp_data.xmag = (float)(mavlink_out_scaled_imu_struct.xmag);
+  comp_data.ymag = (float)(mavlink_out_scaled_imu_struct.ymag);
+  comp_data.zmag = (float)(mavlink_out_scaled_imu_struct.zmag);
 }
 
 /**

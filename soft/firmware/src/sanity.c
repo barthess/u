@@ -9,8 +9,8 @@ extern GlobalFlags_t GlobalFlags;
 extern uint32_t LastResetFlags;
 
 extern mavlink_system_t       mavlink_system_struct;
-extern mavlink_heartbeat_t    mavlink_heartbeat_struct;
-extern mavlink_sys_status_t   mavlink_sys_status_struct;
+extern mavlink_heartbeat_t    mavlink_out_heartbeat_struct;
+extern mavlink_sys_status_t   mavlink_out_sys_status_struct;
 
 extern EventSource event_mavlink_out_heartbeat;
 
@@ -77,8 +77,8 @@ static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
 
-  mavlink_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
-  mavlink_heartbeat_struct.custom_mode = 0;
+  mavlink_out_heartbeat_struct.autopilot = MAV_AUTOPILOT_GENERIC;
+  mavlink_out_heartbeat_struct.custom_mode = 0;
 
   systime_t t = chTimeNow();
 
@@ -87,26 +87,26 @@ static msg_t SanityControlThread(void *arg) {
 
     /* fill data fields and send struct to message box */
     if (GlobalFlags.tlm_link_ready){
-      mavlink_heartbeat_struct.type           = mavlink_system_struct.type;
-      mavlink_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
-      mavlink_heartbeat_struct.system_status  = mavlink_system_struct.state;
+      mavlink_out_heartbeat_struct.type           = mavlink_system_struct.type;
+      mavlink_out_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
+      mavlink_out_heartbeat_struct.system_status  = mavlink_system_struct.state;
       chEvtBroadcastFlags(&event_mavlink_out_heartbeat, EVMSK_MAVLINK_OUT_HEARTBEAT);
 
       /* stub */
-      mavlink_sys_status_struct.onboard_control_sensors_present = (
+      mavlink_out_sys_status_struct.onboard_control_sensors_present = (
               SYS_STATUS_3D_GYRO | SYS_STATUS_3D_ACCEL | SYS_STATUS_3D_MAG |
               SYS_STATUS_ABS_PRES | SYS_STATUS_DIFF_PRES | SYS_STATUS_GPS);
-      mavlink_sys_status_struct.onboard_control_sensors_enabled = mavlink_sys_status_struct.onboard_control_sensors_present;
-      mavlink_sys_status_struct.onboard_control_sensors_health  = mavlink_sys_status_struct.onboard_control_sensors_present;
+      mavlink_out_sys_status_struct.onboard_control_sensors_enabled = mavlink_out_sys_status_struct.onboard_control_sensors_present;
+      mavlink_out_sys_status_struct.onboard_control_sensors_health  = mavlink_out_sys_status_struct.onboard_control_sensors_present;
     }
 
     log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
-    mavlink_sys_status_struct.load = get_cpu_load();
+    mavlink_out_sys_status_struct.load = get_cpu_load();
     /* how many times device was soft resetted */
-    mavlink_sys_status_struct.errors_count1 = bkpSoftResetCnt;
+    mavlink_out_sys_status_struct.errors_count1 = bkpSoftResetCnt;
     /* reset flags */
-    mavlink_sys_status_struct.errors_count2 = LastResetFlags >> 24;
+    mavlink_out_sys_status_struct.errors_count2 = LastResetFlags >> 24;
     if (GlobalFlags.sighalt){
       palClearPad(GPIOB, GPIOB_LED_B);
       palClearPad(GPIOB, GPIOB_LED_R);

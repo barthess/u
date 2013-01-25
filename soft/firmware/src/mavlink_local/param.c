@@ -34,9 +34,9 @@ BinarySemaphore SettingsFile_sem;
 
 extern GlobalFlags_t GlobalFlags;
 
-extern mavlink_param_value_t          mavlink_param_value_struct;
-extern mavlink_param_set_t            mavlink_param_set_struct;
-extern mavlink_param_request_read_t   mavlink_param_request_read_struct;
+extern mavlink_param_value_t          mavlink_out_param_value_struct;
+extern mavlink_param_set_t            mavlink_in_param_set_struct;
+extern mavlink_param_request_read_t   mavlink_in_param_request_read_struct;
 
 extern EventSource event_mavlink_out_param_value;
 extern EventSource event_mavlink_in_param_set;
@@ -242,11 +242,11 @@ static bool_t send_value(char *key, uint32_t n){
 
   if ((index >= 0) && (index <= OnboardParamCount)){
     /* fill all fields */
-    mavlink_param_value_struct.param_value = GlobalParam[index].valuep->f32;
-    mavlink_param_value_struct.param_type  = GlobalParam[index].param_type;
-    mavlink_param_value_struct.param_count = OnboardParamCount;
-    mavlink_param_value_struct.param_index = index;
-    memcpy(mavlink_param_value_struct.param_id, GlobalParam[index].name, ONBOARD_PARAM_NAME_LENGTH);
+    mavlink_out_param_value_struct.param_value = GlobalParam[index].valuep->f32;
+    mavlink_out_param_value_struct.param_type  = GlobalParam[index].param_type;
+    mavlink_out_param_value_struct.param_count = OnboardParamCount;
+    mavlink_out_param_value_struct.param_index = index;
+    memcpy(mavlink_out_param_value_struct.param_id, GlobalParam[index].name, ONBOARD_PARAM_NAME_LENGTH);
 
     /* inform sending thread */
     chEvtBroadcastFlags(&event_mavlink_out_param_value, EVMSK_MAVLINK_OUT_PARAM_VALUE);
@@ -285,7 +285,7 @@ static void param_set_handler(void){
   param_status_t status;
   mavlink_param_set_t p; /* local copy for thread safety */
 
-  if (CH_SUCCESS != memcpy_ts(&p, &mavlink_param_set_struct, sizeof(p), 4))
+  if (CH_SUCCESS != memcpy_ts(&p, &mavlink_in_param_set_struct, sizeof(p), 4))
     return;
 
   valuep = (floatint *)&(p.param_value);
@@ -318,7 +318,7 @@ static void param_set_handler(void){
 void param_request_read_handler(void){
   mavlink_param_request_read_t p; /* local copy */
 
-  if (CH_SUCCESS != memcpy_ts(&p, &mavlink_param_request_read_struct, sizeof(p), 4))
+  if (CH_SUCCESS != memcpy_ts(&p, &mavlink_in_param_request_read_struct, sizeof(p), 4))
     return;
 
   if (p.param_index >= 0)

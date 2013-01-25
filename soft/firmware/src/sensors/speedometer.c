@@ -14,7 +14,7 @@
  */
 extern Mailbox speedometer_mb;
 extern CompensatedData comp_data;
-extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
+extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -55,7 +55,7 @@ static msg_t SpeedometerThread(void *arg){
       comp_data.groundspeed_odo = 0; /* device is still */
 
     /* set variable for telemetry */
-    mavlink_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
+    mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
   }
 
   return 0;

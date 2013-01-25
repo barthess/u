@@ -14,12 +14,13 @@
  */
 extern GlobalFlags_t GlobalFlags;
 
+extern mavlink_system_t mavlink_system_struct;
+
+extern mavlink_command_ack_t mavlink_out_command_ack_struct;
+extern mavlink_command_long_t mavlink_in_command_long_struct;
+
 extern EventSource event_mavlink_out_command_ack;
 extern EventSource event_mavlink_in_command_long;
-
-extern mavlink_system_t mavlink_system_struct;
-extern mavlink_command_ack_t mavlink_command_ack_struct;
-extern mavlink_command_long_t mavlink_command_long_struct;
 
 /*
  ******************************************************************************
@@ -39,8 +40,8 @@ extern mavlink_command_long_t mavlink_command_long_struct;
  * helper funcion
  */
 static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
-  mavlink_command_ack_struct.result = result;
-  mavlink_command_ack_struct.command = cmd;
+  mavlink_out_command_ack_struct.result = result;
+  mavlink_out_command_ack_struct.command = cmd;
 
   chEvtBroadcastFlags(&event_mavlink_out_command_ack, EVMSK_MAVLINK_OUT_COMMAND_ACK);
 }
@@ -214,7 +215,7 @@ static msg_t CmdThread(void* arg){
   while(!chThdShouldTerminate()){
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG, MS2ST(50));
     if (evt == EVMSK_MAVLINK_IN_COMMAND_LONG){
-      process_cmd(&mavlink_command_long_struct);
+      process_cmd(&mavlink_in_command_long_struct);
     }
   }
 

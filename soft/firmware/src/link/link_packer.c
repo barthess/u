@@ -10,52 +10,52 @@ extern mavlink_system_t mavlink_system_struct;
 
 extern GlobalFlags_t GlobalFlags;
 
-extern mavlink_gps_raw_int_t mavlink_gps_raw_int_struct;
+extern mavlink_gps_raw_int_t mavlink_out_gps_raw_int_struct;
 extern EventSource event_mavlink_out_gps_raw_int;
 
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
+extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern EventSource event_mavlink_out_raw_imu;
 
-extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern EventSource event_mavlink_out_scaled_imu;
 
-extern mavlink_raw_pressure_t mavlink_raw_pressure_struct;
+extern mavlink_raw_pressure_t mavlink_out_raw_pressure_struct;
 extern EventSource event_mavlink_out_raw_pressure;
 
-extern mavlink_scaled_pressure_t mavlink_scaled_pressure_struct;
+extern mavlink_scaled_pressure_t mavlink_out_scaled_pressure_struct;
 extern EventSource event_mavlink_out_scaled_pressure;
 
-extern mavlink_sys_status_t mavlink_sys_status_struct;
+extern mavlink_sys_status_t mavlink_out_sys_status_struct;
 extern EventSource event_mavlink_out_sys_status;
 
-extern mavlink_vfr_hud_t mavlink_vfr_hud_struct;
+extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 extern EventSource event_mavlink_out_vfr_hud;
 
-extern mavlink_global_position_int_t mavlink_global_position_int_struct;
+extern mavlink_global_position_int_t mavlink_out_global_position_int_struct;
 extern EventSource event_mavlink_out_global_position_int;
 
-extern mavlink_attitude_t mavlink_attitude_struct;
+extern mavlink_attitude_t mavlink_out_attitude_struct;
 extern EventSource event_mavlink_out_attitude;
 
-extern mavlink_heartbeat_t mavlink_heartbeat_struct;
+extern mavlink_heartbeat_t mavlink_out_heartbeat_struct;
 extern EventSource event_mavlink_out_heartbeat;
 
-extern mavlink_param_value_t mavlink_param_value_struct;
+extern mavlink_param_value_t mavlink_out_param_value_struct;
 extern EventSource event_mavlink_out_param_value;
 
-extern mavlink_statustext_t mavlink_statustext_struct;
+extern mavlink_statustext_t mavlink_out_statustext_struct;
 extern EventSource event_mavlink_out_statustext;
 
-extern mavlink_mission_count_t mavlink_mission_count_struct;
+extern mavlink_mission_count_t mavlink_out_mission_count_struct;
 extern EventSource event_mavlink_out_mission_count;
 
-extern mavlink_mission_item_t mavlink_mission_item_struct;
+extern mavlink_mission_item_t mavlink_out_mission_item_struct;
 extern EventSource event_mavlink_out_mission_item;
 
-extern mavlink_mission_ack_t mavlink_mission_ack_struct;
+extern mavlink_mission_ack_t mavlink_out_mission_ack_struct;
 extern EventSource event_mavlink_out_mission_ack;
 
-extern mavlink_mission_request_t mavlink_mission_request_struct;
+extern mavlink_mission_request_t mavlink_out_mission_request_struct;
 extern EventSource event_mavlink_out_mission_request;
 
 
@@ -117,82 +117,82 @@ void PackCycle(SerialDriver *sdp){
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM | EVMSK_MAVLINK_OUT_MISSION_ACK | EVMSK_MAVLINK_OUT_MISSION_REQUEST, MS2ST(50));
     switch(evt){
     case EVMSK_MAVLINK_OUT_GPS_RAW_INT:
-      memcpy_ts(sendbuf, &mavlink_gps_raw_int_struct, sizeof(mavlink_gps_raw_int_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_gps_raw_int_struct, sizeof(mavlink_out_gps_raw_int_struct), 4);
       mavlink_msg_gps_raw_int_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_gps_raw_int_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_RAW_IMU:
-      memcpy_ts(sendbuf, &mavlink_raw_imu_struct, sizeof(mavlink_raw_imu_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_raw_imu_struct, sizeof(mavlink_out_raw_imu_struct), 4);
       mavlink_msg_raw_imu_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_raw_imu_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_SCALED_IMU:
-      memcpy_ts(sendbuf, &mavlink_scaled_imu_struct, sizeof(mavlink_scaled_imu_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_scaled_imu_struct, sizeof(mavlink_out_scaled_imu_struct), 4);
       mavlink_msg_scaled_imu_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_scaled_imu_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_RAW_PRESSURE:
-      memcpy_ts(sendbuf, &mavlink_raw_pressure_struct, sizeof(mavlink_raw_pressure_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_raw_pressure_struct, sizeof(mavlink_out_raw_pressure_struct), 4);
       mavlink_msg_raw_pressure_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_raw_pressure_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_SCALED_PRESSURE:
-      memcpy_ts(sendbuf, &mavlink_scaled_pressure_struct, sizeof(mavlink_scaled_pressure_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_scaled_pressure_struct, sizeof(mavlink_out_scaled_pressure_struct), 4);
       mavlink_msg_scaled_pressure_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_scaled_pressure_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_SYS_STATUS:
-      memcpy_ts(sendbuf, &mavlink_sys_status_struct, sizeof(mavlink_sys_status_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_sys_status_struct, sizeof(mavlink_out_sys_status_struct), 4);
       mavlink_msg_sys_status_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_sys_status_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_VFR_HUD:
-      memcpy_ts(sendbuf, &mavlink_vfr_hud_struct, sizeof(mavlink_vfr_hud_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_vfr_hud_struct, sizeof(mavlink_out_vfr_hud_struct), 4);
       mavlink_msg_vfr_hud_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_vfr_hud_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT:
-      memcpy_ts(sendbuf, &mavlink_global_position_int_struct, sizeof(mavlink_global_position_int_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_global_position_int_struct, sizeof(mavlink_out_global_position_int_struct), 4);
       mavlink_msg_global_position_int_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_global_position_int_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_ATTITUDE:
-      memcpy_ts(sendbuf, &mavlink_attitude_struct, sizeof(mavlink_attitude_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_attitude_struct, sizeof(mavlink_out_attitude_struct), 4);
       mavlink_msg_attitude_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_attitude_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_HEARTBEAT:
-      memcpy_ts(sendbuf, &mavlink_heartbeat_struct, sizeof(mavlink_heartbeat_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_heartbeat_struct, sizeof(mavlink_out_heartbeat_struct), 4);
       mavlink_msg_heartbeat_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_heartbeat_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_PARAM_VALUE:
-      memcpy_ts(sendbuf, &mavlink_param_value_struct, sizeof(mavlink_param_value_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_param_value_struct, sizeof(mavlink_out_param_value_struct), 4);
       mavlink_msg_param_value_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_param_value_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_STATUSTEXT:
-      memcpy_ts(sendbuf, &mavlink_statustext_struct, sizeof(mavlink_statustext_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_statustext_struct, sizeof(mavlink_out_statustext_struct), 4);
       mavlink_msg_statustext_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_statustext_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_MISSION_COUNT:
-      memcpy_ts(sendbuf, &mavlink_mission_count_struct, sizeof(mavlink_mission_count_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_mission_count_struct, sizeof(mavlink_out_mission_count_struct), 4);
       mavlink_msg_mission_count_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_count_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_MISSION_ITEM:
-      memcpy_ts(sendbuf, &mavlink_mission_item_struct, sizeof(mavlink_mission_item_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_mission_item_struct, sizeof(mavlink_out_mission_item_struct), 4);
       mavlink_msg_mission_item_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_item_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_MISSION_ACK:
-      memcpy_ts(sendbuf, &mavlink_mission_ack_struct, sizeof(mavlink_mission_ack_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_mission_ack_struct, sizeof(mavlink_out_mission_ack_struct), 4);
       mavlink_msg_mission_ack_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_ack_t *)sendbuf);
       break;
 
     case EVMSK_MAVLINK_OUT_MISSION_REQUEST:
-      memcpy_ts(sendbuf, &mavlink_mission_request_struct, sizeof(mavlink_mission_request_struct), 4);
+      memcpy_ts(sendbuf, &mavlink_out_mission_request_struct, sizeof(mavlink_out_mission_request_struct), 4);
       mavlink_msg_mission_request_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_request_t *)sendbuf);
       break;
 

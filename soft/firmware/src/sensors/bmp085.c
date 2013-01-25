@@ -26,8 +26,8 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 
-extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
-extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
+extern mavlink_vfr_hud_t          mavlink_out_vfr_hud_struct;
+extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
 
 /*
  ******************************************************************************
@@ -143,10 +143,10 @@ static void process_pressure(uint32_t pval){
 
   comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter, climb, *flen_climb);
 
-  mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
-  mavlink_vfr_hud_struct.climb = comp_data.baro_climb;
-  mavlink_vfr_hud_struct.alt = comp_data.baro_altitude;
-  mavlink_scaled_pressure_struct.press_abs = (float)pval / 100.0;
+  mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
+  mavlink_out_vfr_hud_struct.climb = comp_data.baro_climb;
+  mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
+  mavlink_out_scaled_pressure_struct.press_abs = (float)pval / 100.0;
 }
 
 /**

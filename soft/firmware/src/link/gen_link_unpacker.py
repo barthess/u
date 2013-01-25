@@ -58,10 +58,10 @@ void UnpackCycle(SerialDriver *sdp){
 
 def printcase(f, i):
     f.write("        case MAVLINK_MSG_ID_" + str.upper(i) + ":\n")
-    f.write("          mavlink_msg_" + i + "_decode(&msg, &mavlink_" + i + "_struct);\n")
+    f.write("          mavlink_msg_" + i + "_decode(&msg, &mavlink_in_" + i + "_struct);\n")
     if (i[:-3] == "heartbeat") or (i == "statustext"):
         f.write("//")
-    f.write("          if (mavlink_" + i + "_struct.target_system == mavlink_system_struct.sysid)\n")
+    f.write("          if (mavlink_in_" + i + "_struct.target_system == mavlink_system_struct.sysid)\n")
     f.write("            chEvtBroadcastFlags(&event_mavlink_in_" + i + ", EVMSK_MAVLINK_IN_" + str.upper(i) + ");\n")
     f.write("          break;\n\n")
 
@@ -73,7 +73,7 @@ def gen(arr):
     f.write(head)
 
     for i in arr:
-        f.write("extern mavlink_" + i + "_t mavlink_" + i + "_struct;\n")
+        f.write("extern mavlink_" + i + "_t mavlink_in_" + i + "_struct;\n")
     f.write("\n")
 
     for i in arr:

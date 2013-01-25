@@ -21,7 +21,7 @@ extern uint16_t WpSeqNew;
 extern BinarySemaphore servo_updated_sem;
 extern CompensatedData comp_data;
 extern RawData raw_data;
-extern mavlink_nav_controller_output_t  mavlink_nav_controller_output_struct;
+extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
 extern float LongitudeScale;
 
 /*
@@ -57,11 +57,11 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   delta_y = wp->y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
   delta_y *= LongitudeScale;
 
-  mavlink_nav_controller_output_struct.wp_dist =
+  mavlink_out_nav_controller_output_struct.wp_dist =
       sqrtf(delta_x*delta_x + delta_y*delta_y) * METERS_IN_DEGREE;
 
   //NOTE: atan2(0,0) is forbidden arguments
-  if (mavlink_nav_controller_output_struct.wp_dist > wp->TARGET_RADIUS){
+  if (mavlink_out_nav_controller_output_struct.wp_dist > wp->TARGET_RADIUS){
     *heading = atan2f(delta_y, delta_x);
     return FALSE;
   }

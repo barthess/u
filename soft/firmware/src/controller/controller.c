@@ -14,7 +14,7 @@
  ******************************************************************************
  */
 extern mavlink_system_t   mavlink_system_struct;
-extern mavlink_vfr_hud_t  mavlink_vfr_hud_struct;
+extern mavlink_vfr_hud_t  mavlink_out_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -45,11 +45,11 @@ uint8_t float2thrust(float v){
 
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
     putinrange(v, 0.0f, 1.0f);
-    mavlink_vfr_hud_struct.throttle = roundf(v * 100);
+    mavlink_out_vfr_hud_struct.throttle = roundf(v * 100);
   }
   else{
     putinrange(v, -1.0f, 1.0f);
-    mavlink_vfr_hud_struct.throttle = roundf((v + 1.0) * 50);
+    mavlink_out_vfr_hud_struct.throttle = roundf((v + 1.0) * 50);
   }
 
   return __USAT(tmp, 8);

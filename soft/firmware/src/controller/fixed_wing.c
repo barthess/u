@@ -18,7 +18,7 @@
  */
 extern MemoryHeap ThdHeap;
 extern EventSource event_mavlink_in_manual_control;
-extern mavlink_manual_control_t mavlink_manual_control_struct;
+extern mavlink_manual_control_t mavlink_in_manual_control_struct;
 
 /*
  ******************************************************************************
@@ -56,7 +56,7 @@ static msg_t ControllerThread(void* arg){
 
     switch (evt){
       case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
-        manual_control_handler(&mavlink_manual_control_struct);
+        manual_control_handler(&mavlink_in_manual_control_struct);
         break;
       default:
         break;

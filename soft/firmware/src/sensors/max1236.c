@@ -20,9 +20,9 @@
 extern RawData raw_data;
 extern CompensatedData comp_data;
 
-extern mavlink_raw_pressure_t     mavlink_raw_pressure_struct;
-extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
-extern mavlink_vfr_hud_t          mavlink_vfr_hud_struct;
+extern mavlink_raw_pressure_t     mavlink_out_raw_pressure_struct;
+extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
+extern mavlink_vfr_hud_t          mavlink_out_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -75,15 +75,15 @@ static msg_t PollMax1236Thread(void *arg) {
       raw_data.pressure_dynamic = press;
       raw_data.altitude_sonar = sonar;
 
-      mavlink_vfr_hud_struct.airspeed = calc_air_speed(raw_data.pressure_dynamic);
+      mavlink_out_vfr_hud_struct.airspeed = calc_air_speed(raw_data.pressure_dynamic);
 
-      mavlink_raw_pressure_struct.press_diff1 = raw_data.pressure_dynamic;
-      mavlink_raw_pressure_struct.temperature = raw_data.temp_tmp75;
-      mavlink_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
+      mavlink_out_raw_pressure_struct.press_diff1 = raw_data.pressure_dynamic;
+      mavlink_out_raw_pressure_struct.temperature = raw_data.temp_tmp75;
+      mavlink_out_raw_pressure_struct.time_usec = pnsGetTimeUnixUsec();
 
-      mavlink_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
+      mavlink_out_scaled_pressure_struct.time_boot_ms = TIME_BOOT_MS;
 
-      comp_data.air_speed = (uint16_t)(1000 * mavlink_vfr_hud_struct.airspeed);
+      comp_data.air_speed = (uint16_t)(1000 * mavlink_out_vfr_hud_struct.airspeed);
 
       log_write_schedule(MAVLINK_MSG_ID_VFR_HUD, NULL, 0);
       log_write_schedule(MAVLINK_MSG_ID_RAW_PRESSURE, NULL, 0);

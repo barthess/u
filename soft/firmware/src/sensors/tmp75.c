@@ -16,7 +16,7 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
-extern mavlink_scaled_pressure_t  mavlink_scaled_pressure_struct;
+extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
 
 /*
  ******************************************************************************
@@ -62,7 +62,7 @@ static msg_t PollTmp75Thread(void *arg){
     i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2);
     raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
     comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
-    mavlink_scaled_pressure_struct.temperature = comp_data.temp_onboard;
+    mavlink_out_scaled_pressure_struct.temperature = comp_data.temp_onboard;
     chThdSleepMilliseconds(2000);
   }
   return 0;

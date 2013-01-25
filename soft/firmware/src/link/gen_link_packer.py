@@ -60,7 +60,7 @@ def gen(arr):
     head(f)
 
     for i in arr:
-        f.write("extern mavlink_" + i + "_t mavlink_" + i + "_struct;\n")
+        f.write("extern mavlink_" + i + "_t mavlink_out_" + i + "_struct;\n")
         f.write("extern EventSource event_mavlink_out_" + i + ";\n\n")
 
     f.write("\nvoid PackCycle(SerialDriver *sdp){\n")
@@ -84,7 +84,7 @@ def gen(arr):
     f.write("    switch(evt){\n")
     for i in arr:
         f.write("    case EVMSK_MAVLINK_OUT_" + str.upper(i) + ":\n")
-        f.write("      memcpy_ts(sendbuf, &mavlink_" + i + "_struct, sizeof(mavlink_" + i +"_struct), 4);\n")
+        f.write("      memcpy_ts(sendbuf, &mavlink_out_" + i + "_struct, sizeof(mavlink_out_" + i +"_struct), 4);\n")
         f.write("      mavlink_msg_" + i + "_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_" + i + "_t *)sendbuf);\n")
         f.write("      break;\n\n")
     foot(f, arr)

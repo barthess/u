@@ -21,10 +21,17 @@
  */
 extern GlobalFlags_t GlobalFlags;
 
-extern mavlink_mission_count_t        mavlink_mission_count_struct;
-extern mavlink_mission_item_t         mavlink_mission_item_struct;
-extern mavlink_mission_request_t      mavlink_mission_request_struct;
-extern mavlink_mission_ack_t          mavlink_mission_ack_struct;
+extern mavlink_mission_count_t        mavlink_in_mission_count_struct;
+extern mavlink_mission_count_t        mavlink_out_mission_count_struct;
+
+extern mavlink_mission_request_t      mavlink_in_mission_request_struct;
+extern mavlink_mission_request_t      mavlink_out_mission_request_struct;
+
+extern mavlink_mission_ack_t          mavlink_in_mission_ack_struct;
+extern mavlink_mission_ack_t          mavlink_out_mission_ack_struct;
+
+extern mavlink_mission_item_t         mavlink_in_mission_item_struct;
+extern mavlink_mission_item_t         mavlink_out_mission_item_struct;
 
 extern EventSource event_mavlink_in_mission_clear_all;
 extern EventSource event_mavlink_in_mission_request_list;
@@ -66,9 +73,9 @@ static char dbg_str[64];
 static void send_ack(uint8_t type){
   /* logically the target_component must be MAV_COMP_ID_MISSIONPLANNER,
    * but QGC does not accept them. */
-  mavlink_mission_ack_struct.target_component = MAV_COMP_ID_ALL;
-  mavlink_mission_ack_struct.target_system = GROUND_STATION_ID;
-  mavlink_mission_ack_struct.type = type;
+  mavlink_out_mission_ack_struct.target_component = MAV_COMP_ID_ALL;
+  mavlink_out_mission_ack_struct.target_system = GROUND_STATION_ID;
+  mavlink_out_mission_ack_struct.type = type;
 
   chEvtBroadcastFlags(&event_mavlink_out_mission_ack, EVMSK_MAVLINK_OUT_MISSION_ACK);
 }
@@ -119,10 +126,6 @@ static eventmask_t send_with_confirm(uint32_t out_evid, uint32_t in_evid_msk, in
     if (in_evid_msk == 0) // no need of confirmation
       return 0;
 
-    /* block all unhandled IDs */
-    //if (!(in_evid_msk | EVMSK_MAVLINK_IN_MISSION_REQUEST | EVMSK_MAVLINK_IN_MISSION_ITEM))
-    //  chDbgPanic("ID not handled");
-    /* wait answer */
     evt = chEvtWaitOneTimeout(in_evid_msk, PLANNER_RETRY_TMO);
     if (evt & in_evid_msk)
       return evt;
@@ -147,12 +150,12 @@ static MAVLINK_WPM_STATES mission_item_request_handler(void){
 
   // NOTE: first mission request already received
   do{
-    if (mavlink_mission_request_struct.seq >= waypoint_cnt) // prevent EEPROM overflow
+    if (mavlink_in_mission_request_struct.seq >= waypoint_cnt) // prevent EEPROM overflow
       return MAVLINK_WPM_STATE_IDLE;
 
-    get_waypoint_from_eeprom(mavlink_mission_request_struct.seq, &mavlink_mission_item_struct);
-    mavlink_mission_item_struct.target_system = GROUND_STATION_ID;
-    mavlink_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    get_waypoint_from_eeprom(mavlink_in_mission_request_struct.seq, &mavlink_out_mission_item_struct);
+    mavlink_out_mission_item_struct.target_system = GROUND_STATION_ID;
+    mavlink_out_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
     status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_ITEM,
                                EVMSK_MAVLINK_IN_MISSION_REQUEST | EVMSK_MAVLINK_IN_MISSION_ACK,
@@ -179,11 +182,11 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
   eventmask_t status = 0;
 
   waypoint_cnt = get_waypoint_count();
-  mavlink_mission_count_struct.count = waypoint_cnt;
-  mavlink_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-  mavlink_mission_count_struct.target_system = GROUND_STATION_ID;
+  mavlink_out_mission_count_struct.count = waypoint_cnt;
+  mavlink_out_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+  mavlink_out_mission_count_struct.target_system = GROUND_STATION_ID;
 
-  if (mavlink_mission_count_struct.count == 0){
+  if (mavlink_out_mission_count_struct.count == 0){
     send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_COUNT, 0, 0);
     return MAVLINK_WPM_STATE_IDLE;
   }
@@ -206,7 +209,7 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
 static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
   if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-                                "PLANNER: Unsupported frame #", (int)wp->seq);
+                                 "PLANNER: Unsupported frame #", (int)wp->seq);
     mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
     return MAV_MISSION_UNSUPPORTED_FRAME;
   }
@@ -218,7 +221,7 @@ static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
   }
   if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-                         "PLANNER: Not enough target radius #", (int)wp->seq);
+                          "PLANNER: Not enough target radius #", (int)wp->seq);
     mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
     return MAV_MISSION_INVALID_PARAM1;
   }
@@ -233,9 +236,9 @@ static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
 static bool_t mission_count_handler(void){
   eventmask_t status = 0;
 
-  waypoint_cnt = mavlink_mission_count_struct.count;
+  waypoint_cnt = mavlink_in_mission_count_struct.count;
 
-  mavlink_mission_request_struct.seq = 0;
+  mavlink_out_mission_request_struct.seq = 0;
   uint8_t type = MAV_MISSION_ERROR;
 
   /* check available space */
@@ -247,10 +250,13 @@ static bool_t mission_count_handler(void){
   /* start transaction from clean state to be safer */
   save_waypoint_count(0);
 
+  /* delete from "queue" probably stored old message */
+  chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, MS2ST(10));
+
   /* save waypoints one by one */
   do{
-    mavlink_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-    mavlink_mission_request_struct.target_system = GROUND_STATION_ID;
+    mavlink_out_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    mavlink_out_mission_request_struct.target_system = GROUND_STATION_ID;
 
     /* send request to ground */
     status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_REQUEST,
@@ -258,20 +264,20 @@ static bool_t mission_count_handler(void){
                                PLANNER_RETRY_CNT);
     /* handle answer */
     if (status == EVMSK_MAVLINK_IN_MISSION_ITEM){
-      type = check_wp(&mavlink_mission_item_struct, mavlink_mission_request_struct.seq);
+      type = check_wp(&mavlink_in_mission_item_struct, mavlink_out_mission_request_struct.seq);
       if (type != MAV_MISSION_ACCEPTED)
         goto EXIT;
       else{
-        save_waypoint_to_eeprom(mavlink_mission_request_struct.seq, &mavlink_mission_item_struct);
-        mavlink_mission_request_struct.seq++;
+        save_waypoint_to_eeprom(mavlink_out_mission_request_struct.seq, &mavlink_in_mission_item_struct);
+        mavlink_out_mission_request_struct.seq++;
       }
     }
     else
       goto EXIT;
-  }while(mavlink_mission_request_struct.seq < waypoint_cnt);
+  }while(mavlink_out_mission_request_struct.seq < waypoint_cnt);
 
   /* save waypoint count in eeprom only in the very end of transaction */
-  save_waypoint_count(mavlink_mission_request_struct.seq);
+  save_waypoint_count(mavlink_out_mission_request_struct.seq);
 EXIT:
   send_ack(type);
   return MAVLINK_WPM_STATE_IDLE;

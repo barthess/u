@@ -19,8 +19,8 @@
 extern GlobalFlags_t GlobalFlags;
 extern CompensatedData comp_data;
 
-extern mavlink_raw_imu_t mavlink_raw_imu_struct;
-extern mavlink_scaled_imu_t mavlink_scaled_imu_struct;
+extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern mavlink_system_t mavlink_system_struct;
 
 uint32_t GyroUpdatePeriodUs; /* uS */
@@ -84,10 +84,10 @@ static void process_gyro_data(uint8_t *rxbuf){
   sorti_3values(raw, Gyro, *sortmtrx);
 
   /* fill debug struct */
-  mavlink_raw_imu_struct.xgyro = Gyro[0];
-  mavlink_raw_imu_struct.ygyro = Gyro[1];
-  mavlink_raw_imu_struct.zgyro = Gyro[2];
-  mavlink_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
+  mavlink_out_raw_imu_struct.xgyro = Gyro[0];
+  mavlink_out_raw_imu_struct.ygyro = Gyro[1];
+  mavlink_out_raw_imu_struct.zgyro = Gyro[2];
+  mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* update statistic for zeros */
   status = gyro_stat_update(Gyro);
@@ -116,10 +116,10 @@ static void process_gyro_data(uint8_t *rxbuf){
 //        mavlink_scaled_imu_struct.xgyro = (int16_t)(1000 * comp_data.xgyro);
 //        mavlink_scaled_imu_struct.ygyro = (int16_t)(1000 * comp_data.ygyro);
 //        mavlink_scaled_imu_struct.zgyro = (int16_t)(1000 * comp_data.zgyro);
-  mavlink_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
-  mavlink_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
-  mavlink_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-  mavlink_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
+  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
+  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
+  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
+  mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 
   if (status == GYRO_STAT_UNCHANGED)
     chBSemSignal(imusync_semp);/* say IMU "Hey, we have fresh data!"*/
