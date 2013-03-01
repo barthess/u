@@ -50,14 +50,14 @@ static Thread *groundrover_tp = NULL;
 static void manual_control_handler(mavlink_manual_control_t *mc){
   uint32_t v = 0;
 
-  if (mc->thrust_manual == 1){
-    v = float2thrust(mc->thrust);
-    ServoCarThrustSet(v);
-  }
-  if (mc->yaw_manual == 1){
-    v = float2servo(mc->yaw);
-    Servo7Set(v);
-  }
+//  if (mc->thrust_manual == 1){
+//    v = float2thrust(mc->thrust);
+//    ServoCarThrustSet(v);
+//  }
+//  if (mc->yaw_manual == 1){
+//    v = float2servo(mc->yaw);
+//    Servo7Set(v);
+//  }
 }
 
 /**
