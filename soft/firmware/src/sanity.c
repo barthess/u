@@ -37,12 +37,9 @@ extern EventSource event_mavlink_out_heartbeat;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* указатель на Idle поток. Оттуда мы будем брать данные для расчета загрузки проца */
-static Thread *IdleThread_p = NULL;
-
-/* переменные для оценки загруженности процессора */
-static uint32_t last_sys_ticks = 0;
-static uint32_t last_idle_ticks = 0;
+/* variables for cpu utilization calculation */
+static systime_t last_systick = 0;
+static systime_t last_idletick = 0;
 
 static BinarySemaphore blink_sem;
 static uint32_t BlinkCnt = 0;
@@ -102,7 +99,7 @@ static msg_t SanityControlThread(void *arg) {
 
     log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
-    mavlink_out_sys_status_struct.load = get_cpu_load();
+    mavlink_out_sys_status_struct.load = getCpuLoad();
     /* how many times device was soft resetted */
     mavlink_out_sys_status_struct.errors_count1 = bkpSoftResetCnt;
     /* reset flags */
@@ -151,7 +148,6 @@ static msg_t RedBlinkThread(void *arg) {
  */
 void SanityControlInit(void){
   chBSemInit(&blink_sem,  TRUE);
-  IdleThread_p = chSysGetIdleThread();
 
   if (was_softreset())
     BlinksCount = 4;
@@ -198,24 +194,20 @@ void SheduleRedBlink(uint32_t cnt, uint32_t on, uint32_t off){
 }
 
 /**
- * Рассчитывает загрузку проца.
- * Возвращает десятые доли процента.
+ * return tens of persents.
  */
-uint16_t get_cpu_load(void){
+uint16_t getCpuLoad(void){
 
-  uint32_t i, s; /* "мгновенные" значения количества тиков idle, system */
+  systime_t i, s;
 
-  /* получаем мгновенное значение счетчика из Idle */
-  if (chThdGetTicks(IdleThread_p) >= last_idle_ticks)
-    i = chThdGetTicks(IdleThread_p) - last_idle_ticks;
-  else /* overflow */
-    i = chThdGetTicks(IdleThread_p) + (0xFFFFFFFF - last_idle_ticks);
+  s = chTimeNow() - last_systick;
+  i = chThdGetTicks(chSysGetIdleThread()) - last_idletick;
 
-  last_idle_ticks = chThdGetTicks(IdleThread_p);
-
-  /* получаем мгновенное значение счетчика из системы */
-  s = GetTimeInterval(&last_sys_ticks);
+  last_systick = chTimeNow();
+  last_idletick = chThdGetTicks(chSysGetIdleThread());
 
   return ((s - i) * 1000) / s;
 }
+
+
 
