@@ -37,10 +37,6 @@ extern EventSource event_mavlink_out_heartbeat;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* variables for cpu utilization calculation */
-static systime_t last_systick = 0;
-static systime_t last_idletick = 0;
-
 static BinarySemaphore blink_sem;
 static uint32_t BlinkCnt = 0;
 static systime_t offtime = 10, ontime = 10;
@@ -193,21 +189,6 @@ void SheduleRedBlink(uint32_t cnt, uint32_t on, uint32_t off){
   chBSemSignal(&blink_sem);
 }
 
-/**
- * return tens of persents.
- */
-uint16_t getCpuLoad(void){
-
-  systime_t i, s;
-
-  s = chTimeNow() - last_systick;
-  i = chThdGetTicks(chSysGetIdleThread()) - last_idletick;
-
-  last_systick = chTimeNow();
-  last_idletick = chThdGetTicks(chSysGetIdleThread());
-
-  return ((s - i) * 1000) / s;
-}
 
 
 

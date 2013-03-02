@@ -41,6 +41,10 @@ static uint32_t WrapCount = 0;
 /* последнее значение счетчика для отлова момента переполнения */
 static uint32_t LastTimeBootMs = 0;
 
+/* variables for cpu utilization calculation */
+static systime_t last_systick = 0;
+static systime_t last_idletick = 0;
+
 /*
  *******************************************************************************
  *******************************************************************************
@@ -159,4 +163,20 @@ Thread* date_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
 
   /* stub */
   return NULL;
+}
+
+/**
+ * return tens of persents.
+ */
+uint16_t getCpuLoad(void){
+
+  systime_t i, s;
+
+  s = chTimeNow() - last_systick;
+  i = chThdGetTicks(chSysGetIdleThread()) - last_idletick;
+
+  last_systick = chTimeNow();
+  last_idletick = chThdGetTicks(chSysGetIdleThread());
+
+  return ((s - i) * 1000) / s;
 }
