@@ -158,7 +158,7 @@ CSRC = $(PORTSRC) \
        src/pwr_mgmt.c \
        src/fault_handlers.c \
        src/utils/memfunc.c \
-       
+
 DSPSRC = cortex_dsp
 #CSRC += $(DSPSRC)/arm_common_tables.c \
 #		$(DSPSRC)/arm_sqrt_q31.c \
@@ -216,6 +216,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/math \
          src/calibration \
          src/utils \
+         src/benchmark \
          $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
          $(MAVLINKDIR)/bart

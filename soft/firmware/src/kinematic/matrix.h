@@ -26,7 +26,7 @@ void matrix_multiply( int m, int p, int n , float *A, float *B,  float *C){
 			//printf("\n");
 		}
 	}
-};
+}
 
 
 void matrix_copy(int m, int n, float* A, float* B ){

@@ -92,6 +92,8 @@ int main(void) {
   halInit();
   chSysInit();
 
+  //benchmark_start();
+
   /* enable softreset on panic */
   setGlobalFlag(GlobalFlags.allow_softreset);
 

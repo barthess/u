@@ -11,6 +11,7 @@
 /* uav includes */
 #include "adc_local.h"
 #include "airspeed.h"
+#include "benchmark.h"
 #include "bkp.h"
 #include "bmp085.h"
 #include "cli.h"
