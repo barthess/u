@@ -14,7 +14,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern MemoryHeap ThdHeap;
 extern GlobalFlags_t GlobalFlags;
 
 /*
@@ -48,7 +47,7 @@ static msg_t LinkOutThread(void *sdp){
 /**
  * Parse input data.
  */
-static WORKING_AREA(LinkInThreadWA, 512);
+static WORKING_AREA(LinkInThreadWA, 1024);
 static msg_t LinkInThread(void *sdp){
   chRegSetThreadName("MAVLinkIn");
   UnpackCycle(sdp);
@@ -78,17 +77,18 @@ void KillMavlinkThreads(void){
 /**
  * Create telemetry link threads
  */
-void SpawnMavlinkThreads(SerialDriver *sdp){
+void SpawnMavlinkThreads(void *sdp){
 
-  linkout_tp = chThdCreateFromHeap(&ThdHeap,
+  linkout_tp = chThdCreateStatic(LinkOutThreadWA,
                             sizeof(LinkOutThreadWA),
                             LINK_THREADS_PRIO,
                             LinkOutThread,
                             sdp);
+
   if (linkout_tp == NULL)
     chDbgPanic("Can not allocate memory");
 
-  linkin_tp = chThdCreateFromHeap(&ThdHeap,
+  linkin_tp = chThdCreateStatic(LinkInThreadWA,
                             sizeof(LinkInThreadWA),
                             LINK_THREADS_PRIO,
                             LinkInThread,

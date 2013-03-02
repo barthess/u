@@ -355,7 +355,7 @@ static void get_time(struct tm *timp, uint8_t *buft, uint8_t *bufd){
 static uint8_t get_gps_sentence(uint8_t *buf, uint8_t checksum){
   uint8_t byte = 0, i = 0;
 
-  while TRUE{
+  while (TRUE){
     i++;
     if (i >= GPS_MSG_LEN)   /* если данных больше, чем поместится в буфер длинной len */
       return 1;

@@ -60,6 +60,7 @@ extern EventSource event_mavlink_out_mission_request;
 
 
 void PackCycle(SerialDriver *sdp){
+
   struct EventListener el_gps_raw_int;
   chEvtRegisterMask(&event_mavlink_out_gps_raw_int, &el_gps_raw_int, EVMSK_MAVLINK_OUT_GPS_RAW_INT);
 

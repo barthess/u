@@ -63,6 +63,7 @@
 #include "timekeeping.h"
 #include "tlm_sender.h"
 #include "tmp75.h"
+#include "usbcfg.h"
 #include "wp.h"
 #include "wp_global.h"
 #include "wp_local.h"
@@ -73,13 +74,12 @@
 #define PI          3.14159265f
 
 /* Heap size for dynamic thread creation */
-#define THREAD_HEAP_SIZE    (1024 * 5)
+#define THREAD_HEAP_SIZE    (1024 * 4)
 
 /*******************************************************************
  * humanreadable names of serial drivers */
-#define LINKSD  SD2
-#define GPSSD   SD1
-#define SHELLSD LINKSD
+#define XBEESD    SD2
+#define GPSSD     SD1
 
 /******************************************************************
  * Disarm halting on panic and changing it to soft reset after this amount of time */
@@ -124,7 +124,7 @@ typedef struct GlobalFlags_t{
   uint32_t i2c_ready:1;       /* i2c bus initialized */
   uint32_t messaging_ready:1;
   //16
-  uint32_t stub4:1;
+  uint32_t shell_ready:1;
   uint32_t stub5:1;
   uint32_t stub6:1;
   uint32_t stub7:1;

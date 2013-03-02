@@ -49,6 +49,8 @@ static Thread *groundrover_tp = NULL;
  */
 static void manual_control_handler(mavlink_manual_control_t *mc){
   uint32_t v = 0;
+  (void)v;
+  (void)mc;
 
 //  if (mc->thrust_manual == 1){
 //    v = float2thrust(mc->thrust);

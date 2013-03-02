@@ -21,14 +21,14 @@
  * EXTERNS
  ******************************************************************************
  */
-extern MemoryHeap ThdHeap;
+extern GlobalFlags_t GlobalFlags;
 
 /*
  *******************************************************************************
  * PROTOTYPES
  *******************************************************************************
  */
-static Thread* logout_cmd(int argc, const char * const * argv, SerialDriver *sdp);
+static Thread* togglesh_cmd(int argc, const char * const * argv, SerialDriver *sdp);
 static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sdp);
 
 /*
@@ -46,15 +46,15 @@ static const ShellCmd_t chibiutils[] = {
     {"help",      &help_clicmd,       "this message"},
     {"info",      &uname_clicmd,      "system information"},
     {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
-    {"logout",    &logout_cmd,        "close shell threads and fork telemtry threads"},
     {"loop",      &loop_clicmd,       "command to test ^C fucntionallity"},
     {"param",     &param_clicmd,      "manage onboard system paramters"},
     {"ps",        &ps_clicmd,         "info about running threads"},
+    {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
     {"selftest",  &selftest_clicmd,   "exectute selftests (stub)"},
     {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
     {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,      "put autopilot board in sleep state (do not use it)"},
-    {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
+    {"togglesh",  &togglesh_cmd,      "swap telemetry and shell channels"},
     {"uname",     &uname_clicmd,      "'info' alias"},
     {"wps",       &wps_clicmd,        "simple waypoint interface"},
     #if USE_EEPROM_TEST_SUIT
@@ -169,11 +169,11 @@ static void sigint (void){
  * Thread function
  */
 static WORKING_AREA(ShellThreadWA, 2048);
-static msg_t ShellThread(void *arg){
+static msg_t ShellThread(void *sdp){
   chRegSetThreadName("Shell");
 
   /* init static pointer for serial driver with received pointer */
-  ShellSDp = (SerialDriver *)arg;
+  ShellSDp = (SerialDriver *)sdp;
 
   // create and init microrl object
   microrl_t microrl_shell;
@@ -192,6 +192,8 @@ static msg_t ShellThread(void *arg){
 
   // set callback for ctrl+c handling (optionally)
   microrl_set_sigint_callback(&microrl_shell, sigint);
+
+  setGlobalFlag(GlobalFlags.shell_ready);
 
   while (!chThdShouldTerminate()){
     // put received char from stdin to microrl lib
@@ -212,6 +214,8 @@ static msg_t ShellThread(void *arg){
       chThdTerminate(current_cmd_tp);
     chThdWait(current_cmd_tp);
   }
+
+  clearGlobalFlag(GlobalFlags.shell_ready);
   chThdExit(0);
   return 0;
 }
@@ -219,12 +223,15 @@ static msg_t ShellThread(void *arg){
 /**
  *
  */
-static Thread* logout_cmd(int argc, const char * const * argv, SerialDriver *sdp){
+static Thread* togglesh_cmd(int argc, const char * const * argv, SerialDriver *sdp){
   (void)sdp;
   (void)argc;
   (void)argv;
 
-  *(uint32_t*)ValueSearch("SH_enable") = 0;
+  if (*(uint32_t*)ValueSearch("SH_overxbee") == 0)
+    *(uint32_t*)ValueSearch("SH_overxbee") = 1;
+  else
+    *(uint32_t*)ValueSearch("SH_overxbee") = 0;
 
   return NULL;
 }
@@ -314,13 +321,13 @@ void KillShellThreads(void){
 /**
  *
  */
-void SpawnShellThreads(SerialDriver *arg){
+void SpawnShellThreads(void *sdp){
 
-  shell_tp = chThdCreateFromHeap(&ThdHeap,
+  shell_tp = chThdCreateStatic(ShellThreadWA,
                             sizeof(ShellThreadWA),
                             LINK_THREADS_PRIO,
                             ShellThread,
-                            arg);
+                            sdp);
   if (shell_tp == NULL)
     chDbgPanic("Can not allocate memory");
 }

@@ -16,7 +16,7 @@ ONBOARD_PARAM_NAME_LENGTH = 15
 param = [
 ("SYS_ID",          1,      20,     255,    "u", "NULL",    "System ID.\\n This value MUST BE FIRST in param structure. Value 0 reserved for ground station."),
 ("SYS_mavtype",     0,      10,     16,     "u", "NULL",    "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
-("SH_enable",       0,      0,      1,      "u", "NULL",    "Set to 1 to switch off telemetry sending and enabling shell."),
+("SH_overxbee",     0,      0,      1,      "u", "NULL",    "When 1 than drop shell on xbee channel and telemetry on USB_CDC and vice versa."),
 
 ("IMU_still_thr",   100,    10000,  100000, "u", "NULL",    "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
 

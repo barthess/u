@@ -5,6 +5,7 @@ Do not edit it manually.
 */
 #include "uav.h"
 #include <stdio.h>
+#include <string.h>
 
 extern GlobalFlags_t GlobalFlags;
 
@@ -45,6 +46,9 @@ void UnpackCycle(SerialDriver *sdp){
   mavlink_status_t status;
   msg_t c = 0;
   char dbg_string[52];
+
+  memset(&msg, 0, sizeof(msg));
+  memset(&status, 0, sizeof(status));
 
   while(GlobalFlags.messaging_ready == 0)
     chThdSleepMilliseconds(50);

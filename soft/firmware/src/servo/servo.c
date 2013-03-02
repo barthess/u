@@ -162,31 +162,39 @@ static void _servo_set_angle(uint16_t n, uint8_t angle){
  */
 
 void Servo0Set(uint8_t angle) {
-  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
     chDbgPanic("This fucntion can not be called in ground rover mode");
-  else
+  }
+  else{
     _servo_set_angle(0, angle);
+  }
 }
 
 void Servo1Set(uint8_t angle) {
-  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
     chDbgPanic("This fucntion can not be called in ground rover mode");
-  else
-  _servo_set_angle(1, angle);
+  }
+  else{
+    _servo_set_angle(1, angle);
+  }
 }
 
 void Servo2Set(uint8_t angle) {
-  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
     chDbgPanic("This fucntion can not be called in ground rover mode");
-  else
-  _servo_set_angle(2, angle);
+  }
+  else{
+    _servo_set_angle(2, angle);
+  }
 }
 
 void Servo3Set(uint8_t angle) {
-  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
     chDbgPanic("This fucntion can not be called in ground rover mode");
-  else
-  _servo_set_angle(3, angle);
+  }
+  else{
+    _servo_set_angle(3, angle);
+  }
 }
 
 void Servo4Set(uint8_t angle) {

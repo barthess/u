@@ -140,6 +140,7 @@ CSRC = $(PORTSRC) \
        src/link/link_unpacker.c \
        src/link/mavlink_dbg.c \
        src/link/tlm_sender.c \
+       src/link/usbcfg.c \
        src/eeprom/eeprom.c \
        src/eeprom/eeprom_testsuit.c \
        src/controller/controller.c \
