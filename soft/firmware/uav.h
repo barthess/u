@@ -115,7 +115,7 @@ typedef struct GlobalFlags_t{
   uint32_t logger_ready:1;
   //8
   uint32_t sighalt:1;
-  uint32_t mag_data_ready:1;
+  uint32_t mag_data_fresh:1;
   uint32_t mission_takeoff:1;
   uint32_t mission_loiter:1;
   //12

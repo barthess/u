@@ -161,9 +161,10 @@ bool_t mag_stat_update(int32_t *data){
         tmStopMeasurement(&sphere_tmup);
         sphere_time = sphere_tmup.last;
 
-        *(int32_t *)(ValueSearch("MAG_xoffset")) = roundf(S.c[0]);
-        *(int32_t *)(ValueSearch("MAG_yoffset")) = roundf(S.c[1]);
-        *(int32_t *)(ValueSearch("MAG_zoffset")) = roundf(S.c[2]);
+        *(int32_t *)(ValueSearch("MAG_xoffset"))   = roundf(S.c[0]);
+        *(int32_t *)(ValueSearch("MAG_yoffset"))   = roundf(S.c[1]);
+        *(int32_t *)(ValueSearch("MAG_zoffset"))   = roundf(S.c[2]);
+        *(int32_t *)(ValueSearch("MAG_vectorlen")) = roundf(S.r);
 
         mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
         mavlink_system_struct.state = MAV_STATE_STANDBY;

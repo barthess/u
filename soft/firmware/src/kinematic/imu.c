@@ -65,31 +65,6 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
 }
 
-
-/**
- * Get attitude from DCM in quarterion notation
- */
-//static void get_attitude_quaternion(mavlink_attitude_quaternion_t *mavlink_attitude_quaternion_struct){
-//  // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
-//  float t = Rxx+Ryy+Rzz;
-//  float r = sqrtf(1+t);
-//  float s = 0.5 / r;
-//  float w = 0.5*r;
-//  float x = (Rzy - Ryz) * s;
-//  float y = (Rxz - Rzx) * s;
-//  float z = (Ryx - Rxy) * s;
-//
-//  mavlink_attitude_quaternion_struct->q1 = w;
-//  mavlink_attitude_quaternion_struct->q2 = x;
-//  mavlink_attitude_quaternion_struct->q3 = y;
-//  mavlink_attitude_quaternion_struct->q4 = z;
-//  mavlink_attitude_quaternion_struct->time_boot_ms = TIME_BOOT_MS;
-//  mavlink_attitude_quaternion_struct->rollspeed    = -comp_data.xgyro;
-//  mavlink_attitude_quaternion_struct->pitchspeed   = -comp_data.ygyro;
-//  mavlink_attitude_quaternion_struct->yawspeed     = -comp_data.zgyro;
-//}
-
-
 /**
  *
  */

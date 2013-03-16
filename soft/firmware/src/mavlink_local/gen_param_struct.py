@@ -30,9 +30,9 @@ param = [
 
 # /**** Magnetometer ****/
 # /* zero offsets */
-("MAG_xoffset",     -5000,  0,      5000,   "i", "NULL",    "NULL"),
-("MAG_yoffset",     -5000,  0,      5000,   "i", "NULL",    "NULL"),
-("MAG_zoffset",     -5000,  0,      5000,   "i", "NULL",    "NULL"),
+("MAG_xoffset",     -5000,  0,      5000,   "i", "NULL",    "Sphere center offset"),
+("MAG_yoffset",     -5000,  0,      5000,   "i", "NULL",    "Sphere center offset"),
+("MAG_zoffset",     -5000,  0,      5000,   "i", "NULL",    "Sphere center offset"),
 # /* axis sensitivity */
 ("MAG_xsens",       0.001,  0.1,    1.0,    "f", "NULL",    "NULL"),
 ("MAG_ysens",       0.001,  0.1,    1.0,    "f", "NULL",    "NULL"),
@@ -46,7 +46,7 @@ param = [
 # /* count of samples to zero calibration */
 ("MAG_zerocnt",     256,    512,    4096,   "i", "NULL",    "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
-("MAG_reserved2",   0,      0,      4096,   "u", "NULL",    "NULL"),
+("MAG_vectorlen",   0,      10,     4096,   "u", "NULL",    "Length of magnetic flux vector acquired during sphere offset calculation"),
 
 #/**** accelerometer ****/
 #/* zero offsets */

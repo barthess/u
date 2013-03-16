@@ -156,6 +156,7 @@ float fmodulo(float x, float y){
  */
 /* reference realization */
 void sort_3values(int32_t *in, int32_t *out, uint32_t sortmatrix){
+  chDbgCheck((in != out), "this function can not modify values inplace");
   switch (sortmatrix){
   case 0b001100010: // #6
     //   001
@@ -212,6 +213,7 @@ void sort_3values(int32_t *in, int32_t *out, uint32_t sortmatrix){
 }
 
 #define __sort3 \
+  chDbgCheck((in != out), "this function can not modify values inplace");\
   switch (sortmatrix){\
   case 0b001100010: out[0] = in[2]; out[1] = in[0]; out[2] = in[1]; break;\
   case 0b001010100: out[0] = in[2]; out[1] = in[1]; out[2] = in[0]; break;\

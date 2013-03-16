@@ -89,7 +89,7 @@ static void process_gyro_data(uint8_t *rxbuf){
   mavlink_out_raw_imu_struct.zgyro = Gyro[2];
   mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
-  /* update statistic for zeros */
+  /* update statistic for zero offsets */
   status = gyro_stat_update(Gyro);
 
   /* correct zero offset */
