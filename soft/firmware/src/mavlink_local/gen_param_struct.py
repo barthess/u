@@ -74,10 +74,10 @@ param = [
 ("GYRO_ypol",       -1,     1,      1,      "i", "polarity","NULL"),
 ("GYRO_zpol",       -1,     1,      1,      "i", "polarity","NULL"),
 
-("GYRO_zerocnt",    512,    2048,   16384,  "i", "NULL",    "Sample count for zeroing using accumulated sums"),
-("GYRO_x_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum X"),
-("GYRO_y_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Y"),
-("GYRO_z_zerosum",  -20000000, 0, 20000000, "i", "NULL",    "accumulated sum Z"),
+("GYRO_zerocnt",    512,    2048,   16384,  "i", "NULL",    "Sample count for zeroing procedure"),
+("GYRO_x_offset",  -2000,   0,      2000,   "f", "NULL",    "Cached zero offset for faster startup"),
+("GYRO_y_offset",  -2000,   0,      2000,   "f", "NULL",    "Cached zero offset for faster startup"),
+("GYRO_z_offset",  -2000,   0,      2000,   "f", "NULL",    "Cached zero offset for faster startup"),
 ("GYRO_sortmtrx",   0,  0b100010001, 1,     "u", "sortmtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 
 ("GYRO_reserved3",  -20000000, 0, 20000000, "i", "NULL",    "NULL"),

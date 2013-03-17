@@ -52,14 +52,15 @@ extern float dcmEst[3][3];
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-/* modulus of magnetic flux */
-static float mag_modulus = 0;
 
 /* accelerometer data weight relative to gyro's weight of 1 */
 static float const *accweight = NULL;
 
 /* magnetometer data weight relative to gyro's weight of 1. */
 static float const *magweight = NULL;
+
+/* length of magnetic vector without external sources of magnetic field */
+static uint32_t const *magvectorlen = NULL;
 
 /* increments on each call to imu_update */
 static uint32_t imu_step;
@@ -136,6 +137,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
+  float magmodulus;
+  float accmodulus;
 
   //interval since last call
   //imu_interval_ms = itg3200_period;
@@ -171,6 +174,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Kacc[0] = xacc;
   Kacc[1] = yacc;
   Kacc[2] = zacc;
+  accmodulus = vector3d_modulus(Kacc);
   vector3d_normalize(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc
@@ -194,13 +198,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Imag[0] = xmag;
   Imag[1] = ymag;
   Imag[2] = zmag;
+  magmodulus = vector3d_modulus(Imag);
 
-  /* get length of vector if not yet present */
-  if (mag_modulus == 0)
-    mag_modulus = vector3d_modulus(Imag);
-
-  /* ignore magnetometer readings if external magnetic field too strong
-   * and if there is no fresh data measured */
+  /* ignore magnetometer readings if there is no fresh data measured */
   if (GlobalFlags.mag_data_fresh){
     clearGlobalFlag(GlobalFlags.mag_data_fresh);
     /* Проработать комплексирование с нижним рядом DCM вместо вектора
@@ -234,12 +234,26 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
   w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
 
+  /* correction factors for accelerometer and mognetometer weights */
+  float magcor, acccor;
+  if (1 == GlobalFlags.gyro_cal){
+    acccor = 10;
+    magcor = 10;
+  }
+  else{
+    acccor = 1;
+    magcor = 1;
+  }
+
+  float aw = *accweight * acccor;
+  float mw = *magweight * magcor;
+
   uint32_t i;
   for(i=0; i<3; i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector
-    w[i] = (w[i] + *accweight * wA[i] + *magweight * wM[i]) /
-                  (1.0f + *accweight + *magweight);
+    w[i] = (w[i] + aw * wA[i] + mw * wM[i]) /
+                  (1.0f + aw + mw);
   }
 
   dcm_rotate(dcmEst, w);
@@ -252,6 +266,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 void dcmInit(){
   magweight = ValueSearch("IMU_magweight");
   accweight = ValueSearch("IMU_accweight");
+  magvectorlen = ValueSearch("MAG_vectorlen");
 }
 
 

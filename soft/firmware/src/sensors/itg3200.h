@@ -17,7 +17,7 @@
 #define GYRO_INT_CFG    0x17
 #define GYRO_DLPF_FS    0x16
   #define GYRO_FS_SEL   (3 << 3) //full scale range
-  #define GYRO_DLPF_CFG (5)//low pass finlter bandwidth
+  #define GYRO_DLPF_CFG (5)//low pass filter bandwidth
 #define GYRO_PWR_MGMT   0x3E
 
 

@@ -8,8 +8,9 @@
  * DEFINES
  ******************************************************************************
  */
-#define itg3200addr   0b1101000
-#define GYRO_TIMEOUT  MS2ST(50)
+#define itg3200addr         0b1101000
+#define GYRO_TIMEOUT        MS2ST(100)
+#define SKIP_FIRST_SAMPLES  100
 
 /*
  ******************************************************************************
@@ -36,11 +37,14 @@ static uint8_t txbuf[GYRO_TX_DEPTH];
 /* указатели на коэффициенты */
 static float    const *xsens,     *ysens,     *zsens;
 static int32_t  const *xpol,      *ypol,      *zpol;
-static int32_t  const *x_zerosum, *y_zerosum, *z_zerosum, *zerocnt;
+static float    const *x_offset,  *y_offset,  *z_offset;
 static uint32_t const *sortmtrx;
 
 /* семафор для синхронизации инерциалки с хероскопом */
 static BinarySemaphore *imusync_semp = NULL;
+
+/* how many first samples skip before starting */
+static uint32_t skipsample;
 
 /*
  *******************************************************************************
@@ -49,16 +53,6 @@ static BinarySemaphore *imusync_semp = NULL;
  *******************************************************************************
  *******************************************************************************
  */
-/**
- * пересчет из сырых значений в рад/сек
- */
-static float calc_gyro_rate(int32_t raw, float sens){
-  float tmp = (float)raw;
-  tmp /= (float)*zerocnt;
-  tmp /= sens;
-  tmp *= (PI / 180.0);
-  return tmp;
-}
 
 /**
  * Получение приращения угла исходя из угловой скорости и временем между выборками
@@ -74,7 +68,13 @@ static float get_degrees(float raw){
 static void process_gyro_data(uint8_t *rxbuf){
   int32_t raw[3];
   int32_t Gyro[3];
-  bool_t  status;
+  float   Gyrof[3];
+
+  /* hack to skip first bad samples */
+  if (0 != skipsample){
+    skipsample--;
+    return;
+  }
 
   //rawgyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw[0] = complement2signed(rxbuf[2], rxbuf[3]);
@@ -90,22 +90,22 @@ static void process_gyro_data(uint8_t *rxbuf){
   mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* update statistic for zero offsets */
-  status = gyro_stat_update(Gyro);
+  GyroZeroUpdate(Gyro);
 
   /* correct zero offset */
-  Gyro[0] = Gyro[0] * *zerocnt - *x_zerosum;
-  Gyro[1] = Gyro[1] * *zerocnt - *y_zerosum;
-  Gyro[2] = Gyro[2] * *zerocnt - *z_zerosum;
+  Gyrof[0] = (float)Gyro[0] - *x_offset;
+  Gyrof[1] = (float)Gyro[1] - *y_offset;
+  Gyrof[2] = (float)Gyro[2] - *z_offset;
 
   /* adjust rotation direction */
-  Gyro[0] *= *xpol;
-  Gyro[1] *= *ypol;
-  Gyro[2] *= *zpol;
+  Gyrof[0] *= *xpol;
+  Gyrof[1] *= *ypol;
+  Gyrof[2] *= *zpol;
 
-  /* now get angular velocity in rad/sec */
-  comp_data.xgyro = calc_gyro_rate(Gyro[0], *xsens);
-  comp_data.ygyro = calc_gyro_rate(Gyro[1], *ysens);
-  comp_data.zgyro = calc_gyro_rate(Gyro[2], *zsens);
+  /* now get angular rate in rad/sec */
+  comp_data.xgyro = fdeg2rad(Gyrof[0] / *xsens);
+  comp_data.ygyro = fdeg2rad(Gyrof[1] / *ysens);
+  comp_data.zgyro = fdeg2rad(Gyrof[2] / *zsens);
 
   /* calc summary angle for debug purpose */
   comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
@@ -121,14 +121,13 @@ static void process_gyro_data(uint8_t *rxbuf){
   mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 
-  if (status == GYRO_STAT_UNCHANGED)
-    chBSemSignal(imusync_semp);/* say IMU "Hey, we have fresh data!"*/
+  chBSemSignal(imusync_semp);/* say IMU "Hey, we have fresh data!"*/
 }
 
 /**
  * Поток для опроса хероскопа
  */
-static WORKING_AREA(PollGyroThreadWA, 384);
+static WORKING_AREA(PollGyroThreadWA, 400);
 static msg_t PollGyroThread(void *semp){
   chRegSetThreadName("PollGyro");
 
@@ -167,11 +166,11 @@ static void __search_indexes(void){
   ypol      = ValueSearch("GYRO_ypol");
   zpol      = ValueSearch("GYRO_zpol");
 
-  zerocnt   = ValueSearch("GYRO_zerocnt");
+  x_offset   = ValueSearch("GYRO_x_offset");
+  y_offset   = ValueSearch("GYRO_y_offset");
+  z_offset   = ValueSearch("GYRO_z_offset");
+
   sortmtrx  = ValueSearch("GYRO_sortmtrx");
-  x_zerosum = ValueSearch("GYRO_x_zerosum");
-  y_zerosum = ValueSearch("GYRO_y_zerosum");
-  z_zerosum = ValueSearch("GYRO_z_zerosum");
 }
 
 /**
@@ -230,24 +229,25 @@ void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
 
   imusync_semp = imu_semp;
 
-  // обнуление инкрементальных сумм
+  /* инкрементальные суммы */
   comp_data.xgyro_angle = 0;
   comp_data.ygyro_angle = 0;
   comp_data.zgyro_angle = 0;
 
   __search_indexes();
 
-  if (need_full_init())
-    __hard_init_full();
-  else
-    __hard_init_short();
-
-  /* schedule calibration */
   GyroCalInit();
-  if (need_full_init())
+
+  if (need_full_init()){
+    __hard_init_full();
     setGlobalFlag(GlobalFlags.gyro_cal);
-  else
+  }
+  else{
+    __hard_init_short();
     mavlink_system_struct.state = MAV_STATE_STANDBY;
+  }
+
+  skipsample = SKIP_FIRST_SAMPLES;
 
   /**/
   chThdCreateStatic(PollGyroThreadWA,
