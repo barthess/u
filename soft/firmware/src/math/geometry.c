@@ -2,18 +2,21 @@
 
 #include "uav.h"
 
+#define DEG_TO_RAD  0.017453292519943296f
+#define RAD_TO_DEG  57.295779513082321f
+
 /**
  * convert from degrees to radians
  */
 float fdeg2rad(float deg){
-  return deg * (PI / 180.0);
+  return deg * DEG_TO_RAD;
 }
 
 /**
  * convert from degrees to radians
  */
 float frad2deg(float rad){
-  return rad * (180.0 / PI);
+  return rad * RAD_TO_DEG;
 }
 
 int32_t wrap_180(int32_t error){

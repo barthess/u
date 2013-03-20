@@ -121,7 +121,7 @@ static msg_t PollMagThread(void *semp){
     txbuf[0] = MAG_OUT_DATA;
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
-    setGlobalFlag(GlobalFlags.mag_data_ready);
+    setGlobalFlag(GlobalFlags.mag_data_fresh);
   }
   return 0;
 }

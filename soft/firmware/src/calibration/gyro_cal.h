@@ -6,7 +6,7 @@
 #define GYRO_STAT_UNCHANGED   FALSE
 
 
-bool_t gyro_stat_update(int32_t *data);
+bool_t GyroZeroUpdate(int32_t *data);
 void GyroCalInit(void);
 
 
