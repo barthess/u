@@ -113,9 +113,6 @@ static void process_gyro_data(uint8_t *rxbuf){
   comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
 
   /* fill scaled debug struct */
-//        mavlink_scaled_imu_struct.xgyro = (int16_t)(1000 * comp_data.xgyro);
-//        mavlink_scaled_imu_struct.ygyro = (int16_t)(1000 * comp_data.ygyro);
-//        mavlink_scaled_imu_struct.zgyro = (int16_t)(1000 * comp_data.zgyro);
   mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
   mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
   mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);

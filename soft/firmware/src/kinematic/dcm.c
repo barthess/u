@@ -139,6 +139,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
   float magmodulus;
   float accmodulus;
+  (void)magmodulus;
+  (void)accmodulus;
 
   //interval since last call
   //imu_interval_ms = itg3200_period;
