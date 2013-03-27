@@ -47,7 +47,7 @@ static int32_t prevAcc[3] = {0,0,0};/* variable to check still device or not */
 /**
  * Функция может только СБРОСИТЬ флаг неподвижности, взводить его нужно вручную.
  */
-void __is_device_still(int32_t *prevAcc, int32_t *Acc){
+static void __is_device_still(int32_t *prevAcc, int32_t *Acc){
   uint32_t delta = 0;
 
   if (!DeviceStill)

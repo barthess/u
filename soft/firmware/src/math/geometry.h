@@ -2,6 +2,7 @@
 #define GEOMETRY_H_
 
 //#include "arm_math.h"
+#define PI 3.14159265f
 
 float fdeg2rad(float deg);
 float frad2deg(float rad);

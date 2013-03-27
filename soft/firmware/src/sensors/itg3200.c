@@ -163,9 +163,9 @@ static void __search_indexes(void){
   ypol      = ValueSearch("GYRO_ypol");
   zpol      = ValueSearch("GYRO_zpol");
 
-  x_offset   = ValueSearch("GYRO_x_offset");
-  y_offset   = ValueSearch("GYRO_y_offset");
-  z_offset   = ValueSearch("GYRO_z_offset");
+  x_offset  = ValueSearch("GYRO_x_offset");
+  y_offset  = ValueSearch("GYRO_y_offset");
+  z_offset  = ValueSearch("GYRO_z_offset");
 
   sortmtrx  = ValueSearch("GYRO_sortmtrx");
 }
