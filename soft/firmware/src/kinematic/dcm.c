@@ -83,19 +83,19 @@ static uint32_t imu_step;
  * orthonormal (or at least closer to orthonormal) */
 static void dcm_orthonormalize(float dcm[3][3]){
   //err = X . Y ,  X = X - err/2 * Y , Y = Y - err/2 * X  (DCMDraft2 Eqn.19)
-  float err = vector3d_dot((float*)(dcm[0]),(float*)(dcm[1]));
+  float err = vector3d_dotf((float*)(dcm[0]),(float*)(dcm[1]));
   float delta[2][3];
-  vector3d_scale(-err/2,(float*)(dcm[1]),(float*)(delta[0]));
-  vector3d_scale(-err/2,(float*)(dcm[0]),(float*)(delta[1]));
-  vector3d_add((float*)(dcm[0]),(float*)(delta[0]),(float*)(dcm[0]));
-  vector3d_add((float*)(dcm[1]),(float*)(delta[1]),(float*)(dcm[1]));
+  vector3d_scalef(-err/2,(float*)(dcm[1]),(float*)(delta[0]));
+  vector3d_scalef(-err/2,(float*)(dcm[0]),(float*)(delta[1]));
+  vector3d_addf((float*)(dcm[0]),(float*)(delta[0]),(float*)(dcm[0]));
+  vector3d_addf((float*)(dcm[1]),(float*)(delta[1]),(float*)(dcm[1]));
 
   //Z = X x Y  (DCMDraft2 Eqn. 20) ,
-  vector3d_cross((float*)(dcm[0]),(float*)(dcm[1]),(float*)(dcm[2]));
+  vector3d_crossf((float*)(dcm[0]),(float*)(dcm[1]),(float*)(dcm[2]));
   //re-nomralization
-  vector3d_normalize((float*)(dcm[0]));
-  vector3d_normalize((float*)(dcm[1]));
-  vector3d_normalize((float*)(dcm[2]));
+  vector3d_normalizef((float*)(dcm[0]));
+  vector3d_normalizef((float*)(dcm[1]));
+  vector3d_normalizef((float*)(dcm[2]));
 }
 
 
@@ -112,8 +112,8 @@ static void dcm_rotate(float dcm[3][3], float w[3]){
   float dR[3];
   //update matrix using formula R(t+1)= R(t) + dR(t) = R(t) + w x R(t)
   for(i=0;i<3;i++){
-    vector3d_cross(w, dcm[i], dR);
-    vector3d_add(dcm[i], dR, dcm[i]);
+    vector3d_crossf(w, dcm[i], dR);
+    vector3d_addf(dcm[i], dR, dcm[i]);
   }
 
   //make matrix orthonormal again
@@ -176,14 +176,14 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Kacc[0] = xacc;
   Kacc[1] = yacc;
   Kacc[2] = zacc;
-  accmodulus = vector3d_modulus(Kacc);
-  vector3d_normalize(Kacc);
+  accmodulus = vector3d_modulusf(Kacc);
+  vector3d_normalizef(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc
   // vector (K vector according to accelerometer)
   float wA[3];
   // wA = Kgyro x  Kacc , rotation needed to bring Kacc to Kgyro
-  vector3d_cross(dcmEst[2], Kacc, wA);
+  vector3d_crossf(dcmEst[2], Kacc, wA);
 
   //---------------
   //Magnetomer
@@ -200,7 +200,7 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Imag[0] = xmag;
   Imag[1] = ymag;
   Imag[2] = zmag;
-  magmodulus = vector3d_modulus(Imag);
+  magmodulus = vector3d_modulusf(Imag);
 
   /* ignore magnetometer readings if there is no fresh data measured */
   if (GlobalFlags.mag_data_fresh){
@@ -209,15 +209,15 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
      * гравитации. Какие-то непонятные результаты получаются, или я их
      * готовить не умею. */
     float tmpM[3];
-    vector3d_normalize(Imag);
+    vector3d_normalizef(Imag);
     //vector3d_cross(Kacc, Imag, tmpM);
-    vector3d_cross(dcmEst[2], Imag, tmpM);
-    vector3d_normalize(tmpM);
+    vector3d_crossf(dcmEst[2], Imag, tmpM);
+    vector3d_normalizef(tmpM);
     //vector3d_cross(tmpM, Kacc, Imag);
-    vector3d_cross(tmpM, dcmEst[2], Imag);
-    vector3d_normalize(Imag);
+    vector3d_crossf(tmpM, dcmEst[2], Imag);
+    vector3d_normalizef(Imag);
     // wM = Igyro x Imag, roation needed to bring Imag to Igyro
-    vector3d_cross(dcmEst[0], Imag, wM);
+    vector3d_crossf(dcmEst[0], Imag, wM);
   }
   else{
     wM[0] = 0;

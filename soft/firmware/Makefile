@@ -104,6 +104,7 @@ CSRC = $(PORTSRC) \
        src/servo/servo_cli.c \
        src/kinematic/imu.c \
        src/kinematic/vector3d.c \
+       src/kinematic/matrix.c \
        src/kinematic/dcm.c \
        src/kinematic/dcm_cli.c \
        src/kinematic/airspeed.c \
