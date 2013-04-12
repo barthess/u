@@ -36,6 +36,7 @@
 #include "link.h"
 #include "logger.h"
 #include "logger_mavencoder.h"
+#include "lsm303.h"
 #include "mag3110.h"
 #include "mag_cal.h"
 #include "mavcmd_local.h"
