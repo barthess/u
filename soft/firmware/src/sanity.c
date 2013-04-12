@@ -66,6 +66,7 @@ static void blue_blinker(void){
  * посылает heartbeat пакеты и моргает светодиодиком
  */
 static WORKING_AREA(SanityControlThreadWA, 128);
+__attribute__ ((__noreturn__))
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
@@ -78,7 +79,7 @@ static msg_t SanityControlThread(void *arg) {
   while (TRUE) {
     t += HEART_BEAT_PERIOD;
 
-    /* fill data fields and send struct to message box */
+    /* fill data fields */
     if (GlobalFlags.tlm_link_ready){
       mavlink_out_heartbeat_struct.type           = mavlink_system_struct.type;
       mavlink_out_heartbeat_struct.base_mode      = mavlink_system_struct.mode;
@@ -110,7 +111,6 @@ static msg_t SanityControlThread(void *arg) {
     blue_blinker();
     chThdSleepUntil(t);
   }
-  return 0;
 }
 
 /**
