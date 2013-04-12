@@ -123,6 +123,7 @@ CSRC = $(PORTSRC) \
        src/sensors/sensors.c \
        src/sensors/sensors_cli.c \
        src/sensors/max1236.c \
+       src/sensors/lsm303.c \
        src/sensors/tmp75.c \
        src/sensors/bmp085.c \
        src/sensors/mma8451.c \
@@ -174,7 +175,7 @@ DSPSRC = cortex_dsp
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC =
+CPPSRC = 
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
