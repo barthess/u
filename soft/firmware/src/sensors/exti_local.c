@@ -45,6 +45,7 @@ BinarySemaphore *mag3110_semp = NULL;
 BinarySemaphore *mma8451_semp = NULL;
 BinarySemaphore *bmp085_semp  = NULL;
 BinarySemaphore *itg3200_semp = NULL;
+BinarySemaphore *lsm303_semp  = NULL;
 
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
@@ -185,6 +186,7 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
 #endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
   chBSemSignalI(itg3200_semp);
+  chBSemSignalI(lsm303_semp);
   chSysUnlockFromIsr();
 }
 
@@ -256,12 +258,14 @@ EXT_MODE_GPIOE)// accelerometer int2
 void ExtiInitLocal(BinarySemaphore *mag3110_sem,
                    BinarySemaphore *mma8451_sem,
                    BinarySemaphore *bmp085_sem,
-                   BinarySemaphore *itg3200_sem){
+                   BinarySemaphore *itg3200_sem,
+                   BinarySemaphore *lsm303_sem){
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;
   bmp085_semp  = bmp085_sem;
   itg3200_semp = itg3200_sem;
+  lsm303_semp  = lsm303_sem;
 
   chSysLock();
   starttacho_vt();

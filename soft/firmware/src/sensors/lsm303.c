@@ -65,27 +65,31 @@ static void process_lsm_data(uint8_t *rxbuf){
 /**
  *
  */
-static WORKING_AREA(PollLsmThreadWA, 1024);
-static msg_t PollLsmThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("PollLsm");
-  uint8_t txbuf[1];
+static WORKING_AREA(PollLsmThreadWA, 192);
+static msg_t PollLsmThread(void *semp){
+  chRegSetThreadName("PollLsm303");
+  uint8_t txbuf[2];
   uint8_t rxbuf[8]; // 6 for mag, 2 for temp
   uint32_t cnt = 0;
 
   while (!chThdShouldTerminate()){
-    txbuf[0] = OUT_X_H_M;
-    i2c_transmit(lsm303_mag_addr, txbuf, 1, rxbuf, 6);
-
     if ((cnt % 128) == 0){
       txbuf[0] = TEMP_OUT_H_M;
       i2c_transmit(lsm303_mag_addr, txbuf, 1, rxbuf+6, 2);
     }
     cnt++;
 
-    process_lsm_data(rxbuf);
+    /* read previose measurement results */
+    txbuf[0] = OUT_X_H_M;
+    i2c_transmit(lsm303_mag_addr, txbuf, 1, rxbuf, 6);
 
-    chThdSleepMilliseconds(10);
+    /* start new measurement */
+    txbuf[0] = MR_REG_M;
+    txbuf[1] = 0b00000001;
+    i2c_transmit(lsm303_mag_addr, txbuf, 2, NULL, 0);
+
+    process_lsm_data(rxbuf);
+    chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
   }
 
   chThdExit(0);
@@ -101,9 +105,13 @@ void HwInit(void){
   chDbgCheck(1 == GlobalFlags.i2c_ready, "you must initialize I2C driver first");
 
   txbuf[0] = CRA_REG_M;
-  txbuf[1] = 0b10011100; /* enable thermometer and set maximum output rate */
-  txbuf[2] = 0b00100000; /* set maximum gain */
-  txbuf[3] = 0b00000000; /* continuouse conversion mode */
+  /* enable thermometer and set maximum output rate */
+  txbuf[1] = 0b10011100;
+  /* set maximum gain. 001 is documented for LSM303 and 000 is for HMC5883.
+   * 000 looks working for LSM303 too. */
+  txbuf[2] = 0b00000000;
+  /* single conversion mode */
+  txbuf[3] = 0b00000001;
 
   i2c_transmit(lsm303_mag_addr, txbuf, 4, NULL, 0);
 }
@@ -117,7 +125,7 @@ void HwInit(void){
 /**
  *
  */
-void init_lsm303(void){
+void init_lsm303(BinarySemaphore *mag3110_semp){
 
   HwInit();
 
@@ -125,7 +133,7 @@ void init_lsm303(void){
         sizeof(PollLsmThreadWA),
         I2C_THREADS_PRIO,
         PollLsmThread,
-        NULL);
+        mag3110_semp);
 }
 
 

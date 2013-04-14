@@ -6,11 +6,13 @@
 
 #define CRA_REG_M           0x00
 #define CRB_REG_M           0x01
+#define MR_REG_M            0x02
+
 #define OUT_X_H_M           0x03
 #define TEMP_OUT_H_M        0x31
 
 
-void init_lsm303(void);
+void init_lsm303(BinarySemaphore *mag3110_semp);
 
 
 #endif /* LSM303_H_ */
