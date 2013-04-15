@@ -111,17 +111,18 @@ static msg_t PollMagThread(void *semp){
      * Кроме того, для того,
      * чтобы прерывание работало, надо обязательно читать данные
      * из как минимум первого регистра. */
-    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
-    if (sem_status != RDY_OK){
-      retry--;
-      chDbgAssert(retry > 0, "PollMagThread(), #1",
-          "probably no interrupts from magnetometer");
-    }
+//    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
+//    if (sem_status != RDY_OK){
+//      retry--;
+//      chDbgAssert(retry > 0, "PollMagThread(), #1",
+//          "probably no interrupts from magnetometer");
+//    }
 
     txbuf[0] = MAG_OUT_DATA;
     i2c_transmit(mag3110addr, txbuf, 1, rxbuf, 6);
     process_magentometer_data(rxbuf);
     setGlobalFlag(GlobalFlags.mag_data_fresh);
+    chThdSleepMilliseconds(50);
   }
   return 0;
 }

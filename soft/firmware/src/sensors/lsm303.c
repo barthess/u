@@ -33,6 +33,10 @@ extern CompensatedData comp_data;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static float    const *xsens,   *ysens,   *zsens;
+static int32_t  const *xoffset, *yoffset, *zoffset;
+static int32_t  const *xpol,    *ypol,    *zpol;
+static uint32_t const *sortmtrx;
 
 /*
  ******************************************************************************
@@ -44,6 +48,7 @@ extern CompensatedData comp_data;
 
 static void process_lsm_data(uint8_t *rxbuf){
   int32_t raw[3];
+  int32_t Mag[3];
   int16_t t;
 
   /**/
@@ -52,11 +57,19 @@ static void process_lsm_data(uint8_t *rxbuf){
   raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
   t      = complement2signed(rxbuf[6], rxbuf[7]) / 16; // deg * 8
   (void)t;
+  sorti_3values(raw, Mag, *sortmtrx);
 
-  mavlink_out_raw_imu_struct.xmag = raw[0];
-  mavlink_out_raw_imu_struct.ymag = raw[1];
-  mavlink_out_raw_imu_struct.zmag = raw[2];
+  mavlink_out_raw_imu_struct.xmag = Mag[0];
+  mavlink_out_raw_imu_struct.ymag = Mag[1];
+  mavlink_out_raw_imu_struct.zmag = Mag[2];
 
+  /**/
+  mag_stat_update(Mag);
+
+  /* Sensitivity is 0.1uT/LSB */
+  mavlink_out_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * *xpol * roundf(*xsens * 100.0f);
+  mavlink_out_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * *ypol * roundf(*ysens * 100.0f);
+  mavlink_out_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * *zpol * roundf(*zsens * 100.0f);
   comp_data.xmag = (float)(mavlink_out_scaled_imu_struct.xmag);
   comp_data.ymag = (float)(mavlink_out_scaled_imu_struct.ymag);
   comp_data.zmag = (float)(mavlink_out_scaled_imu_struct.zmag);
@@ -65,7 +78,7 @@ static void process_lsm_data(uint8_t *rxbuf){
 /**
  *
  */
-static WORKING_AREA(PollLsmThreadWA, 192);
+static WORKING_AREA(PollLsmThreadWA, 512); /* large stack need for sphere calc */
 static msg_t PollLsmThread(void *semp){
   chRegSetThreadName("PollLsm303");
   uint8_t txbuf[2];
@@ -89,6 +102,7 @@ static msg_t PollLsmThread(void *semp){
     i2c_transmit(lsm303_mag_addr, txbuf, 2, NULL, 0);
 
     process_lsm_data(rxbuf);
+    setGlobalFlag(GlobalFlags.mag_data_fresh);
     chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
   }
 
@@ -109,11 +123,31 @@ void HwInit(void){
   txbuf[1] = 0b10011100;
   /* set maximum gain. 001 is documented for LSM303 and 000 is for HMC5883.
    * 000 looks working for LSM303 too. */
-  txbuf[2] = 0b00000000;
+  txbuf[2] = 0b00100000;
+  //txbuf[2] = 0b00000000;
   /* single conversion mode */
   txbuf[3] = 0b00000001;
 
   i2c_transmit(lsm303_mag_addr, txbuf, 4, NULL, 0);
+}
+
+/**
+ *
+ */
+static void __search_indexes(void){
+  xoffset   = ValueSearch("MAG_xoffset");
+  yoffset   = ValueSearch("MAG_yoffset");
+  zoffset   = ValueSearch("MAG_zoffset");
+
+  xpol      = ValueSearch("MAG_xpol");
+  ypol      = ValueSearch("MAG_ypol");
+  zpol      = ValueSearch("MAG_zpol");
+
+  xsens     = ValueSearch("MAG_xsens");
+  ysens     = ValueSearch("MAG_ysens");
+  zsens     = ValueSearch("MAG_zsens");
+
+  sortmtrx  = ValueSearch("MAG_sortmtrx");
 }
 
 /*
@@ -127,7 +161,11 @@ void HwInit(void){
  */
 void init_lsm303(BinarySemaphore *mag3110_semp){
 
+  __search_indexes();
+
   HwInit();
+
+  MagCalInit();
 
   chThdCreateStatic(PollLsmThreadWA,
         sizeof(PollLsmThreadWA),
