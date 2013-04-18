@@ -33,7 +33,7 @@ static BinarySemaphore lsm303_sem;
 
 /* sem for sync IMU with gyro */
 static BinarySemaphore imu_sem;
-BinarySemaphore imu_sem__;
+
 /*
  ******************************************************************************
  * PROTOTYPES

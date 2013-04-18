@@ -143,8 +143,8 @@ CSRC = $(PORTSRC) \
        src/link/mavlink_dbg.c \
        src/link/tlm_sender.c \
        src/link/usbcfg.c \
-       src/eeprom/eeprom.c \
-       src/eeprom/eeprom_testsuit.c \
+       src/eeprom/c/eeprom.c \
+       src/eeprom/c/eeprom_testsuit.c \
        src/controller/controller.c \
        src/controller/ground_rover.c \
        src/controller/fixed_wing.c \
@@ -207,7 +207,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
          include \
-         src/eeprom \
+         src/eeprom/c \
          src/link \
          src/cli \
          src/sensors \
