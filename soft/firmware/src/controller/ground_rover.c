@@ -142,7 +142,7 @@ float calc_ground_rover_speed(uint32_t rtt){
   if (uS == 0)/* prevent division by zero */
     return 3;
 
-  float t = ((float)uS / 1000000.0);
+  float t = ((float)uS / 1000000.0f);
   return *pulse2m / t;
 }
 

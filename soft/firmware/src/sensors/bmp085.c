@@ -146,7 +146,7 @@ static void process_pressure(uint32_t pval){
   mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
   mavlink_out_vfr_hud_struct.climb = comp_data.baro_climb;
   mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
-  mavlink_out_scaled_pressure_struct.press_abs = (float)pval / 100.0;
+  mavlink_out_scaled_pressure_struct.press_abs = (float)pval / 100.0f;
 }
 
 /**

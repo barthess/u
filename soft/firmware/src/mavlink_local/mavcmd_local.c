@@ -87,20 +87,20 @@ static enum MAV_RESULT cmd_reboot_shutdown_handler(mavlink_command_long_t *cl){
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
   /* you can perform power operation on autopilot OR computer, not both at once */
-  if (cl->param1 == 1.0){/* reboot */
+  if (cl->param1 == 1.0f){/* reboot */
     NVIC_SystemReset();
     return MAV_RESULT_UNSUPPORTED;
   }
-  else if (cl->param1 == 2.0){/* shutdown */
+  else if (cl->param1 == 2.0f){/* shutdown */
     //setGlobalFlag(GlobalFlags.sighalt);
     return MAV_RESULT_UNSUPPORTED;
   }
 
   /**/
-  if (cl->param2 == 1.0){/* reboot */
+  if (cl->param2 == 1.0f){/* reboot */
     return MAV_RESULT_UNSUPPORTED;
   }
-  else if (cl->param2 == 2.0){/* shutdown */
+  else if (cl->param2 == 2.0f){/* shutdown */
     return MAV_RESULT_UNSUPPORTED;
   }
 

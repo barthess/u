@@ -82,7 +82,7 @@ static msg_t Imu(void *semp) {
   /* wait until giro sampling time measured */
   while (GyroUpdatePeriodUs == 0)
     chThdSleepMilliseconds(10);
-  interval = (((float)GyroUpdatePeriodUs)/1000000.0);
+  interval = (((float)GyroUpdatePeriodUs)/1000000.0f);
 
   while (TRUE) {
     sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(100));

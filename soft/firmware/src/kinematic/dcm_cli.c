@@ -58,31 +58,31 @@ static msg_t DcmPrintTread(void *sdp){
 
     cli_println("DCM:");
     nres = snprintf(str, n, format,
-          dcmEst[0][0],
-          dcmEst[0][1],
-          dcmEst[0][2]);
+          (double)dcmEst[0][0],
+          (double)dcmEst[0][1],
+          (double)dcmEst[0][2]);
     cli_print_long(str, n, nres);
     cli_println("");
 
     nres = snprintf(str, n, format,
-          dcmEst[1][0],
-          dcmEst[1][1],
-          dcmEst[1][2]);
+          (double)dcmEst[1][0],
+          (double)dcmEst[1][1],
+          (double)dcmEst[1][2]);
     cli_print_long(str, n, nres);
     cli_println("");
 
     nres = snprintf(str, n, format,
-          dcmEst[2][0],
-          dcmEst[2][1],
-          dcmEst[2][2]);
+          (double)dcmEst[2][0],
+          (double)dcmEst[2][1],
+          (double)dcmEst[2][2]);
     cli_print_long(str, n, nres);
     cli_println("");
 
     cli_println("Accelration in g [X Y Z]:");
     nres = snprintf(str, n, format,
-          (float)comp_data.xacc / 1000.0f,
-          (float)comp_data.yacc / 1000.0f,
-          (float)comp_data.zacc / 1000.0f);
+          (double)comp_data.xacc / 1000.0,
+          (double)comp_data.yacc / 1000.0,
+          (double)comp_data.zacc / 1000.0);
     cli_print_long(str, n, nres);
     cli_println("");
 

@@ -265,11 +265,14 @@ AOPT =
 # THUMB-specific options here
 TOPT = -mthumb -DTHUMB
 
+# Define common warning options here
+WARN = -Wall -Wextra -Wdouble-promotion -Wformat #-Wconversion -Werror
+
 # Define C warning options here
-CWARN = -Wall -Wextra -Wstrict-prototypes #-Wno-sign-compare
+CWARN = $(WARN) -Wstrict-prototypes
 
 # Define C++ warning options here
-CPPWARN = -Wall -Wextra
+CPPWARN = $(WARN)
 
 #
 # Compiler settings

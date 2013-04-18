@@ -58,7 +58,7 @@ static uint32_t skipsample;
  * Получение приращения угла исходя из угловой скорости и временем между выборками
  */
 static float get_degrees(float raw){
-  float t = (float)GyroUpdatePeriodUs / 1000000.0;
+  float t = (float)GyroUpdatePeriodUs / 1000000.0f;
   return raw * ((t * 180) / PI);
 }
 

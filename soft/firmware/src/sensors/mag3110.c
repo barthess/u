@@ -99,11 +99,9 @@ static void process_magentometer_data(uint8_t *rxbuf){
  * Поток для опроса магнитометра
  */
 static WORKING_AREA(PollMagThreadWA, 512);
-static msg_t PollMagThread(void *semp){
+static msg_t PollMagThread(void *arg){
+  (void)arg;
   chRegSetThreadName("PollMag");
-
-  msg_t sem_status = RDY_OK;
-  int32_t retry = 10;
 
   while (TRUE) {
     /* Первый раз этот семафор скорее всего сбросится по таймауту, поскольку

@@ -68,9 +68,9 @@ static void _param_cli_print(uint32_t i, bool_t need_help){
   switch(GlobalParam[i].param_type){
   case MAVLINK_TYPE_FLOAT:
     nres = snprintf(str, n, " %-15f %-15f %-15f",
-        GlobalParam[i].min.f32,
-        GlobalParam[i].valuep->f32,
-        GlobalParam[i].max.f32);
+        (double)GlobalParam[i].min.f32,
+        (double)GlobalParam[i].valuep->f32,
+        (double)GlobalParam[i].max.f32);
     break;
   case MAVLINK_TYPE_INT32_T:
     nres = snprintf(str, n, " %-15d %-15d %-15d",
