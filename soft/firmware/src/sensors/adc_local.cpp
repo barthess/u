@@ -1,6 +1,8 @@
 #include <math.h>
 
 #include "uav.h"
+#include "global_flags.hpp"
+#include "sensors.hpp"
 
 /*
  ******************************************************************************

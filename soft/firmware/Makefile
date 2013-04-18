@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -92,9 +92,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
        src/fault_handlers.c \
-#       src/gcc_stubs.c \
 #       src/bkp.c \
-#       src/exti_local.c \
 #       src/microrl/src/microrl.c \
 #       src/irq_storm.c \
 #       src/storage/microsd.c \
@@ -114,18 +112,6 @@ CSRC = $(PORTSRC) \
 #       src/mavlink_local/wps.c \
 #       src/mavlink_local/wps_cli.c \
 #       src/mavlink_local/wps_persistant.c \
-#       src/sensors/gps.c \
-#       src/sensors/adc_local.c \
-#       src/sensors/sensors.c \
-#       src/sensors/sensors_cli.c \
-#       src/sensors/max1236.c \
-#       src/sensors/lsm303.c \
-#       src/sensors/tmp75.c \
-#       src/sensors/bmp085.c \
-#       src/sensors/mma8451.c \
-#       src/sensors/mag3110.c \
-#       src/sensors/itg3200.c \
-#       src/sensors/speedometer.c \
 #       src/calibration/gyro_cal.c \
 #       src/calibration/mag_cal.c \
 #       src/calibration/cli_cal.c \
@@ -135,7 +121,6 @@ CSRC = $(PORTSRC) \
 #       src/link/link.c \
 #       src/link/link_packer.c \
 #       src/link/link_unpacker.c \
-#       src/link/mavlink_dbg.c \
 #       src/link/tlm_sender.c \
 #       src/link/usbcfg.c \
 #       src/controller/controller.c \
@@ -166,6 +151,7 @@ DSPSRC = cortex_dsp
 # setting.
 CPPSRC = $(CHCPPSRC) \
 		 main.cpp \
+		 src/gcc_stubs.cpp \
          src/message.cpp \
          src/sanity.cpp \
          src/timekeeping.cpp \
@@ -177,9 +163,23 @@ CPPSRC = $(CHCPPSRC) \
          src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \
+         src/mavlink_local/mavlink_dbg.cpp \
          src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
-         
+         src/sensors/sensors.cpp \
+         src/sensors/adc_local.cpp \
+         src/sensors/exti_local.cpp \
+#         src/sensors/gps.cpp \
+#         src/sensors/sensors_cli.cpp \
+#         src/sensors/max1236.cpp \
+#         src/sensors/lsm303.cpp \
+#         src/sensors/tmp75.cpp \
+#         src/sensors/bmp085.cpp \
+#         src/sensors/mma8451.cpp \
+#         src/sensors/mag3110.cpp \
+#         src/sensors/itg3200.cpp \
+#         src/sensors/speedometer.cpp \
+
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
