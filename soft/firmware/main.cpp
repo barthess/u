@@ -40,6 +40,7 @@ Giovanni
 // TODO: WDT?
 
 #include "uav.h"
+#include "global_flags.h"
 
 /*
  ******************************************************************************
@@ -47,10 +48,10 @@ Giovanni
  ******************************************************************************
  */
 /* RTC-GPS sync */
-BinarySemaphore rtc_sem;
+chibios_rt::BinarySemaphore rtc_sem(true);
 
 /* Servo-PID sync */
-BinarySemaphore servo_updated_sem;
+chibios_rt::BinarySemaphore servo_updated_sem(true);
 
 /* store here time from GPS */
 struct tm gps_timp;
@@ -90,47 +91,47 @@ uint32_t LastResetFlags;
 
 int main(void) {
   halInit();
-  chSysInit();
+  System::init();
 
   //benchmark_start();
 
   /* enable softreset on panic */
-  setGlobalFlag(GlobalFlags.allow_softreset);
-
-  chBSemInit(&rtc_sem, TRUE);
-  chBSemInit(&servo_updated_sem, TRUE);
-
-  if (was_softreset() || was_padreset()){
-    chThdSleepMilliseconds(1);
-  }
-  else
-    chThdSleepMilliseconds(100);
-
-  /* give power to all needys */
-  pwr5v_power_on();
-  gps_power_on();
-  xbee_reset_clear();
-  xbee_sleep_clear();
-
-  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
+//  setGlobalFlag(GlobalFlags.allow_softreset);
+//
+//  chBSemInit(&rtc_sem, TRUE);
+//  chBSemInit(&servo_updated_sem, TRUE);
+//
+//  if (was_softreset() || was_padreset()){
+//    chThdSleepMilliseconds(1);
+//  }
+//  else
+//    chThdSleepMilliseconds(100);
+//
+//  /* give power to all needys */
+//  pwr5v_power_on();
+//  gps_power_on();
+//  xbee_reset_clear();
+//  xbee_sleep_clear();
+//
+//  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
   MsgInit();
-  SanityControlInit();
-  I2CInitLocal();
-  ParametersInit();   /* read parameters from EEPROM via I2C*/
-  MavInit();          /* mavlink constants initialization must be called after parameters init */
-  ControllerInit();   /* must be started only after loading of parameters */
-  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
-  TimekeepingInit();
-  SensorsInit();      /* Note. Sensors depends on I2C */
-  PwrMgmtInit();
-  TlmSenderInit();
-  MavCmdInitLocal();
-  StorageInit();
+//  SanityControlInit();
+//  I2CInitLocal();
+//  ParametersInit();   /* read parameters from EEPROM via I2C*/
+//  MavInit();          /* mavlink constants initialization must be called after parameters init */
+//  ControllerInit();   /* must be started only after loading of parameters */
+//  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
+//  TimekeepingInit();
+//  SensorsInit();      /* Note. Sensors depends on I2C */
+//  PwrMgmtInit();
+//  TlmSenderInit();
+//  MavCmdInitLocal();
+//  StorageInit();
 
   /**/
-  LastResetFlags = RCC->CSR;
-  clear_reset_flags();
+//  LastResetFlags = RCC->CSR;
+//  clear_reset_flags();
 
   while (TRUE){
     chThdSleepMilliseconds(666);

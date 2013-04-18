@@ -5,17 +5,17 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  #USE_OPT = -O2 -ggdb -fno-strict-aliasing -fomit-frame-pointer -falign-functions=16 -mhard-float -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing -std=gnu99
-  #USE_OPT = -O0 -ggdb -fomit-frame-pointer -std=gnu99
-  #USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
-  #USE_OPT = -O3 -ggdb -fomit-frame-pointer -falign-functions=16
-  #USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+endif
+
+# C specific options here (added to USE_OPT).
+ifeq ($(USE_COPT),)
+  USE_COPT = -std=gnu99
 endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti
+  USE_CPPOPT = -fno-rtti -fno-exceptions
 endif
 
 # Enable this if you want the linker to remove unused code and data
@@ -70,6 +70,7 @@ include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/ports/GCC/ARMCMx/STM32F4xx/port.mk
 include $(CHIBIOS)/os/kernel/kernel.mk
 include $(CHIBIOS)/os/various/fatfs_bindings/fatfs.mk
+include $(CHIBIOS)/os/various/cpp_wrappers/kernel.mk
 #include $(CHIBIOS)/test/test.mk
 
 # Define linker script file here
@@ -90,77 +91,75 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
-       $(CHIBIOS)/os/various/memstreams.c \
-       main.c \
-       src/gcc_stubs.c \
-       src/bkp.c \
-       src/exti_local.c \
-       src/microrl/src/microrl.c \
-       src/irq_storm.c \
-       src/storage/microsd.c \
-       src/storage/logger.c \
-       src/storage/logger_mavencoder.c \
-       src/servo/servo.c \
-       src/servo/servo_cli.c \
-       src/kinematic/imu.c \
-       src/kinematic/vector3d.c \
-       src/kinematic/matrix.c \
-       src/kinematic/dcm.c \
-       src/kinematic/dcm_cli.c \
-       src/kinematic/airspeed.c \
-       src/kinematic/pid.c \
-       src/sanity.c \
-       src/mavlink_local/mavcmd_local.c \
-       src/mavlink_local/param.c \
-       src/mavlink_local/param_cli.c \
-       src/mavlink_local/param_persistant.c \
-       src/mavlink_local/wps.c \
-       src/mavlink_local/wps_cli.c \
-       src/mavlink_local/wps_persistant.c \
-       src/timekeeping.c \
-       src/sensors/gps.c \
-       src/sensors/adc_local.c \
-       src/sensors/sensors.c \
-       src/sensors/sensors_cli.c \
-       src/sensors/max1236.c \
-       src/sensors/lsm303.c \
-       src/sensors/tmp75.c \
-       src/sensors/bmp085.c \
-       src/sensors/mma8451.c \
-       src/sensors/mag3110.c \
-       src/sensors/itg3200.c \
-       src/sensors/i2c_local.c \
-       src/sensors/speedometer.c \
-       src/calibration/gyro_cal.c \
-       src/calibration/mag_cal.c \
-       src/calibration/cli_cal.c \
-       src/cli/cli.c \
-       src/cli/cli_cmd.c \
-       src/link/linkmgr.c \
-       src/link/link.c \
-       src/link/link_packer.c \
-       src/link/link_unpacker.c \
-       src/link/mavlink_dbg.c \
-       src/link/tlm_sender.c \
-       src/link/usbcfg.c \
-       src/eeprom/eeprom.c \
-       src/eeprom/eeprom_testsuit.c \
-       src/controller/controller.c \
-       src/controller/ground_rover.c \
-       src/controller/fixed_wing.c \
-       src/controller/planner.c \
-       src/controller/stab.c \
-       src/controller/wp.c \
-       src/controller/wp_local.c \
-       src/controller/wp_global.c \
-       src/math/sphere.c \
-       src/math/misc_math.c \
-       src/math/geometry.c \
-       src/math/dsp.c \
-       src/message.c \
-       src/pwr_mgmt.c \
        src/fault_handlers.c \
-       src/utils/memfunc.c \
+#       src/gcc_stubs.c \
+#       src/bkp.c \
+#       src/exti_local.c \
+#       src/microrl/src/microrl.c \
+#       src/irq_storm.c \
+#       src/storage/microsd.c \
+#       src/storage/logger.c \
+#       src/storage/logger_mavencoder.c \
+#       src/servo/servo.c \
+#       src/servo/servo_cli.c \
+#       src/kinematic/imu.c \
+#       src/kinematic/vector3d.c \
+#       src/kinematic/matrix.c \
+#       src/kinematic/dcm.c \
+#       src/kinematic/dcm_cli.c \
+#       src/kinematic/airspeed.c \
+#       src/kinematic/pid.c \
+#       src/sanity.c \
+#       src/mavlink_local/mavcmd_local.c \
+#       src/mavlink_local/param.c \
+#       src/mavlink_local/param_cli.c \
+#       src/mavlink_local/param_persistant.c \
+#       src/mavlink_local/wps.c \
+#       src/mavlink_local/wps_cli.c \
+#       src/mavlink_local/wps_persistant.c \
+#       src/timekeeping.c \
+#       src/sensors/gps.c \
+#       src/sensors/adc_local.c \
+#       src/sensors/sensors.c \
+#       src/sensors/sensors_cli.c \
+#       src/sensors/max1236.c \
+#       src/sensors/lsm303.c \
+#       src/sensors/tmp75.c \
+#       src/sensors/bmp085.c \
+#       src/sensors/mma8451.c \
+#       src/sensors/mag3110.c \
+#       src/sensors/itg3200.c \
+#       src/sensors/i2c_local.c \
+#       src/sensors/speedometer.c \
+#       src/calibration/gyro_cal.c \
+#       src/calibration/mag_cal.c \
+#       src/calibration/cli_cal.c \
+#       src/cli/cli.c \
+#       src/cli/cli_cmd.c \
+#       src/link/linkmgr.c \
+#       src/link/link.c \
+#       src/link/link_packer.c \
+#       src/link/link_unpacker.c \
+#       src/link/mavlink_dbg.c \
+#       src/link/tlm_sender.c \
+#       src/link/usbcfg.c \
+#       src/eeprom/eeprom.c \
+#       src/eeprom/eeprom_testsuit.c \
+#       src/controller/controller.c \
+#       src/controller/ground_rover.c \
+#       src/controller/fixed_wing.c \
+#       src/controller/planner.c \
+#       src/controller/stab.c \
+#       src/controller/wp.c \
+#       src/controller/wp_local.c \
+#       src/controller/wp_global.c \
+#       src/math/sphere.c \
+#       src/math/misc_math.c \
+#       src/math/geometry.c \
+#       src/math/dsp.c \
+#       src/message.c \
+#       src/pwr_mgmt.c \
+#       src/utils/memfunc.c \
 
 DSPSRC = cortex_dsp
 #CSRC += $(DSPSRC)/arm_common_tables.c \
@@ -175,7 +174,8 @@ DSPSRC = cortex_dsp
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC = 
+CPPSRC = $(CHCPPSRC) \
+		 main.cpp \
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -206,6 +206,7 @@ MAVLINKDIR = ../mavlink/C
 INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
+         $(CHCPPINC) \
          include \
          src/eeprom \
          src/link \
@@ -250,9 +251,8 @@ endif
 # Enable loading with g++ only if you need C++ runtime support.
 # NOTE: You can use C++ even without C++ support if you are careful. C++
 #       runtime support makes code size explode.
- 
-LD   = $(CC)
-#LD   = $(CPPC)
+LD   = $(TRGT)gcc
+#LD   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 OD   = $(TRGT)objdump

@@ -2,75 +2,10 @@
 #define MAIN_H_
 
 /* chibios includes */
-#include "ch.h"
+#include "ch.hpp"
 #include "hal.h"
 
-/* mavlink includes */
-#include "mavlink.h"
-
-/* uav includes */
-#include "adc_local.h"
-#include "airspeed.h"
-#include "benchmark.h"
-#include "bkp.h"
-#include "bmp085.h"
-#include "cli.h"
-#include "cli_cal.h"
-#include "cli_cmd.h"
-#include "controller.h"
-#include "dcm_cli.h"
-#include "dsp.h"
-#include "eeprom.h"
-#include "eeprom_conf.h"
-#include "exti_local.h"
-#include "fixed_wing.h"
-#include "geometry.h"
-#include "gps.h"
-#include "ground_rover.h"
-#include "gyro_cal.h"
-#include "i2c_local.h"
-#include "imu.h"
-#include "irq_storm.h"
-#include "itg3200.h"
-#include "linkmgr.h"
-#include "link.h"
-#include "logger.h"
-#include "logger_mavencoder.h"
-#include "lsm303.h"
-#include "mag3110.h"
-#include "mag_cal.h"
-#include "mavcmd_local.h"
-#include "mavlink_dbg.h"
-#include "max1236.h"
-#include "memfunc.h"
-#include "message.h"
-#include "microsd.h"
-#include "misc_math.h"
-#include "mma8451.h"
-#include "param.h"
-#include "param_cli.h"
-#include "param_persistant.h"
-#include "pid.h"
-#include "planner.h"
-#include "pwr_mgmt.h"
-#include "sanity.h"
-#include "sensors.h"
-#include "sensors_cli.h"
-#include "servo.h"
-#include "servo_cli.h"
-#include "speedometer.h"
-#include "sphere.h"
-#include "stab.h"
-#include "timekeeping.h"
-#include "tlm_sender.h"
-#include "tmp75.h"
-#include "usbcfg.h"
-#include "wp.h"
-#include "wp_global.h"
-#include "wp_local.h"
-#include "wps.h"
-#include "wps_cli.h"
-#include "wps_persistant.h"
+using namespace chibios_rt;
 
 /* Heap size for dynamic thread creation */
 #define THREAD_HEAP_SIZE    (1024 * 4)
@@ -97,59 +32,6 @@
 #define CONTROLLER_THREADS_PRIO   (NORMALPRIO)
 #define CMD_THREADS_PRIO          (LINK_THREADS_PRIO - 2)
 #define GPS_THREAD_PRIO           (NORMALPRIO - 2)
-
-
-/******************************************************************
- * global bool flags */
-typedef struct GlobalFlags_t{
-  //0
-  uint32_t allow_softreset:1; /* system performs soft reset instead of halting in panic */
-  uint32_t gyro_cal:1;
-  uint32_t accel_cal:1;
-  uint32_t mag_cal:1;
-  //4
-  uint32_t eeprom_failed:1;
-  uint32_t tlm_link_ready:1;
-  uint32_t modem_ready:1;
-  uint32_t logger_ready:1;
-  //8
-  uint32_t sighalt:1;
-  uint32_t mag_data_fresh:1;
-  uint32_t mission_takeoff:1;
-  uint32_t mission_loiter:1;
-  //12
-  uint32_t mission_abort:1;
-  uint32_t parameters_got:1;  /* parameters successfully retrieved from EEPROM */
-  uint32_t i2c_ready:1;       /* i2c bus initialized */
-  uint32_t messaging_ready:1;
-  //16
-  uint32_t shell_ready:1;
-  uint32_t stub5:1;
-  uint32_t stub6:1;
-  uint32_t stub7:1;
-  //20
-  uint32_t stub8:1;
-  uint32_t stub9:1;
-  uint32_t stuba:1;
-  uint32_t stubb:1;
-  //24
-  uint32_t stubc:1;
-  uint32_t stubd:1;
-  uint32_t stube:1;
-  uint32_t stubf:1;
-  //28
-  uint32_t stubg:1;
-  uint32_t stubh:1;
-  uint32_t stubi:1;
-  uint32_t stubj:1;
-}GlobalFlags_t;
-
-//
-#define setGlobalFlagI(flag)    do{chDbgCheckClassI(); flag = 1;}while(0)
-#define clearGlobalFlagI(flag)  do{chDbgCheckClassI(); flag = 0;}while(0)
-
-#define setGlobalFlag(flag)     do{chSysLock(); setGlobalFlagI(flag);   chSysUnlock();}while(0)
-#define clearGlobalFlag(flag)   do{chSysLock(); clearGlobalFlagI(flag); chSysUnlock();}while(0)
 
 /******************************************************************/
 /* "init daemon" events */
