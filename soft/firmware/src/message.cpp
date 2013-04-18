@@ -194,3 +194,10 @@ void MavInit(void){
   chDbgPanic("uncomment next line");
   //mavlink_system_struct.type = *(uint8_t *)ValueSearch("SYS_mavtype");
 }
+
+/**
+ *
+ */
+void ParamSendOut(void){
+  chDbgPanic("unrealized");
+}

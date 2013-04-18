@@ -63,7 +63,8 @@ using namespace chibios_rt;
 #define xbee_reset_clear()  {palClearPad(GPIOE, GPIOE_XBEE_RESET);}
 #define xbee_sleep_assert() {palSetPad(GPIOE, GPIOE_XBEE_SLEEP);}
 #define xbee_sleep_clear()  {palSetPad(GPIOE, GPIOE_XBEE_RESET);}
-
+#define eeprom_led_on()     {palClearPad(GPIOB, GPIOB_LED_R);}
+#define eeprom_led_off()    {palSetPad(GPIOB, GPIOB_LED_R);}
 
 /******************************************************************
 * DCM helpers */

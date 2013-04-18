@@ -48,6 +48,7 @@
 /* function prototypes */
 void MsgInit(void);
 void MavInit(void);
+void ParamSendOut(void);
 
 #endif /* MESSAGE_H_ */
 
