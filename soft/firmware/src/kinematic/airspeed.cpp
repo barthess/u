@@ -6,6 +6,8 @@
 
 #include "uav.h"
 #include "airspeed_table.h"
+#include "sensors.hpp"
+#include "misc_math.hpp"
 
 /*
  ******************************************************************************

@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "uav.h"
+#include "geometry.hpp"
 
 #define DEG_TO_RAD  0.017453292519943296f
 #define RAD_TO_DEG  57.295779513082321f

@@ -1,6 +1,10 @@
 #include <string.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "ff.h"
+#include "message.hpp"
+#include "logger_mavencoder.hpp"
 
 /*
  ******************************************************************************
@@ -30,7 +34,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern Mailbox logwriter_mb;
+extern chibios_rt::Mailbox logwriter_mb;
 extern mavlink_system_t mavlink_system_struct;
 
 /*
@@ -140,7 +144,7 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
 #endif /* MAVLINK_LOG_FORMAT */
 
   if (fs_buf != NULL){
-    err = f_write(Log, fs_buf, BUFF_SIZE, (void *)&bytes_written);
+    err = f_write(Log, fs_buf, BUFF_SIZE, (UINT *)&bytes_written);
     if (err == FR_OK)
       *fresh_data = TRUE;
   }
@@ -159,11 +163,12 @@ FRESULT WriteLog(FIL *Log, msg_t id, bool_t *fresh_data){
 void log_write_schedule(uint8_t id, uint32_t *i, uint32_t decimator) {
   if (GlobalFlags.logger_ready){
     if (i == NULL){
-      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
+      logwriter_mb.post(id, TIME_IMMEDIATE);
       return;
     }
-    else if ((*i & decimator) == decimator)
-      chMBPost((&logwriter_mb), id, TIME_IMMEDIATE);
+    else if ((*i & decimator) == decimator){
+      logwriter_mb.post(id, TIME_IMMEDIATE);
+    }
     (*i)++;
   }
 }

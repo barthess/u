@@ -5,6 +5,10 @@
 #include "chprintf.h"
 #include "chrtclib.h"
 #include "ff.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "param_registry.hpp"
+#include "logger.hpp"
 
 /*
  ******************************************************************************
@@ -23,7 +27,8 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
-extern Mailbox logwriter_mb;
+extern chibios_rt::Mailbox logwriter_mb;
+extern ParamRegistry param_registry;
 
 /*
  ******************************************************************************
@@ -105,7 +110,7 @@ static size_t name_from_time(char *buf){
 
   time_t t = 0;
 
-  int32_t const *timezone = ValueSearch("TIME_zone");
+  int32_t const *timezone = (const int32_t*)param_registry.valueSearch("TIME_zone");
 
   t = rtcGetTimeUnixSec(&RTCD1);
   if (timezone != NULL)
@@ -198,7 +203,7 @@ NOT_READY:
   setGlobalFlag(GlobalFlags.logger_ready);
   while (TRUE){
     /* wait ID */
-    if (chMBFetch(&logwriter_mb, &id, TIME_INFINITE) == RDY_OK){
+    if (logwriter_mb.fetch(&id, TIME_INFINITE) == RDY_OK){
       if (!sdcIsCardInserted(&SDCD1)){
         clearGlobalFlag(GlobalFlags.logger_ready);
         remove_handler();
@@ -239,7 +244,7 @@ void cmd_touch(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "FS: f_open() failed\r\n");
     return;
   }
-  err = f_write(&FileObject, "This is test file", 17, (void *)&bytes_written);
+  err = f_write(&FileObject, "This is test file", 17, (UINT *)&bytes_written);
   if (err != FR_OK) {
     chprintf(chp, "FS: f_write() failed\r\n");
     return;

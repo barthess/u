@@ -51,6 +51,9 @@ Giovanni
 #include "eeprom_file_tree.hpp"
 #include "param.hpp"
 #include "timekeeping.hpp"
+#include "sensors.hpp"
+#include "pwr_mgmt.hpp"
+#include "microsd.hpp"
 
 /*
  ******************************************************************************
@@ -128,11 +131,11 @@ int main(void) {
 //  ControllerInit();   /* must be started only after loading of parameters */
 //  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
-//  SensorsInit();      /* Note. Sensors depends on I2C */
-//  PwrMgmtInit();
+  SensorsInit();      /* Note. Sensors depends on I2C */
+  PwrMgmtInit();
 //  TlmSenderInit();
 //  MavCmdInitLocal();
-//  StorageInit();
+  StorageInit();
 
   /**/
   LastResetFlags = RCC->CSR;

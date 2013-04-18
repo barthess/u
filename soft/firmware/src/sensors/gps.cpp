@@ -2,6 +2,13 @@
 #include <time.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "gps.hpp"
+#include "bkp.hpp"
+#include "sensors.hpp"
+#include "geometry.hpp"
+#include "exti_local.hpp"
 
 /**
  * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,
@@ -110,8 +117,7 @@ static msg_t gpsRxThread(void *arg){
   uint32_t n = 0;
 
   /* to sync with tlm sender */
-  BinarySemaphore gps_sem;
-  chBSemInit(&gps_sem, FALSE);
+  chibios_rt::BinarySemaphore gps_sem(false);
 
   mavlink_out_global_position_int_struct.time_boot_ms = 0;
   mavlink_out_global_position_int_struct.relative_alt = 0;
@@ -129,10 +135,10 @@ static msg_t gpsRxThread(void *arg){
 
 EMPTY:
     if (n >= 2 && GlobalFlags.tlm_link_ready){
-      chBSemWaitTimeout(&gps_sem, MS2ST(1));
+      gps_sem.waitTimeout(MS2ST(1));
       mavlink_out_global_position_int_struct.time_boot_ms = TIME_BOOT_MS;
       chEvtBroadcastFlags(&event_mavlink_out_global_position_int, EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT);
-      chBSemSignal(&gps_sem);
+      gps_sem.signal();
       n = 0;
     }
 
@@ -263,7 +269,8 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     global_pos_struct->alt = bkpGpsAltitude;
 	}
 
-  log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
+	chDbgPanic("uncomment next line");
+  //log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
 }
 
 static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){

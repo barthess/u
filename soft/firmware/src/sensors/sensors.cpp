@@ -2,6 +2,9 @@
 #include "sensors.hpp"
 #include "global_flags.h"
 #include "adc_local.hpp"
+#include "exti_local.hpp"
+#include "gps.hpp"
+#include "imu.hpp"
 
 /*
  ******************************************************************************
@@ -61,7 +64,7 @@ void SensorsInit(void){
   chDbgPanic("uncomment next lines");
 
   /* EXTI start. REMEMBER! I2C slaves and RTC need EXTI.*/
-//  ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem, &lsm303_sem);
+  ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem, &lsm303_sem);
   ADCInit_local();
 
   /* start different I2C sensors */
@@ -72,7 +75,7 @@ void SensorsInit(void){
 //  init_bmp085(&bmp085_sem);
 //  init_itg3200(&itg3200_sem, &imu_sem);
 //
-//  ImuInit(&imu_sem);
-//  GPSInit();
+  ImuInit(&imu_sem);
+  GPSInit();
 }
 

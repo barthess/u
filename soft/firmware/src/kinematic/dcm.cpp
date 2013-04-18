@@ -6,9 +6,10 @@
 #include <math.h>
 
 #include "uav.h"
-
-#include "dcm.h"
-#include "vector3d.h"
+#include "global_flags.h"
+#include "dcm.hpp"
+#include "vector3d.hpp"
+#include "param_registry.hpp"
 
 /*
 Output variables are:
@@ -45,6 +46,7 @@ Output variables are:
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 extern float dcmEst[3][3];
 
 /*
@@ -266,9 +268,9 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 // imu_init
 //-------------------------------------------------------------------
 void dcmInit(){
-  magweight = ValueSearch("IMU_magweight");
-  accweight = ValueSearch("IMU_accweight");
-  magvectorlen = ValueSearch("MAG_vectorlen");
+  magweight = (float*)param_registry.valueSearch("IMU_magweight");
+  accweight = (float*)param_registry.valueSearch("IMU_accweight");
+  magvectorlen = (uint32_t*)param_registry.valueSearch("MAG_vectorlen");
 }
 
 

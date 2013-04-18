@@ -1,5 +1,5 @@
 #include <math.h>
-#include "vector3d.h"
+#include "vector3d.hpp"
 
 //get modulus of a 3d vector sqrt(x^2+y^2+z^2)
 float vector3d_modulusf(float* v){

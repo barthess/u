@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "matrix.h"
+#include "matrix.hpp"
 
 //transpose matrix A (m x n)  to  B (n x m)
 void matrix_transposef(const uint32_t m , const uint32_t n, const float* A,  float* B){

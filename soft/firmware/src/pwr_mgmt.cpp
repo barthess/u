@@ -1,6 +1,9 @@
 #include <math.h>
 
 #include "uav.h"
+#include "sensors.hpp"
+#include "message.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -9,6 +12,7 @@
  */
 extern RawData raw_data;
 extern CompensatedData comp_data;
+extern ParamRegistry param_registry;
 
 extern const mavlink_system_t mavlink_system_struct;
 extern mavlink_sys_status_t mavlink_out_sys_status_struct;
@@ -115,7 +119,8 @@ static msg_t PowerKeeperThread(void *arg){
       mavlink_out_sys_status_struct.battery_remaining = 0;
     mavlink_out_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_out_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
-    log_write_schedule(MAVLINK_MSG_ID_SYS_STATUS, NULL, 0);
+    chDbgPanic("uncomment next line");
+    //log_write_schedule(MAVLINK_MSG_ID_SYS_STATUS, NULL, 0);
 
     chThdSleepUntil(time);
   }
@@ -128,20 +133,20 @@ static msg_t PowerKeeperThread(void *arg){
  *******************************************************************************
  */
 void PwrMgmtInit(void){
-  bat_cap  = ValueSearch("BAT_cap");
-  bat_fill = ValueSearch("BAT_fill");
+  bat_cap  = (uint32_t*)param_registry.valueSearch("BAT_cap");
+  bat_fill = (uint32_t*)param_registry.valueSearch("BAT_fill");
 
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
-    adc_I_k = ValueSearch("ADC_car_I_k");
-    adc_I_b = ValueSearch("ADC_car_I_b");
+    adc_I_k = (uint32_t*)param_registry.valueSearch("ADC_car_I_k");
+    adc_I_b = (uint32_t*)param_registry.valueSearch("ADC_car_I_b");
   }
   else{
-    adc_I_k = ValueSearch("ADC_plane_I_k");
-    adc_I_b = ValueSearch("ADC_plane_I_b");
+    adc_I_k = (uint32_t*)param_registry.valueSearch("ADC_plane_I_k");
+    adc_I_b = (uint32_t*)param_registry.valueSearch("ADC_plane_I_b");
   }
 
-  adc_sv_gain  = ValueSearch("ADC_SV_gain");
-  adc_mv_gain  = ValueSearch("ADC_MV_gain");
+  adc_sv_gain  = (uint32_t*)param_registry.valueSearch("ADC_SV_gain");
+  adc_mv_gain  = (uint32_t*)param_registry.valueSearch("ADC_MV_gain");
 
   chThdCreateStatic(PowerKeeperThreadWA,
           sizeof(PowerKeeperThreadWA),

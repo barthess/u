@@ -3,7 +3,9 @@
 src/storage/gen_logger_mavencoder.py
 Do not edit it manually. 
 */
-#include "logger_mavencoder.h"
+#include "logger_mavencoder.hpp"
+#include "message.hpp"
+#include "memfunc.hpp"
 
 extern mavlink_gps_raw_int_t mavlink_out_gps_raw_int_struct;
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
