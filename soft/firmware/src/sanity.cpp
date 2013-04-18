@@ -1,4 +1,11 @@
+
 #include "uav.h"
+#include "global_flags.h"
+#include "fault_handlers.h"
+
+#include "message.hpp"
+#include "timekeeping.hpp"
+#include "bkp.hpp"
 
 /*
  ******************************************************************************
@@ -37,7 +44,7 @@ extern EventSource event_mavlink_out_heartbeat;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static BinarySemaphore blink_sem;
+static chibios_rt::BinarySemaphore blink_sem(true);
 static uint32_t BlinkCnt = 0;
 static systime_t offtime = 10, ontime = 10;
 
@@ -94,7 +101,8 @@ static msg_t SanityControlThread(void *arg) {
       mavlink_out_sys_status_struct.onboard_control_sensors_health  = mavlink_out_sys_status_struct.onboard_control_sensors_present;
     }
 
-    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
+    chDbgPanic("uncomment next line");
+    //log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
     mavlink_out_sys_status_struct.load = getCpuLoad();
     /* how many times device was soft resetted */
@@ -122,7 +130,7 @@ static msg_t RedBlinkThread(void *arg) {
   (void)arg;
 
   while(TRUE){
-    chBSemWait(&blink_sem);
+    blink_sem.wait();
     while(BlinkCnt){
       palClearPad(GPIOB, GPIOB_LED_R);
       chThdSleep(ontime);
@@ -143,7 +151,6 @@ static msg_t RedBlinkThread(void *arg) {
  *
  */
 void SanityControlInit(void){
-  chBSemInit(&blink_sem,  TRUE);
 
   if (was_softreset())
     BlinksCount = 4;
@@ -186,7 +193,7 @@ void SheduleRedBlink(uint32_t cnt, uint32_t on, uint32_t off){
   BlinkCnt = cnt;
   chSysUnlock();
 
-  chBSemSignal(&blink_sem);
+  blink_sem.signal();
 }
 
 

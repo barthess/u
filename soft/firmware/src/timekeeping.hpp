@@ -1,9 +1,7 @@
 #ifndef TIMEKEEPING_H_
 #define TIMEKEEPING_H_
 
-#include <time.h>
-
-#include "cli.h"
+#include "cli.hpp"
 
 void TimekeepingInit(void);
 uint64_t pnsGetTimeUnixUsec(void);

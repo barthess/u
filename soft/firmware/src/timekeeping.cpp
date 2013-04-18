@@ -1,8 +1,12 @@
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "uav.h"
 #include "chrtclib.h"
+
+#include "sensors.hpp"
+#include "timekeeping.hpp"
 
 /*
  ******************************************************************************
@@ -16,7 +20,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
-extern BinarySemaphore rtc_sem;
+extern chibios_rt::BinarySemaphore rtc_sem;
 extern struct tm gps_timp;
 
 /*
@@ -64,7 +68,7 @@ static msg_t TimekeeperThread(void *arg){
   msg_t sem_status = RDY_RESET;
 
   while (TRUE) {
-    sem_status = chBSemWaitTimeout(&rtc_sem, MS2ST(2000));
+    sem_status = rtc_sem.waitTimeout(MS2ST(2000));
     if (sem_status == RDY_OK && raw_data.gps_valid){
       pns_time = pnsGetTimeUnixUsec();
 

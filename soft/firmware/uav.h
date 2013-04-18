@@ -33,22 +33,6 @@ using namespace chibios_rt;
 #define CMD_THREADS_PRIO          (LINK_THREADS_PRIO - 2)
 #define GPS_THREAD_PRIO           (NORMALPRIO - 2)
 
-/******************************************************************/
-/* "init daemon" events */
-//#define MODEM_READY_EVID    1
-//#define LOGGER_READY_EVID   2
-//#define I2C_READY_EVID      3
-//#define EEPROM_MOUNTED_EVID 4
-//#define PARAMETERS_GOT_EVID 5
-//#define SIGHALT_EVID        6   /* при наступлении данного события все подсистемы должны себя корректно остановить */
-//#define POWERFAILE_EVID     7   /* означает критическую просадку напряжения */
-//#define MODEM_FAILED        8
-//#define LOGGER_FAILED       9
-//#define TLM_LINK_UP_EVID    10
-//#define TLM_LINK_DOWN_EVID  11
-//#define INIT_FAKE_EVID      31
-
-
 /******************************************************************
 * статусы возвращаемые разными подсистемами */
 #define PARAM_SUCCESS     CH_SUCCESS

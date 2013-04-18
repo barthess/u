@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -109,7 +109,6 @@ CSRC = $(PORTSRC) \
 #       src/kinematic/dcm_cli.c \
 #       src/kinematic/airspeed.c \
 #       src/kinematic/pid.c \
-#       src/sanity.c \
 #       src/mavlink_local/mavcmd_local.c \
 #       src/mavlink_local/param.c \
 #       src/mavlink_local/param_cli.c \
@@ -117,7 +116,6 @@ CSRC = $(PORTSRC) \
 #       src/mavlink_local/wps.c \
 #       src/mavlink_local/wps_cli.c \
 #       src/mavlink_local/wps_persistant.c \
-#       src/timekeeping.c \
 #       src/sensors/gps.c \
 #       src/sensors/adc_local.c \
 #       src/sensors/sensors.c \
@@ -129,7 +127,6 @@ CSRC = $(PORTSRC) \
 #       src/sensors/mma8451.c \
 #       src/sensors/mag3110.c \
 #       src/sensors/itg3200.c \
-#       src/sensors/i2c_local.c \
 #       src/sensors/speedometer.c \
 #       src/calibration/gyro_cal.c \
 #       src/calibration/mag_cal.c \
@@ -176,7 +173,9 @@ DSPSRC = cortex_dsp
 CPPSRC = $(CHCPPSRC) \
 		 main.cpp \
          src/message.cpp \
-         
+         src/sanity.cpp \
+         src/timekeeping.cpp \
+         src/sensors/i2c_local.cpp \
          
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler

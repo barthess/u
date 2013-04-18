@@ -43,8 +43,11 @@ Giovanni
 
 #include "uav.h"
 #include "global_flags.h"
+#include "fault_handlers.h"
 #include "message.hpp"
 #include "gps.hpp"
+#include "sanity.hpp"
+#include "i2c_local.hpp"
 
 /*
  ******************************************************************************
@@ -98,15 +101,14 @@ int main(void) {
   System::init();
 
   /* enable softreset on panic */
-//  setGlobalFlag(GlobalFlags.allow_softreset);
+  setGlobalFlag(GlobalFlags.allow_softreset);
+  if (was_softreset() || was_padreset()){
+    chThdSleepMilliseconds(1);
+  }
+  else
+    chThdSleepMilliseconds(100);
 
-//  if (was_softreset() || was_padreset()){
-//    chThdSleepMilliseconds(1);
-//  }
-//  else
-//    chThdSleepMilliseconds(100);
-//
-//  /* give power to all needys */
+  /* give power to all needys */
   pwr5v_power_on();
   gps_power_on();
   xbee_reset_clear();
@@ -115,8 +117,8 @@ int main(void) {
   chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
   MsgInit();
-//  SanityControlInit();
-//  I2CInitLocal();
+  SanityControlInit();
+  I2CInitLocal();
 //  ParametersInit();   /* read parameters from EEPROM via I2C*/
 //  MavInit();          /* mavlink constants initialization must be called after parameters init */
 //  ControllerInit();   /* must be started only after loading of parameters */
