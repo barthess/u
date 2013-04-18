@@ -1,4 +1,6 @@
 #include "uav.h"
+#include "exti_local.hpp"
+#include "bkp.hpp"
 
 /*
  ******************************************************************************
@@ -30,9 +32,9 @@
 extern uint32_t GyroUpdatePeriodUs;
 #endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
-extern BinarySemaphore rtc_sem;
+extern chibios_rt::BinarySemaphore rtc_sem;
 //extern mavlink_system_t mavlink_system_struct;
-extern Mailbox speedometer_mb;
+extern chibios_rt::Mailbox speedometer_mb;
 
 /*
  ******************************************************************************
@@ -40,12 +42,12 @@ extern Mailbox speedometer_mb;
  ******************************************************************************
  */
 
-BinarySemaphore *rtc_semp     = &rtc_sem;
-BinarySemaphore *mag3110_semp = NULL;
-BinarySemaphore *mma8451_semp = NULL;
-BinarySemaphore *bmp085_semp  = NULL;
-BinarySemaphore *itg3200_semp = NULL;
-BinarySemaphore *lsm303_semp  = NULL;
+chibios_rt::BinarySemaphore *rtc_semp     = &rtc_sem;
+chibios_rt::BinarySemaphore *mag3110_semp = NULL;
+chibios_rt::BinarySemaphore *mma8451_semp = NULL;
+chibios_rt::BinarySemaphore *bmp085_semp  = NULL;
+chibios_rt::BinarySemaphore *itg3200_semp = NULL;
+chibios_rt::BinarySemaphore *lsm303_semp  = NULL;
 
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
@@ -114,7 +116,7 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
    /* reject short random spikes */
   if (tacho_tmup.last > TACHO_LIM){
     chSysLockFromIsr();
-    chMBPostI(&speedometer_mb, tacho_tmup.last);
+    speedometer_mb.postI(tacho_tmup.last);
     bkpOdometer++;
     chSysUnlockFromIsr();
   }
@@ -131,7 +133,7 @@ static void gps_pps_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(rtc_semp);
+  rtc_semp->signalI();
   chSysUnlockFromIsr();
 }
 
@@ -139,7 +141,7 @@ static void bmp085_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(bmp085_semp);
+  bmp085_semp->signalI();
   chSysUnlockFromIsr();
 }
 
@@ -147,7 +149,7 @@ static void mag3110_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(mag3110_semp);
+  mag3110_semp->signalI();
   chSysUnlockFromIsr();
 }
 
@@ -163,7 +165,7 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  chBSemSignalI(mma8451_semp);
+  mma8451_semp->signalI();
   chSysUnlockFromIsr();
 }
 
@@ -185,8 +187,8 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   }
 #endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
-  chBSemSignalI(itg3200_semp);
-  chBSemSignalI(lsm303_semp);
+  itg3200_semp->signalI();
+  lsm303_semp->signalI();
   chSysUnlockFromIsr();
 }
 
@@ -255,11 +257,11 @@ EXT_MODE_GPIOE)// accelerometer int2
  *******************************************************************************
  */
 
-void ExtiInitLocal(BinarySemaphore *mag3110_sem,
-                   BinarySemaphore *mma8451_sem,
-                   BinarySemaphore *bmp085_sem,
-                   BinarySemaphore *itg3200_sem,
-                   BinarySemaphore *lsm303_sem){
+void ExtiInitLocal(chibios_rt::BinarySemaphore *mag3110_sem,
+                   chibios_rt::BinarySemaphore *mma8451_sem,
+                   chibios_rt::BinarySemaphore *bmp085_sem,
+                   chibios_rt::BinarySemaphore *itg3200_sem,
+                   chibios_rt::BinarySemaphore *lsm303_sem){
 
   mag3110_semp = mag3110_sem;
   mma8451_semp = mma8451_sem;

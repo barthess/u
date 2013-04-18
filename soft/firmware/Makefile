@@ -131,9 +131,6 @@ CSRC = $(PORTSRC) \
 #       src/controller/wp.c \
 #       src/controller/wp_local.c \
 #       src/controller/wp_global.c \
-#       src/math/sphere.c \
-#       src/math/geometry.c \
-#       src/math/dsp.c \
 #       src/pwr_mgmt.c \
 
 DSPSRC = cortex_dsp
@@ -166,6 +163,9 @@ CPPSRC = $(CHCPPSRC) \
          src/mavlink_local/mavlink_dbg.cpp \
          src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
+         src/math/sphere.cpp \
+         src/math/geometry.cpp \
+         src/math/dsp.cpp \
          src/sensors/sensors.cpp \
          src/sensors/adc_local.cpp \
          src/sensors/exti_local.cpp \

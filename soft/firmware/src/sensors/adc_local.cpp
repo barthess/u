@@ -1,8 +1,10 @@
 #include <math.h>
 
 #include "uav.h"
-#include "global_flags.hpp"
+#include "global_flags.h"
 #include "sensors.hpp"
+#include "dsp.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -10,6 +12,7 @@
  ******************************************************************************
  */
 extern RawData raw_data;
+extern ParamRegistry param_registry;
 
 /*
  ******************************************************************************
@@ -118,7 +121,7 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
  *******************************************************************************
  */
 void ADCInit_local(void){
-  flen_adc = ValueSearch("FLEN_adc");
+  flen_adc = (uint32_t *)param_registry.valueSearch("FLEN_adc");
 
   adcStart(&ADCD1, &adccfg);
   adcStartConversion(&ADCD1, &adccg, samples, ADC_BUF_DEPTH);

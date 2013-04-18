@@ -1,14 +1,5 @@
-/*
- * dsp.h
- *
- *  Created on: Jul 12, 2012
- *      Author: barthess
- */
-
 #ifndef DSP_H_
 #define DSP_H_
-
-//#include "arm_math.h"
 
 typedef int32_t q31_t;
 typedef q31_t alphabeta_instance_q31;

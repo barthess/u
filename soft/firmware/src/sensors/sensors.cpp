@@ -1,6 +1,7 @@
 #include "uav.h"
 #include "sensors.hpp"
 #include "global_flags.h"
+#include "adc_local.hpp"
 
 /*
  ******************************************************************************
@@ -32,7 +33,6 @@ static chibios_rt::BinarySemaphore lsm303_sem(true);
 
 /* sem for sync IMU with gyro */
 static chibios_rt::BinarySemaphore imu_sem(true);
-chibios_rt::BinarySemaphore imu_sem__;
 
 /*
  ******************************************************************************
@@ -73,6 +73,6 @@ void SensorsInit(void){
 //  init_itg3200(&itg3200_sem, &imu_sem);
 //
 //  ImuInit(&imu_sem);
-  GPSInit();
+//  GPSInit();
 }
 
