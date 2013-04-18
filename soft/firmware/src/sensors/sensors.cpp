@@ -24,14 +24,14 @@ extern GlobalFlags_t GlobalFlags;
  */
 
 /* semaphores to sync with external interrupts from sensors */
-static chibios_rt::BinarySemaphore mag3110_sem;
-static chibios_rt::BinarySemaphore mma8451_sem;
-static chibios_rt::BinarySemaphore bmp085_sem;
-static chibios_rt::BinarySemaphore itg3200_sem;
-static chibios_rt::BinarySemaphore lsm303_sem;
+static chibios_rt::BinarySemaphore mag3110_sem(true);
+static chibios_rt::BinarySemaphore mma8451_sem(true);
+static chibios_rt::BinarySemaphore bmp085_sem(true);
+static chibios_rt::BinarySemaphore itg3200_sem(true);
+static chibios_rt::BinarySemaphore lsm303_sem(true);
 
 /* sem for sync IMU with gyro */
-static chibios_rt::BinarySemaphore imu_sem;
+static chibios_rt::BinarySemaphore imu_sem(true);
 chibios_rt::BinarySemaphore imu_sem__;
 
 /*
