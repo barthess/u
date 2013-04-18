@@ -192,7 +192,7 @@ static void __hard_init_full(void){
  *
  */
 void init_mag3110(BinarySemaphore *mag3110_semp){
-
+  chDbgPanic("deprecated");
   __search_indexes();
 
   if (need_full_init())
