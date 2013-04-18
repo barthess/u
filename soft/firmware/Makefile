@@ -157,7 +157,6 @@ CSRC = $(PORTSRC) \
 #       src/math/misc_math.c \
 #       src/math/geometry.c \
 #       src/math/dsp.c \
-#       src/message.c \
 #       src/pwr_mgmt.c \
 #       src/utils/memfunc.c \
 
@@ -176,7 +175,9 @@ DSPSRC = cortex_dsp
 # setting.
 CPPSRC = $(CHCPPSRC) \
 		 main.cpp \
-
+         src/message.cpp \
+         
+         
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
@@ -207,7 +208,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(CHIBIOS)/os/various  $(FATFSINC) \
          $(CHCPPINC) \
-         include \
+         src \
          src/eeprom \
          src/link \
          src/cli \

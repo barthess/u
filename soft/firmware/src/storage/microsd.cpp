@@ -59,33 +59,6 @@ static VirtualTimer sync_vt;
  *******************************************************************************
  */
 
-/**
- * @brief   Inserion monitor function.
- *
- * @param[in] sdcp      pointer to the @p SDCDriver object
- *
- * @notapi
- */
-bool_t sdc_lld_is_card_inserted(SDCDriver *sdcp) {
-
-  (void)sdcp;
-  return !palReadPad(GPIOE, GPIOE_SDIO_DETECT);
-}
-
-/**
- * @brief   Protection detection.
- * @note    Not supported, allways not protected.
- *
- * @param[in] sdcp      pointer to the @p SDCDriver object
- *
- * @notapi
- */
-bool_t sdc_lld_is_write_protected(SDCDriver *sdcp) {
-
-  (void)sdcp;
-  return FALSE;
-}
-
 /*
  * SD card insertion event.
  */

@@ -39,8 +39,12 @@ Giovanni
 // TODO: Rewrite XBee code for use DMA.
 // TODO: WDT?
 
+#include <time.h>
+
 #include "uav.h"
 #include "global_flags.h"
+#include "message.hpp"
+#include "gps.hpp"
 
 /*
  ******************************************************************************
@@ -93,14 +97,9 @@ int main(void) {
   halInit();
   System::init();
 
-  //benchmark_start();
-
   /* enable softreset on panic */
 //  setGlobalFlag(GlobalFlags.allow_softreset);
-//
-//  chBSemInit(&rtc_sem, TRUE);
-//  chBSemInit(&servo_updated_sem, TRUE);
-//
+
 //  if (was_softreset() || was_padreset()){
 //    chThdSleepMilliseconds(1);
 //  }
@@ -108,12 +107,12 @@ int main(void) {
 //    chThdSleepMilliseconds(100);
 //
 //  /* give power to all needys */
-//  pwr5v_power_on();
-//  gps_power_on();
-//  xbee_reset_clear();
-//  xbee_sleep_clear();
-//
-//  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
+  pwr5v_power_on();
+  gps_power_on();
+  xbee_reset_clear();
+  xbee_sleep_clear();
+
+  chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
   MsgInit();
 //  SanityControlInit();

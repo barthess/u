@@ -1,4 +1,6 @@
 #include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
 
 /*
  ******************************************************************************
@@ -14,8 +16,8 @@
 extern GlobalFlags_t GlobalFlags;
 
 /* */
-Mailbox speedometer_mb;
-Mailbox logwriter_mb;
+chibios_rt::MailboxBuffer<1> speedometer_mb;
+chibios_rt::MailboxBuffer<4> logwriter_mb;
 
 /* variable for storing system state */
 mavlink_system_t                mavlink_system_struct;
@@ -70,9 +72,7 @@ EventSource event_gps_time_got;
 
 EventSource event_mavlink_out_heartbeat;
 EventSource event_mavlink_out_gps_raw_int;
-EventSource event_mavlink_out_global_position_int;
 EventSource event_mavlink_out_system_time;
-EventSource event_mavlink_out_sys_status;
 EventSource event_mavlink_out_statustext;
 EventSource event_mavlink_out_command_ack;
 EventSource event_mavlink_out_rc_channels_raw;
@@ -111,8 +111,6 @@ EventSource event_mavlink_in_mission_ack;// it has output counterpart
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static msg_t speedometer_mb_buf[1];
-static msg_t logwriter_mb_buf[4];
 
 /*
  ******************************************************************************
@@ -179,13 +177,6 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_in_mission_ack);
 
   setGlobalFlag(GlobalFlags.messaging_ready);
-
-  chMBInit(&speedometer_mb,
-    speedometer_mb_buf,
-    (sizeof(speedometer_mb_buf)/sizeof(msg_t)));
-  chMBInit(&logwriter_mb,
-    logwriter_mb_buf,
-    (sizeof(logwriter_mb_buf)/sizeof(msg_t)));
 }
 
 /**
@@ -199,5 +190,7 @@ void MavInit(void){
   mavlink_system_struct.mode   = MAV_MODE_PREFLIGHT;
 
   //mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
-  mavlink_system_struct.type = *(uint8_t *)ValueSearch("SYS_mavtype");
+
+  chDbgPanic("uncomment next line");
+  //mavlink_system_struct.type = *(uint8_t *)ValueSearch("SYS_mavtype");
 }
