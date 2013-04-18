@@ -56,20 +56,6 @@ using namespace chibios_rt;
 #define TIME_BOOT_MS ((chTimeNow()) / ((CH_FREQUENCY) / 1000))
 #endif
 
-/* region for settings file */
-#define EEPROM_SETTINGS_START         8192
-#define EEPROM_SETTINGS_SIZE          4096
-#define EEPROM_SETTINGS_END           (EEPROM_SETTINGS_START + EEPROM_SETTINGS_SIZE)
-
-/* region for waypoints file */
-#define EEPROM_MISSION_WP_CNT_OFFSET  EEPROM_SETTINGS_END
-/* size in byte of waypoint count variable */
-#define EEPROM_MISSION_WP_CNT_SIZE    2
-/* actual waypoints offset */
-#define EEPROM_MISSION_START          (EEPROM_MISSION_WP_CNT_OFFSET + EEPROM_MISSION_WP_CNT_SIZE)
-#define EEPROM_MISSION_SIZE           (8192 - EEPROM_MISSION_WP_CNT_SIZE)
-#define EEPROM_MISSION_END            (EEPROM_MISSION_START + EEPROM_MISSION_SIZE)
-
 /******************************************************************
 * дефайны для модема */
 #define BAUDRATE_XBEE 115200

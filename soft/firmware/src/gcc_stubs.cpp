@@ -2,9 +2,8 @@
 #include <errno.h>
 
 #include "ch.h"
-#include "hal.h"
 
-#include "gcc_stubs.h"
+#include "gcc_stubs.hpp"
 
 // Glibc stubs - HATE THEM
 void _exit(int status){
@@ -29,3 +28,11 @@ int _kill(int pid, int sig) {
 void _open_r(void){
   return;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  void __cxa_pure_virtual() { chDbgPanic("Pure virtual function call."); }
+#ifdef __cplusplus
+}
+#endif

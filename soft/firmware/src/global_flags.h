@@ -26,7 +26,7 @@ typedef struct GlobalFlags_t{
   uint32_t messaging_ready:1;
   //16
   uint32_t shell_ready:1;
-  uint32_t stub5:1;
+  uint32_t parameters_ready:1;
   uint32_t stub6:1;
   uint32_t stub7:1;
   //20

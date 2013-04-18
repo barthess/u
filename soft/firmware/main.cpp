@@ -48,6 +48,7 @@ Giovanni
 #include "gps.hpp"
 #include "sanity.hpp"
 #include "i2c_local.hpp"
+#include "eeprom_file_tree.hpp"
 
 /*
  ******************************************************************************
@@ -119,8 +120,9 @@ int main(void) {
   MsgInit();
   SanityControlInit();
   I2CInitLocal();
+  EepromFileTreeInit();
 //  ParametersInit();   /* read parameters from EEPROM via I2C*/
-//  MavInit();          /* mavlink constants initialization must be called after parameters init */
+  MavInit();          /* mavlink constants initialization must be called after parameters init */
 //  ControllerInit();   /* must be started only after loading of parameters */
 //  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
 //  TimekeepingInit();
