@@ -9,6 +9,7 @@
 #include "tmp75.hpp"
 #include "itg3200.hpp"
 #include "lsm303.hpp"
+#include "mma8451.hpp"
 
 /*
  ******************************************************************************
@@ -16,6 +17,7 @@
  ******************************************************************************
  */
 #define GYRO_TIMEOUT        MS2ST(100)
+#define ACCEL_SEM_TMO       MS2ST(100)
 
 /*
  ******************************************************************************
@@ -28,17 +30,17 @@ extern GlobalFlags_t GlobalFlags;
 
 extern chibios_rt::BinarySemaphore itg3200_sem;
 extern chibios_rt::BinarySemaphore lsm303_sem;
+extern chibios_rt::BinarySemaphore mma8451_sem;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-
-
 static TMP75    tmp75(&I2CD2, tmp75addr);
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2, lsm303magaddr);
+static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 /*
  ******************************************************************************
@@ -117,22 +119,52 @@ static msg_t PollLsmThread(void *arg){
   return 0;
 }
 
+/**
+ *
+ */
+static WORKING_AREA(PollAccelThreadWA, 256);
+static msg_t PollAccelThread(void *arg){
+  (void)arg;
+  chRegSetThreadName("PollAccel");
+
+  msg_t sem_status = RDY_OK;
+  int32_t retry = 10;
+
+  mma8451.start();
+
+  while (!chThdShouldTerminate()) {
+    sem_status = mma8451_sem.waitTimeout(ACCEL_SEM_TMO);
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollAccelThread(), #1",
+      "probably no interrupts from accelerometer");
+    }
+    mma8451.update();
+  }
+
+  mma8451.stop();
+  chThdExit(0);
+  return 0;
+}
+
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
 void SensorsInit(void){
-
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
-
 
   /* EXTI start. REMEMBER! I2C slaves and RTC need EXTI.*/
   ExtiInitLocal();
   ADCInit_local();
 
   /* start different I2C sensors */
-//  init_mma8451(&mma8451_sem);
+  chThdCreateStatic(PollAccelThreadWA,
+          sizeof(PollAccelThreadWA),
+          I2C_THREADS_PRIO,
+          PollAccelThread,
+          NULL);
 
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),

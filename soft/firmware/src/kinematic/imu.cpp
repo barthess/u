@@ -6,6 +6,7 @@
 #include "message.hpp"
 #include "geometry.hpp"
 #include "param_registry.hpp"
+#include "logger.hpp"
 
 /*
  ******************************************************************************
@@ -114,7 +115,7 @@ static msg_t Imu(void *arg) {
 
       get_attitude(&mavlink_out_attitude_struct);
       chDbgPanic("uncomment next line");
-      //log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
+      log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
     }
   }
   return 0;

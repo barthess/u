@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -163,9 +163,9 @@ CPPSRC = $(CHCPPSRC) \
          src/sensors/tmp75.cpp \
          src/sensors/itg3200.cpp \
          src/sensors/lsm303.cpp \
+         src/sensors/mma8451.cpp \
 #         src/sensors/max1236.cpp \
 #         src/sensors/bmp085.cpp \
-#         src/sensors/mma8451.cpp \
 #         src/sensors/speedometer.cpp \
 
 # C sources to be compiled in ARM mode regardless of the global setting.

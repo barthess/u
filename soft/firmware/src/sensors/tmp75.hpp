@@ -26,7 +26,4 @@ private:
 };
 
 
-
-void init_tmp75(void);
-
 #endif /* TMP75_H_ */
