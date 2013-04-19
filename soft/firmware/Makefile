@@ -160,9 +160,9 @@ CPPSRC = $(CHCPPSRC) \
          src/sensors/exti_local.cpp \
          src/sensors/gps.cpp \
          src/sensors/sensors_cli.cpp \
+         src/sensors/tmp75.cpp \
 #         src/sensors/max1236.cpp \
 #         src/sensors/lsm303.cpp \
-#         src/sensors/tmp75.cpp \
 #         src/sensors/bmp085.cpp \
 #         src/sensors/mma8451.cpp \
 #         src/sensors/itg3200.cpp \

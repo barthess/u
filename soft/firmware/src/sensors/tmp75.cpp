@@ -1,13 +1,16 @@
 #include <stdlib.h>
 
 #include "uav.h"
+#include "sensors.hpp"
+#include "message.hpp"
+#include "tmp75.hpp"
+#include "misc_math.hpp"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define tmp75addr 0b1001000
 
 /*
  ******************************************************************************
@@ -23,8 +26,6 @@ extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint8_t rxbuf[TMP75_RX_DEPTH];
-static uint8_t txbuf[TMP75_TX_DEPTH];
 
 /*
  *******************************************************************************
@@ -33,55 +34,29 @@ static uint8_t txbuf[TMP75_TX_DEPTH];
  *******************************************************************************
  *******************************************************************************
  */
-
 /**
  *
  */
-static WORKING_AREA(PollTmp75ThreadWA, 256);
-static msg_t PollTmp75Thread(void *arg){
-  chRegSetThreadName("PollTmp75");
-  (void)arg;
-
-  while (TRUE) {
-    txbuf[0] = 1; // point to Configuration Register
-    /* single measurement start
-     * To reduce autowarmup at low temperature start less accurate measurements
-     * to speed up data acquision */
-    if (comp_data.temp_onboard < 1000){
-      txbuf[1] = 0b10000001; /* OS R1 R0 F1 F0 POL TM SD */
-      i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
-      chThdSleepMilliseconds(40);
-    }
-    else{
-      txbuf[1] = 0b11000001;  /* OS R1 R0 F1 F0 POL TM SD */
-      i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
-      chThdSleepMilliseconds(150);
-    }
-    txbuf[0] = 0; // point to temperature register
-
-    i2c_transmit(tmp75addr, txbuf, 1, rxbuf, 2);
-    raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
-    comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
-    mavlink_out_scaled_pressure_struct.temperature = comp_data.temp_onboard;
-    chThdSleepMilliseconds(2000);
-  }
-  return 0;
+void Tmp75::pickle(void){
+  raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
+  comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
+  mavlink_out_scaled_pressure_struct.temperature = comp_data.temp_onboard;
 }
 
 /**
  *
  */
-static void __hard_init_short(void){
+void Tmp75::hw_init_fast(void){
 }
 
 /**
  *
  */
-static void __hard_init_full(void){
+void Tmp75::hw_init_full(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
   /* enable autoshutdown, to reduce auto warmup of sensor */
   txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
-  i2c_transmit(tmp75addr, txbuf, 2, rxbuf, 0);
+  transmit(txbuf, 2, rxbuf, 0);
 }
 
 /*
@@ -106,16 +81,51 @@ accomplished by issuing a slave address byte with the
 R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.*/
 
-void init_tmp75(void){
+/**
+ *
+ */
+Tmp75::Tmp75(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr)
+{
+  memset(rxbuf, 0x55, sizeof(rxbuf));
+  memset(txbuf, 0x55, sizeof(txbuf));
+  ready = false;
+}
 
+/**
+ *
+ */
+void Tmp75::start(void){
   if (need_full_init())
-    __hard_init_full();
+    hw_init_full();
   else
-    __hard_init_short();
+    hw_init_fast();
 
-  chThdCreateStatic(PollTmp75ThreadWA,
-          sizeof(PollTmp75ThreadWA),
-          I2C_THREADS_PRIO,
-          PollTmp75Thread,
-          NULL);
+  ready = true;
+}
+
+/**
+ *
+ */
+void Tmp75::update(void){
+  chDbgCheck((true == ready), "you must start() this device");
+  txbuf[0] = 1; // point to Configuration Register
+  /* single measurement start
+   * To reduce autowarmup at low temperature start less accurate measurements
+   * to speed up data acquision */
+  if (comp_data.temp_onboard < 1000){
+    txbuf[1] = 0b10000001; /* OS R1 R0 F1 F0 POL TM SD */
+    transmit(txbuf, 2, rxbuf, 0);
+    chThdSleepMilliseconds(40);
+  }
+  else{
+    txbuf[1] = 0b11000001;  /* OS R1 R0 F1 F0 POL TM SD */
+    transmit(txbuf, 2, rxbuf, 0);
+    chThdSleepMilliseconds(150);
+  }
+  txbuf[0] = 0; // point to temperature register
+
+  transmit(txbuf, 1, rxbuf, 2);
+
+  this->pickle();
 }

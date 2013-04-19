@@ -46,7 +46,7 @@ void I2CInitLocal(void){
   setGlobalFlag(GlobalFlags.i2c_ready);
 }
 
-I2CSlave::I2CSlave(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor::I2CSensor(I2CDriver *i2cdp, i2caddr_t addr):
   i2cdp(i2cdp),
   addr(addr)
 {
@@ -56,7 +56,7 @@ I2CSlave::I2CSlave(I2CDriver *i2cdp, i2caddr_t addr):
 /**
  * transaction wrapper
  */
-msg_t I2CSlave::transmit(const uint8_t *txbuf, size_t txbytes,
+msg_t I2CSensor::transmit(const uint8_t *txbuf, size_t txbytes,
                                  uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
   i2cflags_t flags;
@@ -80,7 +80,7 @@ msg_t I2CSlave::transmit(const uint8_t *txbuf, size_t txbytes,
 /**
  * transaction wrapper
  */
-msg_t I2CSlave::receive(uint8_t *rxbuf, size_t rxbytes){
+msg_t I2CSensor::receive(uint8_t *rxbuf, size_t rxbytes){
   msg_t status = RDY_OK;
   i2cflags_t flags;
 
