@@ -63,7 +63,7 @@ endif
 PROJECT = ch
 
 # Imported source files
-CHIBIOS = ../../../chibios
+CHIBIOS = ../../../chibios-svn
 include $(CHIBIOS)/boards/NONSTANDARD_STM32F4_BARTHESS1/board.mk
 include $(CHIBIOS)/os/hal/platforms/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
@@ -120,17 +120,6 @@ CSRC = $(PORTSRC) \
 #       src/controller/wp.c \
 #       src/controller/wp_local.c \
 #       src/controller/wp_global.c \
-#       src/pwr_mgmt.c \
-
-DSPSRC = cortex_dsp
-#CSRC += $(DSPSRC)/arm_common_tables.c \
-#		$(DSPSRC)/arm_sqrt_q31.c \
-#        $(DSPSRC)/arm_sqrt_q15.c \
-#        $(DSPSRC)/arm_cos_f32.c \
-#        $(DSPSRC)/arm_cos_q31.c \
-#        $(DSPSRC)/FilteringFunctions/arm_fir_q31.c \
-#        $(DSPSRC)/FilteringFunctions/arm_fir_init_q31.c \
-        
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
