@@ -85,19 +85,11 @@ static msg_t Imu(void *arg) {
   uint32_t i = 0;
   const uint32_t decimator = 0b11;
 
-
-
-
   /* wait until giro sampling time measured */
   chDbgPanic("uncomment next lines");
   while (GyroUpdatePeriodUs == 0)
     chThdSleepMilliseconds(10);
   interval = (((float)GyroUpdatePeriodUs)/1000000.0f);
-
-
-
-
-
 
   while (TRUE) {
     sem_status = semp->waitTimeout(MS2ST(100));

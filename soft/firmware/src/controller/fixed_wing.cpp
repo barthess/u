@@ -1,8 +1,8 @@
 #include <math.h>
 
 #include "uav.h"
-
-#include "fixed_wing.h"
+#include "message.hpp"
+#include "fixed_wing.hpp"
 
 /*
  ******************************************************************************

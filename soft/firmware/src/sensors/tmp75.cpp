@@ -59,12 +59,6 @@ void TMP75::hw_init_full(void){
   transmit(txbuf, 2, rxbuf, 0);
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-
 /**
  *
  */
@@ -90,7 +84,8 @@ void TMP75::stop(void){
   ready = false;
 }
 
-/*Accessing a particular register on the TMP175 and TMP75
+/*
+Accessing a particular register on the TMP175 and TMP75
 is accomplished by writing the appropriate value to the
 Pointer Register. The value for the Pointer Register is the
 first byte transferred after the slave address byte with the
@@ -104,7 +99,8 @@ change the register pointer for a read operation, a new
 value must be written to the Pointer Register. This is
 accomplished by issuing a slave address byte with the
 R/W bit LOW, followed by the Pointer Register Byte. No
-additional data is required.*/
+additional data is required.
+*/
 void TMP75::update(void){
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = 1; // point to Configuration Register

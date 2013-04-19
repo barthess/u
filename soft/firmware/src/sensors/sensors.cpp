@@ -11,6 +11,7 @@
 #include "lsm303.hpp"
 #include "mma8451.hpp"
 #include "bmp085.hpp"
+#include "max1236.hpp"
 
 /*
  ******************************************************************************
@@ -45,6 +46,7 @@ static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2, lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
 static BMP085   bmp085(&I2CD2, bmp085addr);
+static MAX1236  max1236(&I2CD2, max1236addr);
 
 /*
  ******************************************************************************
@@ -83,7 +85,7 @@ static msg_t PollTmp75Thread(void *arg){
 static WORKING_AREA(PollGyroThreadWA, 400);
 static msg_t PollGyroThread(void *arg){
   (void)arg;
-  chRegSetThreadName("PollGyro");
+  chRegSetThreadName("Itg3200");
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
 
@@ -109,7 +111,7 @@ static msg_t PollGyroThread(void *arg){
 static WORKING_AREA(PollLsmThreadWA, 512); /* large stack need for sphere calc */
 static msg_t PollLsmThread(void *arg){
   (void)arg;
-  chRegSetThreadName("PollLsm303");
+  chRegSetThreadName("Lsm303");
 
   lsm303.start();
 
@@ -129,7 +131,7 @@ static msg_t PollLsmThread(void *arg){
 static WORKING_AREA(PollAccelThreadWA, 256);
 static msg_t PollAccelThread(void *arg){
   (void)arg;
-  chRegSetThreadName("PollAccel");
+  chRegSetThreadName("Mma8451");
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
@@ -158,7 +160,7 @@ static WORKING_AREA(PollBaroThreadWA, 256);
 static msg_t PollBaroThread(void *arg){
   (void)arg;
 
-  chRegSetThreadName("PollBaro");
+  chRegSetThreadName("Bmp085");
   int32_t retry = 20;
   msg_t sem_status = RDY_OK;
 
@@ -174,6 +176,25 @@ static msg_t PollBaroThread(void *arg){
   }
 
   bmp085.stop();
+  chThdExit(0);
+  return 0;
+}
+
+/**
+ *
+ */
+static WORKING_AREA(PollMax1236ThreadWA, 256);
+static msg_t PollMax1236Thread(void *arg) {
+  chRegSetThreadName("Max1236");
+  (void)arg;
+
+  max1236.start();
+  while (!chThdShouldTerminate()) {
+    chThdSleepMilliseconds(20);
+    max1236.update();
+  }
+
+  max1236.stop();
   chThdExit(0);
   return 0;
 }
@@ -209,7 +230,12 @@ void SensorsInit(void){
           PollGyroThread,
           NULL);
 
-//  init_max1236();
+  chThdCreateStatic(PollMax1236ThreadWA,
+          sizeof(PollMax1236ThreadWA),
+          I2C_THREADS_PRIO,
+          PollMax1236Thread,
+          NULL);
+
   chThdCreateStatic(PollLsmThreadWA,
           sizeof(PollLsmThreadWA),
           I2C_THREADS_PRIO,

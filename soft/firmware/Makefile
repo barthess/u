@@ -112,19 +112,50 @@ CSRC = $(PORTSRC) \
 #       src/link/link_unpacker.c \
 #       src/link/tlm_sender.c \
 #       src/link/usbcfg.c \
-#       src/controller/controller.c \
-#       src/controller/ground_rover.c \
-#       src/controller/fixed_wing.c \
-#       src/controller/planner.c \
-#       src/controller/stab.c \
-#       src/controller/wp.c \
-#       src/controller/wp_local.c \
-#       src/controller/wp_global.c \
+
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
+SENSORSSRC = src/sensors/sensors.cpp \
+         src/sensors/adc_local.cpp \
+         src/sensors/exti_local.cpp \
+         src/sensors/gps.cpp \
+         src/sensors/sensors_cli.cpp \
+         src/sensors/tmp75.cpp \
+         src/sensors/itg3200.cpp \
+         src/sensors/lsm303.cpp \
+         src/sensors/mma8451.cpp \
+         src/sensors/bmp085.cpp \
+         src/sensors/max1236.cpp \
+         src/sensors/speedometer.cpp
+
+CONTROLLERSRC = src/controller/controller.cpp \
+         src/controller/ground_rover.cpp \
+         src/controller/fixed_wing.cpp \
+         src/controller/planner.cpp \
+         src/controller/stab.cpp \
+         src/controller/wp.cpp \
+         src/controller/wp_local.cpp \
+         src/controller/wp_global.cpp
+
+MAVLINKSRC = src/mavlink_local/param.cpp \
+         src/mavlink_local/param_registry.cpp \
+         src/mavlink_local/param_validator.cpp \
+         src/mavlink_local/mavlink_dbg.cpp
+         
+KINEMATICSRC = src/kinematic/imu.cpp \
+         src/kinematic/vector3d.cpp \
+         src/kinematic/matrix.cpp \
+         src/kinematic/dcm.cpp \
+         src/kinematic/dcm_cli.cpp \
+         src/kinematic/airspeed.cpp \
+         src/kinematic/pid.cpp
+         
 CPPSRC = $(CHCPPSRC) \
+		 $(SENSORSSRC) \
+		 $(MAVLINKSRC) \
+		 $(KINEMATICSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
@@ -136,10 +167,6 @@ CPPSRC = $(CHCPPSRC) \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom_file_tree.cpp \
          src/sensors/i2c_local.cpp \
-         src/mavlink_local/param.cpp \
-         src/mavlink_local/param_registry.cpp \
-         src/mavlink_local/param_validator.cpp \
-         src/mavlink_local/mavlink_dbg.cpp \
          src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
          src/math/sphere.cpp \
@@ -148,25 +175,7 @@ CPPSRC = $(CHCPPSRC) \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \
-         src/kinematic/imu.cpp \
-         src/kinematic/vector3d.cpp \
-         src/kinematic/matrix.cpp \
-         src/kinematic/dcm.cpp \
-         src/kinematic/dcm_cli.cpp \
-         src/kinematic/airspeed.cpp \
-         src/kinematic/pid.cpp \
-         src/sensors/sensors.cpp \
-         src/sensors/adc_local.cpp \
-         src/sensors/exti_local.cpp \
-         src/sensors/gps.cpp \
-         src/sensors/sensors_cli.cpp \
-         src/sensors/tmp75.cpp \
-         src/sensors/itg3200.cpp \
-         src/sensors/lsm303.cpp \
-         src/sensors/mma8451.cpp \
-         src/sensors/bmp085.cpp \
-#         src/sensors/max1236.cpp \
-#         src/sensors/speedometer.cpp \
+
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
