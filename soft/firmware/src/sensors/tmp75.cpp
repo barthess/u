@@ -37,7 +37,7 @@ extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
 /**
  *
  */
-void Tmp75::pickle(void){
+void TMP75::pickle(void){
   raw_data.temp_tmp75 = complement2signed(rxbuf[0], rxbuf[1]);
   comp_data.temp_onboard = (int16_t)((100 * (int32_t)raw_data.temp_tmp75) / 256);
   mavlink_out_scaled_pressure_struct.temperature = comp_data.temp_onboard;
@@ -46,13 +46,13 @@ void Tmp75::pickle(void){
 /**
  *
  */
-void Tmp75::hw_init_fast(void){
+void TMP75::hw_init_fast(void){
 }
 
 /**
  *
  */
-void Tmp75::hw_init_full(void){
+void TMP75::hw_init_full(void){
   txbuf[0] = 0b00000001; // point to Configuration Register
   /* enable autoshutdown, to reduce auto warmup of sensor */
   txbuf[1] = 0b00000001; // OS R1 R0 F1 F0 POL TM SD
@@ -68,7 +68,7 @@ void Tmp75::hw_init_full(void){
 /**
  *
  */
-Tmp75::Tmp75(I2CDriver *i2cdp, i2caddr_t addr):
+TMP75::TMP75(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
   ready = false;
@@ -77,13 +77,17 @@ I2CSensor(i2cdp, addr)
 /**
  *
  */
-void Tmp75::start(void){
+void TMP75::start(void){
   if (need_full_init())
     hw_init_full();
   else
     hw_init_fast();
 
   ready = true;
+}
+
+void TMP75::stop(void){
+  ready = false;
 }
 
 /*Accessing a particular register on the TMP175 and TMP75
@@ -101,7 +105,7 @@ value must be written to the Pointer Register. This is
 accomplished by issuing a slave address byte with the
 R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.*/
-void Tmp75::update(void){
+void TMP75::update(void){
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = 1; // point to Configuration Register
   /* single measurement start

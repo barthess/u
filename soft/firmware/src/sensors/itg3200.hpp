@@ -1,10 +1,10 @@
 #include <stdlib.h>
-#include "ch.h"
+#include "i2c_local.hpp"
 
 #ifndef ITG3200_H_
 #define ITG3200_H_
 
-
+#define itg3200addr         0b1101000
 
 /* buffers depth */
 #define GYRO_RX_DEPTH 8
@@ -21,8 +21,26 @@
 #define GYRO_PWR_MGMT   0x3E
 
 
-void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp);
-void gyro_refresh_zeros(void);
+
+class ITG3200: private I2CSensor{
+public:
+  ITG3200(I2CDriver *i2cdp, i2caddr_t addr);
+  void update(void);
+  void start(void);
+  void stop(void);
+
+private:
+  void pickle(void);
+  void hw_init_full(void);
+  void hw_init_fast(void);
+  uint8_t rxbuf[GYRO_RX_DEPTH];
+  uint8_t txbuf[GYRO_TX_DEPTH];
+  /* calibration coefficients pointers */
+  float    const *xsens,     *ysens,     *zsens;
+  int32_t  const *xpol,      *ypol,      *zpol;
+  float    const *x_offset,  *y_offset,  *z_offset;
+  uint32_t const *sortmtrx;
+};
 
 
 

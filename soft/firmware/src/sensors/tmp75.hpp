@@ -10,11 +10,12 @@
 #define TMP75_TX_DEPTH 4
 
 
-class Tmp75: private I2CSensor{
+class TMP75: private I2CSensor{
 public:
-  Tmp75(I2CDriver *i2cdp, i2caddr_t addr);
+  TMP75(I2CDriver *i2cdp, i2caddr_t addr);
   void update(void);
   void start(void);
+  void stop(void);
 
 private:
   void pickle(void);

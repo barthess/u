@@ -5,13 +5,17 @@
 #include "exti_local.hpp"
 #include "gps.hpp"
 #include "imu.hpp"
+
 #include "tmp75.hpp"
+#include "itg3200.hpp"
+#include "lsm303.hpp"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
+#define GYRO_TIMEOUT        MS2ST(100)
 
 /*
  ******************************************************************************
@@ -22,27 +26,19 @@ RawData raw_data;
 CompensatedData comp_data;
 extern GlobalFlags_t GlobalFlags;
 
+extern chibios_rt::BinarySemaphore itg3200_sem;
+extern chibios_rt::BinarySemaphore lsm303_sem;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
 
-/* semaphores to sync with external interrupts from sensors */
-static chibios_rt::BinarySemaphore mag3110_sem(true);
-static chibios_rt::BinarySemaphore mma8451_sem(true);
-static chibios_rt::BinarySemaphore bmp085_sem(true);
-static chibios_rt::BinarySemaphore itg3200_sem(true);
-static chibios_rt::BinarySemaphore lsm303_sem(true);
 
-/* sem for sync IMU with gyro */
-static chibios_rt::BinarySemaphore imu_sem(true);
-
-
-
-
-
-static Tmp75 tmp75(&I2CD2, tmp75addr);
+static TMP75    tmp75(&I2CD2, tmp75addr);
+static ITG3200  itg3200(&I2CD2, itg3200addr);
+static LSM303   lsm303(&I2CD2, lsm303magaddr);
 
 /*
  ******************************************************************************
@@ -65,10 +61,58 @@ static msg_t PollTmp75Thread(void *arg){
   chRegSetThreadName("Tmp75");
   (void)arg;
 
+  tmp75.start();
   while (!chThdShouldTerminate()) {
     chThdSleepMilliseconds(2000);
     tmp75.update();
   }
+  tmp75.stop();
+  chThdExit(0);
+  return 0;
+}
+
+/**
+ *
+ */
+static WORKING_AREA(PollGyroThreadWA, 400);
+static msg_t PollGyroThread(void *arg){
+  (void)arg;
+  chRegSetThreadName("PollGyro");
+  msg_t sem_status = RDY_OK;
+  int32_t retry = 10;
+
+  itg3200.start();
+
+  while (TRUE) {
+    sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
+    }
+    itg3200.update();
+  }
+
+  itg3200.stop();
+  chThdExit(0);
+  return 0;
+}
+
+/**
+ *
+ */
+static WORKING_AREA(PollLsmThreadWA, 512); /* large stack need for sphere calc */
+static msg_t PollLsmThread(void *arg){
+  (void)arg;
+  chRegSetThreadName("PollLsm303");
+
+  lsm303.start();
+
+  while (!chThdShouldTerminate()){
+    lsm303.update();
+    lsm303_sem.waitTimeout(MS2ST(200));
+  }
+
+  lsm303.stop();
   chThdExit(0);
   return 0;
 }
@@ -84,7 +128,7 @@ void SensorsInit(void){
 
 
   /* EXTI start. REMEMBER! I2C slaves and RTC need EXTI.*/
-  ExtiInitLocal(&mag3110_sem, &mma8451_sem, &bmp085_sem, &itg3200_sem, &lsm303_sem);
+  ExtiInitLocal();
   ADCInit_local();
 
   /* start different I2C sensors */
@@ -96,13 +140,24 @@ void SensorsInit(void){
           PollTmp75Thread,
           NULL);
 
+  chThdCreateStatic(PollGyroThreadWA,
+          sizeof(PollGyroThreadWA),
+          I2C_THREADS_PRIO,
+          PollGyroThread,
+          NULL);
 
 //  init_max1236();
-//  init_lsm303(&lsm303_sem);
+  chThdCreateStatic(PollLsmThreadWA,
+        sizeof(PollLsmThreadWA),
+        I2C_THREADS_PRIO,
+        PollLsmThread,
+        NULL);
+
 //  init_bmp085(&bmp085_sem);
-//  init_itg3200(&itg3200_sem, &imu_sem);
-//
-  ImuInit(&imu_sem);
+
+
+  chDbgPanic("this argument must not be NULL");
+  ImuInit(NULL);
   GPSInit();
 }
 

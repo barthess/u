@@ -88,6 +88,12 @@ uint16_t WpSeqNew = 0;
 /* save here flags before clear them from MCU register */
 uint32_t LastResetFlags;
 
+/* semaphores to sync with external interrupts from sensors */
+chibios_rt::BinarySemaphore mma8451_sem(true);
+chibios_rt::BinarySemaphore bmp085_sem(true);
+chibios_rt::BinarySemaphore itg3200_sem(true);
+chibios_rt::BinarySemaphore lsm303_sem(true);
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES

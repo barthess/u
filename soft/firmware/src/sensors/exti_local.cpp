@@ -33,7 +33,12 @@ extern uint32_t GyroUpdatePeriodUs;
 #endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
 extern chibios_rt::BinarySemaphore rtc_sem;
-//extern mavlink_system_t mavlink_system_struct;
+extern chibios_rt::BinarySemaphore mag3110_sem;
+extern chibios_rt::BinarySemaphore mma8451_sem;
+extern chibios_rt::BinarySemaphore bmp085_sem;
+extern chibios_rt::BinarySemaphore itg3200_sem;
+extern chibios_rt::BinarySemaphore lsm303_sem;
+
 extern chibios_rt::Mailbox speedometer_mb;
 
 /*
@@ -43,11 +48,6 @@ extern chibios_rt::Mailbox speedometer_mb;
  */
 
 chibios_rt::BinarySemaphore *rtc_semp     = &rtc_sem;
-chibios_rt::BinarySemaphore *mag3110_semp = NULL;
-chibios_rt::BinarySemaphore *mma8451_semp = NULL;
-chibios_rt::BinarySemaphore *bmp085_semp  = NULL;
-chibios_rt::BinarySemaphore *itg3200_semp = NULL;
-chibios_rt::BinarySemaphore *lsm303_semp  = NULL;
 
 /* timer for RPM counting */
 static VirtualTimer tachocheck_vt;
@@ -141,7 +141,7 @@ static void bmp085_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  bmp085_semp->signalI();
+  bmp085_sem.signalI();
   chSysUnlockFromIsr();
 }
 
@@ -149,7 +149,7 @@ static void mag3110_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  mag3110_semp->signalI();
+  //lsm303_sem.signalI();
   chSysUnlockFromIsr();
 }
 
@@ -165,7 +165,7 @@ static void mma8451_int2_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
   chSysLockFromIsr();
-  mma8451_semp->signalI();
+  mma8451_sem.signalI();
   chSysUnlockFromIsr();
 }
 
@@ -187,8 +187,8 @@ static void itg3200_cb(EXTDriver *extp, expchannel_t channel){
   }
 #endif /* !GYRO_UPDATE_PERIOD_HARDCODED */
 
-  itg3200_semp->signalI();
-  lsm303_semp->signalI();
+  itg3200_sem.signalI();
+  lsm303_sem.signalI();
   chSysUnlockFromIsr();
 }
 
@@ -257,18 +257,7 @@ EXT_MODE_GPIOE)// accelerometer int2
  *******************************************************************************
  */
 
-void ExtiInitLocal(chibios_rt::BinarySemaphore *mag3110_sem,
-                   chibios_rt::BinarySemaphore *mma8451_sem,
-                   chibios_rt::BinarySemaphore *bmp085_sem,
-                   chibios_rt::BinarySemaphore *itg3200_sem,
-                   chibios_rt::BinarySemaphore *lsm303_sem){
-
-  mag3110_semp = mag3110_sem;
-  mma8451_semp = mma8451_sem;
-  bmp085_semp  = bmp085_sem;
-  itg3200_semp = itg3200_sem;
-  lsm303_semp  = lsm303_sem;
-
+void ExtiInitLocal(void){
   chSysLock();
   starttacho_vt();
   chSysUnlock();

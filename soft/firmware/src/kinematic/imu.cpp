@@ -89,9 +89,9 @@ static msg_t Imu(void *arg) {
 
   /* wait until giro sampling time measured */
   chDbgPanic("uncomment next lines");
-//  while (GyroUpdatePeriodUs == 0)
-//    chThdSleepMilliseconds(10);
-//  interval = (((float)GyroUpdatePeriodUs)/1000000.0f);
+  while (GyroUpdatePeriodUs == 0)
+    chThdSleepMilliseconds(10);
+  interval = (((float)GyroUpdatePeriodUs)/1000000.0f);
 
 
 
