@@ -92,20 +92,10 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
        src/fault_handlers.c \
-#       src/microrl/src/microrl.c \
-#       src/irq_storm.c \
-#       src/servo/servo.c \
-#       src/servo/servo_cli.c \
-#       src/mavlink_local/mavcmd_local.c \
-#       src/mavlink_local/param_cli.c \
-#       src/mavlink_local/wps.c \
-#       src/mavlink_local/wps_cli.c \
-#       src/mavlink_local/wps_persistant.c \
+       src/microrl/src/microrl.c \
 #       src/calibration/gyro_cal.c \
 #       src/calibration/mag_cal.c \
 #       src/calibration/cli_cal.c \
-#       src/cli/cli.c \
-#       src/cli/cli_cmd.c \
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -126,7 +116,13 @@ SENSORSSRC = src/sensors/sensors.cpp \
 MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \
-         src/mavlink_local/mavlink_dbg.cpp
+         src/mavlink_local/mavlink_dbg.cpp \
+         src/mavlink_local/mavcmd_local.cpp \
+         src/mavlink_local/param_cli.cpp \
+         src/mavlink_local/wps.cpp \
+         src/mavlink_local/wps_cli.cpp \
+		 src/mavlink_local/wps_persistant.cpp \
+
          
 KINEMATICSRC = src/kinematic/imu.cpp \
          src/kinematic/vector3d.cpp \
@@ -177,8 +173,14 @@ CPPSRC = $(CHCPPSRC) \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \
+         src/cli/cli.cpp \
+         src/cli/cli_cmd.cpp \
+         src/servo/servo.cpp \
+         src/servo/servo_cli.cpp \
+         src/irq_storm.cpp \
 
-
+         
+         
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.

@@ -1,4 +1,8 @@
 #include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "param_registry.hpp"
+#include "ground_rover.hpp"
 
 /*
  ******************************************************************************
@@ -13,6 +17,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 
 extern mavlink_system_t mavlink_system_struct;
 
@@ -39,7 +44,7 @@ extern EventSource event_mavlink_in_command_long;
 /**
  * helper funcion
  */
-static void cmd_confirm(enum MAV_RESULT result, enum MAV_CMD cmd){
+static void cmd_confirm(uint8_t result, uint16_t cmd){
   mavlink_out_command_ack_struct.result = result;
   mavlink_out_command_ack_struct.command = cmd;
 
@@ -118,9 +123,9 @@ static enum MAV_RESULT cmd_preflight_storage_handler(mavlink_command_long_t *cl)
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
   if (cl->param1 == 0)
-    status = load_params_from_eeprom();
+    status = param_registry.load();
   else if (cl->param1 == 1)
-    status = save_all_params_to_eeprom();
+    status = param_registry.saveAll();
 
   if (status != CH_SUCCESS)
     return MAV_RESULT_FAILED;

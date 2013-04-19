@@ -4,6 +4,7 @@
 #include "uav.h"
 #include "global_flags.h"
 #include "message.hpp"
+#include "servo.hpp"
 
 /*
  ******************************************************************************

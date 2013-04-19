@@ -100,7 +100,7 @@ public:
   param_status_t setParam(void *value, const GlobalParam_t *param);
   void *valueSearch(const char *key);
   int32_t paramCount(void);
-  const GlobalParam_t *getParam(char *key, int32_t n, int32_t *i);
+  const GlobalParam_t *getParam(const char *key, int32_t n, int32_t *i);
 
 private:
   int32_t key_index_search(const char* key);

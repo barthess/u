@@ -55,6 +55,7 @@ Giovanni
 #include "pwr_mgmt.hpp"
 #include "microsd.hpp"
 #include "tlm_sender.hpp"
+#include "linkmgr.hpp"
 
 /*
  ******************************************************************************
@@ -136,11 +137,11 @@ int main(void) {
   ParametersInit();   /* read parameters from EEPROM via I2C*/
   MavInit();          /* mavlink constants initialization must be called after parameters init */
 //  ControllerInit();   /* must be started only after loading of parameters */
-//  LinkMgrInit();      /* launch after controller to reduce memory fragmentation on thread creation */
+  LinkMgrInit();      /* launch after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
   SensorsInit();      /* Note. Sensors depends on I2C */
   PwrMgmtInit();
-//  TlmSenderInit();
+  TlmSenderInit();
 //  MavCmdInitLocal();
   StorageInit();
 
