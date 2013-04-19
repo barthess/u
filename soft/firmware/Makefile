@@ -106,13 +106,6 @@ CSRC = $(PORTSRC) \
 #       src/calibration/cli_cal.c \
 #       src/cli/cli.c \
 #       src/cli/cli_cmd.c \
-#       src/link/linkmgr.c \
-#       src/link/link.c \
-#       src/link/link_packer.c \
-#       src/link/link_unpacker.c \
-#       src/link/tlm_sender.c \
-#       src/link/usbcfg.c \
-
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -130,15 +123,6 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/max1236.cpp \
          src/sensors/speedometer.cpp
 
-CONTROLLERSRC = src/controller/controller.cpp \
-         src/controller/ground_rover.cpp \
-         src/controller/fixed_wing.cpp \
-         src/controller/planner.cpp \
-         src/controller/stab.cpp \
-         src/controller/wp.cpp \
-         src/controller/wp_local.cpp \
-         src/controller/wp_global.cpp
-
 MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \
@@ -151,11 +135,29 @@ KINEMATICSRC = src/kinematic/imu.cpp \
          src/kinematic/dcm_cli.cpp \
          src/kinematic/airspeed.cpp \
          src/kinematic/pid.cpp
-         
+
+CONTROLLERSRC = src/controller/controller.cpp \
+         src/controller/ground_rover.cpp \
+         src/controller/fixed_wing.cpp \
+         src/controller/planner.cpp \
+         src/controller/stab.cpp \
+         src/controller/wp.cpp \
+         src/controller/wp_local.cpp \
+         src/controller/wp_global.cpp
+
+LINKSRC = src/link/linkmgr.cpp \
+         src/link/link.cpp \
+         src/link/link_packer.cpp \
+         src/link/link_unpacker.cpp \
+         src/link/tlm_sender.cpp \
+         src/link/usbcfg.cpp
+
 CPPSRC = $(CHCPPSRC) \
 		 $(SENSORSSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
+		 $(LINKSRC) \
+		 $(CONTROLLERSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
