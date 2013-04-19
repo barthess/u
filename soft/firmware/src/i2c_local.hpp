@@ -9,6 +9,8 @@ protected:
   msg_t transmit(const uint8_t *txbuf, size_t txbytes,
                        uint8_t *rxbuf, size_t rxbytes);
   msg_t receive(uint8_t *rxbuf, size_t rxbytes);
+  virtual void hw_init_fast(void) = 0;
+  virtual void hw_init_full(void) = 0;
   bool ready;
 
 private:

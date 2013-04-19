@@ -65,30 +65,12 @@ void Tmp75::hw_init_full(void){
  *******************************************************************************
  */
 
-/*Accessing a particular register on the TMP175 and TMP75
-is accomplished by writing the appropriate value to the
-Pointer Register. The value for the Pointer Register is the
-first byte transferred after the slave address byte with the
-R/W bit LOW. Every write operation to the TMP175 and
-TMP75 requires a value for the Pointer Register.
-
-When reading from the TMP175 and TMP75, the last value
-stored in the Pointer Register by a write operation is used
-to determine which register is read by a read operation. To
-change the register pointer for a read operation, a new
-value must be written to the Pointer Register. This is
-accomplished by issuing a slave address byte with the
-R/W bit LOW, followed by the Pointer Register Byte. No
-additional data is required.*/
-
 /**
  *
  */
 Tmp75::Tmp75(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  memset(rxbuf, 0x55, sizeof(rxbuf));
-  memset(txbuf, 0x55, sizeof(txbuf));
   ready = false;
 }
 
@@ -104,9 +86,21 @@ void Tmp75::start(void){
   ready = true;
 }
 
-/**
- *
- */
+/*Accessing a particular register on the TMP175 and TMP75
+is accomplished by writing the appropriate value to the
+Pointer Register. The value for the Pointer Register is the
+first byte transferred after the slave address byte with the
+R/W bit LOW. Every write operation to the TMP175 and
+TMP75 requires a value for the Pointer Register.
+
+When reading from the TMP175 and TMP75, the last value
+stored in the Pointer Register by a write operation is used
+to determine which register is read by a read operation. To
+change the register pointer for a read operation, a new
+value must be written to the Pointer Register. This is
+accomplished by issuing a slave address byte with the
+R/W bit LOW, followed by the Pointer Register Byte. No
+additional data is required.*/
 void Tmp75::update(void){
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = 1; // point to Configuration Register
