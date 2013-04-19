@@ -10,6 +10,7 @@
 #include "itg3200.hpp"
 #include "lsm303.hpp"
 #include "mma8451.hpp"
+#include "bmp085.hpp"
 
 /*
  ******************************************************************************
@@ -18,6 +19,7 @@
  */
 #define GYRO_TIMEOUT        MS2ST(100)
 #define ACCEL_SEM_TMO       MS2ST(100)
+#define BMP085_SEM_TMO      MS2ST(100)
 
 /*
  ******************************************************************************
@@ -31,6 +33,7 @@ extern GlobalFlags_t GlobalFlags;
 extern chibios_rt::BinarySemaphore itg3200_sem;
 extern chibios_rt::BinarySemaphore lsm303_sem;
 extern chibios_rt::BinarySemaphore mma8451_sem;
+extern chibios_rt::BinarySemaphore bmp085_sem;
 
 /*
  ******************************************************************************
@@ -41,6 +44,7 @@ static TMP75    tmp75(&I2CD2, tmp75addr);
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2, lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
+static BMP085   bmp085(&I2CD2, bmp085addr);
 
 /*
  ******************************************************************************
@@ -137,12 +141,39 @@ static msg_t PollAccelThread(void *arg){
     if (sem_status != RDY_OK){
       retry--;
       chDbgAssert(retry > 0, "PollAccelThread(), #1",
-      "probably no interrupts from accelerometer");
+            "probably no interrupts from accelerometer");
     }
     mma8451.update();
   }
 
   mma8451.stop();
+  chThdExit(0);
+  return 0;
+}
+
+/**
+ * Polling thread
+ */
+static WORKING_AREA(PollBaroThreadWA, 256);
+static msg_t PollBaroThread(void *arg){
+  (void)arg;
+
+  chRegSetThreadName("PollBaro");
+  int32_t retry = 20;
+  msg_t sem_status = RDY_OK;
+
+  bmp085.start();
+  while (!chThdShouldTerminate()) {
+    sem_status = bmp085_sem.waitTimeout(BMP085_SEM_TMO);
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollAccelThread(), #1",
+          "probably no interrupts from pressure sensor");
+    }
+    bmp085.update();
+  }
+
+  bmp085.stop();
   chThdExit(0);
   return 0;
 }
@@ -180,16 +211,18 @@ void SensorsInit(void){
 
 //  init_max1236();
   chThdCreateStatic(PollLsmThreadWA,
-        sizeof(PollLsmThreadWA),
-        I2C_THREADS_PRIO,
-        PollLsmThread,
-        NULL);
+          sizeof(PollLsmThreadWA),
+          I2C_THREADS_PRIO,
+          PollLsmThread,
+          NULL);
 
-//  init_bmp085(&bmp085_sem);
+  chThdCreateStatic(PollBaroThreadWA,
+          sizeof(PollBaroThreadWA),
+          I2C_THREADS_PRIO,
+          PollBaroThread,
+          NULL);
 
-
-  chDbgPanic("this argument must not be NULL");
-  ImuInit(NULL);
+  ImuInit(NULL); chDbgPanic("this argument must not be NULL");
   GPSInit();
 }
 

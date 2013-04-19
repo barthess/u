@@ -111,6 +111,9 @@ static void __hard_init_full(void){
     for (i = 0; i < MAX1236_RX_DEPTH; i++){rxbuf[i] = 0x55;}
   #endif
 
+  /**
+  * see datasheet on page 13 how to initialize ADC
+  */
   txbuf[0] = 0b11110011;
   txbuf[1] = 0b00000101;
   i2c_transmit(max1236addr, txbuf, 2, rxbuf, 0);
@@ -121,9 +124,7 @@ static void __hard_init_full(void){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-/**
- * see datasheet on page 13 how to initialize ADC
- */
+
 void init_max1236(void){
 
   flen_pres_dyn = ValueSearch("FLEN_pres_dyn");
