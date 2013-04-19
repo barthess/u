@@ -1,9 +1,9 @@
 #include "uav.h"
 #include "global_flags.h"
-#include "usbcfg.hpp"
 #include "cli.hpp"
 #include "link.hpp"
 #include "param_registry.hpp"
+#include "usbcfg.hpp"
 
 /*
  ******************************************************************************
@@ -18,6 +18,9 @@
  */
 extern GlobalFlags_t GlobalFlags;
 extern ParamRegistry param_registry;
+
+//extern const USBConfig usbcfg;
+//extern const SerialUSBConfig serusbcfg;
 
 /*
  ******************************************************************************

@@ -1,4 +1,10 @@
 #include "uav.h"
+#include "message.hpp"
+#include "waypoint_db.hpp"
+#include "logger.hpp"
+#include "stab.hpp"
+#include "wp_local.hpp"
+#include "wp_global.hpp"
 
 /*
  ******************************************************************************

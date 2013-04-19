@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 #include "uav.h"
+#include "sensors.hpp"
+#include "cli.hpp"
+#include "cli_cmd.hpp"
 
 /*
  ******************************************************************************

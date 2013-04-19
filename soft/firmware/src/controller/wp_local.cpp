@@ -1,6 +1,13 @@
 #include <math.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "sensors.hpp"
+#include "bkp.hpp"
+#include "message.hpp"
+#include "stab.hpp"
+#include "wp.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -14,9 +21,11 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
+
 extern uint8_t currWpFrame;
 extern uint16_t WpSeqNew;
-extern BinarySemaphore servo_updated_sem;
+extern chibios_rt::BinarySemaphore servo_updated_sem;
 extern CompensatedData comp_data;
 
 /*
@@ -101,7 +110,7 @@ goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
     if (WpSeqNew != 0)
       return WP_GOTO_RESCHEDULED;
 
-    chBSemWait(&servo_updated_sem);
+    servo_updated_sem.wait();
 
     pid_keep_speed(comp_data.groundspeed_odo, *speed_min);
     pid_keep_heading(comp_data.heading, target_heading);
@@ -113,7 +122,7 @@ goto_wp_result_t goto_wp_local_ned(mavlink_mission_item_t *wp){
  *
  */
 void WpLocalInit(void){
-  pulse2m = ValueSearch("SPD_pulse2m");
-  speed_min = ValueSearch("SPD_speed_min");
+  pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
+  speed_min = (const float*)param_registry.valueSearch("SPD_speed_min");
 }
 

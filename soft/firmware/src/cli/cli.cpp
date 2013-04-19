@@ -4,6 +4,13 @@
 #include "../microrl/src/microrl.h"
 
 #include "uav.h"
+#include "global_flags.h"
+#include "cli.hpp"
+#include "cli_cmd.hpp"
+#include "param_registry.hpp"
+#include "param_cli.hpp"
+#include "timekeeping.hpp"
+#include "irq_storm.hpp"
 
 #if USE_EEPROM_TEST_SUIT
 #include "eeprom_testsuit.h"
@@ -22,6 +29,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 
 /*
  *******************************************************************************
@@ -39,24 +47,24 @@ static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sd
 
 static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
-    {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
+//    {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
     {"date",      &date_clicmd,       "print and set current date"},
-    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
+//    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
     {"echo",      &echo_clicmd,       "echo it's input to terminal"},
     {"help",      &help_clicmd,       "this message"},
     {"info",      &uname_clicmd,      "system information"},
-    {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
+//    {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
     {"loop",      &loop_clicmd,       "command to test ^C fucntionallity"},
     {"param",     &param_clicmd,      "manage onboard system paramters"},
     {"ps",        &ps_clicmd,         "info about running threads"},
     {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
     {"selftest",  &selftest_clicmd,   "exectute selftests (stub)"},
-    {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
-    {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
+//    {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
+//    {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,      "put autopilot board in sleep state (do not use it)"},
     {"togglesh",  &togglesh_cmd,      "swap telemetry and shell channels"},
     {"uname",     &uname_clicmd,      "'info' alias"},
-    {"wps",       &wps_clicmd,        "simple waypoint interface"},
+//    {"wps",       &wps_clicmd,        "simple waypoint interface"},
     #if USE_EEPROM_TEST_SUIT
     {"eepromtest",&eepromtest_clicmd, "run EEPROM testsuit. Uses lots of RAM"},
     #endif
@@ -134,13 +142,13 @@ static char ** complete(int argc, const char * const * argv)
     // iterate through our available token and match it
     while (chibiutils[i].name != NULL){
       if (strstr(chibiutils[i].name, bit) == chibiutils[i].name)
-        compl_world[j++] = chibiutils[i].name;
+        compl_world[j++] = (char *)chibiutils[i].name;
       i++;
     }
   }
   else { // if there is no token in cmdline, just print all available token
     while (chibiutils[j].name != NULL){
-      compl_world[j] = chibiutils[j].name;
+      compl_world[j] = (char *)chibiutils[j].name;
       j++;
     }
   }
@@ -228,10 +236,10 @@ static Thread* togglesh_cmd(int argc, const char * const * argv, SerialDriver *s
   (void)argc;
   (void)argv;
 
-  if (*(uint32_t*)ValueSearch("SH_overxbee") == 0)
-    *(uint32_t*)ValueSearch("SH_overxbee") = 1;
+  if (0 == *(uint32_t*)param_registry.valueSearch("SH_overxbee"))
+    *(uint32_t*)param_registry.valueSearch("SH_overxbee") = 1;
   else
-    *(uint32_t*)ValueSearch("SH_overxbee") = 0;
+    *(uint32_t*)param_registry.valueSearch("SH_overxbee") = 0;
 
   return NULL;
 }

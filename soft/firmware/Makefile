@@ -121,7 +121,7 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_cli.cpp \
          src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
-		 src/mavlink_local/wps_persistant.cpp \
+		 #src/mavlink_local/wps_persistant.cpp \
 
          
 KINEMATICSRC = src/kinematic/imu.cpp \
@@ -137,6 +137,7 @@ CONTROLLERSRC = src/controller/controller.cpp \
          src/controller/fixed_wing.cpp \
          src/controller/planner.cpp \
          src/controller/stab.cpp \
+         src/controller/waypoint_db.cpp \
          src/controller/wp.cpp \
          src/controller/wp_local.cpp \
          src/controller/wp_global.cpp
@@ -177,7 +178,7 @@ CPPSRC = $(CHCPPSRC) \
          src/cli/cli_cmd.cpp \
          src/servo/servo.cpp \
          src/servo/servo_cli.cpp \
-         src/irq_storm.cpp \
+         #src/irq_storm.cpp \
 
          
          

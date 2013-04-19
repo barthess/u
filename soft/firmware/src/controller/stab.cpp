@@ -1,7 +1,3 @@
-#include <math.h>
-
-#include "uav.h"
-
 /*
  * Bearing Between Two Points:
  * http://mathforum.org/library/drmath/view/55417.html
@@ -16,6 +12,26 @@
  * http://www.movable-type.co.uk/scripts/latlong.html
  */
 
+#include <math.h>
+
+#include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "dsp.hpp"
+#include "pid.hpp"
+#include "stab.hpp"
+#include "servo.hpp"
+#include "controller.hpp"
+#include "waypoint_db.hpp"
+#include "wp.hpp"
+#include "wp_local.hpp"
+#include "wp_global.hpp"
+#include "speedometer.hpp"
+#include "param_registry.hpp"
+#include "ground_rover.hpp"
+#include "geometry.hpp"
+#include "misc_math.hpp"
+
 /*
  ******************************************************************************
  * DEFINES
@@ -29,7 +45,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t      GlobalFlags;
-
+extern ParamRegistry      param_registry;
 extern mavlink_system_t                 mavlink_system_struct;
 
 extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
@@ -175,25 +191,25 @@ Thread* StabInit(void){
   WpGlobalInit();
   SpeedometerInit();
 
-  speed_min = ValueSearch("SPD_speed_min");
+  speed_min = (const float*)param_registry.valueSearch("SPD_speed_min");
 
-  speedPid.iGain  = ValueSearch("SPD_iGain");
-  speedPid.pGain  = ValueSearch("SPD_pGain");
-  speedPid.dGain  = ValueSearch("SPD_dGain");
-  speedPid.iMin   = ValueSearch("SPD_iMin");
-  speedPid.iMax   = ValueSearch("SPD_iMax");
+  speedPid.iGain  = (const float*)param_registry.valueSearch("SPD_iGain");
+  speedPid.pGain  = (const float*)param_registry.valueSearch("SPD_pGain");
+  speedPid.dGain  = (const float*)param_registry.valueSearch("SPD_dGain");
+  speedPid.iMin   = (const float*)param_registry.valueSearch("SPD_iMin");
+  speedPid.iMax   = (const float*)param_registry.valueSearch("SPD_iMax");
 
-  headingPid.iGain  = ValueSearch("HEAD_iGain");
-  headingPid.pGain  = ValueSearch("HEAD_pGain");
-  headingPid.dGain  = ValueSearch("HEAD_dGain");
-  headingPid.iMin   = ValueSearch("HEAD_iMin");
-  headingPid.iMax   = ValueSearch("HEAD_iMax");
+  headingPid.iGain  = (const float*)param_registry.valueSearch("HEAD_iGain");
+  headingPid.pGain  = (const float*)param_registry.valueSearch("HEAD_pGain");
+  headingPid.dGain  = (const float*)param_registry.valueSearch("HEAD_dGain");
+  headingPid.iMin   = (const float*)param_registry.valueSearch("HEAD_iMin");
+  headingPid.iMax   = (const float*)param_registry.valueSearch("HEAD_iMax");
 
-  xtrackPid.iGain  = ValueSearch("XTRACK_iGain");
-  xtrackPid.pGain  = ValueSearch("XTRACK_pGain");
-  xtrackPid.dGain  = ValueSearch("XTRACK_dGain");
-  xtrackPid.iMin   = ValueSearch("XTRACK_iMin");
-  xtrackPid.iMax   = ValueSearch("XTRACK_iMax");
+  xtrackPid.iGain  = (const float*)param_registry.valueSearch("XTRACK_iGain");
+  xtrackPid.pGain  = (const float*)param_registry.valueSearch("XTRACK_pGain");
+  xtrackPid.dGain  = (const float*)param_registry.valueSearch("XTRACK_dGain");
+  xtrackPid.iMin   = (const float*)param_registry.valueSearch("XTRACK_iMin");
+  xtrackPid.iMax   = (const float*)param_registry.valueSearch("XTRACK_iMax");
 
   stab_tp = chThdCreateStatic(StabThreadWA, sizeof(StabThreadWA),
                          CONTROLLER_THREADS_PRIO,

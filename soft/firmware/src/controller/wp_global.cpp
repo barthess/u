@@ -1,6 +1,13 @@
 #include <math.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "sensors.hpp"
+#include "gps.hpp"
+#include "param_registry.hpp"
+#include "stab.hpp"
+#include "wp.hpp"
 
 /*
  ******************************************************************************
@@ -16,9 +23,11 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
+
 extern uint8_t currWpFrame;
 extern uint16_t WpSeqNew;
-extern BinarySemaphore servo_updated_sem;
+extern chibios_rt::BinarySemaphore servo_updated_sem;
 extern CompensatedData comp_data;
 extern RawData raw_data;
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
@@ -79,7 +88,7 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
  *
  */
 void WpGlobalInit(void){
-  speed_min = ValueSearch("SPD_speed_min");
+  speed_min = (const float*)param_registry.valueSearch("SPD_speed_min");
 }
 
 /**
@@ -100,7 +109,7 @@ goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
     if (WpSeqNew != 0)
       return WP_GOTO_RESCHEDULED;
 
-    chBSemWait(&servo_updated_sem);
+    servo_updated_sem.wait();
     pid_keep_speed(comp_data.groundspeed_odo, *speed_min);
     pid_keep_heading(comp_data.heading, target_heading);
   }

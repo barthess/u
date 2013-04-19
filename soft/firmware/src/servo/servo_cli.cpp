@@ -1,6 +1,10 @@
 #include <stdio.h>
 
 #include "uav.h"
+#include "message.hpp"
+#include "cli.hpp"
+#include "misc_math.hpp"
+#include "servo.hpp"
 
 /*
  ******************************************************************************
@@ -91,7 +95,7 @@ int32_t _servor_cli_get_value(const char * val){
   sscanf_status = sscanf(val, "%u", (unsigned int*)&v);
   if (sscanf_status == 1){
     uint32_t tmp = v;
-    putinrange(v, 0, 255);
+    putinrange(v, (typeof(v))0, (typeof(v))255);
     if (tmp != v)
       cli_println("WARNING: value clamped to 0..255 limits.");
     return v;

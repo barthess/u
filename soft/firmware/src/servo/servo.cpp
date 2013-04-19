@@ -5,16 +5,21 @@
  */
 
 #include "uav.h"
+#include "global_flags.h"
+#include "message.hpp"
+#include "servo.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalParam_t GlobalParam[];
-extern mavlink_system_t mavlink_system_struct;
-extern BinarySemaphore servo_updated_sem;
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
+
+extern mavlink_system_t mavlink_system_struct;
+extern chibios_rt::BinarySemaphore servo_updated_sem;
 
 /*
  ******************************************************************************
@@ -122,7 +127,7 @@ static uint32_t const *car_dz;
 static void pwm4plane_cb(PWMDriver *pwmp){
   (void)pwmp;
   chSysLockFromIsr();
-  chBSemSignalI(&servo_updated_sem);
+  servo_updated_sem.signalI();
   chSysUnlockFromIsr();
 }
 
@@ -140,9 +145,11 @@ static void _servo_set_angle(uint16_t n, uint8_t angle){
   uint16_t val = 0;
   uint16_t i = servoblock_index + (n) * 3;
 
-  min = GlobalParam[i].valuep->u32 & 0xFFFF;
-  max = GlobalParam[i+1].valuep->u32 & 0xFFFF;
-  neutral = GlobalParam[i+2].valuep->u32 & 0xFFFF;
+  chDbgPanic("uncomment next 3 lines");
+//  min = GlobalParam[i].valuep->u32 & 0xFFFF;
+//  max = GlobalParam[i+1].valuep->u32 & 0xFFFF;
+//  neutral = GlobalParam[i+2].valuep->u32 & 0xFFFF;
+  (void)i;
 
   if (angle > 128){
     len = max - neutral;
@@ -244,11 +251,12 @@ void ServoCarThrustSet(uint8_t angle){
 void ServoInit(void){
 
   chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
-  servoblock_index = key_index_search("SERVO_1_min");
-  if (servoblock_index == -1)
-    chDbgPanic("key not found");
+  chDbgPanic("normal parameters reading here");
+//  servoblock_index = key_index_search("SERVO_1_min");
+//  if (servoblock_index == -1)
+//    chDbgPanic("key not found");
 
-  car_dz = ValueSearch("SERVO_car_dz");
+  car_dz = (const uint32_t*)param_registry.valueSearch("SERVO_car_dz");
 
   /* this channel can be run in different modes (plane and rover) */
   if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER)

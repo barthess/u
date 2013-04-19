@@ -19,7 +19,7 @@ struct ShellCmd_t{
   /**
    * Printable command name. Must be zero terminated string without spaces
    */
-  char *name;
+  const char *name;
   /**
    * Function bounded to command
    */
@@ -27,7 +27,7 @@ struct ShellCmd_t{
   /**
    * Short command description for help message.
    */
-  char *help;
+  const char *help;
 };
 
 

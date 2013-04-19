@@ -22,7 +22,7 @@
 #define _USBCFG_H_
 
 extern const USBConfig usbcfg;
-extern SerialUSBConfig serusbcfg;
+extern const SerialUSBConfig serusbcfg;
 
 #endif  /* _USBCFG_H_ */
 

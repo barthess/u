@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "uav.h"
+#include "irq_storm.hpp"
 
 #include "../microrl/src/microrl.h"
 
@@ -47,7 +49,7 @@ static bool_t saturated;
 /*
  * Mailboxes. Them buffers will be allocated at thread context.
  */
-static Mailbox *mb = NULL;
+static chibios_rt::Mailbox *mb = NULL;
 //static Mailbox mb[NUM_THREADS];
 
 /*
@@ -66,7 +68,7 @@ static msg_t WorkerThread(void *arg) {
   /* Work loop.*/
   while (!chThdShouldTerminate()) {
     /* Waiting for a message.*/
-   chMBFetch(&mb[me], &msg, TIME_INFINITE);
+   mb[me].fetch(&msg, TIME_INFINITE);
 
 #if RANDOMIZE
    /* Pseudo-random delay.*/
@@ -95,7 +97,7 @@ static msg_t WorkerThread(void *arg) {
     if (target < NUM_THREADS) {
       /* If this thread is not at the end of a chain re-sending the message,
          note this check works because the variable target is unsigned.*/
-      msg = chMBPost(&mb[target], msg, TIME_IMMEDIATE);
+      msg = mb[target].post(msg, TIME_IMMEDIATE);
       if (msg != RDY_OK)
         saturated = TRUE;
     }
@@ -120,7 +122,7 @@ static void gpt1cb(GPTDriver *gptp) {
 
   (void)gptp;
   chSysLockFromIsr();
-  msg = chMBPostI(&mb[0], MSG_SEND_RIGHT);
+  msg = mb[0].postI(MSG_SEND_RIGHT);
   if (msg != RDY_OK)
     saturated = TRUE;
   chSysUnlockFromIsr();
@@ -161,11 +163,11 @@ static const GPTConfig gpt2cfg = {
 /* Generic demo code.                                                        */
 /*===========================================================================*/
 
-static void print(char *p) {
+static void print(const char *p) {
   cli_print(p);
 }
 
-static void println(char *p) {
+static void println(const char *p) {
   cli_println(p);
 }
 

@@ -5,6 +5,11 @@
 #include "global_flags.h"
 #include "message.hpp"
 #include "servo.hpp"
+#include "controller.hpp"
+#include "dsp.hpp"
+#include "planner.hpp"
+#include "stab.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -21,6 +26,7 @@
  */
 extern GlobalFlags_t GlobalFlags;
 extern MemoryHeap ThdHeap;
+extern ParamRegistry param_registry;
 
 extern EventSource event_mavlink_in_manual_control;
 extern EventSource event_mavlink_in_set_mode;
@@ -69,7 +75,9 @@ static void manual_control_handler(mavlink_manual_control_t *mc){
  * Set autopilot mode logic.
  */
 static void set_current_wp_handler(mavlink_mission_set_current_t *sc){
-  WpSeqOverwrite(sc->seq);
+  chDbgPanic("uncomment next line");
+  //WpSeqOverwrite(sc->seq);
+  (void)sc;
 }
 
 /**
@@ -236,7 +244,8 @@ enum MAV_RESULT cmd_nav_return_to_launch_handler(mavlink_command_long_t *cl){
  */
 enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
   (void)cl;
-  WpSeqOverwrite(get_waypoint_count() - 1);
+  chDbgPanic("uncomment next line");
+  //WpSeqOverwrite(get_waypoint_count() - 1);
   return MAV_RESULT_ACCEPTED;
 }
 
@@ -245,7 +254,7 @@ enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
  */
 Thread *ControllerGroundRoverInit(void){
 
-  pulse2m = ValueSearch("SPD_pulse2m");
+  pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
 
   /* reset filter */
   uint32_t i = 0;

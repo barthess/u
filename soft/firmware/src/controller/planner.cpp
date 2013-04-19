@@ -3,6 +3,10 @@
 #include "uav.h"
 #include "global_flags.h"
 #include "message.hpp"
+#include "waypoint_db.hpp"
+#include "wps.hpp"
+#include "mavlink_dbg.hpp"
+#include "eeprom_file_tree.hpp"
 
 /*
  ******************************************************************************
