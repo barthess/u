@@ -84,6 +84,7 @@ void EepromFileTreeInit(void){
 
   eefs.mount();
   ParamFile.open(&eefs, (uint8_t*)"param");
+  MissionFile.open(&eefs, (uint8_t*)"mission");
 }
 
 

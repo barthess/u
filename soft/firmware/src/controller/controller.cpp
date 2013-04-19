@@ -1,6 +1,10 @@
 #include <math.h>
 
 #include "uav.h"
+#include "message.hpp"
+#include "misc_math.hpp"
+#include "ground_rover.hpp"
+#include "fixed_wing.hpp"
 
 /*
  ******************************************************************************

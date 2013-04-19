@@ -2,14 +2,19 @@
 #include <math.h>
 
 #include "uav.h"
+#include "geometry.hpp"
+#include "itg3200.hpp"
+#include "param_registry.hpp"
+#include "message.hpp"
+#include "sensors.hpp"
+#include "misc_math.hpp"
+#include "timekeeping.hpp"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
-#define itg3200addr         0b1101000
-#define GYRO_TIMEOUT        MS2ST(100)
 #define SKIP_FIRST_SAMPLES  100
 
 /*
@@ -17,34 +22,19 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalFlags_t GlobalFlags;
 extern CompensatedData comp_data;
+extern ParamRegistry param_registry;
 
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
-extern mavlink_system_t mavlink_system_struct;
 
-uint32_t GyroUpdatePeriodUs; /* uS */
+uint32_t GyroUpdatePeriodUs = 10000; /* uS */
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint8_t rxbuf[GYRO_RX_DEPTH];
-static uint8_t txbuf[GYRO_TX_DEPTH];
-
-/* указатели на коэффициенты */
-static float    const *xsens,     *ysens,     *zsens;
-static int32_t  const *xpol,      *ypol,      *zpol;
-static float    const *x_offset,  *y_offset,  *z_offset;
-static uint32_t const *sortmtrx;
-
-/* семафор для синхронизации инерциалки с хероскопом */
-static BinarySemaphore *imusync_semp = NULL;
-
-/* how many first samples skip before starting */
-static uint32_t skipsample;
 
 /*
  *******************************************************************************
@@ -65,16 +55,10 @@ static float get_degrees(float raw){
 /**
  *
  */
-static void process_gyro_data(uint8_t *rxbuf){
+void ITG3200::pickle(void){
   int32_t raw[3];
   int32_t Gyro[3];
   float   Gyrof[3];
-
-  /* hack to skip first bad samples */
-  if (0 != skipsample){
-    skipsample--;
-    return;
-  }
 
   //rawgyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw[0] = complement2signed(rxbuf[2], rxbuf[3]);
@@ -88,9 +72,6 @@ static void process_gyro_data(uint8_t *rxbuf){
   mavlink_out_raw_imu_struct.ygyro = Gyro[1];
   mavlink_out_raw_imu_struct.zgyro = Gyro[2];
   mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-
-  /* update statistic for zero offsets */
-  GyroZeroUpdate(Gyro);
 
   /* correct zero offset */
   Gyrof[0] = (float)Gyro[0] - *x_offset;
@@ -117,80 +98,60 @@ static void process_gyro_data(uint8_t *rxbuf){
   mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
   mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
-
-  chBSemSignal(imusync_semp);/* say IMU "Hey, we have fresh data!"*/
-}
-
-/**
- * Поток для опроса хероскопа
- */
-static WORKING_AREA(PollGyroThreadWA, 400);
-static msg_t PollGyroThread(void *semp){
-  chRegSetThreadName("PollGyro");
-
-  msg_t sem_status = RDY_OK;
-  int32_t retry = 10;
-
-  /* variables for regulate log writing frequency */
-  uint32_t i = 0;
-  const uint32_t decimator = 0b11;
-
-  while (TRUE) {
-    sem_status = chBSemWaitTimeout((BinarySemaphore*)semp, GYRO_TIMEOUT);
-    if (sem_status != RDY_OK){
-      retry--;
-      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
-    }
-    txbuf[0] = GYRO_OUT_DATA;
-    i2c_transmit(itg3200addr, txbuf, 1, rxbuf, 8);
-    process_gyro_data(rxbuf);
-    log_write_schedule(MAVLINK_MSG_ID_RAW_IMU, &i, decimator);
-    i--; /* trick to avoid having one more variable for decimating */
-    log_write_schedule(MAVLINK_MSG_ID_SCALED_IMU, &i, decimator);
-  }
-  return 0;
 }
 
 /**
  *
  */
-static void __search_indexes(void){
-  xsens     = ValueSearch("GYRO_xsens");
-  ysens     = ValueSearch("GYRO_ysens");
-  zsens     = ValueSearch("GYRO_zsens");
+ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr)
+{
+  xsens     = (const float*)param_registry.valueSearch("GYRO_xsens");
+  ysens     = (const float*)param_registry.valueSearch("GYRO_ysens");
+  zsens     = (const float*)param_registry.valueSearch("GYRO_zsens");
 
-  xpol      = ValueSearch("GYRO_xpol");
-  ypol      = ValueSearch("GYRO_ypol");
-  zpol      = ValueSearch("GYRO_zpol");
+  xpol      = (const int32_t*)param_registry.valueSearch("GYRO_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("GYRO_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("GYRO_zpol");
 
-  x_offset  = ValueSearch("GYRO_x_offset");
-  y_offset  = ValueSearch("GYRO_y_offset");
-  z_offset  = ValueSearch("GYRO_z_offset");
+  x_offset  = (const float*)param_registry.valueSearch("GYRO_x_offset");
+  y_offset  = (const float*)param_registry.valueSearch("GYRO_y_offset");
+  z_offset  = (const float*)param_registry.valueSearch("GYRO_z_offset");
 
-  sortmtrx  = ValueSearch("GYRO_sortmtrx");
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
+
+  ready = false;
+}
+
+void ITG3200::stop(void){
+  // TODO: power down sensor here
+  ready = false;
 }
 
 /**
  *
  */
-static void __hard_init_short(void){
+void ITG3200::update(void){
+  chDbgCheck((true == ready), "not ready");
+  txbuf[0] = GYRO_OUT_DATA;
+  transmit(txbuf, 1, rxbuf, 8);
+  this->pickle();
 }
 
 /**
  *
  */
-static void __hard_init_full(void){
+void ITG3200::hw_init_fast(void){
+}
 
-  #if CH_DBG_ENABLE_ASSERTS
-    // clear bufers. Just to be safe.
-    uint32_t i = 0;
-    for (i = 0; i < GYRO_TX_DEPTH; i++){txbuf[i] = 0x55;}
-    for (i = 0; i < GYRO_RX_DEPTH; i++){rxbuf[i] = 0x55;}
-  #endif
+/**
+ *
+ */
+void ITG3200::hw_init_full(void){
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 0b1000000; /* soft reset */
-  i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0);
+  transmit(txbuf, 2, rxbuf, 0);
   chThdSleepMilliseconds(60);
 
 //  txbuf[0] = GYRO_WHOAMI;
@@ -200,7 +161,7 @@ static void __hard_init_full(void){
 
   txbuf[0] = GYRO_PWR_MGMT;
   txbuf[1] = 1; /* select clock source */
-  i2c_transmit(itg3200addr, txbuf, 2, rxbuf, 0);
+  transmit(txbuf, 2, rxbuf, 0);
   chThdSleepMilliseconds(5);
 
   txbuf[0] = GYRO_SMPLRT_DIV;
@@ -208,7 +169,24 @@ static void __hard_init_full(void){
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота среза внутреннего фильтра */
   //txbuf[3] = 0b00110001; /* configure and enable interrupts */
   txbuf[3] = 0b00010001; /* configure and enable interrupts */
-  i2c_transmit(itg3200addr, txbuf, 4, rxbuf, 0);
+  transmit(txbuf, 4, rxbuf, 0);
+}
+
+/**
+ *
+ */
+void ITG3200::start(void){
+  comp_data.xgyro_angle = 0;
+  comp_data.ygyro_angle = 0;
+  comp_data.zgyro_angle = 0;
+
+  if (need_full_init()){
+    hw_init_full();
+  }
+  else{
+    hw_init_fast();
+  }
+  ready = true;
 }
 
 /*
@@ -216,41 +194,4 @@ static void __hard_init_full(void){
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-/**
- *
- */
-void init_itg3200(BinarySemaphore *itg3200_semp, BinarySemaphore *imu_semp){
-
-  /* set close to real value. It can be updated later using EXTI module */
-  GyroUpdatePeriodUs = 10000;
-
-  imusync_semp = imu_semp;
-
-  /* инкрементальные суммы */
-  comp_data.xgyro_angle = 0;
-  comp_data.ygyro_angle = 0;
-  comp_data.zgyro_angle = 0;
-
-  __search_indexes();
-
-  GyroCalInit();
-
-  if (need_full_init()){
-    __hard_init_full();
-    setGlobalFlag(GlobalFlags.gyro_cal);
-  }
-  else{
-    __hard_init_short();
-    mavlink_system_struct.state = MAV_STATE_STANDBY;
-  }
-
-  skipsample = SKIP_FIRST_SAMPLES;
-
-  /**/
-  chThdCreateStatic(PollGyroThreadWA,
-          sizeof(PollGyroThreadWA),
-          I2C_THREADS_PRIO,
-          PollGyroThread,
-          itg3200_semp);
-}
 

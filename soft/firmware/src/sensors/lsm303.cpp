@@ -1,10 +1,11 @@
 #include <math.h>
 
 #include "uav.h"
-#include "lsm303.h"
-#include "i2c_local.h"
-#include "sensors.h"
-#include "message.h"
+#include "lsm303.hpp"
+#include "sensors.hpp"
+#include "message.hpp"
+#include "param_registry.hpp"
+#include "misc_math.hpp"
 
 /*
  ******************************************************************************
@@ -17,10 +18,10 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalFlags_t GlobalFlags;
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
+extern ParamRegistry param_registry;
 
 /*
  ******************************************************************************
@@ -33,20 +34,7 @@ extern CompensatedData comp_data;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float    const *xsens,   *ysens,   *zsens;
-static int32_t  const *xoffset, *yoffset, *zoffset;
-static int32_t  const *xpol,    *ypol,    *zpol;
-static uint32_t const *sortmtrx;
 
-
-//static float m[9] = {
-//   0.9143        0        0
-//   0.0622   1.0121        0
-//   0.2726   0.2050   0.5062}
-//
-//  -86.9220
-//    3.4023
-//  138.7114
 /*
  ******************************************************************************
  ******************************************************************************
@@ -55,7 +43,16 @@ static uint32_t const *sortmtrx;
  ******************************************************************************
  */
 
-static void process_lsm_data(uint8_t *rxbuf){
+/*
+ ******************************************************************************
+ * EXPORTED FUNCTIONS
+ ******************************************************************************
+ */
+
+/**
+ *
+ */
+void LSM303::pickle(void){
   int32_t raw[3];
   int32_t Mag[3];
   int16_t t;
@@ -103,46 +100,66 @@ static void process_lsm_data(uint8_t *rxbuf){
 /**
  *
  */
-static WORKING_AREA(PollLsmThreadWA, 512); /* large stack need for sphere calc */
-static msg_t PollLsmThread(void *semp){
-  chRegSetThreadName("PollLsm303");
-  uint8_t txbuf[2];
-  uint8_t rxbuf[8]; // 6 for mag, 2 for temp
-  uint32_t cnt = 0;
+LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr)
+{
+  xoffset   = (const int32_t*)param_registry.valueSearch("MAG_xoffset");
+  yoffset   = (const int32_t*)param_registry.valueSearch("MAG_yoffset");
+  zoffset   = (const int32_t*)param_registry.valueSearch("MAG_zoffset");
 
-  while (!chThdShouldTerminate()){
-    if ((cnt % 128) == 0){
-      txbuf[0] = TEMP_OUT_H_M;
-      i2c_transmit(lsm303_mag_addr, txbuf, 1, rxbuf+6, 2);
-    }
-    cnt++;
+  xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("MAG_zpol");
 
-    /* read previose measurement results */
-    txbuf[0] = OUT_X_H_M;
-    i2c_transmit(lsm303_mag_addr, txbuf, 1, rxbuf, 6);
+  xsens     = (const float*)param_registry.valueSearch("MAG_xsens");
+  ysens     = (const float*)param_registry.valueSearch("MAG_ysens");
+  zsens     = (const float*)param_registry.valueSearch("MAG_zsens");
 
-    /* start new measurement */
-    txbuf[0] = MR_REG_M;
-    txbuf[1] = 0b00000001;
-    i2c_transmit(lsm303_mag_addr, txbuf, 2, NULL, 0);
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
 
-    process_lsm_data(rxbuf);
-    setGlobalFlag(GlobalFlags.mag_data_fresh);
-    chBSemWaitTimeout((BinarySemaphore*)semp, MS2ST(200));
-  }
+  ready = false;
+}
 
-  chThdExit(0);
-  return 0;
+void LSM303::stop(void){
+  // TODO: power down sensor here
+  ready = false;
 }
 
 /**
  *
  */
-void HwInit(void){
-  uint8_t txbuf[4];
+static uint32_t cnt = 0;
+void LSM303::update(void){
+  chDbgCheck((true == ready), "not ready");
 
-  chDbgCheck(1 == GlobalFlags.i2c_ready, "you must initialize I2C driver first");
+  if ((cnt % 128) == 0){
+    txbuf[0] = TEMP_OUT_H_M;
+    transmit(txbuf, 1, rxbuf+6, 2);
+  }
+  cnt++;
 
+  /* read previose measurement results */
+  txbuf[0] = OUT_X_H_M;
+  transmit(txbuf, 1, rxbuf, 6);
+
+  /* start new measurement */
+  txbuf[0] = MR_REG_M;
+  txbuf[1] = 0b00000001;
+  transmit(txbuf, 2, NULL, 0);
+
+  this->pickle();
+}
+
+/**
+ *
+ */
+void LSM303::hw_init_fast(void){
+}
+
+/**
+ *
+ */
+void LSM303::hw_init_full(void){
   txbuf[0] = CRA_REG_M;
   /* enable thermometer and set maximum output rate */
   txbuf[1] = 0b10011100;
@@ -153,50 +170,18 @@ void HwInit(void){
   /* single conversion mode */
   txbuf[3] = 0b00000001;
 
-  i2c_transmit(lsm303_mag_addr, txbuf, 4, NULL, 0);
+  transmit(txbuf, 4, NULL, 0);
 }
 
 /**
  *
  */
-static void __search_indexes(void){
-  xoffset   = ValueSearch("MAG_xoffset");
-  yoffset   = ValueSearch("MAG_yoffset");
-  zoffset   = ValueSearch("MAG_zoffset");
-
-  xpol      = ValueSearch("MAG_xpol");
-  ypol      = ValueSearch("MAG_ypol");
-  zpol      = ValueSearch("MAG_zpol");
-
-  xsens     = ValueSearch("MAG_xsens");
-  ysens     = ValueSearch("MAG_ysens");
-  zsens     = ValueSearch("MAG_zsens");
-
-  sortmtrx  = ValueSearch("MAG_sortmtrx");
+void LSM303::start(void){
+  if (need_full_init()){
+    hw_init_full();
+  }
+  else{
+    hw_init_fast();
+  }
+  ready = true;
 }
-
-/*
- ******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************
- */
-
-/**
- *
- */
-void init_lsm303(BinarySemaphore *mag3110_semp){
-
-  __search_indexes();
-
-  HwInit();
-
-  MagCalInit();
-
-  chThdCreateStatic(PollLsmThreadWA,
-        sizeof(PollLsmThreadWA),
-        I2C_THREADS_PRIO,
-        PollLsmThread,
-        mag3110_semp);
-}
-
-

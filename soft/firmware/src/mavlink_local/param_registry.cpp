@@ -154,7 +154,7 @@ int32_t ParamRegistry::paramCount(void){
  * @return    pointer to parameter structure
  * @retval    NULL - parameter not found
  */
-const GlobalParam_t *ParamRegistry::getParam(char *key, int32_t n, int32_t *i){
+const GlobalParam_t *ParamRegistry::getParam(const char *key, int32_t n, int32_t *i){
   int32_t index = -1;
 
   if (key != NULL){

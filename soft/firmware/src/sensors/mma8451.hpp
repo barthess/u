@@ -1,8 +1,9 @@
-#include <stdlib.h>
-#include "ch.h"
-
 #ifndef MMA8451_H_
 #define MMA8451_H_
+
+#include "i2c_local.hpp"
+
+#define mma8451addr         0b0011100
 
 #define ACCEL_WHOAMI_VALUE  0b00011010
 
@@ -27,9 +28,25 @@
 #define ACCEL_XYZ_DATA_CFG 0x0E
 
 
-bool_t IsDeviceStill(void);
-void DeviceStillSet(void);
-void init_mma8451(BinarySemaphore *mma8451_semp);
+class MMA8451: private I2CSensor{
+public:
+  MMA8451(I2CDriver *i2cdp, i2caddr_t addr);
+  void update(void);
+  void start(void);
+  void stop(void);
+
+private:
+  void pickle(void);
+  void hw_init_full(void);
+  void hw_init_fast(void);
+  uint8_t rxbuf[ACCEL_RX_DEPTH];
+  uint8_t txbuf[ACCEL_TX_DEPTH];
+  /*  */
+  int32_t  const *xoffset,   *yoffset,   *zoffset;
+  int32_t  const *xpol,      *ypol,      *zpol;
+  uint32_t const *xsens,     *ysens,     *zsens;
+  uint32_t const *still_thr, *sortmtrx;
+};
 
 
 #endif /* MMA8451_H_ */

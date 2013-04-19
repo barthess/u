@@ -1,7 +1,8 @@
 #include "uav.h"
+#include "global_flags.h"
 
-#include "link_packer.h"
-#include "link_unpacker.h"
+#include "link_packer.hpp"
+#include "link_unpacker.hpp"
 
 /*
  ******************************************************************************
@@ -37,8 +38,9 @@ static Thread *linkin_tp  = NULL;
  *
  */
 static WORKING_AREA(LinkOutThreadWA, 1536);
-static msg_t LinkOutThread(void *sdp){
+static msg_t LinkOutThread(void *arg){
   chRegSetThreadName("MAVLinkOut");
+  SerialDriver *sdp = (SerialDriver *)arg;
   PackCycle(sdp);
   chThdExit(0);
   return 0;
@@ -48,8 +50,9 @@ static msg_t LinkOutThread(void *sdp){
  * Parse input data.
  */
 static WORKING_AREA(LinkInThreadWA, 1024);
-static msg_t LinkInThread(void *sdp){
+static msg_t LinkInThread(void *arg){
   chRegSetThreadName("MAVLinkIn");
+  SerialDriver *sdp = (SerialDriver *)arg;
   UnpackCycle(sdp);
   chThdExit(0);
   return 0;

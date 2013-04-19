@@ -54,6 +54,8 @@ Giovanni
 #include "sensors.hpp"
 #include "pwr_mgmt.hpp"
 #include "microsd.hpp"
+#include "tlm_sender.hpp"
+#include "linkmgr.hpp"
 
 /*
  ******************************************************************************
@@ -87,6 +89,12 @@ uint16_t WpSeqNew = 0;
 
 /* save here flags before clear them from MCU register */
 uint32_t LastResetFlags;
+
+/* semaphores to sync with external interrupts from sensors */
+chibios_rt::BinarySemaphore mma8451_sem(true);
+chibios_rt::BinarySemaphore bmp085_sem(true);
+chibios_rt::BinarySemaphore itg3200_sem(true);
+chibios_rt::BinarySemaphore lsm303_sem(true);
 
 /*
  ******************************************************************************
@@ -129,11 +137,11 @@ int main(void) {
   ParametersInit();   /* read parameters from EEPROM via I2C*/
   MavInit();          /* mavlink constants initialization must be called after parameters init */
 //  ControllerInit();   /* must be started only after loading of parameters */
-//  LinkMgrInit();      /* after controller to reduce memory fragmentation on thread creation */
+  LinkMgrInit();      /* launch after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
   SensorsInit();      /* Note. Sensors depends on I2C */
   PwrMgmtInit();
-//  TlmSenderInit();
+  TlmSenderInit();
 //  MavCmdInitLocal();
   StorageInit();
 

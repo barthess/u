@@ -1,6 +1,11 @@
 #include <stdio.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "cli.hpp"
+#include "message.hpp"
+#include "param_cli.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -13,8 +18,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalParam_t GlobalParam[];
-extern uint32_t OnboardParamCount;
+extern ParamRegistry param_registry;
 extern GlobalFlags_t GlobalFlags;
 
 /*
@@ -61,37 +65,39 @@ static void _param_cli_print(uint32_t i, bool_t need_help){
   int n = 80;
   int nres = 0;
   char str[n];
+  const GlobalParam_t *p;
+  p = param_registry.getParam(NULL, i, NULL);
 
-  nres = snprintf(str, n, "%-15s", GlobalParam[i].name);
+  nres = snprintf(str, n, "%-15s", p->name);
   cli_print_long(str, n, nres);
 
-  switch(GlobalParam[i].param_type){
+  switch(p->param_type){
   case MAVLINK_TYPE_FLOAT:
     nres = snprintf(str, n, " %-15f %-15f %-15f",
-        (double)GlobalParam[i].min.f32,
-        (double)GlobalParam[i].valuep->f32,
-        (double)GlobalParam[i].max.f32);
+        (double)p->min.f32,
+        (double)p->valuep->f32,
+        (double)p->max.f32);
     break;
   case MAVLINK_TYPE_INT32_T:
     nres = snprintf(str, n, " %-15d %-15d %-15d",
-        (int)GlobalParam[i].min.i32,
-        (int)GlobalParam[i].valuep->i32,
-        (int)GlobalParam[i].max.i32);
+        (int)p->min.i32,
+        (int)p->valuep->i32,
+        (int)p->max.i32);
     break;
   default: // uint32_t
     nres = snprintf(str, n, " %-15u %-15u %-15u",
-        (unsigned int)GlobalParam[i].min.u32,
-        (unsigned int)GlobalParam[i].valuep->u32,
-        (unsigned int)GlobalParam[i].max.u32);
+        (unsigned int)p->min.u32,
+        (unsigned int)p->valuep->u32,
+        (unsigned int)p->max.u32);
     break;
   }
 
   cli_print_long(str, n, nres);
   cli_print(ENDL);
 
-  if (need_help && (GlobalParam[i].help != NULL)){
+  if (need_help && (p->help != NULL)){
     cli_println("");
-    cli_println(GlobalParam[i].help);
+    cli_println(p->help);
   }
 }
 
@@ -107,11 +113,11 @@ static void _param_cli_print_header(void){
  *
  */
 static void _param_print_all(void){
-  uint32_t i = 0;
+  int32_t i = 0;
 
   _param_cli_print_header();
 
-  for (i = 0; i < OnboardParamCount; i++)
+  for (i = 0; i < param_registry.paramCount(); i++)
     _param_cli_print(i, FALSE);
 }
 
@@ -121,8 +127,10 @@ static void _param_print_all(void){
 static param_status_t _param_cli_set(const char * val, uint32_t i){
   floatint v;
   int sscanf_status;
+  const GlobalParam_t *p;
+  p = param_registry.getParam(NULL, i, NULL);
 
-  switch(GlobalParam[i].param_type){
+  switch(p->param_type){
   case MAVLINK_TYPE_FLOAT:
     sscanf_status = sscanf(val, "%f", &v.f32);
     break;
@@ -138,8 +146,9 @@ static param_status_t _param_cli_set(const char * val, uint32_t i){
 
   if (sscanf_status != 1)
     return PARAM_INCONSISTENT;
-  else
-    return set_global_param(&v, &GlobalParam[i]);
+  else{
+    return param_registry.setParam(&v, p);
+  }
 }
 
 /**
@@ -182,11 +191,12 @@ Thread* param_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
       _param_cli_help();
     else if (strcmp(*argv, "save") == 0){
       cli_print("Please wait. Saving to EEPROM... ");
-      save_all_params_to_eeprom();
+      param_registry.saveAll();
       cli_println("Done.");
     }
     else{
-      i = key_index_search(*argv);
+      i = -1;
+      param_registry.getParam(*argv, 0, &i);
       if (i != -1){
         _param_cli_print_header();
         _param_cli_print(i, TRUE);
@@ -200,7 +210,7 @@ Thread* param_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   /* two arguments */
   else if (argc == 2){
     i = -1;
-    i = key_index_search(argv[0]);
+    param_registry.getParam(argv[0], 0, &i);
     if (i != -1){
       status = _param_cli_set(argv[1], i);
       _param_cli_confirm(status);

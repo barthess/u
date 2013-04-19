@@ -1,4 +1,7 @@
 #include "uav.h"
+#include "sensors.hpp"
+#include "message.hpp"
+#include "ground_rover.hpp"
 
 /*
  ******************************************************************************
@@ -12,7 +15,7 @@
  * EXTERNS
  ******************************************************************************
  */
-extern Mailbox speedometer_mb;
+extern chibios_rt::Mailbox speedometer_mb;
 extern CompensatedData comp_data;
 extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 
@@ -48,7 +51,7 @@ static msg_t SpeedometerThread(void *arg){
 
   while (TRUE) {
     /* get current speed without waiting, because it updates very slowly comparing to other sensors */
-    status = chMBFetch(&speedometer_mb, &spd, SPEED_TMO);
+    status = speedometer_mb.fetch(&spd, SPEED_TMO);
     if (status == RDY_OK)
       comp_data.groundspeed_odo = calc_ground_rover_speed(spd);
     else

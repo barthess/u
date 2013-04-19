@@ -63,7 +63,7 @@ endif
 PROJECT = ch
 
 # Imported source files
-CHIBIOS = ../../../chibios
+CHIBIOS = ../../../chibios-svn
 include $(CHIBIOS)/boards/NONSTANDARD_STM32F4_BARTHESS1/board.mk
 include $(CHIBIOS)/os/hal/platforms/STM32F4xx/platform.mk
 include $(CHIBIOS)/os/hal/hal.mk
@@ -92,39 +92,68 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
        src/fault_handlers.c \
-#       src/microrl/src/microrl.c \
-#       src/irq_storm.c \
-#       src/servo/servo.c \
-#       src/servo/servo_cli.c \
-#       src/mavlink_local/mavcmd_local.c \
-#       src/mavlink_local/param_cli.c \
-#       src/mavlink_local/wps.c \
-#       src/mavlink_local/wps_cli.c \
-#       src/mavlink_local/wps_persistant.c \
+       src/microrl/src/microrl.c \
 #       src/calibration/gyro_cal.c \
 #       src/calibration/mag_cal.c \
 #       src/calibration/cli_cal.c \
-#       src/cli/cli.c \
-#       src/cli/cli_cmd.c \
-#       src/link/linkmgr.c \
-#       src/link/link.c \
-#       src/link/link_packer.c \
-#       src/link/link_unpacker.c \
-#       src/link/tlm_sender.c \
-#       src/link/usbcfg.c \
-#       src/controller/controller.c \
-#       src/controller/ground_rover.c \
-#       src/controller/fixed_wing.c \
-#       src/controller/planner.c \
-#       src/controller/stab.c \
-#       src/controller/wp.c \
-#       src/controller/wp_local.c \
-#       src/controller/wp_global.c \
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
+SENSORSSRC = src/sensors/sensors.cpp \
+         src/sensors/adc_local.cpp \
+         src/sensors/exti_local.cpp \
+         src/sensors/gps.cpp \
+         src/sensors/sensors_cli.cpp \
+         src/sensors/tmp75.cpp \
+         src/sensors/itg3200.cpp \
+         src/sensors/lsm303.cpp \
+         src/sensors/mma8451.cpp \
+         src/sensors/bmp085.cpp \
+         src/sensors/max1236.cpp \
+         src/sensors/speedometer.cpp
+
+MAVLINKSRC = src/mavlink_local/param.cpp \
+         src/mavlink_local/param_registry.cpp \
+         src/mavlink_local/param_validator.cpp \
+         src/mavlink_local/mavlink_dbg.cpp \
+         src/mavlink_local/mavcmd_local.cpp \
+         src/mavlink_local/param_cli.cpp \
+         src/mavlink_local/wps.cpp \
+         src/mavlink_local/wps_cli.cpp \
+		 src/mavlink_local/wps_persistant.cpp \
+
+         
+KINEMATICSRC = src/kinematic/imu.cpp \
+         src/kinematic/vector3d.cpp \
+         src/kinematic/matrix.cpp \
+         src/kinematic/dcm.cpp \
+         src/kinematic/dcm_cli.cpp \
+         src/kinematic/airspeed.cpp \
+         src/kinematic/pid.cpp
+
+CONTROLLERSRC = src/controller/controller.cpp \
+         src/controller/ground_rover.cpp \
+         src/controller/fixed_wing.cpp \
+         src/controller/planner.cpp \
+         src/controller/stab.cpp \
+         src/controller/wp.cpp \
+         src/controller/wp_local.cpp \
+         src/controller/wp_global.cpp
+
+LINKSRC = src/link/linkmgr.cpp \
+         src/link/link.cpp \
+         src/link/link_packer.cpp \
+         src/link/link_unpacker.cpp \
+         src/link/tlm_sender.cpp \
+         src/link/usbcfg.cpp
+
 CPPSRC = $(CHCPPSRC) \
+		 $(SENSORSSRC) \
+		 $(MAVLINKSRC) \
+		 $(KINEMATICSRC) \
+		 $(LINKSRC) \
+		 $(CONTROLLERSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
@@ -136,10 +165,6 @@ CPPSRC = $(CHCPPSRC) \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom_file_tree.cpp \
          src/sensors/i2c_local.cpp \
-         src/mavlink_local/param.cpp \
-         src/mavlink_local/param_registry.cpp \
-         src/mavlink_local/param_validator.cpp \
-         src/mavlink_local/mavlink_dbg.cpp \
          src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
          src/math/sphere.cpp \
@@ -148,26 +173,14 @@ CPPSRC = $(CHCPPSRC) \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \
-         src/kinematic/imu.cpp \
-         src/kinematic/vector3d.cpp \
-         src/kinematic/matrix.cpp \
-         src/kinematic/dcm.cpp \
-         src/kinematic/dcm_cli.cpp \
-         src/kinematic/airspeed.cpp \
-         src/kinematic/pid.cpp \
-         src/sensors/sensors.cpp \
-         src/sensors/adc_local.cpp \
-         src/sensors/exti_local.cpp \
-         src/sensors/gps.cpp \
-         src/sensors/sensors_cli.cpp \
-#         src/sensors/max1236.cpp \
-#         src/sensors/lsm303.cpp \
-#         src/sensors/tmp75.cpp \
-#         src/sensors/bmp085.cpp \
-#         src/sensors/mma8451.cpp \
-#         src/sensors/itg3200.cpp \
-#         src/sensors/speedometer.cpp \
+         src/cli/cli.cpp \
+         src/cli/cli_cmd.cpp \
+         src/servo/servo.cpp \
+         src/servo/servo_cli.cpp \
+         src/irq_storm.cpp \
 
+         
+         
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
@@ -365,7 +378,7 @@ src/link/tlm_sender.cpp: gen_tlm_sender.py
 src/storage/logger_mavencoder.cpp: gen_logger_mavencoder.py
 	python $<
 
-src/sensors/bmp085.c: src/sensors/bmp085_tab_autogenerated.h 
+src/sensors/bmp085.cpp: src/sensors/bmp085_tab_autogenerated.h 
 src/sensors/bmp085_tab_autogenerated.h: src/sensors/gen_bmp085_table.py
 	rm -f $@
 	python $< > $@

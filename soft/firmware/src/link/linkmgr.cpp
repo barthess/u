@@ -1,4 +1,9 @@
 #include "uav.h"
+#include "global_flags.h"
+#include "usbcfg.hpp"
+#include "cli.hpp"
+#include "link.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -12,6 +17,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 
 /*
  ******************************************************************************
@@ -117,7 +123,7 @@ static msg_t LinkMgrThread(void *arg){
  */
 void LinkMgrInit(void){
 
-  sh_overxbee = ValueSearch("SH_overxbee");
+  sh_overxbee = (const uint32_t*)param_registry.valueSearch("SH_overxbee");
 
   sdStart(&XBEESD, &xbee_ser_cfg);
 
