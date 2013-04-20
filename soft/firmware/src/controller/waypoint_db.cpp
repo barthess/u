@@ -137,31 +137,41 @@ bool WpDB::write(const mavlink_mission_item_t *wpp, uint16_t seq){
     offset += seq * WAYPOINT_SIZE;
     dbfile->setPosition(offset);
     result = dbfile->read((uint8_t *)wpp, WAYPOINT_SIZE);
-    if (WAYPOINT_SIZE == result)
+    if (WAYPOINT_SIZE == result){
+      count++;
       return CH_SUCCESS;
+    }
     else
       return CH_FAILED;
   }
 }
 
-
-
-
-
+/**
+ *
+ */
 uint16_t WpDB::len(void){
   return count;
 }
 
-
-
+/**
+ *
+ */
 bool WpDB::validate(mavlink_mission_item_t *wpp){
+  chDbgCheck((NULL != wpp), "");
   return CH_FAILED;
 }
 
-
-
+/**
+ *
+ */
 bool WpDB::finalize(void){
-  return CH_FAILED;
+  size_t result = 0;
+  dbfile->setPosition(0);
+  result = dbfile->writeHalfWord(count);
+  if (HEADER_SIZE == result)
+    return CH_SUCCESS;
+  else
+    return CH_FAILED;
 }
 
 
