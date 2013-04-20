@@ -1,6 +1,8 @@
-#include <stdio.h>
+#include <string.h>
 
 #include "uav.h"
+#include "global_flags.h"
+#include "cli.hpp"
 
 /*
  ******************************************************************************

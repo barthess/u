@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -93,9 +93,6 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/shell.c \
        src/fault_handlers.c \
        src/microrl/src/microrl.c \
-#       src/calibration/gyro_cal.c \
-#       src/calibration/mag_cal.c \
-#       src/calibration/cli_cal.c \
         
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -176,8 +173,10 @@ CPPSRC = $(CHCPPSRC) \
          src/cli/cli_cmd.cpp \
          src/servo/servo.cpp \
          src/servo/servo_cli.cpp \
-         #src/irq_storm.cpp \
-
+         src/irq_storm.cpp \
+         src/calibration/gyro_cal.cpp \
+         src/calibration/mag_cal.cpp \
+         src/calibration/cli_cal.cpp \
          
          
 # C sources to be compiled in ARM mode regardless of the global setting.

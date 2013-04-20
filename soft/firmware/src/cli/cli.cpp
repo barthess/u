@@ -11,6 +11,7 @@
 #include "param_cli.hpp"
 #include "timekeeping.hpp"
 #include "irq_storm.hpp"
+#include "cli_cal.hpp"
 
 #if USE_EEPROM_TEST_SUIT
 #include "eeprom_testsuit.h"
@@ -47,13 +48,13 @@ static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sd
 
 static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
-//    {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
+    {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
     {"date",      &date_clicmd,       "print and set current date"},
 //    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
     {"echo",      &echo_clicmd,       "echo it's input to terminal"},
     {"help",      &help_clicmd,       "this message"},
     {"info",      &uname_clicmd,      "system information"},
-//    {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
+    {"irqstorm",  &irqstorm_clicmd,   "run longterm stability load test"},
     {"loop",      &loop_clicmd,       "command to test ^C fucntionallity"},
     {"param",     &param_clicmd,      "manage onboard system paramters"},
     {"ps",        &ps_clicmd,         "info about running threads"},

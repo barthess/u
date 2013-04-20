@@ -1,4 +1,12 @@
 #include "uav.h"
+#include "global_flags.h"
+#include "gyro_cal.hpp"
+#include "message.hpp"
+#include "mavlink_dbg.hpp"
+#include "sensors.hpp"
+#include "imu.hpp"
+#include "sanity.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -12,6 +20,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 extern CompensatedData comp_data;
 extern mavlink_system_t mavlink_system_struct;
 
@@ -70,7 +79,6 @@ bool_t GyroZeroUpdate(int32_t *data){
     *ctx.z_offset = 0;
     ctx.SamplesCnt = *ctx.zerocount;
 
-    DeviceStillSet();
     SheduleRedBlink(3, MS2ST(20), MS2ST(100));
 
     ctx.gyrocalstate = GYROCAL_COLLECTING;
@@ -105,11 +113,11 @@ bool_t GyroZeroUpdate(int32_t *data){
       chSysUnlock();
 
       /* store in EEPROM for fast boot */
-      save_param_to_eeprom("GYRO_x_offset");
-      save_param_to_eeprom("GYRO_y_offset");
-      save_param_to_eeprom("GYRO_z_offset");
+      param_registry.syncParam("GYRO_x_offset");
+      param_registry.syncParam("GYRO_y_offset");
+      param_registry.syncParam("GYRO_z_offset");
       /* just to be safe. Because it can be changed manually from QGC */
-      save_param_to_eeprom("GYRO_zerocnt");
+      param_registry.syncParam("GYRO_zerocnt");
 
       mavlink_system_struct.state = MAV_STATE_STANDBY;
       ctx.gyrocalstate = GYROCAL_READY;
@@ -145,10 +153,10 @@ void GyroCalInit(void){
   ctx.ZeroSum[1] = 0;
   ctx.ZeroSum[2] = 0;
 
-  ctx.zerocount  = ValueSearch("GYRO_zerocnt");
-  ctx.x_offset   = ValueSearch("GYRO_x_offset");
-  ctx.y_offset   = ValueSearch("GYRO_y_offset");
-  ctx.z_offset   = ValueSearch("GYRO_z_offset");
+  ctx.zerocount  = (const int32_t*)param_registry.valueSearch("GYRO_zerocnt");
+  ctx.x_offset   = (float*)param_registry.valueSearch("GYRO_x_offset");
+  ctx.y_offset   = (float*)param_registry.valueSearch("GYRO_y_offset");
+  ctx.z_offset   = (float*)param_registry.valueSearch("GYRO_z_offset");
 
   ctx.gyrocalstate = GYROCAL_READY;
 }

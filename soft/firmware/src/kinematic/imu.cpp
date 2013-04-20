@@ -128,6 +128,13 @@ void ImuInit(chibios_rt::BinarySemaphore *imu_semp){
 /**
  *
  */
+bool IsDeviceStill(void){
+  return true;
+}
+
+/**
+ *
+ */
 void ImuReset(void){
 
 }

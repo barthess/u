@@ -1,5 +1,16 @@
 #include <math.h>
+
 #include "uav.h"
+#include "global_flags.h"
+#include "mag_cal.hpp"
+#include "message.hpp"
+#include "mavlink_dbg.hpp"
+#include "sensors.hpp"
+#include "imu.hpp"
+#include "sanity.hpp"
+#include "param_registry.hpp"
+#include "sphere.hpp"
+#include "misc_math.hpp"
 
 /*
  ******************************************************************************
@@ -26,6 +37,8 @@ typedef enum {
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
+
 extern mavlink_system_t mavlink_system_struct;
 
 /* how many ticks needed for calculate sphere */
@@ -82,7 +95,6 @@ static void __clear_state(void){
   MagSum[0] = 0;
   MagSum[1] = 0;
   MagSum[2] = 0;
-  DeviceStillSet();
 }
 
 /**
@@ -161,10 +173,10 @@ bool_t mag_stat_update(int32_t *data){
         tmStopMeasurement(&sphere_tmup);
         sphere_time = sphere_tmup.last;
 
-        *(int32_t *)(ValueSearch("MAG_xoffset"))   = roundf(S.c[0]);
-        *(int32_t *)(ValueSearch("MAG_yoffset"))   = roundf(S.c[1]);
-        *(int32_t *)(ValueSearch("MAG_zoffset"))   = roundf(S.c[2]);
-        *(int32_t *)(ValueSearch("MAG_vectorlen")) = roundf(S.r);
+        *(int32_t *)(param_registry.valueSearch("MAG_xoffset"))   = roundf(S.c[0]);
+        *(int32_t *)(param_registry.valueSearch("MAG_yoffset"))   = roundf(S.c[1]);
+        *(int32_t *)(param_registry.valueSearch("MAG_zoffset"))   = roundf(S.c[2]);
+        *(int32_t *)(param_registry.valueSearch("MAG_vectorlen")) = roundf(S.r);
 
         mavlink_dbg_print(MAV_SEVERITY_INFO, "MAG: calibration finished");
         mavlink_system_struct.state = MAV_STATE_STANDBY;
@@ -208,7 +220,7 @@ bool_t mag_stat_update(int32_t *data){
     break;
   }
 
-  return GYRO_STAT_UPDATED;
+  return MAG_STAT_UPDATED;
 }
 
 /*
@@ -223,7 +235,7 @@ bool_t mag_stat_update(int32_t *data){
 void MagCalInit(void){
   magcalstate = MAGCAL_UNINIT;
 
-  zerocount = ValueSearch("MAG_zerocnt");
+  zerocount = (const int32_t*)param_registry.valueSearch("MAG_zerocnt");
 
   tmObjectInit(&sphere_tmup);
 

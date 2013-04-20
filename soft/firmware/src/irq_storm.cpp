@@ -3,6 +3,7 @@
 
 #include "uav.h"
 #include "irq_storm.hpp"
+#include "cli.hpp"
 
 #include "../microrl/src/microrl.h"
 
@@ -50,7 +51,7 @@ static bool_t saturated;
  * Mailboxes. Them buffers will be allocated at thread context.
  */
 static chibios_rt::Mailbox *mb = NULL;
-//static Mailbox mb[NUM_THREADS];
+//static chibios_rt::Mailbox mb[NUM_THREADS];
 
 /*
  * Test worker threads.
@@ -136,7 +137,7 @@ static void gpt2cb(GPTDriver *gptp) {
 
   (void)gptp;
   chSysLockFromIsr();
-  msg = chMBPostI(&mb[NUM_THREADS - 1], MSG_SEND_LEFT);
+  msg = mb[NUM_THREADS - 1].postI(MSG_SEND_LEFT);
   if (msg != RDY_OK)
     saturated = TRUE;
   chSysUnlockFromIsr();
@@ -191,7 +192,8 @@ void _storm_abort(Thread* th_pull[]){
   chThdSleepMilliseconds(20);
   for (i = 0; i < NUM_THREADS; i++) {
     chThdTerminate(th_pull[i]);
-    chMBPost(&mb[i], 0, TIME_INFINITE); /* gives worker thread a chace to run to chThdShouldTerminate()*/
+    /* gives worker thread a chace to run to chThdShouldTerminate()*/
+    mb[i].post(0, TIME_INFINITE);
     chThdWait(th_pull[i]);
   }
   palOffIrqStormLed();
@@ -204,8 +206,7 @@ static msg_t StormTread(void *sdp){
   (void)sdp;
   unsigned i;
   gptcnt_t interval, threshold, worst;
-  Mailbox _mb[NUM_THREADS];
-  msg_t b[NUM_THREADS][MAILBOX_SIZE];
+  chibios_rt::MailboxBuffer<MAILBOX_SIZE> _mb[NUM_THREADS];
 
   /*
    * Initializes the mailboxes and creates the worker threads.
@@ -213,7 +214,6 @@ static msg_t StormTread(void *sdp){
   mb = _mb; /* init static variable */
   Thread* th_pull[NUM_THREADS];
   for (i = 0; i < NUM_THREADS; i++) {
-    chMBInit(&mb[i], b[i], MAILBOX_SIZE);
     th_pull[i] = chThdCreateFromHeap(&ThdHeap,
                                      sizeof(waWorkerThread[i]),
                                      NORMALPRIO - 20,

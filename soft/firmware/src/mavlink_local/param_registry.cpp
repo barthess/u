@@ -279,7 +279,7 @@ bool ParamRegistry::saveAll(void){
 /**
  *
  */
-bool ParamRegistry::saveParam(const char* key){
+bool ParamRegistry::syncParam(const char* key){
   int32_t  i;
   uint32_t status = 0;
   uint32_t v = 0;

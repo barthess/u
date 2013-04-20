@@ -96,7 +96,7 @@ public:
   ParamRegistry(void);
   bool load(void);
   bool saveAll(void);
-  bool saveParam(const char* key);
+  bool syncParam(const char* key);
   param_status_t setParam(void *value, const GlobalParam_t *param);
   void *valueSearch(const char *key);
   int32_t paramCount(void);
