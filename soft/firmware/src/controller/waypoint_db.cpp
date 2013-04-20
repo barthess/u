@@ -77,39 +77,79 @@ uint16_t WpDB::connect(EepromFile *dbfile){
   return count;
 }
 
+/**
+ *
+ */
+bool WpDB::get(mavlink_mission_item_t *wpp, uint16_t seq){
+  uint32_t offset = HEADER_SIZE;
+  size_t result = 0;
 
-bool WpDB::get(uint16_t seq, mavlink_mission_item_t *wpp){
   chDbgCheck((NULL != this->dbfile), "DB unconnected");
   chDbgCheck((NULL != wpp), "");
-  if (seq > count)
+
+  if (seq >= count)
     return CH_FAILED;
   else{
+    offset += seq * WAYPOINT_SIZE;
+    dbfile->setPosition(offset);
+    result = dbfile->read((uint8_t *)wpp, WAYPOINT_SIZE);
+    if (WAYPOINT_SIZE == result)
+      return CH_SUCCESS;
+    else
+      return CH_FAILED;
+  }
+}
 
+/**
+ * overwrite all data in db file by pattern
+ */
+bool WpDB::massErase(void){
+  chDbgPanic("unrealized");
+  return CH_FAILED;
+}
+
+/**
+ * Just clear header without erasing of data
+ */
+bool WpDB::deleteAll(void){
+  size_t result = 0;
+  dbfile->setPosition(0);
+  result = dbfile->writeHalfWord(0);
+  if (HEADER_SIZE == result)
+    return CH_SUCCESS;
+  else
+    return CH_FAILED;
+}
+
+/**
+ *
+ */
+bool WpDB::write(const mavlink_mission_item_t *wpp, uint16_t seq){
+  uint32_t offset = HEADER_SIZE;
+  size_t result = 0;
+
+  chDbgCheck((NULL != this->dbfile), "DB unconnected");
+  chDbgCheck((NULL != wpp), "");
+
+  if (seq >= count)
+    return CH_FAILED;
+  else{
+    offset += seq * WAYPOINT_SIZE;
+    dbfile->setPosition(offset);
+    result = dbfile->read((uint8_t *)wpp, WAYPOINT_SIZE);
+    if (WAYPOINT_SIZE == result)
+      return CH_SUCCESS;
+    else
+      return CH_FAILED;
   }
 }
 
 
 
-bool WpDB::massErase(void){
-  return CH_FAILED;
-}
-
-
-
-bool WpDB::deleteAll(void){
-  return CH_FAILED;
-}
-
-
-
-bool WpDB::write(uint16_t n, mavlink_mission_item_t *wpp){
-return CH_FAILED;
-}
-
 
 
 uint16_t WpDB::len(void){
-  return 0;
+  return count;
 }
 
 
