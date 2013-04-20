@@ -30,8 +30,8 @@
  * PROTOTYPES
  ******************************************************************************
  */
-void acquire_settings_file(void){;}
-void release_settings_file(void){;}
+static void acquire(void);
+static void release(void);
 
 /*
  ******************************************************************************
@@ -52,6 +52,7 @@ extern EepromFile ParamFile;
 
 const GlobalParam_t *ParamRegistry::param_array = GlobalParam;
 static uint8_t eeprombuf[PARAM_RECORD_SIZE];
+static chibios_rt::BinarySemaphore sem(false);
 
 /*
  *******************************************************************************
@@ -60,6 +61,19 @@ static uint8_t eeprombuf[PARAM_RECORD_SIZE];
  *******************************************************************************
  *******************************************************************************
  */
+/**
+ *
+ */
+static void acquire(void){
+  sem.wait();
+}
+
+/**
+ *
+ */
+static void release(void){
+  sem.signal();
+}
 
 /**
  * @brief   Performs key-value search. Low level function
@@ -187,7 +201,7 @@ bool ParamRegistry::load(void){
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 
-  acquire_settings_file();
+  acquire();
   ParamFile.setPosition(0);
 
   for (i = 0; i < OnboardParamCount; i++){
@@ -222,7 +236,7 @@ bool ParamRegistry::load(void){
     /* check value acceptability and set it */
     validator.set(&v, &(GlobalParam[i]));
   }
-  release_settings_file();
+  release();
 
   /* refresh EEPROM data */
   if (need_eeprom_update)
@@ -242,7 +256,7 @@ bool ParamRegistry::saveAll(void){
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 
-  acquire_settings_file();
+  acquire();
   ParamFile.setPosition(0);
 
   for (i = 0; i < OnboardParamCount; i++){
@@ -271,7 +285,7 @@ bool ParamRegistry::saveAll(void){
     chThdSleep(ADDITIONAL_WRITE_TMO);
   }
 
-  release_settings_file();
+  release();
   eeprom_led_off();
   return PARAM_SUCCESS;
 }
@@ -290,7 +304,7 @@ bool ParamRegistry::syncParam(const char* key){
   i = key_index_search(key);
   chDbgCheck(i != -1, "Not found");
 
-  acquire_settings_file();
+  acquire();
   ParamFile.setPosition(i * PARAM_RECORD_SIZE);
 
   /* ensure we found exacly what needed */
@@ -310,7 +324,7 @@ bool ParamRegistry::syncParam(const char* key){
     eeprom_led_off();
   }
 
-  release_settings_file();
+  release();
   return PARAM_SUCCESS;
 }
 
