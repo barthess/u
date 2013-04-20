@@ -121,8 +121,6 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_cli.cpp \
          src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
-		 #src/mavlink_local/wps_persistant.cpp \
-
          
 KINEMATICSRC = src/kinematic/imu.cpp \
          src/kinematic/vector3d.cpp \

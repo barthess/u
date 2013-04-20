@@ -46,6 +46,8 @@
  */
 extern GlobalFlags_t      GlobalFlags;
 extern ParamRegistry      param_registry;
+extern WpDB               wpdb;
+
 extern mavlink_system_t                 mavlink_system_struct;
 
 extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
@@ -141,7 +143,7 @@ WAIT_NEW_MISSION:
 
   currWpFrame = MAV_FRAME_GLOBAL;
   seq = 0;
-  wp_cnt = get_waypoint_count();
+  wp_cnt = wpdb.len();
 
   /* are there some waypoints on board? */
   if (wp_cnt == 0)

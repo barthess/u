@@ -25,7 +25,10 @@
  * EXTERNS
  ******************************************************************************
  */
-extern GlobalFlags_t GlobalFlags;
+WpDB wpdb;
+
+extern GlobalFlags_t  GlobalFlags;
+extern EepromFile     MissionFile;
 
 extern mavlink_mission_count_t        mavlink_in_mission_count_struct;
 extern mavlink_mission_count_t        mavlink_out_mission_count_struct;
@@ -90,7 +93,7 @@ static void send_ack(uint8_t type){
  * Lazy clear all routine.
  */
 static void mission_clear_all(void){
-  save_waypoint_count(0);
+  wpdb.clear();
   send_ack(MAV_MISSION_ACCEPTED);
 }
 
@@ -159,7 +162,7 @@ static MAVLINK_WPM_STATES mission_item_request_handler(void){
     if (mavlink_in_mission_request_struct.seq >= waypoint_cnt) // prevent EEPROM overflow
       return MAVLINK_WPM_STATE_IDLE;
 
-    get_waypoint_from_eeprom(mavlink_in_mission_request_struct.seq, &mavlink_out_mission_item_struct);
+    wpdb.load(&mavlink_out_mission_item_struct, mavlink_in_mission_request_struct.seq);
     mavlink_out_mission_item_struct.target_system = GROUND_STATION_ID;
     mavlink_out_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
@@ -187,7 +190,7 @@ static MAVLINK_WPM_STATES mission_request_list_handler(void){
 
   eventmask_t status = 0;
 
-  waypoint_cnt = get_waypoint_count();
+  waypoint_cnt = wpdb.len();
   mavlink_out_mission_count_struct.count = waypoint_cnt;
   mavlink_out_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
   mavlink_out_mission_count_struct.target_system = GROUND_STATION_ID;
@@ -254,7 +257,7 @@ static bool_t mission_count_handler(void){
   }
 
   /* start transaction from clean state to be safer */
-  save_waypoint_count(0);
+  wpdb.clear();
 
   /* delete from "queue" probably stored old message */
   chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, MS2ST(1));
@@ -274,7 +277,7 @@ static bool_t mission_count_handler(void){
       if (type != MAV_MISSION_ACCEPTED)
         goto EXIT;
       else{
-        save_waypoint_to_eeprom(mavlink_out_mission_request_struct.seq, &mavlink_in_mission_item_struct);
+        wpdb.save(&mavlink_in_mission_item_struct, mavlink_out_mission_request_struct.seq);
         mavlink_out_mission_request_struct.seq++;
       }
     }
@@ -283,7 +286,7 @@ static bool_t mission_count_handler(void){
   }while(mavlink_out_mission_request_struct.seq < waypoint_cnt);
 
   /* save waypoint count in eeprom only in the very end of transaction */
-  save_waypoint_count(mavlink_out_mission_request_struct.seq);
+  wpdb.finalize();
 EXIT:
   send_ack(type);
   return MAVLINK_WPM_STATE_IDLE;
@@ -365,6 +368,8 @@ static msg_t PlannerThread(void* arg){
 Thread* PlannerInit(void){
 
   MavlinkWpmInit();
+
+  wpdb.connect(&MissionFile);
 
   planner_tp = chThdCreateStatic(PlannerThreadWA,
                         sizeof(PlannerThreadWA),

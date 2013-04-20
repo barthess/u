@@ -2,27 +2,6 @@
 #include "message.hpp"
 #include "waypoint_db.hpp"
 
-
-void save_waypoint_count(int i){
-  (void)i;
-  chDbgPanic("temporal stub");
-}
-bool get_waypoint_from_eeprom(int a, mavlink_mission_item_t *b){
-  (void)a;
-  (void)b;
-  chDbgPanic("temporal stub");
-  return false;
-}
-int get_waypoint_count(void){
-  chDbgPanic("temporal stub");
-  return 0;
-}
-void save_waypoint_to_eeprom(int a, mavlink_mission_item_t *b){
-    (void)a;
-  (void)b;
-  chDbgPanic("temporal stub");
-}
-
 /*
  ******************************************************************************
  * DEFINES
@@ -80,7 +59,7 @@ uint16_t WpDB::connect(EepromFile *dbfile){
 /**
  *
  */
-bool WpDB::get(mavlink_mission_item_t *wpp, uint16_t seq){
+bool WpDB::load(mavlink_mission_item_t *wpp, uint16_t seq){
   uint32_t offset = HEADER_SIZE;
   size_t result = 0;
 
@@ -111,7 +90,7 @@ bool WpDB::massErase(void){
 /**
  * Just clear header without erasing of data
  */
-bool WpDB::deleteAll(void){
+bool WpDB::clear(void){
   size_t result = 0;
   dbfile->setPosition(0);
   result = dbfile->writeHalfWord(0);
@@ -124,8 +103,8 @@ bool WpDB::deleteAll(void){
 /**
  *
  */
-bool WpDB::write(const mavlink_mission_item_t *wpp, uint16_t seq){
-  uint32_t offset = HEADER_SIZE;
+bool WpDB::save(const mavlink_mission_item_t *wpp, uint16_t seq){
+  uint32_t offset = 0;
   size_t result = 0;
 
   chDbgCheck((NULL != this->dbfile), "DB unconnected");
@@ -134,9 +113,11 @@ bool WpDB::write(const mavlink_mission_item_t *wpp, uint16_t seq){
   if (seq >= count)
     return CH_FAILED;
   else{
-    offset += seq * WAYPOINT_SIZE;
+    eeprom_led_on();
+    offset = HEADER_SIZE + seq * WAYPOINT_SIZE;
     dbfile->setPosition(offset);
-    result = dbfile->read((uint8_t *)wpp, WAYPOINT_SIZE);
+    result = dbfile->write((uint8_t *)wpp, WAYPOINT_SIZE);
+    eeprom_led_off();
     if (WAYPOINT_SIZE == result){
       count++;
       return CH_SUCCESS;

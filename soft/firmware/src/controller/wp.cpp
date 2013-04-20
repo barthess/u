@@ -18,6 +18,7 @@
  ******************************************************************************
  */
 extern uint16_t WpSeqNew;
+extern WpDB wpdb;
 
 /*
  ******************************************************************************
@@ -54,7 +55,7 @@ extern EventSource event_mavlink_out_mission_item_reached;
  *
  */
 void WpSeqOverwrite(uint16_t seq){
-  if (WpSeqNew < get_waypoint_count()){
+  if (WpSeqNew < wpdb.len()){
     chSysLock();
     WpSeqNew = seq;
     chSysUnlock();
@@ -89,7 +90,7 @@ goto_wp_result_t goto_wp(uint16_t seq){
   bool_t status = WP_FAILED;
 
   /* get current waypoint */
-  status = get_waypoint_from_eeprom(seq, &wp);
+  status = wpdb.load(&wp, seq);
   if (status != WP_SUCCESS)
     return WP_GOTO_FAILED;
   else{
