@@ -65,20 +65,13 @@ void LSM303::pickle(void){
   (void)t;
   sorti_3values(raw, Mag, *sortmtrx);
 
+  Mag[0] *= *xpol;
+  Mag[1] *= *ypol;
+  Mag[2] *= *zpol;
+
   mavlink_out_raw_imu_struct.xmag = Mag[0];
   mavlink_out_raw_imu_struct.ymag = Mag[1];
   mavlink_out_raw_imu_struct.zmag = Mag[2];
-
-//  /**/
-//  mag_stat_update(Mag);
-//
-//  /* Sensitivity is 0.1uT/LSB */
-//  mavlink_out_scaled_imu_struct.xmag = (Mag[0] - *xoffset) * *xpol * roundf(*xsens * 100.0f);
-//  mavlink_out_scaled_imu_struct.ymag = (Mag[1] - *yoffset) * *ypol * roundf(*ysens * 100.0f);
-//  mavlink_out_scaled_imu_struct.zmag = (Mag[2] - *zoffset) * *zpol * roundf(*zsens * 100.0f);
-//  comp_data.xmag = (float)(mavlink_out_scaled_imu_struct.xmag);
-//  comp_data.ymag = (float)(mavlink_out_scaled_imu_struct.ymag);
-//  comp_data.zmag = (float)(mavlink_out_scaled_imu_struct.zmag);
 
   comp_data.xmag = Mag[0] * 0.9143f;
   comp_data.ymag = Mag[0] * 0.0622f + Mag[1] * 1.0121f;
@@ -87,10 +80,6 @@ void LSM303::pickle(void){
   comp_data.xmag -= 86.922f;
   comp_data.ymag -= -3.4023f;
   comp_data.zmag -= -138.7114f;
-
-  comp_data.xmag *= *xpol;
-  comp_data.ymag *= *ypol;
-  comp_data.zmag *= *zpol;
 
   mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
   mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
