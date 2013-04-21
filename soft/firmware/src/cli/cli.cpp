@@ -12,6 +12,9 @@
 #include "timekeeping.hpp"
 #include "irq_storm.hpp"
 #include "cli_cal.hpp"
+#include "dcm_cli.hpp"
+#include "servo_cli.hpp"
+#include "sensors_cli.hpp"
 
 #if USE_EEPROM_TEST_SUIT
 #include "eeprom_testsuit.h"
@@ -50,7 +53,7 @@ static const ShellCmd_t chibiutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
     {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
     {"date",      &date_clicmd,       "print and set current date"},
-//    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
+    {"dcm",       &dcm_clicmd,        "print DCM in realtime until ^C pressed"},
     {"echo",      &echo_clicmd,       "echo it's input to terminal"},
     {"help",      &help_clicmd,       "this message"},
     {"info",      &uname_clicmd,      "system information"},
@@ -60,8 +63,8 @@ static const ShellCmd_t chibiutils[] = {
     {"ps",        &ps_clicmd,         "info about running threads"},
     {"reboot",    &reboot_clicmd,     "reboot system. Use with caution!"},
     {"selftest",  &selftest_clicmd,   "exectute selftests (stub)"},
-//    {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
-//    {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
+    {"sensors",   &sensors_clicmd,    "get human readable data from onboard sensors"},
+    {"servo",     &servo_clicmd,      "change actuators' state during servo limits tuning"},
     {"sleep",     &sleep_clicmd,      "put autopilot board in sleep state (do not use it)"},
     {"togglesh",  &togglesh_cmd,      "swap telemetry and shell channels"},
     {"uname",     &uname_clicmd,      "'info' alias"},
