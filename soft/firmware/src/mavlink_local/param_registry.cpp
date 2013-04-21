@@ -9,6 +9,7 @@
 #include "param_registry.hpp"
 #include "misc_math.hpp"
 #include "eeprom_file.hpp"
+#include "eeprom_file_tree.hpp"
 
 /*
  ******************************************************************************
@@ -142,6 +143,10 @@ ParamRegistry::ParamRegistry(void){
         chDbgPanic("name collision detected");
     }
   }
+
+  /* check reserved space in EEPROM */
+  chDbgCheck(((PARAM_RECORD_SIZE * this->paramCount()) < EEPROM_SETTINGS_SIZE),
+          "not enough space in file");
 }
 
 /**
@@ -203,8 +208,6 @@ bool ParamRegistry::load(void){
 
   acquire();
   ParamFile.setPosition(0);
-  chDbgCheck((sizeof(GlobalParam) < ParamFile.getSize()),
-            "not enough space in file");
 
   for (i = 0; i < this->paramCount(); i++){
 
