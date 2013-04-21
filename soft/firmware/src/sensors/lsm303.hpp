@@ -31,9 +31,10 @@ private:
   uint8_t rxbuf[LSM_RX_DEPTH];
   uint8_t txbuf[LSM_TX_DEPTH];
   /* calibration coefficients pointers */
-  float    const *xsens,   *ysens,   *zsens;
-  int32_t  const *xoffset, *yoffset, *zoffset;
-  int32_t  const *xpol,    *ypol,    *zpol;
+  float    const *xsens,    *ysens,    *zsens;
+  float    const *xoffset,  *yoffset,  *zoffset;
+  float    const *ellip_00, *ellip_10, *ellip_11, *ellip_20, *ellip_21, *ellip_22;
+  int32_t  const *xpol,     *ypol,     *zpol;
   uint32_t const *sortmtrx;
 };
 

@@ -95,7 +95,7 @@ void MMA8451::pickle(void) {
   raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
   raw[1] = complement2signed(rxbuf[3], rxbuf[4]);
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
-  sorti_3values(raw, Acc, *sortmtrx);
+  sort3(raw, Acc, *sortmtrx);
 
   mavlink_out_raw_imu_struct.xacc = Acc[0];
   mavlink_out_raw_imu_struct.yacc = Acc[1];

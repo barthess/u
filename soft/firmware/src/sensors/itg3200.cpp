@@ -64,7 +64,7 @@ void ITG3200::pickle(void){
   raw[1] = complement2signed(rxbuf[4], rxbuf[5]);
   raw[2] = complement2signed(rxbuf[6], rxbuf[7]);
 
-  sorti_3values(raw, Gyro, *sortmtrx);
+  sort3(raw, Gyro, *sortmtrx);
 
   /* fill debug struct */
   mavlink_out_raw_imu_struct.xgyro = Gyro[0];

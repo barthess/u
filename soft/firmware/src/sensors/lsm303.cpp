@@ -63,7 +63,7 @@ void LSM303::pickle(void){
   raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
   t      = complement2signed(rxbuf[6], rxbuf[7]) / 16; // deg * 8
   (void)t;
-  sorti_3values(raw, Mag, *sortmtrx);
+  sort3(raw, Mag, *sortmtrx);
 
   Mag[0] *= *xpol;
   Mag[1] *= *ypol;
@@ -73,13 +73,21 @@ void LSM303::pickle(void){
   mavlink_out_raw_imu_struct.ymag = Mag[1];
   mavlink_out_raw_imu_struct.zmag = Mag[2];
 
-  comp_data.xmag = Mag[0] * 0.9143f;
-  comp_data.ymag = Mag[0] * 0.0622f + Mag[1] * 1.0121f;
-  comp_data.zmag = Mag[0] * 0.2726f + Mag[1] * 0.2050f + Mag[2] * 0.5062f;
+  comp_data.xmag = Mag[0] * *ellip_00;
+  comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
+  comp_data.zmag = Mag[0] * *ellip_20 + Mag[1] * *ellip_21 + Mag[2] * *ellip_22;
 
-  comp_data.xmag -= 86.922f;
-  comp_data.ymag -= -3.4023f;
-  comp_data.zmag -= -138.7114f;
+//  comp_data.xmag = Mag[0] * 0.9143f;
+//  comp_data.ymag = Mag[0] * 0.0622f + Mag[1] * 1.0121f;
+//  comp_data.zmag = Mag[0] * 0.2726f + Mag[1] * 0.2050f + Mag[2] * 0.5062f;
+
+  comp_data.xmag -= *xoffset;
+  comp_data.ymag -= *yoffset;
+  comp_data.zmag -= *zoffset;
+
+//  comp_data.xmag -= 86.922f;
+//  comp_data.ymag -= -3.4023f;
+//  comp_data.zmag -= -138.7114f;
 
   mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
   mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
@@ -159,9 +167,16 @@ void LSM303::start(void){
     hw_init_fast();
   }
 
-  xoffset   = (const int32_t*)param_registry.valueSearch("MAG_xoffset");
-  yoffset   = (const int32_t*)param_registry.valueSearch("MAG_yoffset");
-  zoffset   = (const int32_t*)param_registry.valueSearch("MAG_zoffset");
+  xoffset   = (const float*)param_registry.valueSearch("MAG_xoffset");
+  yoffset   = (const float*)param_registry.valueSearch("MAG_yoffset");
+  zoffset   = (const float*)param_registry.valueSearch("MAG_zoffset");
+
+  ellip_00  = (const float*)param_registry.valueSearch("MAG_ellip_00");
+  ellip_10  = (const float*)param_registry.valueSearch("MAG_ellip_10");
+  ellip_11  = (const float*)param_registry.valueSearch("MAG_ellip_11");
+  ellip_20  = (const float*)param_registry.valueSearch("MAG_ellip_20");
+  ellip_21  = (const float*)param_registry.valueSearch("MAG_ellip_21");
+  ellip_22  = (const float*)param_registry.valueSearch("MAG_ellip_22");
 
   xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
   ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");
