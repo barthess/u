@@ -36,6 +36,7 @@ private:
   float    const *ellip_00, *ellip_10, *ellip_11, *ellip_20, *ellip_21, *ellip_22;
   int32_t  const *xpol,     *ypol,     *zpol;
   uint32_t const *sortmtrx;
+  int32_t  const *filterlen;
 };
 
 

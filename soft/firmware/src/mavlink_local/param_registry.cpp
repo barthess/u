@@ -203,8 +203,10 @@ bool ParamRegistry::load(void){
 
   acquire();
   ParamFile.setPosition(0);
+  chDbgCheck((sizeof(GlobalParam) < ParamFile.getSize()),
+            "not enough space in file");
 
-  for (i = 0; i < OnboardParamCount; i++){
+  for (i = 0; i < this->paramCount(); i++){
 
     /* read field from EEPROM and check number of red bytes */
     status = ParamFile.read(eeprombuf, PARAM_RECORD_SIZE);
@@ -259,7 +261,7 @@ bool ParamRegistry::saveAll(void){
   acquire();
   ParamFile.setPosition(0);
 
-  for (i = 0; i < OnboardParamCount; i++){
+  for (i = 0; i < this->paramCount(); i++){
 
     /* first copy parameter name in buffer */
     memcpy(eeprombuf, GlobalParam[i].name, PARAM_ID_SIZE);

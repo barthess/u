@@ -169,14 +169,14 @@ param = [
 ("TIME_zone",       -24,    0,      24,     "i", "default",    "Simple offset in hours."),
 
 #/* Length of filters for different systems. */
-("FLEN_adc",        0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_pres_dyn",   0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_pres_stat",  0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_climb",      0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_reserved1",  0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_reserved2",  0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_reserved3",  0,      6,      30,     "u", "default",    "NULL"),
-("FLEN_reserved4",  0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_adc",        1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_pres_dyn",   1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_pres_stat",  1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_climb",      1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_magnetom",   1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_reserved2",  1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_reserved3",  1,      16,     32768,  "i", "default",    "NULL"),
+("FLEN_reserved4",  1,      16,     32768,  "i", "default",    "NULL"),
 
 #/*  */
 ("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "default",    "Multiply odometer pulses count by this coefficient to get\\ntrip in meters. Coarse value is 0.05555555"),

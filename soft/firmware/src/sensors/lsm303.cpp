@@ -6,12 +6,14 @@
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "misc_math.hpp"
+#include "dsp.hpp"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
+//#define ALPHABETA_LEN   1024
 
 /*
  ******************************************************************************
@@ -34,6 +36,7 @@ extern ParamRegistry param_registry;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+static AlphaBeta<int32_t> xalphabeta, yalphabeta, zalphabeta;
 
 /*
  ******************************************************************************
@@ -69,9 +72,13 @@ void LSM303::pickle(void){
   Mag[1] *= *ypol;
   Mag[2] *= *zpol;
 
-  mavlink_out_raw_imu_struct.xmag = Mag[0];
-  mavlink_out_raw_imu_struct.ymag = Mag[1];
-  mavlink_out_raw_imu_struct.zmag = Mag[2];
+  mavlink_out_raw_imu_struct.xmag = xalphabeta.update(Mag[0], *filterlen);
+  mavlink_out_raw_imu_struct.ymag = yalphabeta.update(Mag[1], *filterlen);
+  mavlink_out_raw_imu_struct.zmag = zalphabeta.update(Mag[2], *filterlen);
+
+//  mavlink_out_raw_imu_struct.xmag = Mag[0];
+//  mavlink_out_raw_imu_struct.ymag = Mag[1];
+//  mavlink_out_raw_imu_struct.zmag = Mag[2];
 
   comp_data.xmag = Mag[0] * *ellip_00;
   comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
@@ -187,6 +194,7 @@ void LSM303::start(void){
   zsens     = (const float*)param_registry.valueSearch("MAG_zsens");
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
+  filterlen = (const int32_t*)param_registry.valueSearch("FLEN_magnetom");
 
   ready = true;
 }
