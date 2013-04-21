@@ -42,7 +42,7 @@ extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 /**
  *
  */
-static WORKING_AREA(SpeedometerThreadWA, 128);
+static WORKING_AREA(SpeedometerThreadWA, 192);
 static msg_t SpeedometerThread(void *arg){
   chRegSetThreadName("Speedometer");
   (void)arg;

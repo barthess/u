@@ -9,8 +9,11 @@
 #define SERVO_MAX 2000
 
 struct ServoConfig{
-  PWMDriver     *pwmp;
-  pwmchannel_t  pwmchannel; // what channel use servo. Enumeration from 0
+  PWMDriver       *pwmp;
+  pwmchannel_t    pwmchannel; // what channel used by servo. Enumeration from 0
+  const uint16_t  *min;
+  const uint16_t  *max;
+  const uint16_t  *neutr;
 };
 typedef struct ServoConfig ServoConfig;
 

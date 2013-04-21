@@ -27,17 +27,23 @@ extern GlobalFlags_t GlobalFlags;
  * PROTOTYPES
  ******************************************************************************
  */
+
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 /**
  * During boot process system must verify correctness of data in EEPROM.
  * This array used for automatic detection of changes in file "tree".
  */
-const inode_t param_inode = {
+static const inode_t param_inode = {
     EEPROM_FS_TOC_SIZE / EEPROM_PAGE_SIZE,
     0,
     EEPROM_SETTINGS_SIZE,
 };
 
-const inode_t mission_inode = {
+static const inode_t mission_inode = {
     128,
     0,
     64,
@@ -58,12 +64,6 @@ static const EepromMtdConfig mtd_cfg = {
 
 static EepromMtd   eemtd(&mtd_cfg);
 static EepromFs    eefs(&eemtd, reftoc, sizeof(reftoc)/sizeof(reftoc[0]));
-
-/*
- ******************************************************************************
- * GLOBAL VARIABLES
- ******************************************************************************
- */
 
 /*
  ******************************************************************************

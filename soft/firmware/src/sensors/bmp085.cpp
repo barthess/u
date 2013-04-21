@@ -150,8 +150,6 @@ void BMP085::process_pressure(uint32_t pval){
 BMP085::BMP085(I2CDriver* i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  flen_pres_stat = (const uint32_t*)param_registry.valueSearch("FLEN_pres_stat");
-  flen_climb     = (const uint32_t*)param_registry.valueSearch("FLEN_climb");
   measure = MEASURE_NONE;
   up  = 0; ut  = 0;
   ac1 = 0; ac2 = 0; ac3 = 0; b1 = 0; b2 = 0; mb = 0; mc = 0; md = 0;
@@ -217,6 +215,8 @@ void BMP085::start(void) {
   else
     hw_init_fast();
 
+  flen_pres_stat = (const uint32_t*)param_registry.valueSearch("FLEN_pres_stat");
+  flen_climb     = (const uint32_t*)param_registry.valueSearch("FLEN_climb");
   ready = true;
 }
 

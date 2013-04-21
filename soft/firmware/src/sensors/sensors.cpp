@@ -35,17 +35,18 @@ extern chibios_rt::BinarySemaphore itg3200_sem;
 extern chibios_rt::BinarySemaphore lsm303_sem;
 extern chibios_rt::BinarySemaphore mma8451_sem;
 extern chibios_rt::BinarySemaphore bmp085_sem;
+extern chibios_rt::BinarySemaphore imu_sem;
 
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static TMP75    tmp75(&I2CD2, tmp75addr);
+static TMP75    tmp75(&I2CD2,   tmp75addr);
 static ITG3200  itg3200(&I2CD2, itg3200addr);
-static LSM303   lsm303(&I2CD2, lsm303magaddr);
+static LSM303   lsm303(&I2CD2,  lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
-static BMP085   bmp085(&I2CD2, bmp085addr);
+static BMP085   bmp085(&I2CD2,  bmp085addr);
 static MAX1236  max1236(&I2CD2, max1236addr);
 
 /*
@@ -82,8 +83,8 @@ static msg_t PollTmp75Thread(void *arg){
 /**
  *
  */
-static WORKING_AREA(PollGyroThreadWA, 400);
-static msg_t PollGyroThread(void *arg){
+static WORKING_AREA(PollItg3200ThreadWA, 400);
+static msg_t PollItg3200Thread(void *arg){
   (void)arg;
   chRegSetThreadName("Itg3200");
   msg_t sem_status = RDY_OK;
@@ -98,6 +99,7 @@ static msg_t PollGyroThread(void *arg){
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
     itg3200.update();
+    imu_sem.signal();
   }
 
   itg3200.stop();
@@ -224,10 +226,10 @@ void SensorsInit(void){
           PollTmp75Thread,
           NULL);
 
-  chThdCreateStatic(PollGyroThreadWA,
-          sizeof(PollGyroThreadWA),
+  chThdCreateStatic(PollItg3200ThreadWA,
+          sizeof(PollItg3200ThreadWA),
           I2C_THREADS_PRIO,
-          PollGyroThread,
+          PollItg3200Thread,
           NULL);
 
   chThdCreateStatic(PollMax1236ThreadWA,
@@ -248,7 +250,7 @@ void SensorsInit(void){
           PollBaroThread,
           NULL);
 
-  ImuInit(NULL); chDbgPanic("this argument must not be NULL");
+  ImuInit(&imu_sem);
   GPSInit();
 }
 

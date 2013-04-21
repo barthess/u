@@ -113,11 +113,9 @@ bool WpDB::save(const mavlink_mission_item_t *wpp, uint16_t seq){
   if (seq >= count)
     return CH_FAILED;
   else{
-    eeprom_led_on();
     offset = HEADER_SIZE + seq * WAYPOINT_SIZE;
     dbfile->setPosition(offset);
     result = dbfile->write((uint8_t *)wpp, WAYPOINT_SIZE);
-    eeprom_led_off();
     if (WAYPOINT_SIZE == result){
       count++;
       return CH_SUCCESS;

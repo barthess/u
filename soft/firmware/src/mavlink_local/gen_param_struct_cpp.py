@@ -22,84 +22,124 @@ SEND_MAX    = 5000
 
 ONBOARD_PARAM_NAME_LENGTH = 15
 
-#    key            min     default max     type checker    help
-param_ns = [
-("SYS_ID",          1,      20,     255,    "u", "default", "System ID.\\n This value MUST BE FIRST in param structure. Value 0 reserved for ground station."),
-("SYS_mavtype",     0,      10,     16,     "u", "default", "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
-("SH_enable",       0,      0,      1,      "u", "default", "Set to 1 to switch off telemetry sending and enabling shell."),
 
-("IMU_still_thr",   100,    10000,  100000, "u", "default", "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
+#    key            min     default max     type checker    help
+param = [
+("SYS_ID",          1,      20,     255,    "u", "default",    "System ID.\\n This value MUST BE FIRST in param structure. Value 0 reserved for ground station."),
+("SYS_mavtype",     0,      10,     16,     "u", "default",    "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
+("SH_overxbee",     0,      0,      1,      "u", "default",    "When 1 than drop shell on xbee channel and telemetry on USB_CDC and vice versa."),
+
+("IMU_still_thr",   100,    10000,  100000, "u", "default",    "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
 
 #/* veights of different components */
-("IMU_accweight",   0.0,    0.005,  0.1,    "f", "default", "NULL"),
-("IMU_magweight",   0.0,    0.05,   0.9,    "f", "default", "NULL"),
-("IMU_gpsweight",   0.0,    0.05,   0.1,    "f", "default", "NULL"),
-("IMU_reserved1",   -1,     0,      1,      "f", "default", "NULL"),
-("IMU_reserved2",   -1,     0,      1,      "f", "default", "NULL"),
-("IMU_reserved3",   -1,     0,      1,      "f", "default", "NULL"),
+("IMU_accweight",   0.0,    0.005,  0.1,    "f", "default",    "NULL"),
+("IMU_magweight",   0.0,    0.05,   0.9,    "f", "default",    "NULL"),
+("IMU_gpsweight",   0.0,    0.05,   0.1,    "f", "default",    "NULL"),
+("IMU_reserved1",   -1,     0,      1,      "f", "default",    "NULL"),
+("IMU_reserved2",   -1,     0,      1,      "f", "default",    "NULL"),
+("IMU_reserved3",   -1,     0,      1,      "f", "default",    "NULL"),
 
 # /**** Magnetometer ****/
 # /* zero offsets */
-("MAG_xoffset",     -5000,  0,      5000,   "i", "default", "NULL"),
-("MAG_yoffset",     -5000,  0,      5000,   "i", "default", "NULL"),
-("MAG_zoffset",     -5000,  0,      5000,   "i", "default", "NULL"),
+("MAG_xoffset",     -5000,  0,      5000,   "i", "default",    "Sphere center offset"),
+("MAG_yoffset",     -5000,  0,      5000,   "i", "default",    "Sphere center offset"),
+("MAG_zoffset",     -5000,  0,      5000,   "i", "default",    "Sphere center offset"),
 # /* axis sensitivity */
-("MAG_xsens",       0.001,  0.1,    1.0,    "f", "default", "NULL"),
-("MAG_ysens",       0.001,  0.1,    1.0,    "f", "default", "NULL"),
-("MAG_zsens",       0.001,  0.1,    1.0,    "f", "default", "NULL"),
+("MAG_xsens",       0.001,  0.1,    1.0,    "f", "default",    "NULL"),
+("MAG_ysens",       0.001,  0.1,    1.0,    "f", "default",    "NULL"),
+("MAG_zsens",       0.001,  0.1,    1.0,    "f", "default",    "NULL"),
 # /* axis polarities. Relative to device axis */
 ("MAG_xpol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("MAG_ypol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("MAG_zpol",        -1,     1,      1,      "i", "polarity","NULL"),
 # /* declination in degrees */
-("MAG_declinate",   -90,    7,      90,     "i", "default", "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
+("MAG_declinate",   -90,    7,      90,     "i", "default",    "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
 # /* count of samples to zero calibration */
-("MAG_zerocnt",     256,    512,    4096,   "i", "default", "NULL"),
+("MAG_zerocnt",     256,    512,    4096,   "i", "default",    "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
-("MAG_reserved2",   0,      0,      4096,   "u", "default", "NULL"),
+("MAG_vectorlen",   0,      10,     4096,   "u", "default",    "Length of magnetic flux vector acquired during sphere offset calculation"),
 
 #/**** accelerometer ****/
 #/* zero offsets */
-("ACC_xoffset",     -100,   0,      100,    "i", "default", "NULL"),
-("ACC_yoffset",     -100,   0,      100,    "i", "default", "NULL"),
-("ACC_zoffset",     -100,   0,      100,    "i", "default", "NULL"),
+("ACC_xoffset",     -100,   0,      100,    "i", "default",    "NULL"),
+("ACC_yoffset",     -100,   0,      100,    "i", "default",    "NULL"),
+("ACC_zoffset",     -100,   0,      100,    "i", "default",    "NULL"),
 #/* sens LSB/g, nominals: 4096, 8192, 16384 ****/
-("ACC_xsens",       3000,   8192,   17000,  "u", "default", "sens LSB/g, nominals: 4096, 8192, 16384"),
-("ACC_ysens",       3000,   8192,   17000,  "u", "default", "sens LSB/g, nominals: 4096, 8192, 16384"),
-("ACC_zsens",       3000,   8192,   17000,  "u", "default", "sens LSB/g, nominals: 4096, 8192, 16384"),
+("ACC_xsens",       3000,   8192,   17000,  "u", "default",    "sens LSB/g, nominals: 4096, 8192, 16384"),
+("ACC_ysens",       3000,   8192,   17000,  "u", "default",    "sens LSB/g, nominals: 4096, 8192, 16384"),
+("ACC_zsens",       3000,   8192,   17000,  "u", "default",    "sens LSB/g, nominals: 4096, 8192, 16384"),
 #/* axis polarities. Relative to device axis  */
 ("ACC_xpol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("ACC_ypol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("ACC_zpol",        -1,     1,      1,      "i", "polarity","NULL"),
 ("ACC_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
-("ACC_reserved2",   -1,     1,      1,      "i", "default", "NULL"),
+("ACC_reserved2",   -1,     1,      1,      "i", "default",    "NULL"),
 
 #/* Gyroscope */
 #/* sens (LSB/(deg/s)) */
-("GYRO_xsens",      7.0,    14.375, 30.0,   "f", "default", "NULL"),
-("GYRO_ysens",      7.0,    14.375, 30.0,   "f", "default", "NULL"),
-("GYRO_zsens",      7.0,    14.375, 30.0,   "f", "default", "NULL"),
+("GYRO_xsens",      7.0,    14.375, 30.0,   "f", "default",    "NULL"),
+("GYRO_ysens",      7.0,    14.375, 30.0,   "f", "default",    "NULL"),
+("GYRO_zsens",      7.0,    14.375, 30.0,   "f", "default",    "NULL"),
 #/* polarities */
 ("GYRO_xpol",       -1,     1,      1,      "i", "polarity","NULL"),
 ("GYRO_ypol",       -1,     1,      1,      "i", "polarity","NULL"),
 ("GYRO_zpol",       -1,     1,      1,      "i", "polarity","NULL"),
-#/* sens (LSB/(deg/s)) */
-("GYRO_xoffset",    -70.0,  0.0,    70.0,   "f", "default", "NULL"),
-("GYRO_yoffset",    -70.0,  0.0,    70.0,   "f", "default", "NULL"),
-("GYRO_zoffset",    -70.0,  0.0,    70.0,   "f", "default", "NULL"),
 
-("GYRO_zerocnt",    512,    2048,   16384,  "i", "default", "Sample count for zeroing using accumulated sums"),
-("GYRO_x_zerosum",  -20000000, 0, 20000000, "i", "default", "accumulated sum X"),
-("GYRO_y_zerosum",  -20000000, 0, 20000000, "i", "default", "accumulated sum Y"),
-("GYRO_z_zerosum",  -20000000, 0, 20000000, "i", "default", "accumulated sum Z"),
+("GYRO_zerocnt",    512,    2048,   16384,  "i", "default",    "Sample count for zeroing procedure"),
+("GYRO_x_offset",  -2000,   0,      2000,   "f", "default",    "Cached zero offset for faster startup"),
+("GYRO_y_offset",  -2000,   0,      2000,   "f", "default",    "Cached zero offset for faster startup"),
+("GYRO_z_offset",  -2000,   0,      2000,   "f", "default",    "Cached zero offset for faster startup"),
 ("GYRO_sortmtrx",   0,  0b100010001, 1,     "u", "sort_mtrx","Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 
-("GYRO_reserved3",  -20000000, 0, 20000000, "i", "default", "NULL"),
+("GYRO_reserved3",  -20000000, 0, 20000000, "i", "default",    "NULL"),
 
 #/**** PMU - pressure measurement unit ****/
 #// coefficients for thermal compensation
-("PMU_reserved0",   -2000000, 0, 2000000,   "i", "default", "NULL"),
-("PMU_reserved1",   -2000000, 0, 2000000,   "i", "default", "NULL"),
+("PMU_reserved0",   -2000000, 0, 2000000,   "i", "default",    "NULL"),
+("PMU_reserved1",   -2000000, 0, 2000000,   "i", "default",    "NULL"),
+
+#/**** ADC coefficients ****/
+("ADC_car_I_k",     -1000000, 0, 1000000,   "i", "default",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor ground rover"),
+("ADC_car_I_b",     -1000000, 0, 1000000,   "i", "default",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor ground rover"),
+#// secondary voltage. на столько надо умножить, чтобы получить uV
+("ADC_SV_gain",     0,      0,      122400, "u", "default",    "NULL"),
+#// main voltage. на столько надо умножить, чтобы получить uV
+("ADC_MV_gain",     0,      0,      122400, "u", "default",    "NULL"),
+("ADC_plane_I_k",   -1000000, 0, 1000000,   "i", "default",    "k coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor fixed wing"),
+("ADC_plane_I_b",   -1000000, 0, 1000000,   "i", "default",    "b coefficient for calculation from ADC values to uA using formulae y=kx+b\\nfor fixed wing"),
+
+#/**** Bttery parameters ****/
+("BAT_cap",         0,      3000,   11000,  "u", "default",    "Battery capacitance (mAh)"),
+("BAT_fill",        0,      0,      100,    "u", "default",    "Start battery filling in percents"),
+
+#/**** Servos coefficients ****/
+("SERVO_0_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_0_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_0_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_1_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_1_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_1_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_2_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_2_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_2_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_3_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_3_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_3_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_4_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_4_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_4_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_5_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_5_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_5_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_6_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_6_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_6_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_7_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_7_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_7_neutr",   SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
+#/* car specific settings (throttle) */
+("SERVO_car_max",   1,         1500, SERVO_MAX, "u", "default","NULL"),
+("SERVO_car_dz",    1,         16,   64,        "u", "default","NULL"),
 
 #/* intervals between sending different data (mS) */
 ("T_raw_imu",       SEND_MIN, 0, SEND_MAX, "u", "send_tmo","Interval of sending this data in milliseconds.\\nSet it to 0 for disabling"),
@@ -119,117 +159,50 @@ param_ns = [
 ("T_reserved6",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
 
 #/* Timezone. */
-("TIME_zone",       -24,    0,      24,     "i", "default", "Simple offset in hours."),
+("TIME_zone",       -24,    0,      24,     "i", "default",    "Simple offset in hours."),
 
 #/* Length of filters for different systems. */
-("FLEN_adc",        0,      6,      30,     "u", "default", "NULL"),
-("FLEN_pres_dyn",   0,      6,      30,     "u", "default", "NULL"),
-("FLEN_pres_stat",  0,      6,      30,     "u", "default", "NULL"),
-("FLEN_climb",      0,      6,      30,     "u", "default", "NULL"),
-("FLEN_reserved1",  0,      6,      30,     "u", "default", "NULL"),
-("FLEN_reserved2",  0,      6,      30,     "u", "default", "NULL"),
-("FLEN_reserved3",  0,      6,      30,     "u", "default", "NULL"),
-("FLEN_reserved4",  0,      6,      30,     "u", "default", "NULL"),
-
-#/**** Variables for debugging purposes ****/
-("DBG_reserved0",   0,      0,      10000,  "u", "default", "NULL"),
-("DBG_reserved1",   0,      0,      10000,  "u", "default", "NULL"),
-("DBG_reserved2",   0,      0,      10000,  "u", "default", "NULL"),
-
-#/**** fake field with 14 symbols name ****/
-("param_end_mark",  0,      0,      1224,   "u", "default", "Fake parameter with maximum allowable name length"),
-]
-
-
-
-#    key            min     default max     type checker    help
-param_acs = [
-("SYS_ID",          1,      20,     255,    "u", "default", "System ID.\\n This value MUST BE FIRST in param structure. Value 0 reserved for ground station."),
-("SYS_mavtype",     0,      10,     16,     "u", "default", "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
-("SH_enable",       0,      0,      1,      "u", "default", "Set to 1 to switch off telemetry sending and enabling shell."),
-
-#/**** Servos coefficients ****/
-("SERVO_1_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_1_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_1_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_2_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_2_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_2_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_3_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_3_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_3_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_4_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_4_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_4_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_5_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_5_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_5_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_6_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_6_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_6_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_7_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_7_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_7_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_8_min",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_8_max",     SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-("SERVO_8_neutra",  SERVO_MIN, 1500, SERVO_MAX, "u", "default","NULL"),
-
-#/* intervals between sending different data (mS) */
-("T_reserved0",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved1",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved2",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved3",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved4",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved5",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved6",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-
-#/* Timezone. */
-("TIME_zone",       -24,    0,      24,     "i", "default", "Simple offset in hours."),
+("FLEN_adc",        0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_pres_dyn",   0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_pres_stat",  0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_climb",      0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_reserved1",  0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_reserved2",  0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_reserved3",  0,      6,      30,     "u", "default",    "NULL"),
+("FLEN_reserved4",  0,      6,      30,     "u", "default",    "NULL"),
 
 #/*  */
-("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "default", "Multiply odometer pulses count by this coefficient to get\\ntrip in meters. Coarse value is 0.05555555"),
+("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "default",    "Multiply odometer pulses count by this coefficient to get\\ntrip in meters. Coarse value is 0.05555555"),
 #/**** pid coefficients for speed control ****/
-("SPD_iGain",       -1.0,   0,      1.0,    "f", "default", "NULL"),
-("SPD_pGain",       -200.0, 0,      200.0,  "f", "default", "NULL"),
-("SPD_dGain",       -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("SPD_iMin",        -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("SPD_iMax",        -10000.0, 0, 10000.0,   "f", "default", "NULL"),
+("SPD_iGain",       -1.0,   0,      1.0,    "f", "default",    "NULL"),
+("SPD_pGain",       -200.0, 0,      200.0,  "f", "default",    "NULL"),
+("SPD_dGain",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("SPD_iMin",        -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("SPD_iMax",        -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 #/**** pid coefficients for heading control ****/
-("HEAD_iGain",      -1.0,   0,      1.0,    "f", "default", "NULL"),
-("HEAD_pGain",      -200.0, 0,      200.0,  "f", "default", "NULL"),
-("HEAD_dGain",      -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("HEAD_iMin",       -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("HEAD_iMax",       -10000.0, 0, 10000.0,   "f", "default", "NULL"),
+("HEAD_iGain",      -1.0,   0,      1.0,    "f", "default",    "NULL"),
+("HEAD_pGain",      -200.0, 0,      200.0,  "f", "default",    "NULL"),
+("HEAD_dGain",      -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("HEAD_iMin",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("HEAD_iMax",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 #/* device's speed limits */
-("SPD_speed_min",   0.0,    0,      60.0,   "f", "default", "NULL"),
-("SPD_speed_max",   0.0,    0,      60.0,   "f", "default", "NULL"),
+("SPD_speed_min",   0.0,    0,      60.0,   "f", "default",    "NULL"),
+("SPD_speed_max",   0.0,    0,      60.0,   "f", "default",    "NULL"),
 #/**** pid coefficients for cross track correction ****/
-("XTRACK_iGain",    -1.0,   0,      1.0,    "f", "default", "NULL"),
-("XTRACK_pGain",    -200.0, 0,      200.0,  "f", "default", "NULL"),
-("XTRACK_dGain",    -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("XTRACK_iMin",     -10000.0, 0, 10000.0,   "f", "default", "NULL"),
-("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default", "NULL"),
+("XTRACK_iGain",    -1.0,   0,      1.0,    "f", "default",    "NULL"),
+("XTRACK_pGain",    -200.0, 0,      200.0,  "f", "default",    "NULL"),
+("XTRACK_dGain",    -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("XTRACK_iMin",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 
 #/**** Variables for debugging purposes ****/
-("DBG_reserved0",   0,      0,      10000,  "u", "default", "NULL"),
-("DBG_reserved1",   0,      0,      10000,  "u", "default", "NULL"),
-("DBG_reserved2",   0,      0,      10000,  "u", "default", "NULL"),
+("DBG_reserved0",   0,      0,      10000,  "u", "default",    "NULL"),
+("DBG_reserved1",   0,      0,      10000,  "u", "default",    "NULL"),
+("DBG_reserved2",   0,      0,      10000,  "u", "default",    "NULL"),
 
 #/**** fake field with 14 symbols name ****/
-("param_end_mark",  0,      0,      1224,   "u", "default", "Fake parameter with maximum allowable name length"),
+("param_end_mark",  0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ]
-
-
-
-# check what we have to use as parameter array
-if args.name == "ns":
-    param = param_ns
-elif args.name == "acs":
-    param = param_acs
-else:
-    print "wrong name"
-    exit(1)
-
 
 ######### checkers ###############
 # name lengths

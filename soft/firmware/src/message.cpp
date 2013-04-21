@@ -1,6 +1,7 @@
 #include "uav.h"
 #include "global_flags.h"
 #include "message.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -14,6 +15,7 @@
  ******************************************************************************
  */
 extern GlobalFlags_t GlobalFlags;
+extern ParamRegistry param_registry;
 
 /* */
 chibios_rt::MailboxBuffer<1> speedometer_mb;
@@ -188,16 +190,12 @@ void MavInit(void){
   mavlink_system_struct.compid = MAV_COMP_ID_ALL;     ///< The component sending the message, it could be also a Linux process
   mavlink_system_struct.state  = MAV_STATE_BOOT;
   mavlink_system_struct.mode   = MAV_MODE_PREFLIGHT;
-
-  //mavlink_system_struct.type   = MAV_TYPE_FIXED_WING;
-
-  chDbgPanic("uncomment next line");
-  //mavlink_system_struct.type = *(uint8_t *)ValueSearch("SYS_mavtype");
+  mavlink_system_struct.type = *(uint8_t *)param_registry.valueSearch("SYS_mavtype");
 }
 
 /**
  *
  */
 void ParamSendOut(void){
-  chDbgPanic("unrealized");
+  chEvtBroadcastFlags(&event_mavlink_out_param_value, EVMSK_MAVLINK_OUT_PARAM_VALUE);
 }

@@ -4,6 +4,7 @@
 #include "sensors.hpp"
 #include "message.hpp"
 #include "param_registry.hpp"
+#include "logger.hpp"
 
 /*
  ******************************************************************************
@@ -119,8 +120,8 @@ static msg_t PowerKeeperThread(void *arg){
       mavlink_out_sys_status_struct.battery_remaining = 0;
     mavlink_out_sys_status_struct.current_battery   = (uint16_t)(comp_data.main_current / 10);
     mavlink_out_sys_status_struct.voltage_battery   = comp_data.secondary_voltage;
-    chDbgPanic("uncomment next line");
-    //log_write_schedule(MAVLINK_MSG_ID_SYS_STATUS, NULL, 0);
+
+    log_write_schedule(MAVLINK_MSG_ID_SYS_STATUS, NULL, 0);
 
     chThdSleepUntil(time);
   }

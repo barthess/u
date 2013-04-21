@@ -178,7 +178,7 @@ Thread* param_clicmd(int argc, const char * const * argv, SerialDriver *sdp){
   param_status_t status;
 
   /* wait until value uninitialized (just to be safe) */
-  while (GlobalFlags.parameters_got != 1)
+  while (GlobalFlags.parameters_loaded != 1)
     chThdSleepMilliseconds(10);
 
   /* no arguments */

@@ -39,7 +39,7 @@ extern chibios_rt::BinarySemaphore servo_updated_sem;
 #define RELOAD_CAR    SERVO_MAX
 
 /**/
-#define SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
+//#define SERVO_COUNT = (sizeof(servocfg_array) / sizeof(ServoConfig));
 
 /*
  ******************************************************************************
@@ -96,19 +96,16 @@ static const PWMConfig pwm1car_cfg = {
 /**
  * массив конфигов серв
  */
-static const ServoConfig servocfg_array[] = {
-    {&PWMD1, 0},
-    {&PWMD1, 1},
-    {&PWMD1, 2},
-    {&PWMD1, 3},
-    {&PWMD4, 0},
-    {&PWMD4, 1},
-    {&PWMD4, 2},
-    {&PWMD4, 3},
+static ServoConfig servocfg_array[] = {
+    {&PWMD1, 0, NULL, NULL, NULL},
+    {&PWMD1, 1, NULL, NULL, NULL},
+    {&PWMD1, 2, NULL, NULL, NULL},
+    {&PWMD1, 3, NULL, NULL, NULL},
+    {&PWMD4, 0, NULL, NULL, NULL},
+    {&PWMD4, 1, NULL, NULL, NULL},
+    {&PWMD4, 2, NULL, NULL, NULL},
+    {&PWMD4, 3, NULL, NULL, NULL},
 };
-
-/* смещение блока настроек серв в глобальном блоке настроек */
-static int32_t servoblock_index = -1;
 
 /* размер мертвой зоны, актуален только для ручного управления */
 static uint32_t const *car_dz;
@@ -137,19 +134,16 @@ static void pwm4plane_cb(PWMDriver *pwmp){
  * @param[in]   n     номер сервы, нумерация с 0.
  * @param[in]   angle отклонение сервы в условных единицах 0..255
  */
-static void _servo_set_angle(uint16_t n, uint8_t angle){
+static void _servo_set_angle(uint16_t i, uint8_t angle){
   uint16_t len = 0;
   uint16_t min = 0;
   uint16_t max = 0;
   uint16_t neutral = 0;
   uint16_t val = 0;
-  uint16_t i = servoblock_index + (n) * 3;
 
-  chDbgPanic("uncomment next 3 lines");
-//  min = GlobalParam[i].valuep->u32 & 0xFFFF;
-//  max = GlobalParam[i+1].valuep->u32 & 0xFFFF;
-//  neutral = GlobalParam[i+2].valuep->u32 & 0xFFFF;
-  (void)i;
+  min = *(servocfg_array[i].min);
+  max = *(servocfg_array[i].max);
+  neutral = *(servocfg_array[i].neutr);
 
   if (angle > 128){
     len = max - neutral;
@@ -159,7 +153,7 @@ static void _servo_set_angle(uint16_t n, uint8_t angle){
     len = neutral - min;
     val = neutral - (len - ((len * angle) >> 7));
   }
-  pwmEnableChannel(servocfg_array[n].pwmp, servocfg_array[n].pwmchannel, val);
+  pwmEnableChannel(servocfg_array[i].pwmp, servocfg_array[i].pwmchannel, val);
 }
 
 /*
@@ -250,11 +244,22 @@ void ServoCarThrustSet(uint8_t angle){
  */
 void ServoInit(void){
 
-  chDbgCheck(GlobalFlags.parameters_got == 1, "parameters not ready");
-  chDbgPanic("normal parameters reading here");
-//  servoblock_index = key_index_search("SERVO_1_min");
-//  if (servoblock_index == -1)
-//    chDbgPanic("key not found");
+  chDbgCheck(GlobalFlags.parameters_loaded == 1, "parameters not ready");
+
+  char key_min[]   = "SERVO_0_min";
+  char key_max[]   = "SERVO_0_max";
+  char key_neutr[] = "SERVO_0_neutr";
+
+  const uint8_t len = sizeof(servocfg_array) / sizeof(servocfg_array[0]);
+  uint8_t i = 0;
+  for (i=0; i<len; i++){
+    key_min[6]   = i + '0';
+    key_max[6]   = i + '0';
+    key_neutr[6] = i + '0';
+    servocfg_array[i].min   = (const uint16_t*)param_registry.valueSearch(key_min);
+    servocfg_array[i].max   = (const uint16_t*)param_registry.valueSearch(key_max);
+    servocfg_array[i].neutr = (const uint16_t*)param_registry.valueSearch(key_neutr);
+  }
 
   car_dz = (const uint32_t*)param_registry.valueSearch("SERVO_car_dz");
 

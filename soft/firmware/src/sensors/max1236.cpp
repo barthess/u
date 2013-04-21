@@ -57,7 +57,6 @@ static alphabeta_instance_q31 press_diff_filter;
 MAX1236::MAX1236(I2CDriver* i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  flen_pres_dyn = (const uint32_t*)param_registry.valueSearch("FLEN_pres_dyn");
   ready = false;
 }
 
@@ -106,6 +105,8 @@ void MAX1236::start(void) {
     hw_init_full();
   else
     hw_init_fast();
+
+  flen_pres_dyn = (const uint32_t*)param_registry.valueSearch("FLEN_pres_dyn");
 
   ready = true;
 }

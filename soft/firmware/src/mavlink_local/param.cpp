@@ -232,5 +232,5 @@ void ParametersInit(void){
           ParametersThread,
           NULL);
 
-  setGlobalFlag(GlobalFlags.parameters_ready);
+  setGlobalFlag(GlobalFlags.parameters_loaded);
 }

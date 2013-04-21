@@ -103,20 +103,6 @@ void LSM303::pickle(void){
 LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  xoffset   = (const int32_t*)param_registry.valueSearch("MAG_xoffset");
-  yoffset   = (const int32_t*)param_registry.valueSearch("MAG_yoffset");
-  zoffset   = (const int32_t*)param_registry.valueSearch("MAG_zoffset");
-
-  xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
-  ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");
-  zpol      = (const int32_t*)param_registry.valueSearch("MAG_zpol");
-
-  xsens     = (const float*)param_registry.valueSearch("MAG_xsens");
-  ysens     = (const float*)param_registry.valueSearch("MAG_ysens");
-  zsens     = (const float*)param_registry.valueSearch("MAG_zsens");
-
-  sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
-
   ready = false;
 }
 
@@ -183,5 +169,20 @@ void LSM303::start(void){
   else{
     hw_init_fast();
   }
+
+  xoffset   = (const int32_t*)param_registry.valueSearch("MAG_xoffset");
+  yoffset   = (const int32_t*)param_registry.valueSearch("MAG_yoffset");
+  zoffset   = (const int32_t*)param_registry.valueSearch("MAG_zoffset");
+
+  xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("MAG_zpol");
+
+  xsens     = (const float*)param_registry.valueSearch("MAG_xsens");
+  ysens     = (const float*)param_registry.valueSearch("MAG_ysens");
+  zsens     = (const float*)param_registry.valueSearch("MAG_zsens");
+
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
+
   ready = true;
 }

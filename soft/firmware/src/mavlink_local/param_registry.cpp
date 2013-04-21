@@ -97,7 +97,7 @@ int32_t ParamRegistry::key_index_search(const char* key){
 void *ParamRegistry::valueSearch(const char *key){
   int32_t i = -1;
 
-  chDbgCheck(GlobalFlags.parameters_ready == 1, "parameters not ready");
+  chDbgCheck(GlobalFlags.parameters_loaded == 1, "parameters not ready");
 
   i = this->key_index_search(key);
   if (i == -1){
@@ -261,8 +261,6 @@ bool ParamRegistry::saveAll(void){
 
   for (i = 0; i < OnboardParamCount; i++){
 
-    eeprom_led_on();
-
     /* first copy parameter name in buffer */
     memcpy(eeprombuf, GlobalParam[i].name, PARAM_ID_SIZE);
 
@@ -286,7 +284,6 @@ bool ParamRegistry::saveAll(void){
   }
 
   release();
-  eeprom_led_off();
   return PARAM_SUCCESS;
 }
 
@@ -316,12 +313,10 @@ bool ParamRegistry::syncParam(const char* key){
   ParamFile.setPosition(ParamFile.getPosition() - PARAM_VALUE_SIZE);
   v = ParamFile.readWord();
   if (v != GlobalParam[i].valuep->u32){
-    eeprom_led_on();
     ParamFile.setPosition(ParamFile.getPosition() - PARAM_VALUE_SIZE);
     status = ParamFile.writeWord(GlobalParam[i].valuep->u32);
     chDbgCheck(status == sizeof(uint32_t), "read failed");
     chThdSleep(ADDITIONAL_WRITE_TMO);
-    eeprom_led_off();
   }
 
   release();

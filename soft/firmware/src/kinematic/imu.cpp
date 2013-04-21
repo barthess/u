@@ -79,19 +79,13 @@ static msg_t Imu(void *arg) {
   chRegSetThreadName("IMU");
 
   msg_t sem_status = RDY_TIMEOUT;
-  float interval = 0; /* time between 2 gyro measurements */
+  float interval = 0.01; /* time between 2 gyro measurements */
 
   /* variables for regulate log writing frequency */
   uint32_t i = 0;
   const uint32_t decimator = 0b11;
 
-  /* wait until giro sampling time measured */
-  chDbgPanic("uncomment next lines");
-  while (GyroUpdatePeriodUs == 0)
-    chThdSleepMilliseconds(10);
-  interval = (((float)GyroUpdatePeriodUs)/1000000.0f);
-
-  while (TRUE) {
+  while (!chThdShouldTerminate()) {
     sem_status = semp->waitTimeout(MS2ST(100));
     if (sem_status == RDY_OK){
       dcmUpdate(((float)comp_data.xacc) / 1000,
@@ -106,7 +100,6 @@ static msg_t Imu(void *arg) {
                 interval);
 
       get_attitude(&mavlink_out_attitude_struct);
-      chDbgPanic("uncomment next line");
       log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
     }
   }

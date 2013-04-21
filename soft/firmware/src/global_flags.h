@@ -21,12 +21,12 @@ typedef struct GlobalFlags_t{
   uint32_t mission_loiter:1;
   //12
   uint32_t mission_abort:1;
-  uint32_t parameters_got:1;  /* parameters successfully retrieved from EEPROM */
+  uint32_t parameters_loaded:1;  /* parameters successfully retrieved from EEPROM */
   uint32_t i2c_ready:1;       /* i2c bus initialized */
   uint32_t messaging_ready:1;
   //16
   uint32_t shell_ready:1;
-  uint32_t parameters_ready:1;
+  uint32_t stub5:1;
   uint32_t stub6:1;
   uint32_t stub7:1;
   //20

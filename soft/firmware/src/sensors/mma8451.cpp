@@ -40,21 +40,6 @@ extern ParamRegistry param_registry;
 MMA8451::MMA8451(I2CDriver* i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  xoffset   = (const int32_t*)param_registry.valueSearch("ACC_xoffset");
-  yoffset   = (const int32_t*)param_registry.valueSearch("ACC_yoffset");
-  zoffset   = (const int32_t*)param_registry.valueSearch("ACC_zoffset");
-
-  xpol      = (const int32_t*)param_registry.valueSearch("ACC_xpol");
-  ypol      = (const int32_t*)param_registry.valueSearch("ACC_ypol");
-  zpol      = (const int32_t*)param_registry.valueSearch("ACC_zpol");
-
-  xsens     = (const uint32_t*)param_registry.valueSearch("ACC_xsens");
-  ysens     = (const uint32_t*)param_registry.valueSearch("ACC_ysens");
-  zsens     = (const uint32_t*)param_registry.valueSearch("ACC_zsens");
-
-  sortmtrx  = (const uint32_t*)param_registry.valueSearch("ACC_sortmtrx");
-  still_thr = (const uint32_t*)param_registry.valueSearch("IMU_still_thr");
-
   ready = false;
 }
 
@@ -74,6 +59,21 @@ void MMA8451::start(void) {
     hw_init_full();
   else
     hw_init_fast();
+
+  xoffset   = (const int32_t*)param_registry.valueSearch("ACC_xoffset");
+  yoffset   = (const int32_t*)param_registry.valueSearch("ACC_yoffset");
+  zoffset   = (const int32_t*)param_registry.valueSearch("ACC_zoffset");
+
+  xpol      = (const int32_t*)param_registry.valueSearch("ACC_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("ACC_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("ACC_zpol");
+
+  xsens     = (const uint32_t*)param_registry.valueSearch("ACC_xsens");
+  ysens     = (const uint32_t*)param_registry.valueSearch("ACC_ysens");
+  zsens     = (const uint32_t*)param_registry.valueSearch("ACC_zsens");
+
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("ACC_sortmtrx");
+  still_thr = (const uint32_t*)param_registry.valueSearch("IMU_still_thr");
 
   ready = true;
 }

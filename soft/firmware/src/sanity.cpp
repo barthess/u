@@ -6,6 +6,7 @@
 #include "message.hpp"
 #include "timekeeping.hpp"
 #include "bkp.hpp"
+#include "logger.hpp"
 
 /*
  ******************************************************************************
@@ -101,8 +102,7 @@ static msg_t SanityControlThread(void *arg) {
       mavlink_out_sys_status_struct.onboard_control_sensors_health  = mavlink_out_sys_status_struct.onboard_control_sensors_present;
     }
 
-    chDbgPanic("uncomment next line");
-    //log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
+    log_write_schedule(MAVLINK_MSG_ID_HEARTBEAT, NULL, 0);
 
     mavlink_out_sys_status_struct.load = getCpuLoad();
     /* how many times device was soft resetted */

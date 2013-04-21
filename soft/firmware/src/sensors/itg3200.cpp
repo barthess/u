@@ -105,20 +105,6 @@ void ITG3200::pickle(void){
 ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
-  xsens     = (const float*)param_registry.valueSearch("GYRO_xsens");
-  ysens     = (const float*)param_registry.valueSearch("GYRO_ysens");
-  zsens     = (const float*)param_registry.valueSearch("GYRO_zsens");
-
-  xpol      = (const int32_t*)param_registry.valueSearch("GYRO_xpol");
-  ypol      = (const int32_t*)param_registry.valueSearch("GYRO_ypol");
-  zpol      = (const int32_t*)param_registry.valueSearch("GYRO_zpol");
-
-  x_offset  = (const float*)param_registry.valueSearch("GYRO_x_offset");
-  y_offset  = (const float*)param_registry.valueSearch("GYRO_y_offset");
-  z_offset  = (const float*)param_registry.valueSearch("GYRO_z_offset");
-
-  sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
-
   ready = false;
 }
 
@@ -185,6 +171,21 @@ void ITG3200::start(void){
   else{
     hw_init_fast();
   }
+
+  xsens     = (const float*)param_registry.valueSearch("GYRO_xsens");
+  ysens     = (const float*)param_registry.valueSearch("GYRO_ysens");
+  zsens     = (const float*)param_registry.valueSearch("GYRO_zsens");
+
+  xpol      = (const int32_t*)param_registry.valueSearch("GYRO_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("GYRO_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("GYRO_zpol");
+
+  x_offset  = (const float*)param_registry.valueSearch("GYRO_x_offset");
+  y_offset  = (const float*)param_registry.valueSearch("GYRO_y_offset");
+  z_offset  = (const float*)param_registry.valueSearch("GYRO_z_offset");
+
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
+
   ready = true;
 }
 
