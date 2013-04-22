@@ -5,7 +5,7 @@
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "memfunc.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 
 /*
  ******************************************************************************

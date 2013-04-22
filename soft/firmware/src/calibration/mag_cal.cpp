@@ -4,7 +4,7 @@
 #include "global_flags.h"
 #include "mag_cal.hpp"
 #include "message.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 #include "sensors.hpp"
 #include "imu.hpp"
 #include "sanity.hpp"

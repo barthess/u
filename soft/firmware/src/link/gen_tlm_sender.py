@@ -75,7 +75,7 @@ thd_head = """
  * compare new values with old cached values
  * if changed - retune virtual timers
  */
-static WORKING_AREA(TlmSenderThreadWA, 256);
+static WORKING_AREA(TlmSenderThreadWA, 128);
 static msg_t TlmSenderThread(void *arg) {
   chRegSetThreadName("TLM_Scheduler");
   (void)arg;

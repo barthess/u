@@ -120,7 +120,7 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ADCInit_local(void){
+void ADCInitLocal(void){
   flen_adc = (uint32_t *)param_registry.valueSearch("FLEN_adc");
 
   adcStart(&ADCD1, &adccfg);

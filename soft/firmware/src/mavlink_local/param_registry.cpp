@@ -5,7 +5,7 @@
 #include "uav.h"
 #include "global_flags.h"
 #include "message.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 #include "param_registry.hpp"
 #include "misc_math.hpp"
 #include "eeprom_file.hpp"

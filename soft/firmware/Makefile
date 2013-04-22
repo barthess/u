@@ -108,19 +108,19 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/mma8451.cpp \
          src/sensors/bmp085.cpp \
          src/sensors/max1236.cpp \
-         src/sensors/speedometer.cpp
+         src/sensors/speedometer.cpp \
+         src/kinematic/imu.cpp \
 
 MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \
-         src/mavlink_local/mavlink_dbg.cpp \
-         src/mavlink_local/mavcmd_local.cpp \
+         src/mavlink_local/mavdbg.cpp \
+         src/mavlink_local/mavcmd.cpp \
          src/mavlink_local/param_cli.cpp \
          src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
          
-KINEMATICSRC = src/kinematic/imu.cpp \
-         src/kinematic/vector3d.cpp \
+KINEMATICSRC = src/kinematic/vector3d.cpp \
          src/kinematic/matrix.cpp \
          src/kinematic/dcm.cpp \
          src/kinematic/dcm_cli.cpp \
@@ -160,7 +160,6 @@ CPPSRC = $(CHCPPSRC) \
          src/eeprom/cpp/eeprom_fs.cpp \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom/cpp/eeprom_testsuit.cpp \
-         src/eeprom_file_tree.cpp \
          src/sensors/i2c_local.cpp \
          src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
@@ -170,6 +169,7 @@ CPPSRC = $(CHCPPSRC) \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \
+         src/storage/eeprom_file_tree.cpp \
          src/cli/cli.cpp \
          src/cli/cli_cmd.cpp \
          src/servo/servo.cpp \

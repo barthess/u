@@ -8,7 +8,7 @@ Do not edit it manually.
 #include <stdio.h>
 #include "message.hpp"
 #include "memfunc.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 
 extern mavlink_system_t mavlink_system_struct;
 

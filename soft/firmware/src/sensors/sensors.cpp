@@ -18,7 +18,6 @@
  * DEFINES
  ******************************************************************************
  */
-#define GYRO_TIMEOUT        MS2ST(100)
 #define ACCEL_SEM_TMO       MS2ST(100)
 #define BMP085_SEM_TMO      MS2ST(100)
 
@@ -30,12 +29,7 @@
 RawData raw_data;
 CompensatedData comp_data;
 extern GlobalFlags_t GlobalFlags;
-
-extern chibios_rt::BinarySemaphore itg3200_sem;
-extern chibios_rt::BinarySemaphore lsm303_sem;
-extern chibios_rt::BinarySemaphore mma8451_sem;
 extern chibios_rt::BinarySemaphore bmp085_sem;
-extern chibios_rt::BinarySemaphore imu_sem;
 
 /*
  ******************************************************************************
@@ -76,81 +70,6 @@ static msg_t PollTmp75Thread(void *arg){
     tmp75.update();
   }
   tmp75.stop();
-  chThdExit(0);
-  return 0;
-}
-
-/**
- *
- */
-static WORKING_AREA(PollItg3200ThreadWA, 400);
-static msg_t PollItg3200Thread(void *arg){
-  (void)arg;
-  chRegSetThreadName("Itg3200");
-  msg_t sem_status = RDY_OK;
-  int32_t retry = 10;
-
-  itg3200.start();
-
-  while (TRUE) {
-    sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
-    if (sem_status != RDY_OK){
-      retry--;
-      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
-    }
-    itg3200.update();
-    imu_sem.signal();
-  }
-
-  itg3200.stop();
-  chThdExit(0);
-  return 0;
-}
-
-/**
- *
- */
-static WORKING_AREA(PollLsmThreadWA, 512); /* large stack need for sphere calc */
-static msg_t PollLsmThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("Lsm303");
-
-  lsm303.start();
-
-  while (!chThdShouldTerminate()){
-    lsm303.update();
-    lsm303_sem.waitTimeout(MS2ST(200));
-  }
-
-  lsm303.stop();
-  chThdExit(0);
-  return 0;
-}
-
-/**
- *
- */
-static WORKING_AREA(PollAccelThreadWA, 256);
-static msg_t PollAccelThread(void *arg){
-  (void)arg;
-  chRegSetThreadName("Mma8451");
-
-  msg_t sem_status = RDY_OK;
-  int32_t retry = 10;
-
-  mma8451.start();
-
-  while (!chThdShouldTerminate()) {
-    sem_status = mma8451_sem.waitTimeout(ACCEL_SEM_TMO);
-    if (sem_status != RDY_OK){
-      retry--;
-      chDbgAssert(retry > 0, "PollAccelThread(), #1",
-            "probably no interrupts from accelerometer");
-    }
-    mma8451.update();
-  }
-
-  mma8451.stop();
   chThdExit(0);
   return 0;
 }
@@ -211,25 +130,13 @@ void SensorsInit(void){
 
   /* EXTI start. REMEMBER! I2C slaves and RTC need EXTI.*/
   ExtiInitLocal();
-  ADCInit_local();
+  ADCInitLocal();
 
   /* start different I2C sensors */
-  chThdCreateStatic(PollAccelThreadWA,
-          sizeof(PollAccelThreadWA),
-          I2C_THREADS_PRIO,
-          PollAccelThread,
-          NULL);
-
   chThdCreateStatic(PollTmp75ThreadWA,
           sizeof(PollTmp75ThreadWA),
           I2C_THREADS_PRIO,
           PollTmp75Thread,
-          NULL);
-
-  chThdCreateStatic(PollItg3200ThreadWA,
-          sizeof(PollItg3200ThreadWA),
-          I2C_THREADS_PRIO,
-          PollItg3200Thread,
           NULL);
 
   chThdCreateStatic(PollMax1236ThreadWA,
@@ -238,19 +145,13 @@ void SensorsInit(void){
           PollMax1236Thread,
           NULL);
 
-  chThdCreateStatic(PollLsmThreadWA,
-          sizeof(PollLsmThreadWA),
-          I2C_THREADS_PRIO,
-          PollLsmThread,
-          NULL);
-
   chThdCreateStatic(PollBaroThreadWA,
           sizeof(PollBaroThreadWA),
           I2C_THREADS_PRIO,
           PollBaroThread,
           NULL);
 
-  ImuInit(&imu_sem);
+  ImuInit();
   GPSInit();
 }
 

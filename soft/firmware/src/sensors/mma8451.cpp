@@ -144,14 +144,16 @@ void MMA8451::hw_init_full(void) {
   chThdSleepMilliseconds(2);
 
   txbuf[0] = ACCEL_CTRL_REG2;
-  txbuf[1] = 0b10; //High Resolution
-  txbuf[2] = 0b10; //Interrupt active high
-  txbuf[3] = 0b01; //Interrupt on data ready
+  txbuf[1] = 0b10;    // High Resolution
+  txbuf[2] = 0b10;    // Interrupt active high
+  //txbuf[3] = 0b01;  // Interrupt on data ready
+  txbuf[3] = 0;       // disable interrupts
   transmit(txbuf, 4, rxbuf, 0);
   chThdSleepMilliseconds(2);
 
   txbuf[0] = ACCEL_CTRL_REG1;
-  txbuf[1] = 0b11101; //100Hz, low noice, active
+  txbuf[1] = 0b10101; //200Hz, low noice, active
+  //txbuf[1] = 0b11101; //100Hz, low noice, active
   //txbuf[1] = 0b11001; //100Hz, normal noice, active
   //txbuf[1] = 0b100101; //50Hz, low noice, active
   transmit(txbuf, 2, rxbuf, 0);

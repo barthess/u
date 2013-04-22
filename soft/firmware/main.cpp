@@ -57,7 +57,7 @@ Giovanni
 #include "tlm_sender.hpp"
 #include "linkmgr.hpp"
 #include "controller.hpp"
-#include "mavcmd_local.hpp"
+#include "mavcmd.hpp"
 
 /*
  ******************************************************************************

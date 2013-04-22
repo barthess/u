@@ -4,7 +4,7 @@
 #ifndef ADC_H_
 #define ADC_H_
 
-void ADCInit_local(void);
+void ADCInitLocal(void);
 
 #endif /* ADC_H_ */
 

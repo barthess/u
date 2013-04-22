@@ -5,7 +5,7 @@
 #include "message.hpp"
 #include "waypoint_db.hpp"
 #include "wps.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 #include "eeprom_file_tree.hpp"
 
 /*

@@ -20,7 +20,7 @@ head = """
 #include "global_flags.h"
 #include <stdio.h>
 #include "message.hpp"
-#include "mavlink_dbg.hpp"
+#include "mavdbg.hpp"
 
 extern GlobalFlags_t GlobalFlags;
 

@@ -8,11 +8,17 @@
 #include "param_registry.hpp"
 #include "logger.hpp"
 
+#include "itg3200.hpp"
+#include "lsm303.hpp"
+#include "mma8451.hpp"
+#include "max1236.hpp"
+
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
+#define GYRO_TIMEOUT        MS2ST(100)
 
 /*
  ******************************************************************************
@@ -21,8 +27,8 @@
  */
 extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_out_attitude_struct;
-extern uint32_t GyroUpdatePeriodUs;
 extern ParamRegistry param_registry;
+extern chibios_rt::BinarySemaphore itg3200_sem;
 
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
@@ -33,7 +39,10 @@ float dcmEst[3][3] = {{1,0,0},
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float const *declinate;
+static float const *declination;
+static ITG3200  itg3200(&I2CD2, itg3200addr);
+static LSM303   lsm303(&I2CD2,  lsm303magaddr);
+static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 /*
  *******************************************************************************
@@ -45,7 +54,7 @@ static float const *declinate;
 /**
  * Get attitude from DCM
  */
-static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
+static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
     mavlink_attitude_struct->pitch  = -asinf(Rxz);
@@ -57,7 +66,7 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   }
 
   /* get yaw from DCM */
-  comp_data.heading = atan2f(Rxy, -Rxx) + PI - fdeg2rad(*declinate);
+  comp_data.heading = atan2f(Rxy, -Rxx) + PI - fdeg2rad(*declination);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
@@ -75,34 +84,48 @@ static void get_attitude(mavlink_attitude_t *mavlink_attitude_struct){
  */
 static WORKING_AREA(waImu, 512);
 static msg_t Imu(void *arg) {
-  chibios_rt::BinarySemaphore *semp = (chibios_rt::BinarySemaphore*)arg;
+  (void)arg;
   chRegSetThreadName("IMU");
 
-  msg_t sem_status = RDY_TIMEOUT;
+  msg_t sem_status = RDY_OK;
+  int32_t retry = 10;
   float interval = 0.01; /* time between 2 gyro measurements */
 
-  /* variables for regulate log writing frequency */
-  uint32_t i = 0;
-  const uint32_t decimator = 0b11;
+  lsm303.start();
+  mma8451.start();
+  itg3200.start();
 
   while (!chThdShouldTerminate()) {
-    sem_status = semp->waitTimeout(MS2ST(100));
-    if (sem_status == RDY_OK){
-      dcmUpdate(((float)comp_data.xacc) / 1000,
-                ((float)comp_data.yacc) / 1000,
-                ((float)comp_data.zacc) / 1000,
-                comp_data.xgyro,
-                comp_data.ygyro,
-                comp_data.zgyro,
-                comp_data.xmag,
-                comp_data.ymag,
-                comp_data.zmag,
-                interval);
-
-      get_attitude(&mavlink_out_attitude_struct);
-      log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, &i, decimator);
+    sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
+    if (sem_status != RDY_OK){
+      retry--;
+      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
+
+    itg3200.update();
+    lsm303.update();
+    mma8451.update();
+
+    dcmUpdate(((float)comp_data.xacc) / 1000,
+              ((float)comp_data.yacc) / 1000,
+              ((float)comp_data.zacc) / 1000,
+              comp_data.xgyro,
+              comp_data.ygyro,
+              comp_data.zgyro,
+              comp_data.xmag,
+              comp_data.ymag,
+              comp_data.zmag,
+              interval);
+
+    calc_attitude(&mavlink_out_attitude_struct);
+    log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
+
+  lsm303.stop();
+  mma8451.stop();
+  itg3200.stop();
+
+  chThdExit(0);
   return 0;
 }
 
@@ -111,11 +134,25 @@ static msg_t Imu(void *arg) {
  * EXPORTED FUNCTIONS
  *******************************************************************************
  */
-void ImuInit(chibios_rt::BinarySemaphore *imu_semp){
-  declinate = (const float*)param_registry.valueSearch("MAG_declinate");
+void ImuInit(void){
+  declination = (const float*)param_registry.valueSearch("MAG_declinate");
 
   dcmInit();
-  chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, imu_semp);
+  chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
+}
+
+/**
+ *
+ */
+bool ImuTrigCalibrateGyro(void){
+  return CH_FAILED;
+}
+
+/**
+ *
+ */
+bool ImuTrigCalibrateMag(void){
+  return lsm303.trigCal();
 }
 
 /**

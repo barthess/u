@@ -6,7 +6,6 @@
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "misc_math.hpp"
-#include "dsp.hpp"
 
 /*
  ******************************************************************************
@@ -20,10 +19,13 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
-extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
 extern ParamRegistry param_registry;
+
+extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
+
+extern EventSource event_mavlink_out_raw_imu;
 
 /*
  ******************************************************************************
@@ -36,7 +38,6 @@ extern ParamRegistry param_registry;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static AlphaBeta<int32_t> xalphabeta, yalphabeta, zalphabeta;
 
 /*
  ******************************************************************************
@@ -72,13 +73,21 @@ void LSM303::pickle(void){
   Mag[1] *= *ypol;
   Mag[2] *= *zpol;
 
-  mavlink_out_raw_imu_struct.xmag = xalphabeta.update(Mag[0], *filterlen);
-  mavlink_out_raw_imu_struct.ymag = yalphabeta.update(Mag[1], *filterlen);
-  mavlink_out_raw_imu_struct.zmag = zalphabeta.update(Mag[2], *filterlen);
-
-//  mavlink_out_raw_imu_struct.xmag = Mag[0];
-//  mavlink_out_raw_imu_struct.ymag = Mag[1];
-//  mavlink_out_raw_imu_struct.zmag = Mag[2];
+  if (calibration){
+    mavlink_out_raw_imu_struct.xmag = xalphabeta.update(Mag[0], *filterlen);
+    mavlink_out_raw_imu_struct.ymag = yalphabeta.update(Mag[1], *filterlen);
+    mavlink_out_raw_imu_struct.zmag = zalphabeta.update(Mag[2], *filterlen);
+    sample_cnt++;
+    if (*zerocnt <= sample_cnt){
+      calibration = false;
+      chEvtBroadcastFlags(&event_mavlink_out_raw_imu, EVMSK_MAVLINK_OUT_RAW_IMU);
+    }
+  }
+  else{
+    mavlink_out_raw_imu_struct.xmag = Mag[0];
+    mavlink_out_raw_imu_struct.ymag = Mag[1];
+    mavlink_out_raw_imu_struct.zmag = Mag[2];
+  }
 
   comp_data.xmag = Mag[0] * *ellip_00;
   comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
@@ -106,7 +115,8 @@ void LSM303::pickle(void){
  */
 LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr),
-sample_cnt(0)
+sample_cnt(0),
+calibration(false)
 {
   ready = false;
 }
@@ -114,6 +124,23 @@ sample_cnt(0)
 void LSM303::stop(void){
   // TODO: power down sensor here
   ready = false;
+}
+
+/**
+ *
+ */
+bool LSM303::trigCal(void){
+  if (true == calibration)
+    return CH_FAILED;
+  else{
+    xalphabeta.reset(mavlink_out_raw_imu_struct.xmag, *filterlen);
+    yalphabeta.reset(mavlink_out_raw_imu_struct.ymag, *filterlen);
+    zalphabeta.reset(mavlink_out_raw_imu_struct.zmag, *filterlen);
+
+    sample_cnt = 0;
+    calibration = true;
+    return CH_SUCCESS;
+  }
 }
 
 /**
@@ -194,6 +221,7 @@ void LSM303::start(void){
   zsens     = (const float*)param_registry.valueSearch("MAG_zsens");
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
+  zerocnt   = (const uint32_t*)param_registry.valueSearch("MAG_zerocnt");
   filterlen = (const int32_t*)param_registry.valueSearch("FLEN_magnetom");
 
   ready = true;

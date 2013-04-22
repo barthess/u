@@ -3,6 +3,7 @@
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "ground_rover.hpp"
+#include "imu.hpp"
 
 /*
  ******************************************************************************
@@ -62,19 +63,28 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
   * | Radio calibration: 0: no, 1: yes
   * | Empty| Empty| Empty|  */
 
-  if ((mavlink_system_struct.mode != MAV_MODE_PREFLIGHT) ||
-                            (GlobalFlags.gyro_cal) || (GlobalFlags.mag_cal))
+  bool result;
+
+  if (mavlink_system_struct.mode != MAV_MODE_PREFLIGHT)
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
   /* Gyro */
   if (cl->param1 == 1){
-    setGlobalFlag(GlobalFlags.gyro_cal);
-    return MAV_RESULT_ACCEPTED;
+    result = ImuTrigCalibrateGyro();
+    if (CH_SUCCESS == result)
+      return MAV_RESULT_ACCEPTED;
+    else
+      return MAV_RESULT_FAILED;
   }
-  else if (cl->param2 == 1){ /* Magnetometer */
-    setGlobalFlag(GlobalFlags.mag_cal);
-    return MAV_RESULT_ACCEPTED;
+  /* Magnetometer */
+  else if (cl->param2 == 1){
+    result = ImuTrigCalibrateMag();
+    if (CH_SUCCESS == result)
+      return MAV_RESULT_ACCEPTED;
+    else
+      return MAV_RESULT_FAILED;
   }
+  /* unknown */
   else
     return MAV_RESULT_DENIED;
 }
