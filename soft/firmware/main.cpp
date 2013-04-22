@@ -112,7 +112,14 @@ chibios_rt::BinarySemaphore imu_sem(true);
  *******************************************************************************
  *******************************************************************************
  */
+
+#include "matrix.hpp"
+float A[9] = {2,3,4, 5,6,7, 8,9,1};
+
 int main(void) {
+  matrix_inverse(3, A);
+  chDbgPanic("check results");
+
   halInit();
   System::init();
 
