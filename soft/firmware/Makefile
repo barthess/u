@@ -120,9 +120,7 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
          
-KINEMATICSRC = src/kinematic/vector3d.cpp \
-         src/kinematic/matrix.cpp \
-         src/kinematic/dcm.cpp \
+KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/dcm_cli.cpp \
          src/kinematic/airspeed.cpp \
          src/kinematic/pid.cpp

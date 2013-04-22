@@ -95,18 +95,10 @@ void LSM303::pickle(void){
   comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
   comp_data.zmag = Mag[0] * *ellip_20 + Mag[1] * *ellip_21 + Mag[2] * *ellip_22;
 
-//  comp_data.xmag = Mag[0] * 0.9143f;
-//  comp_data.ymag = Mag[0] * 0.0622f + Mag[1] * 1.0121f;
-//  comp_data.zmag = Mag[0] * 0.2726f + Mag[1] * 0.2050f + Mag[2] * 0.5062f;
-
   /* hard iron correction */
   comp_data.xmag -= *xoffset;
   comp_data.ymag -= *yoffset;
   comp_data.zmag -= *zoffset;
-
-//  comp_data.xmag -= 86.922f;
-//  comp_data.ymag -= -3.4023f;
-//  comp_data.zmag -= -138.7114f;
 
   mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
   mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
