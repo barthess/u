@@ -73,6 +73,7 @@ void LSM303::pickle(void){
   Mag[1] *= *ypol;
   Mag[2] *= *zpol;
 
+  /* calibration aid */
   if (calibration){
     mavlink_out_raw_imu_struct.xmag = xalphabeta.update(Mag[0], *filterlen);
     mavlink_out_raw_imu_struct.ymag = yalphabeta.update(Mag[1], *filterlen);
@@ -89,6 +90,7 @@ void LSM303::pickle(void){
     mavlink_out_raw_imu_struct.zmag = Mag[2];
   }
 
+  /* soft iron correction */
   comp_data.xmag = Mag[0] * *ellip_00;
   comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
   comp_data.zmag = Mag[0] * *ellip_20 + Mag[1] * *ellip_21 + Mag[2] * *ellip_22;
@@ -97,6 +99,7 @@ void LSM303::pickle(void){
 //  comp_data.ymag = Mag[0] * 0.0622f + Mag[1] * 1.0121f;
 //  comp_data.zmag = Mag[0] * 0.2726f + Mag[1] * 0.2050f + Mag[2] * 0.5062f;
 
+  /* hard iron correction */
   comp_data.xmag -= *xoffset;
   comp_data.ymag -= *yoffset;
   comp_data.zmag -= *zoffset;
