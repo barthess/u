@@ -105,7 +105,8 @@ void LSM303::pickle(void){
  *
  */
 LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
-I2CSensor(i2cdp, addr)
+I2CSensor(i2cdp, addr),
+sample_cnt(0)
 {
   ready = false;
 }
@@ -118,15 +119,14 @@ void LSM303::stop(void){
 /**
  *
  */
-static uint32_t cnt = 0;
 void LSM303::update(void){
   chDbgCheck((true == ready), "not ready");
 
-  if ((cnt % 128) == 0){
+  if ((sample_cnt % 128) == 0){
     txbuf[0] = TEMP_OUT_H_M;
     transmit(txbuf, 1, rxbuf+6, 2);
   }
-  cnt++;
+  sample_cnt++;
 
   /* read previose measurement results */
   txbuf[0] = OUT_X_H_M;

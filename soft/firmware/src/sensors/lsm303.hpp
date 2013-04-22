@@ -30,6 +30,7 @@ private:
   void hw_init_fast(void);
   uint8_t rxbuf[LSM_RX_DEPTH];
   uint8_t txbuf[LSM_TX_DEPTH];
+  uint32_t sample_cnt;
   /* calibration coefficients pointers */
   float    const *xsens,    *ysens,    *zsens;
   float    const *xoffset,  *yoffset,  *zoffset;
