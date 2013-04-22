@@ -41,37 +41,13 @@ Type putinrange(Type v, Type vmin, Type vmax){
 template <typename T>
 void sort3(T *in, T *out, uint32_t sortmatrix){
   switch (sortmatrix){
-  case 0b001100010: // #6
-    //   001
+  case 0b100010001: // #1
     //   100
     //   010
-    out[0] = in[2];
-    out[1] = in[0];
-    out[2] = in[1];
-    break;
-  case 0b001010100: // #5
     //   001
-    //   010
-    //   100
-    out[0] = in[2];
-    out[1] = in[1];
-    out[2] = in[0];
-    break;
-  case 0b010001100: // #4
-    //   010
-    //   001
-    //   100
-    out[0] = in[1];
-    out[1] = in[2];
-    out[2] = in[0];
-    break;
-  case 0b100001010: // #3
-    //   100
-    //   001
-    //   010
     out[0] = in[0];
-    out[1] = in[2];
-    out[2] = in[1];
+    out[1] = in[1];
+    out[2] = in[2];
     break;
   case 0b010100001: // #2
     //   010
@@ -81,13 +57,113 @@ void sort3(T *in, T *out, uint32_t sortmatrix){
     out[1] = in[0];
     out[2] = in[2];
     break;
+  case 0b100001010: // #3
+    //   100
+    //   001
+    //   010
+    out[0] = in[0];
+    out[1] = in[2];
+    out[2] = in[1];
+    break;
+  case 0b010001100: // #4
+    //   010
+    //   001
+    //   100
+    out[0] = in[1];
+    out[1] = in[2];
+    out[2] = in[0];
+    break;
+  case 0b001010100: // #5
+    //   001
+    //   010
+    //   100
+    out[0] = in[2];
+    out[1] = in[1];
+    out[2] = in[0];
+    break;
+  case 0b001100010: // #6
+    //   001
+    //   100
+    //   010
+    out[0] = in[2];
+    out[1] = in[0];
+    out[2] = in[1];
+    break;
+  default:
+    chDbgPanic("bad sorting matrix");
+    break;
+  }
+}
+
+template <typename T>
+void sort3(T *v, uint32_t sortmatrix){
+  T tmp;
+  switch (sortmatrix){
   case 0b100010001: // #1
     //   100
     //   010
     //   001
-    out[0] = in[0];
-    out[1] = in[1];
-    out[2] = in[2];
+    //out[0] = v[0];
+    //out[1] = v[1];
+    //out[2] = v[2];
+    //nothing to do
+    break;
+  case 0b010100001: // #2
+    //   010
+    //   100
+    //   001
+    //out[0] = v[1];
+    //out[1] = v[0];
+    //out[2] = v[2];
+    tmp = v[0];
+    v[0] = v[1];
+    v[1] = tmp;
+    break;
+  case 0b100001010: // #3
+    //   100
+    //   001
+    //   010
+    //out[0] = v[0];
+    //out[1] = v[2];
+    //out[2] = v[1];
+    tmp = v[1];
+    v[1] = v[2];
+    v[2] = tmp;
+    break;
+  case 0b010001100: // #4
+    //   010
+    //   001
+    //   100
+    //out[0] = v[1];
+    //out[1] = v[2];
+    //out[2] = v[0];
+    tmp = v[0];
+    v[0] = v[1];
+    v[1] = v[2];
+    v[2] = tmp;
+    break;
+  case 0b001010100: // #5
+    //   001
+    //   010
+    //   100
+    //out[0] = v[2];
+    //out[1] = v[1];
+    //out[2] = v[0];
+    tmp = v[0];
+    v[0] = v[2];
+    v[2] = tmp;
+    break;
+  case 0b001100010: // #6
+    //   001
+    //   100
+    //   010
+    //out[0] = v[2];
+    //out[1] = in[0];
+    //out[2] = v[1];
+    tmp = v[1];
+    v[1] = v[0];
+    v[2] = tmp;
+    v[0] = v[2];
     break;
   default:
     chDbgPanic("bad sorting matrix");

@@ -67,6 +67,7 @@ void LSM303::pickle(void){
   raw[2] = complement2signed(rxbuf[4], rxbuf[5]);
   t      = complement2signed(rxbuf[6], rxbuf[7]) / 16; // deg * 8
   (void)t;
+
   sort3(raw, Mag, *sortmtrx);
 
   Mag[0] *= *xpol;
