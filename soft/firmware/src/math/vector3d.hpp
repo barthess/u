@@ -2,16 +2,19 @@
 #define VECTOR3D_H
 
 #include <math.h>
+#include "misc_math.hpp"
 
 //get modulus of a 3d vector sqrt(x^2+y^2+z^2)
-template <typename T>
-T vector3d_modulus(T *v){
+inline double vector3d_modulus(double *v){
   return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
-template <>
-float vector3d_modulus(float *v){
+inline float vector3d_modulus(float *v){
   return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
+
+inline int32_t vector3d_modulus(int32_t *v){
+  return sqrti(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
 //convert vector to a vector with same direction and modulus 1

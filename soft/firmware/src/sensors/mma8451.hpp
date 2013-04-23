@@ -2,6 +2,7 @@
 #define MMA8451_H_
 
 #include "i2c_local.hpp"
+#include "dsp.hpp"
 
 #define mma8451addr         0b0011100
 
@@ -37,8 +38,10 @@ public:
 
 private:
   void pickle(void);
+  void detect_immobility(void);
   void hw_init_full(void);
   void hw_init_fast(void);
+  AlphaBeta<float> xabeta, yabeta, zabeta;
   uint8_t rxbuf[ACCEL_RX_DEPTH];
   uint8_t txbuf[ACCEL_TX_DEPTH];
   /*  */

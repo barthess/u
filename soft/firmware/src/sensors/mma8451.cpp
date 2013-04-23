@@ -1,15 +1,18 @@
 #include "uav.h"
+#include "global_flags.h"
 #include "mma8451.hpp"
 #include "sensors.hpp"
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "misc_math.hpp"
+#include "vector3d.hpp"
 
 /*
  ******************************************************************************
  * DEFINES
  ******************************************************************************
  */
+#define IMMOBILE_FILTER_LEN     128
 
 /*
  ******************************************************************************
@@ -19,6 +22,7 @@
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
+extern GlobalFlags_t GlobalFlags;
 extern ParamRegistry param_registry;
 
 /*
@@ -41,14 +45,6 @@ MMA8451::MMA8451(I2CDriver* i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr)
 {
   ready = false;
-}
-
-
-void MMA8451::update(void) {
-  chDbgCheck((true == ready), "you must start() this device");
-  txbuf[0] = ACCEL_STATUS;
-  transmit(txbuf, 1, rxbuf, 7);
-  this->pickle();
 }
 
 /**
@@ -83,6 +79,43 @@ void MMA8451::start(void) {
  */
 void MMA8451::stop(void) {
   ready = false;
+}
+
+/**
+ *
+ */
+void MMA8451::update(void) {
+  chDbgCheck((true == ready), "you must start() this device");
+  txbuf[0] = ACCEL_STATUS;
+  transmit(txbuf, 1, rxbuf, 7);
+  this->pickle();
+  this->detect_immobility();
+}
+
+/**
+ *
+ */
+void MMA8451::detect_immobility(void){
+  float cross[3];
+  float filtered[3];
+  float current[3];
+  float modulus;
+
+  /* immobile detect */
+  current[0] = comp_data.xacc / 1000.0f;
+  current[1] = comp_data.yacc / 1000.0f;
+  current[2] = comp_data.zacc / 1000.0f;
+
+  filtered[0] = xabeta.update(current[0], IMMOBILE_FILTER_LEN);
+  filtered[1] = yabeta.update(current[1], IMMOBILE_FILTER_LEN);
+  filtered[2] = zabeta.update(current[2], IMMOBILE_FILTER_LEN);
+
+  vector3d_cross(current, filtered, cross);
+  modulus = vector3d_modulus(cross);
+  if (modulus > 0.1f)
+    setGlobalFlag(GlobalFlags.accel_not_still);
+  else
+    clearGlobalFlag(GlobalFlags.accel_not_still);
 }
 
 /**

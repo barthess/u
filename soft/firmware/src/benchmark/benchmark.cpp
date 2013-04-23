@@ -42,6 +42,12 @@ static volatile uint32_t result;
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
+
+//static volatile int32_t t0, t1;
+//  t0 = hal_lld_get_counter_value();
+//  this->detect_immobility();
+//  t1 = hal_lld_get_counter_value() - t0;
+
 /**
  *
  */
