@@ -204,28 +204,19 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Imag[2] = zmag;
   magmodulus = vector3d_modulus(Imag);
 
-  /* ignore magnetometer readings if there is no fresh data measured */
-  if (GlobalFlags.mag_data_fresh){
-    clearGlobalFlag(GlobalFlags.mag_data_fresh);
-    /* Проработать комплексирование с нижним рядом DCM вместо вектора
-     * гравитации. Какие-то непонятные результаты получаются, или я их
-     * готовить не умею. */
-    float tmpM[3];
-    vector3d_normalize(Imag);
-    //vector3d_cross(Kacc, Imag, tmpM);
-    vector3d_cross(dcmEst[2], Imag, tmpM);
-    vector3d_normalize(tmpM);
-    //vector3d_cross(tmpM, Kacc, Imag);
-    vector3d_cross(tmpM, dcmEst[2], Imag);
-    vector3d_normalize(Imag);
-    // wM = Igyro x Imag, roation needed to bring Imag to Igyro
-    vector3d_cross(dcmEst[0], Imag, wM);
-  }
-  else{
-    wM[0] = 0;
-    wM[1] = 0;
-    wM[2] = 0;
-  }
+  /* Проработать комплексирование с нижним рядом DCM вместо вектора
+   * гравитации. Какие-то непонятные результаты получаются, или я их
+   * готовить не умею. */
+  float tmpM[3];
+  vector3d_normalize(Imag);
+  //vector3d_cross(Kacc, Imag, tmpM);
+  vector3d_cross(dcmEst[2], Imag, tmpM);
+  vector3d_normalize(tmpM);
+  //vector3d_cross(tmpM, Kacc, Imag);
+  vector3d_cross(tmpM, dcmEst[2], Imag);
+  vector3d_normalize(Imag);
+  // wM = Igyro x Imag, roation needed to bring Imag to Igyro
+  vector3d_cross(dcmEst[0], Imag, wM);
 
   //---------------
   //dcmEst
