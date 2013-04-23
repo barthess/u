@@ -94,7 +94,7 @@ void MMA8451::update(void) {
   t0 = hal_lld_get_counter_value();
   this->detect_immobilityi();
   t1 = hal_lld_get_counter_value() - t0;
-  //this->detect_immobilityf();
+  this->detect_immobilityf();
 }
 
 /**
@@ -130,7 +130,8 @@ void MMA8451::detect_immobilityi(void){
   int32_t cross[3];
   int32_t filtered[3];
   int32_t current[3];
-  int32_t modulus;
+  int32_t modulus_cross;
+  int32_t modulus_delta;
 
   /* immobile detect */
   current[0] = comp_data.xacc;
@@ -142,11 +143,13 @@ void MMA8451::detect_immobilityi(void){
   filtered[2] = zabetai.update(current[2], IMMOBILE_FILTER_LEN);
 
   vector3d_cross(current, filtered, cross);
-  modulus = vector3d_modulus(cross);
-  if (modulus > 10)
-    setGlobalFlag(GlobalFlags.accel_not_still);
-  else
-    clearGlobalFlag(GlobalFlags.accel_not_still);
+  modulus_cross = vector3d_modulus(cross) / 1000;
+
+  modulus_delta = vector3d_modulus(current) - vector3d_modulus(filtered);
+
+  mavlink_out_scaled_imu_struct.xacc = modulus_cross;
+  mavlink_out_scaled_imu_struct.yacc = modulus_delta;
+  mavlink_out_scaled_imu_struct.zacc = 0;
 }
 
 /**
@@ -173,9 +176,9 @@ void MMA8451::pickle(void) {
   comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
   comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
 
-  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
-  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
-  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
+//  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
+//  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
+//  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
 }
 
 /**
