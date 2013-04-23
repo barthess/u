@@ -1,7 +1,7 @@
-#include "math.h"
+#include <math.h>
 
 #include "uav.h"
-#include "matrix.h"
+#include "matrix.hpp"
 
 /*
  ******************************************************************************
@@ -28,9 +28,6 @@
  */
 static TimeMeasurement tmup;
 static volatile uint32_t result;
-static float m1[15*15];
-static float m2[15*15];
-static float res[15*15];
 
 /*
  ******************************************************************************
@@ -45,9 +42,15 @@ static float res[15*15];
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-float benchmark_start(void){
-
+/**
+ *
+ */
+float benchmark_matrix_mul(void){
   uint32_t i = 0;
+  float m1[15*15];
+  float m2[15*15];
+  float res[15*15];
+
   for (i=0; i<225; i++){
     m1[i] = 0;
     m2[i] = 0;
@@ -58,7 +61,28 @@ float benchmark_start(void){
   tmStopMeasurement(&tmup);
 
   result = tmup.last;
-  return res[113];
+  return res[113] * result;
 }
+
+/**
+ *
+ */
+float benchmark_matrix_inv(void){
+
+  uint32_t i = 0;
+  float A[81];
+
+  for (i=0; i<(sizeof(A)/sizeof(A[0])); i++){
+    A[i] = i * 0.013f;
+  }
+  tmObjectInit(&tmup);
+  tmStartMeasurement(&tmup);
+  matrix_inverse(9, A);
+  tmStopMeasurement(&tmup);
+
+  result = tmup.last;
+  return A[10] * result;
+}
+
 
 
