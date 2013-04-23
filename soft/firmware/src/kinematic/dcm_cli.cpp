@@ -82,9 +82,9 @@ static msg_t DcmPrintTread(void *sdp){
 
     cli_println("Accelration in g [X Y Z]:");
     nres = snprintf(str, n, format,
-          (double)comp_data.xacc / 1000.0,
-          (double)comp_data.yacc / 1000.0,
-          (double)comp_data.zacc / 1000.0);
+          (double)comp_data.xacc / (double)1000.0,
+          (double)comp_data.yacc / (double)1000.0,
+          (double)comp_data.zacc / (double)1000.0);
     cli_print_long(str, n, nres);
     cli_println("");
 
