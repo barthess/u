@@ -176,8 +176,9 @@ CPPSRC = $(CHCPPSRC) \
          src/calibration/gyro_cal.cpp \
          src/calibration/mag_cal.cpp \
          src/calibration/cli_cal.cpp \
+         src/benchmark/benchmark.cpp \
          
-         
+       
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
