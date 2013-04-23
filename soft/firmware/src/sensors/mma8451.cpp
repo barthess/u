@@ -84,18 +84,23 @@ void MMA8451::stop(void) {
 /**
  *
  */
+static volatile uint32_t t0, t1;
 void MMA8451::update(void) {
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = ACCEL_STATUS;
   transmit(txbuf, 1, rxbuf, 7);
   this->pickle();
-  this->detect_immobility();
+
+  t0 = hal_lld_get_counter_value();
+  this->detect_immobilityi();
+  t1 = hal_lld_get_counter_value() - t0;
+  //this->detect_immobilityf();
 }
 
 /**
  *
  */
-void MMA8451::detect_immobility(void){
+void MMA8451::detect_immobilityf(void){
   float cross[3];
   float filtered[3];
   float current[3];
@@ -106,13 +111,39 @@ void MMA8451::detect_immobility(void){
   current[1] = comp_data.yacc / 1000.0f;
   current[2] = comp_data.zacc / 1000.0f;
 
-  filtered[0] = xabeta.update(current[0], IMMOBILE_FILTER_LEN);
-  filtered[1] = yabeta.update(current[1], IMMOBILE_FILTER_LEN);
-  filtered[2] = zabeta.update(current[2], IMMOBILE_FILTER_LEN);
+  filtered[0] = xabetaf.update(current[0], IMMOBILE_FILTER_LEN);
+  filtered[1] = yabetaf.update(current[1], IMMOBILE_FILTER_LEN);
+  filtered[2] = zabetaf.update(current[2], IMMOBILE_FILTER_LEN);
 
   vector3d_cross(current, filtered, cross);
   modulus = vector3d_modulus(cross);
   if (modulus > 0.1f)
+    setGlobalFlag(GlobalFlags.accel_not_still);
+  else
+    clearGlobalFlag(GlobalFlags.accel_not_still);
+}
+
+/**
+ *
+ */
+void MMA8451::detect_immobilityi(void){
+  int32_t cross[3];
+  int32_t filtered[3];
+  int32_t current[3];
+  int32_t modulus;
+
+  /* immobile detect */
+  current[0] = comp_data.xacc;
+  current[1] = comp_data.yacc;
+  current[2] = comp_data.zacc;
+
+  filtered[0] = xabetai.update(current[0], IMMOBILE_FILTER_LEN);
+  filtered[1] = yabetai.update(current[1], IMMOBILE_FILTER_LEN);
+  filtered[2] = zabetai.update(current[2], IMMOBILE_FILTER_LEN);
+
+  vector3d_cross(current, filtered, cross);
+  modulus = vector3d_modulus(cross);
+  if (modulus > 10)
     setGlobalFlag(GlobalFlags.accel_not_still);
   else
     clearGlobalFlag(GlobalFlags.accel_not_still);

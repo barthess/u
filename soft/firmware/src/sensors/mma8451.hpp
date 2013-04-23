@@ -38,10 +38,12 @@ public:
 
 private:
   void pickle(void);
-  void detect_immobility(void);
+  void detect_immobilityf(void);
+  void detect_immobilityi(void);
   void hw_init_full(void);
   void hw_init_fast(void);
-  AlphaBeta<float> xabeta, yabeta, zabeta;
+  AlphaBeta<float> xabetaf, yabetaf, zabetaf;
+  AlphaBeta<int32_t> xabetai, yabetai, zabetai;
   uint8_t rxbuf[ACCEL_RX_DEPTH];
   uint8_t txbuf[ACCEL_TX_DEPTH];
   /*  */
