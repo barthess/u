@@ -108,6 +108,4 @@ int32_t matrix_inverse(int32_t n, T *A)
   return 1;
 }
 
-
-
 #endif
