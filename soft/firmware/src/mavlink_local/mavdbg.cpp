@@ -56,7 +56,7 @@ void mavlink_dbg_print(uint8_t severity, const char *text){
   memset(mavlink_out_statustext_struct.text, 0, n);
   memcpy(mavlink_out_statustext_struct.text, text, n);
 
-  chDbgPanic("events based routine deprecated now");
+  //chDbgPanic("events based routine deprecated now");
   chEvtBroadcastFlags(&event_mavlink_out_statustext, EVMSK_MAVLINK_OUT_STATUSTEXT);
 }
 
