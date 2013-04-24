@@ -43,7 +43,7 @@ private:
   void hw_init_full(void);
   void hw_init_fast(void);
   bool immobile;
-  AlphaBeta<float> xabetaf, yabetaf, zabetaf;
+  AlphaBeta<float> abeta[3];
   uint8_t rxbuf[ACCEL_RX_DEPTH];
   uint8_t txbuf[ACCEL_TX_DEPTH];
   /*  */

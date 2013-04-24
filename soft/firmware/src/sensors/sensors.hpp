@@ -3,31 +3,21 @@
 
 
 /*
- * Обработанные данные.
+ *
  */
 typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
-  /* Накопленные углы поворота с момента включения устройства (для отладки). Градусы */
-  float     xgyro_angle;
-  float     ygyro_angle;
-  float     zgyro_angle;
-  /* моментальные угловые скорости в рад/с */
-  float     xgyro;
-  float     ygyro;
-  float     zgyro;
-  /* моментальные угловые скорости в uRad/s */
-  int32_t   xgyroi;
-  int32_t   ygyroi;
-  int32_t   zgyroi;
-  /* ускорения по осям в mG */
-  int16_t   xacc;
-  int16_t   yacc;
-  int16_t   zacc;
-  /* магнитное поле в T */
-  float     xmag;
-  float     ymag;
-  float     zmag;
-
+  /* Integrated angles for debug. Degrease */
+  float     gyro_angle[3];
+  /* angular rates in rad/s */
+  float     gyro[3];
+  float     gyrotemp;
+  /* acceleration in mG (for sending in mavlink messages) */
+  int16_t   acc_i16[3];
+  /* acceleration in G (for internal use) */
+  float     acc[3];
+  /* magnetic flux in T */
+  float     mag[3];
   /**/
   float     baro_altitude;      /* высота по барометру bmp085 (m)*/
   float     baro_climb;         /* вертикальная скорость (m/s) */

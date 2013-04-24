@@ -139,10 +139,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
 
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
-  float magmodulus;
-  float accmodulus;
-  (void)magmodulus;
-  (void)accmodulus;
 
   //interval since last call
   //imu_interval_ms = itg3200_period;
@@ -178,7 +174,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Kacc[0] = xacc;
   Kacc[1] = yacc;
   Kacc[2] = zacc;
-  accmodulus = vector3d_modulus(Kacc);
   vector3d_normalize(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc
@@ -202,7 +197,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   Imag[0] = xmag;
   Imag[1] = ymag;
   Imag[2] = zmag;
-  magmodulus = vector3d_modulus(Imag);
 
   /* Проработать комплексирование с нижним рядом DCM вместо вектора
    * гравитации. Какие-то непонятные результаты получаются, или я их

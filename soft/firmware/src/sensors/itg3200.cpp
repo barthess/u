@@ -56,49 +56,41 @@ static float get_degrees(float raw){
  */
 void ITG3200::pickle(void){
   int32_t raw[3];
-  int32_t Gyro[3];
-  float   Gyrof[3];
+  uint32_t i = 0;
 
-  //rawgyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
+  comp_data.gyrotemp  = complement2signed(rxbuf[0], rxbuf[1]);
   raw[0] = complement2signed(rxbuf[2], rxbuf[3]);
   raw[1] = complement2signed(rxbuf[4], rxbuf[5]);
   raw[2] = complement2signed(rxbuf[6], rxbuf[7]);
-
-  sort3(raw, Gyro, *sortmtrx);
-
-  /* fill debug struct */
-  mavlink_out_raw_imu_struct.xgyro = Gyro[0];
-  mavlink_out_raw_imu_struct.ygyro = Gyro[1];
-  mavlink_out_raw_imu_struct.zgyro = Gyro[2];
-  mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
-
-  /* correct zero offset */
-  Gyrof[0] = (float)Gyro[0] - *x_offset;
-  Gyrof[1] = (float)Gyro[1] - *y_offset;
-  Gyrof[2] = (float)Gyro[2] - *z_offset;
+  sort3(raw, *sortmtrx);
 
   /* adjust rotation direction */
-  Gyrof[0] *= *xpol;
-  Gyrof[1] *= *ypol;
-  Gyrof[2] *= *zpol;
+  raw[0] *= *xpol;
+  raw[1] *= *ypol;
+  raw[2] *= *zpol;
+
+  /* fill debug struct */
+  mavlink_out_raw_imu_struct.xgyro = raw[0];
+  mavlink_out_raw_imu_struct.ygyro = raw[1];
+  mavlink_out_raw_imu_struct.zgyro = raw[2];
+  mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular rate in rad/sec */
-  comp_data.xgyro = fdeg2rad(Gyrof[0] / *xsens);
-  comp_data.ygyro = fdeg2rad(Gyrof[1] / *ysens);
-  comp_data.zgyro = fdeg2rad(Gyrof[2] / *zsens);
+  comp_data.gyro[0] = fdeg2rad(((float)raw[0] - *x_offset) / *xsens);
+  comp_data.gyro[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
+  comp_data.gyro[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
 
   /* calc summary angle for debug purpose */
-  comp_data.xgyro_angle += get_degrees(comp_data.xgyro);
-  comp_data.ygyro_angle += get_degrees(comp_data.ygyro);
-  comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
+  for(i=0; i<3; i++)
+    comp_data.gyro_angle[i] += get_degrees(comp_data.gyro[i]);
 
   /* fill scaled debug struct */
 //  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
 //  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
 //  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(comp_data.xgyro * 1000);
-  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(comp_data.ygyro * 1000);
-  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(comp_data.zgyro * 1000);
+  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(comp_data.gyro[0] * 1000);
+  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(comp_data.gyro[1] * 1000);
+  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(comp_data.gyro[2] * 1000);
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 }
 
@@ -164,9 +156,9 @@ void ITG3200::hw_init_full(void){
  *
  */
 void ITG3200::start(void){
-  comp_data.xgyro_angle = 0;
-  comp_data.ygyro_angle = 0;
-  comp_data.zgyro_angle = 0;
+
+  for (int i=0; i<3; i++)
+    comp_data.gyro_angle[i] = 0;
 
   if (need_full_init()){
     hw_init_full();

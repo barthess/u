@@ -55,7 +55,6 @@ extern EventSource event_mavlink_out_raw_imu;
  */
 
 //float lsm303_dcm[9];
-float lsm303_in[3];
 float lsm303_out[3];
 
 /**
@@ -63,7 +62,6 @@ float lsm303_out[3];
  */
 void LSM303::pickle(void){
   int32_t raw[3];
-  int32_t Mag[3];
   int16_t t;
 
   /**/
@@ -73,17 +71,17 @@ void LSM303::pickle(void){
   t      = complement2signed(rxbuf[6], rxbuf[7]) / 16; // deg * 8
   (void)t;
 
-  sort3(raw, Mag, *sortmtrx);
+  sort3(raw, *sortmtrx);
 
-  Mag[0] *= *xpol;
-  Mag[1] *= *ypol;
-  Mag[2] *= *zpol;
+  raw[0] *= *xpol;
+  raw[1] *= *ypol;
+  raw[2] *= *zpol;
 
   /* calibration aid */
   if (calibration){
-    mavlink_out_raw_imu_struct.xmag = xalphabeta.update(Mag[0], *filterlen);
-    mavlink_out_raw_imu_struct.ymag = yalphabeta.update(Mag[1], *filterlen);
-    mavlink_out_raw_imu_struct.zmag = zalphabeta.update(Mag[2], *filterlen);
+    mavlink_out_raw_imu_struct.xmag = xalphabeta.update(raw[0], *filterlen);
+    mavlink_out_raw_imu_struct.ymag = yalphabeta.update(raw[1], *filterlen);
+    mavlink_out_raw_imu_struct.zmag = zalphabeta.update(raw[2], *filterlen);
     sample_cnt++;
     if (*zerocnt <= sample_cnt){
       calibration = false;
@@ -91,20 +89,20 @@ void LSM303::pickle(void){
     }
   }
   else{
-    mavlink_out_raw_imu_struct.xmag = Mag[0];
-    mavlink_out_raw_imu_struct.ymag = Mag[1];
-    mavlink_out_raw_imu_struct.zmag = Mag[2];
+    mavlink_out_raw_imu_struct.xmag = raw[0];
+    mavlink_out_raw_imu_struct.ymag = raw[1];
+    mavlink_out_raw_imu_struct.zmag = raw[2];
   }
 
   /* soft iron correction */
-  comp_data.xmag = Mag[0] * *ellip_00;
-  comp_data.ymag = Mag[0] * *ellip_10 + Mag[1] * *ellip_11;
-  comp_data.zmag = Mag[0] * *ellip_20 + Mag[1] * *ellip_21 + Mag[2] * *ellip_22;
+  comp_data.mag[0] = raw[0] * *ellip_00;
+  comp_data.mag[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
+  comp_data.mag[2] = raw[0] * *ellip_20 + raw[1] * *ellip_21 + raw[2] * *ellip_22;
 
   /* hard iron correction */
-  comp_data.xmag -= *xoffset;
-  comp_data.ymag -= *yoffset;
-  comp_data.zmag -= *zoffset;
+  comp_data.mag[0] -= *xoffset;
+  comp_data.mag[1] -= *yoffset;
+  comp_data.mag[2] -= *zoffset;
 
 //  lsm303_dcm[0] = *dcm_00;
 //  lsm303_dcm[1] = *dcm_10;
@@ -131,11 +129,7 @@ void LSM303::pickle(void){
 //void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
 //                     const T *A, const T *B, T *C){
 
-  lsm303_in[0] = comp_data.xmag;
-  lsm303_in[1] = comp_data.ymag;
-  lsm303_in[2] = comp_data.zmag;
-
-  matrix_multiply(3,3,3, lsm303_in, dcm, lsm303_out);
+  matrix_multiply(3,3,3, comp_data.mag, dcm, lsm303_out);
 
 //  mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
 //  mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;

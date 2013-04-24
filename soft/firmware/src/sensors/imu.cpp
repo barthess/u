@@ -73,9 +73,9 @@ static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   /* or from Z gyro for dbug reasons */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
-  mavlink_attitude_struct->rollspeed    = -comp_data.xgyro;
-  mavlink_attitude_struct->pitchspeed   = -comp_data.ygyro;
-  mavlink_attitude_struct->yawspeed     = -comp_data.zgyro;
+  mavlink_attitude_struct->rollspeed    = -comp_data.gyro[0];
+  mavlink_attitude_struct->pitchspeed   = -comp_data.gyro[1];
+  mavlink_attitude_struct->yawspeed     = -comp_data.gyro[2];
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
 }
 
@@ -106,15 +106,15 @@ static msg_t Imu(void *arg) {
     lsm303.update();
     mma8451.update();
 
-    dcmUpdate(((float)comp_data.xacc) / 1000,
-              ((float)comp_data.yacc) / 1000,
-              ((float)comp_data.zacc) / 1000,
-              comp_data.xgyro,
-              comp_data.ygyro,
-              comp_data.zgyro,
-              comp_data.xmag,
-              comp_data.ymag,
-              comp_data.zmag,
+    dcmUpdate(comp_data.acc[0],
+              comp_data.acc[1],
+              comp_data.acc[2],
+              comp_data.gyro[0],
+              comp_data.gyro[1],
+              comp_data.gyro[2],
+              comp_data.mag[0],
+              comp_data.mag[1],
+              comp_data.mag[2],
               interval);
 
     calc_attitude(&mavlink_out_attitude_struct);

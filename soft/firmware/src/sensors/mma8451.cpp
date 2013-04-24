@@ -44,22 +44,18 @@ extern ParamRegistry param_registry;
 void MMA8451::update_still(void){
   float cross[3];
   float filtered[3];
-  float current[3];
   float modulus_cross;
   float modulus_delta;
+  uint32_t i = 0;
 
-  /* immobile detect */
-  current[0] = comp_data.xacc / 1000.0f;
-  current[1] = comp_data.yacc / 1000.0f;
-  current[2] = comp_data.zacc / 1000.0f;
+  /* update array of filters */
+  for (i=0; i<3; i++)
+    filtered[i] = abeta[i].update(comp_data.acc[i], IMMOBILE_FILTER_LEN);
 
-  filtered[0] = xabetaf.update(current[0], IMMOBILE_FILTER_LEN);
-  filtered[1] = yabetaf.update(current[1], IMMOBILE_FILTER_LEN);
-  filtered[2] = zabetaf.update(current[2], IMMOBILE_FILTER_LEN);
-
-  vector3d_cross(current, filtered, cross);
+  /* calculate differences between vectors */
+  vector3d_cross(comp_data.acc, filtered, cross);
   modulus_cross = vector3d_modulus(cross);
-  modulus_delta = vector3d_modulus(current) - vector3d_modulus(filtered);
+  modulus_delta = vector3d_modulus(comp_data.acc) - vector3d_modulus(filtered);
 
   if ((fabsf(modulus_delta) > STILL_THRS_MG) || (fabsf(modulus_cross) > STILL_THRS_MG))
     immobile = false;
@@ -77,21 +73,25 @@ void MMA8451::pickle(void) {
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
   sort3(raw, Acc, *sortmtrx);
 
-  mavlink_out_raw_imu_struct.xacc = Acc[0];
-  mavlink_out_raw_imu_struct.yacc = Acc[1];
-  mavlink_out_raw_imu_struct.zacc = Acc[2];
-
   Acc[0] *= *xpol;
   Acc[1] *= *ypol;
   Acc[2] *= *zpol;
 
-  comp_data.xacc = (1000 * (Acc[0] + *xoffset)) / *xsens;
-  comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
-  comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
+  mavlink_out_raw_imu_struct.xacc = Acc[0];
+  mavlink_out_raw_imu_struct.yacc = Acc[1];
+  mavlink_out_raw_imu_struct.zacc = Acc[2];
 
-  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
-  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
-  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
+  comp_data.acc_i16[0] = (1000 * (Acc[0] + *xoffset)) / *xsens;
+  comp_data.acc_i16[1] = (1000 * (Acc[1] + *yoffset)) / *ysens;
+  comp_data.acc_i16[2] = (1000 * (Acc[2] + *zoffset)) / *zsens;
+
+  comp_data.acc[0] = comp_data.acc_i16[0] / 1000.0f;
+  comp_data.acc[1] = comp_data.acc_i16[1] / 1000.0f;
+  comp_data.acc[2] = comp_data.acc_i16[2] / 1000.0f;
+
+  mavlink_out_scaled_imu_struct.xacc = comp_data.acc_i16[0];
+  mavlink_out_scaled_imu_struct.yacc = comp_data.acc_i16[1];
+  mavlink_out_scaled_imu_struct.zacc = comp_data.acc_i16[2];
 }
 
 /**

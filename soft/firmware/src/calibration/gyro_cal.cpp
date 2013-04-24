@@ -107,9 +107,8 @@ bool_t GyroZeroUpdate(int32_t *data){
       clearGlobalFlag(GlobalFlags.gyro_cal);
       chSysLock();
 
-      comp_data.xgyro_angle = 0;
-      comp_data.ygyro_angle = 0;
-      comp_data.zgyro_angle = 0;
+      for (int i=0; i<3; i++)
+        comp_data.gyro_angle[i] = 0;
       chSysUnlock();
 
       /* store in EEPROM for fast boot */
