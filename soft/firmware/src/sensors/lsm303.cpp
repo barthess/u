@@ -54,7 +54,7 @@ extern EventSource event_mavlink_out_raw_imu;
  ******************************************************************************
  */
 
-float lsm303_dcm[9];
+//float lsm303_dcm[9];
 float lsm303_in[3];
 float lsm303_out[3];
 
@@ -116,15 +116,15 @@ void LSM303::pickle(void){
 //  lsm303_dcm[7] = *dcm_12;
 //  lsm303_dcm[8] = *dcm_22;
 
-  lsm303_dcm[0] = *dcm_00;
-  lsm303_dcm[1] = *dcm_01;
-  lsm303_dcm[2] = *dcm_02;
-  lsm303_dcm[3] = *dcm_10;
-  lsm303_dcm[4] = *dcm_11;
-  lsm303_dcm[5] = *dcm_12;
-  lsm303_dcm[6] = *dcm_20;
-  lsm303_dcm[7] = *dcm_21;
-  lsm303_dcm[8] = *dcm_22;
+//  lsm303_dcm[0] = *dcm_00;
+//  lsm303_dcm[1] = *dcm_01;
+//  lsm303_dcm[2] = *dcm_02;
+//  lsm303_dcm[3] = *dcm_10;
+//  lsm303_dcm[4] = *dcm_11;
+//  lsm303_dcm[5] = *dcm_12;
+//  lsm303_dcm[6] = *dcm_20;
+//  lsm303_dcm[7] = *dcm_21;
+//  lsm303_dcm[8] = *dcm_22;
 
   //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
 //template <typename T>
@@ -135,7 +135,7 @@ void LSM303::pickle(void){
   lsm303_in[1] = comp_data.ymag;
   lsm303_in[2] = comp_data.zmag;
 
-  matrix_multiply(3,3,3, lsm303_in, lsm303_dcm, lsm303_out);
+  matrix_multiply(3,3,3, lsm303_in, dcm, lsm303_out);
 
 //  mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
 //  mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
@@ -157,6 +157,9 @@ calibration(false)
   ready = false;
 }
 
+/**
+ *
+ */
 void LSM303::stop(void){
   // TODO: power down sensor here
   ready = false;
@@ -248,15 +251,15 @@ void LSM303::start(void){
   ellip_21  = (const float*)param_registry.valueSearch("MAG_ellip_21");
   ellip_22  = (const float*)param_registry.valueSearch("MAG_ellip_22");
 
-  dcm_00    = (const float*)param_registry.valueSearch("MAG_dcm_00");
-  dcm_01    = (const float*)param_registry.valueSearch("MAG_dcm_01");
-  dcm_02    = (const float*)param_registry.valueSearch("MAG_dcm_02");
-  dcm_10    = (const float*)param_registry.valueSearch("MAG_dcm_10");
-  dcm_11    = (const float*)param_registry.valueSearch("MAG_dcm_11");
-  dcm_12    = (const float*)param_registry.valueSearch("MAG_dcm_12");
-  dcm_20    = (const float*)param_registry.valueSearch("MAG_dcm_20");
-  dcm_21    = (const float*)param_registry.valueSearch("MAG_dcm_21");
-  dcm_22    = (const float*)param_registry.valueSearch("MAG_dcm_22");
+  dcm[0]    = (const float*)param_registry.valueSearch("MAG_dcm_00");
+  dcm[1]    = (const float*)param_registry.valueSearch("MAG_dcm_01");
+  dcm[2]    = (const float*)param_registry.valueSearch("MAG_dcm_02");
+  dcm[3]    = (const float*)param_registry.valueSearch("MAG_dcm_10");
+  dcm[4]    = (const float*)param_registry.valueSearch("MAG_dcm_11");
+  dcm[5]    = (const float*)param_registry.valueSearch("MAG_dcm_12");
+  dcm[6]    = (const float*)param_registry.valueSearch("MAG_dcm_20");
+  dcm[7]    = (const float*)param_registry.valueSearch("MAG_dcm_21");
+  dcm[8]    = (const float*)param_registry.valueSearch("MAG_dcm_22");
 
   xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
   ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");
