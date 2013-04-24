@@ -195,6 +195,58 @@ const GlobalParam_t *ParamRegistry::getParam(const char *key, int32_t n, int32_t
 }
 
 /**
+ * This functions created for smooth update of parameter registry in case
+ * adding of some new parameters somewhere in middle.
+ * 1) get name from MCU's flash
+ * 2) perform brute force search in EEPROM file
+ */
+bool ParamRegistry::load_extensive(void){
+  int32_t  i = 0, n = 0;
+  uint32_t status = 0;
+  uint32_t v = 0;
+  bool found = false;
+
+  chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
+
+  acquire();
+
+  for (i = 0; i < this->paramCount(); i++){
+    ParamFile.setPosition(0);
+    found = false;
+
+    for (n=0; n<this->paramCount(); n++){
+      status = ParamFile.read(eeprombuf, PARAM_RECORD_SIZE);
+      if (status < PARAM_RECORD_SIZE){
+        chDbgPanic("");
+        return PARAM_FAILED;
+      }
+      if (strcmp((const char *)eeprombuf, GlobalParam[i].name) == 0){
+        found = true;
+        break;
+      }
+    }
+
+    /* was parameter previously stored in eeprom */
+    if (found){
+      v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
+          eeprombuf[PARAM_ID_SIZE + 1] << 16 |
+          eeprombuf[PARAM_ID_SIZE + 2] << 8  |
+          eeprombuf[PARAM_ID_SIZE + 3];
+    }
+    else{
+      /* use hardcoded default */
+      v = GlobalParam[i].def.u32;
+    }
+    /* check value acceptability and set it */
+    validator.set(&v, &(GlobalParam[i]));
+  }
+
+  release();
+  saveAll();
+  return PARAM_SUCCESS;
+}
+
+/**
  *
  */
 bool ParamRegistry::load(void){
@@ -202,7 +254,6 @@ bool ParamRegistry::load(void){
   int32_t  index = -1;
   uint32_t status = 0;
   uint32_t v = 0;
-  bool_t   need_eeprom_update = FALSE;
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
 
@@ -233,20 +284,15 @@ bool ParamRegistry::load(void){
        * To correctly fix this situation we just need to
        * save structure to EEPROM after loading of all parameters to RAM.
        */
-      need_eeprom_update = TRUE;
-      /* load default value */
-      v = GlobalParam[i].def.u32;
+      release();
+      return load_extensive();
     }
 
     /* check value acceptability and set it */
-    validator.set(&v, &(GlobalParam[i]));
+    validator.set(&v, &(GlobalParam[index]));
   }
+
   release();
-
-  /* refresh EEPROM data */
-  if (need_eeprom_update)
-    saveAll();
-
   return PARAM_SUCCESS;
 }
 

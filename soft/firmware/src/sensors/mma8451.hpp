@@ -35,15 +35,15 @@ public:
   void update(void);
   void start(void);
   void stop(void);
+  bool still(void);
 
 private:
   void pickle(void);
-  void detect_immobilityf(void);
-  void detect_immobilityi(void);
+  void update_still(void);
   void hw_init_full(void);
   void hw_init_fast(void);
+  bool immobile;
   AlphaBeta<float> xabetaf, yabetaf, zabetaf;
-  AlphaBeta<int32_t> xabetai, yabetai, zabetai;
   uint8_t rxbuf[ACCEL_RX_DEPTH];
   uint8_t txbuf[ACCEL_TX_DEPTH];
   /*  */

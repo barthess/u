@@ -41,6 +41,9 @@ private:
   float    const *xsens,    *ysens,    *zsens;
   float    const *xoffset,  *yoffset,  *zoffset;
   float    const *ellip_00, *ellip_10, *ellip_11, *ellip_20, *ellip_21, *ellip_22;
+  float    const *dcm_00,   *dcm_01,   *dcm_02,
+                 *dcm_10,   *dcm_11,   *dcm_12,
+                 *dcm_20,   *dcm_21,   *dcm_22;
   int32_t  const *xpol,     *ypol,     *zpol;
   uint32_t const *sortmtrx, *zerocnt;
   int32_t  const *filterlen;

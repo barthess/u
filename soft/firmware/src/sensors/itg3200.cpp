@@ -93,9 +93,12 @@ void ITG3200::pickle(void){
   comp_data.zgyro_angle += get_degrees(comp_data.zgyro);
 
   /* fill scaled debug struct */
-  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
-  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
-  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
+//  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
+//  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
+//  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
+  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(comp_data.xgyro * 1000);
+  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(comp_data.ygyro * 1000);
+  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(comp_data.zgyro * 1000);
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 }
 

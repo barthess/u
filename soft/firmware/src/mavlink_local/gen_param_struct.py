@@ -32,9 +32,9 @@ param = [
 ("IMU_still_thr",   100,    10000,  100000, "u", "default",     "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
 
 #/* veights of different components */
-("IMU_accweight",   0.0,    0.005,  0.1,    "f", "default",     "NULL"),
+("IMU_accweight",   0.0,    0.005,  0.5,    "f", "default",     "NULL"),
 ("IMU_magweight",   0.0,    0.05,   0.9,    "f", "default",     "NULL"),
-("IMU_gpsweight",   0.0,    0.05,   0.1,    "f", "default",     "NULL"),
+("IMU_gpsweight",   0.0,    0.05,   0.5,    "f", "default",     "NULL"),
 ("IMU_reserved1",   -1,     0,      1,      "f", "default",     "NULL"),
 ("IMU_reserved2",   -1,     0,      1,      "f", "default",     "NULL"),
 ("IMU_reserved3",   -1,     0,      1,      "f", "default",     "NULL"),
@@ -65,6 +65,16 @@ param = [
 ("MAG_ellip_20",    -5.0,   0,      5.0,    "f", "default",     "ellipsoid correction coefficient"),
 ("MAG_ellip_21",    -5.0,   0,      5.0,    "f", "default",     "ellipsoid correction coefficient"),
 ("MAG_ellip_22",    -5.0,   0,      5.0,    "f", "default",     "ellipsoid correction coefficient"),
+# rotation matrix to align magnetometers and accelerometers
+("MAG_dcm_00",      -1.0,   1.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_01",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_02",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_10",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_11",      -1.0,   1.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_12",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_20",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_21",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
+("MAG_dcm_22",      -1.0,   1.0,    1.0,    "f", "default",     "NULL"),
 
 #/**** accelerometer ****/
 #/* zero offsets */
@@ -203,11 +213,13 @@ param = [
 ("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 
 #/**** Variables for debugging purposes ****/
+("DBG_test2",       17,    19,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ("DBG_reserved0",   0,      0,      10000,  "u", "default",    "NULL"),
 ("DBG_reserved1",   0,      0,      10000,  "u", "default",    "NULL"),
 ("DBG_reserved2",   0,      0,      10000,  "u", "default",    "NULL"),
 
 #/**** fake field with 14 symbols name ****/
+("param_test",      0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ("param_end_mark",  0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ]
 

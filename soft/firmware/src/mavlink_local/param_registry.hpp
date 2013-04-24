@@ -103,6 +103,7 @@ public:
   const GlobalParam_t *getParam(const char *key, int32_t n, int32_t *i);
 
 private:
+  bool load_extensive(void);
   int32_t key_index_search(const char* key);
   ParamValidator validator;
   static const GlobalParam_t *param_array;

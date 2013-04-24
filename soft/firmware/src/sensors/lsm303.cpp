@@ -6,6 +6,7 @@
 #include "message.hpp"
 #include "param_registry.hpp"
 #include "misc_math.hpp"
+#include "matrix.hpp"
 
 /*
  ******************************************************************************
@@ -52,6 +53,10 @@ extern EventSource event_mavlink_out_raw_imu;
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
+
+float lsm303_dcm[9];
+float lsm303_in[3];
+float lsm303_out[3];
 
 /**
  *
@@ -101,9 +106,44 @@ void LSM303::pickle(void){
   comp_data.ymag -= *yoffset;
   comp_data.zmag -= *zoffset;
 
-  mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
-  mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
-  mavlink_out_scaled_imu_struct.zmag = comp_data.zmag;
+//  lsm303_dcm[0] = *dcm_00;
+//  lsm303_dcm[1] = *dcm_10;
+//  lsm303_dcm[2] = *dcm_20;
+//  lsm303_dcm[3] = *dcm_01;
+//  lsm303_dcm[4] = *dcm_11;
+//  lsm303_dcm[5] = *dcm_21;
+//  lsm303_dcm[6] = *dcm_02;
+//  lsm303_dcm[7] = *dcm_12;
+//  lsm303_dcm[8] = *dcm_22;
+
+  lsm303_dcm[0] = *dcm_00;
+  lsm303_dcm[1] = *dcm_01;
+  lsm303_dcm[2] = *dcm_02;
+  lsm303_dcm[3] = *dcm_10;
+  lsm303_dcm[4] = *dcm_11;
+  lsm303_dcm[5] = *dcm_12;
+  lsm303_dcm[6] = *dcm_20;
+  lsm303_dcm[7] = *dcm_21;
+  lsm303_dcm[8] = *dcm_22;
+
+  //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
+//template <typename T>
+//void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
+//                     const T *A, const T *B, T *C){
+
+  lsm303_in[0] = comp_data.xmag;
+  lsm303_in[1] = comp_data.ymag;
+  lsm303_in[2] = comp_data.zmag;
+
+  matrix_multiply(3,3,3, lsm303_in, lsm303_dcm, lsm303_out);
+
+//  mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
+//  mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
+//  mavlink_out_scaled_imu_struct.zmag = comp_data.zmag;
+
+  mavlink_out_scaled_imu_struct.xmag = lsm303_out[0];
+  mavlink_out_scaled_imu_struct.ymag = lsm303_out[1];
+  mavlink_out_scaled_imu_struct.zmag = lsm303_out[2];
 }
 
 /**
@@ -207,6 +247,16 @@ void LSM303::start(void){
   ellip_20  = (const float*)param_registry.valueSearch("MAG_ellip_20");
   ellip_21  = (const float*)param_registry.valueSearch("MAG_ellip_21");
   ellip_22  = (const float*)param_registry.valueSearch("MAG_ellip_22");
+
+  dcm_00    = (const float*)param_registry.valueSearch("MAG_dcm_00");
+  dcm_01    = (const float*)param_registry.valueSearch("MAG_dcm_01");
+  dcm_02    = (const float*)param_registry.valueSearch("MAG_dcm_02");
+  dcm_10    = (const float*)param_registry.valueSearch("MAG_dcm_10");
+  dcm_11    = (const float*)param_registry.valueSearch("MAG_dcm_11");
+  dcm_12    = (const float*)param_registry.valueSearch("MAG_dcm_12");
+  dcm_20    = (const float*)param_registry.valueSearch("MAG_dcm_20");
+  dcm_21    = (const float*)param_registry.valueSearch("MAG_dcm_21");
+  dcm_22    = (const float*)param_registry.valueSearch("MAG_dcm_22");
 
   xpol      = (const int32_t*)param_registry.valueSearch("MAG_xpol");
   ypol      = (const int32_t*)param_registry.valueSearch("MAG_ypol");

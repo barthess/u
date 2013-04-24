@@ -12,7 +12,8 @@
  * DEFINES
  ******************************************************************************
  */
-#define IMMOBILE_FILTER_LEN     128
+#define IMMOBILE_FILTER_LEN     256
+#define STILL_THRS_MG           6.0f
 
 /*
  ******************************************************************************
@@ -22,7 +23,6 @@
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 extern CompensatedData comp_data;
-extern GlobalFlags_t GlobalFlags;
 extern ParamRegistry param_registry;
 
 /*
@@ -41,70 +41,12 @@ extern ParamRegistry param_registry;
 /**
  *
  */
-MMA8451::MMA8451(I2CDriver* i2cdp, i2caddr_t addr):
-I2CSensor(i2cdp, addr)
-{
-  ready = false;
-}
-
-/**
- *
- */
-void MMA8451::start(void) {
-  if (need_full_init())
-    hw_init_full();
-  else
-    hw_init_fast();
-
-  xoffset   = (const int32_t*)param_registry.valueSearch("ACC_xoffset");
-  yoffset   = (const int32_t*)param_registry.valueSearch("ACC_yoffset");
-  zoffset   = (const int32_t*)param_registry.valueSearch("ACC_zoffset");
-
-  xpol      = (const int32_t*)param_registry.valueSearch("ACC_xpol");
-  ypol      = (const int32_t*)param_registry.valueSearch("ACC_ypol");
-  zpol      = (const int32_t*)param_registry.valueSearch("ACC_zpol");
-
-  xsens     = (const uint32_t*)param_registry.valueSearch("ACC_xsens");
-  ysens     = (const uint32_t*)param_registry.valueSearch("ACC_ysens");
-  zsens     = (const uint32_t*)param_registry.valueSearch("ACC_zsens");
-
-  sortmtrx  = (const uint32_t*)param_registry.valueSearch("ACC_sortmtrx");
-  still_thr = (const uint32_t*)param_registry.valueSearch("IMU_still_thr");
-
-  ready = true;
-}
-
-/**
- *
- */
-void MMA8451::stop(void) {
-  ready = false;
-}
-
-/**
- *
- */
-static volatile uint32_t t0, t1;
-void MMA8451::update(void) {
-  chDbgCheck((true == ready), "you must start() this device");
-  txbuf[0] = ACCEL_STATUS;
-  transmit(txbuf, 1, rxbuf, 7);
-  this->pickle();
-
-  t0 = hal_lld_get_counter_value();
-  this->detect_immobilityi();
-  t1 = hal_lld_get_counter_value() - t0;
-  this->detect_immobilityf();
-}
-
-/**
- *
- */
-void MMA8451::detect_immobilityf(void){
+void MMA8451::update_still(void){
   float cross[3];
   float filtered[3];
   float current[3];
-  float modulus;
+  float modulus_cross;
+  float modulus_delta;
 
   /* immobile detect */
   current[0] = comp_data.xacc / 1000.0f;
@@ -116,40 +58,11 @@ void MMA8451::detect_immobilityf(void){
   filtered[2] = zabetaf.update(current[2], IMMOBILE_FILTER_LEN);
 
   vector3d_cross(current, filtered, cross);
-  modulus = vector3d_modulus(cross);
-  if (modulus > 0.1f)
-    setGlobalFlag(GlobalFlags.accel_not_still);
-  else
-    clearGlobalFlag(GlobalFlags.accel_not_still);
-}
-
-/**
- *
- */
-void MMA8451::detect_immobilityi(void){
-  int32_t cross[3];
-  int32_t filtered[3];
-  int32_t current[3];
-  int32_t modulus_cross;
-  int32_t modulus_delta;
-
-  /* immobile detect */
-  current[0] = comp_data.xacc;
-  current[1] = comp_data.yacc;
-  current[2] = comp_data.zacc;
-
-  filtered[0] = xabetai.update(current[0], IMMOBILE_FILTER_LEN);
-  filtered[1] = yabetai.update(current[1], IMMOBILE_FILTER_LEN);
-  filtered[2] = zabetai.update(current[2], IMMOBILE_FILTER_LEN);
-
-  vector3d_cross(current, filtered, cross);
-  modulus_cross = vector3d_modulus(cross) / 1000;
-
+  modulus_cross = vector3d_modulus(cross);
   modulus_delta = vector3d_modulus(current) - vector3d_modulus(filtered);
 
-  mavlink_out_scaled_imu_struct.xacc = modulus_cross;
-  mavlink_out_scaled_imu_struct.yacc = modulus_delta;
-  mavlink_out_scaled_imu_struct.zacc = 0;
+  if ((fabsf(modulus_delta) > STILL_THRS_MG) || (fabsf(modulus_cross) > STILL_THRS_MG))
+    immobile = false;
 }
 
 /**
@@ -176,9 +89,9 @@ void MMA8451::pickle(void) {
   comp_data.yacc = (1000 * (Acc[1] + *yoffset)) / *ysens;
   comp_data.zacc = (1000 * (Acc[2] + *zoffset)) / *zsens;
 
-//  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
-//  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
-//  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
+  mavlink_out_scaled_imu_struct.xacc = comp_data.xacc;
+  mavlink_out_scaled_imu_struct.yacc = comp_data.yacc;
+  mavlink_out_scaled_imu_struct.zacc = comp_data.zacc;
 }
 
 /**
@@ -237,4 +150,72 @@ void MMA8451::hw_init_fast(void) {
  *******************************************************************************
  */
 
+/**
+ *
+ */
+MMA8451::MMA8451(I2CDriver* i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr)
+{
+  ready = false;
+  immobile = false;
+}
 
+/**
+ *
+ */
+void MMA8451::start(void) {
+  if (need_full_init())
+    hw_init_full();
+  else
+    hw_init_fast();
+
+  xoffset   = (const int32_t*)param_registry.valueSearch("ACC_xoffset");
+  yoffset   = (const int32_t*)param_registry.valueSearch("ACC_yoffset");
+  zoffset   = (const int32_t*)param_registry.valueSearch("ACC_zoffset");
+
+  xpol      = (const int32_t*)param_registry.valueSearch("ACC_xpol");
+  ypol      = (const int32_t*)param_registry.valueSearch("ACC_ypol");
+  zpol      = (const int32_t*)param_registry.valueSearch("ACC_zpol");
+
+  xsens     = (const uint32_t*)param_registry.valueSearch("ACC_xsens");
+  ysens     = (const uint32_t*)param_registry.valueSearch("ACC_ysens");
+  zsens     = (const uint32_t*)param_registry.valueSearch("ACC_zsens");
+
+  sortmtrx  = (const uint32_t*)param_registry.valueSearch("ACC_sortmtrx");
+  still_thr = (const uint32_t*)param_registry.valueSearch("IMU_still_thr");
+
+  ready = true;
+}
+
+/**
+ *
+ */
+void MMA8451::stop(void) {
+  ready = false;
+}
+
+/**
+ * return true is device was immobile still last call of this function
+ */
+bool MMA8451::still(void){
+  bool tmp;
+
+  chSysLock();
+  tmp = immobile;
+  immobile = true;
+  chSysUnlock();
+
+  return tmp;
+}
+
+/**
+ *
+ */
+void MMA8451::update(void) {
+  chDbgCheck((true == ready), "you must start() this device");
+  txbuf[0] = ACCEL_STATUS;
+  transmit(txbuf, 1, rxbuf, 7);
+
+  this->pickle();
+  this->update_still();
+}
