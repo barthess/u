@@ -27,6 +27,24 @@ uint16_t pack8to16(uint8_t *buf){
 /**
  *
  */
+void unpack32to8(uint32_t v, uint8_t *buf){
+  buf[0] = (v >> 24) & 0xFF;
+  buf[1] = (v >> 16) & 0xFF;
+  buf[2] = (v >> 8)  & 0xFF;
+  buf[3] = (v >> 0)  & 0xFF;
+}
+
+/**
+ *
+ */
+void unpack16to8(uint16_t v, uint8_t *buf){
+  buf[0] = (v >> 8)  & 0xFF;
+  buf[1] = (v >> 0)  & 0xFF;
+}
+
+/**
+ *
+ */
 int16_t complement2signed(uint8_t msb, uint8_t lsb){
   uint16_t word = 0;
   word = (msb << 8) + lsb;
