@@ -110,6 +110,15 @@ static msg_t Imu(void *arg) {
     lsm303.update(mag, 3);
     mma8451.update(acc, 3);
 
+
+
+    if (lsm303.still())
+      palSetPad(GPIOB, GPIOB_LED_R);
+    else
+      palClearPad(GPIOB, GPIOB_LED_R);
+
+
+
     dcmUpdate(acc, gyro, mag, interval);
 
     calc_attitude(&mavlink_out_attitude_struct, gyro);

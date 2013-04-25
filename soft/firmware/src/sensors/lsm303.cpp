@@ -7,6 +7,7 @@
 #include "param_registry.hpp"
 #include "misc_math.hpp"
 #include "matrix.hpp"
+#include "vector3d.hpp"
 
 /*
  ******************************************************************************
@@ -46,6 +47,29 @@ extern EventSource event_mavlink_out_raw_imu;
  ******************************************************************************
  ******************************************************************************
  */
+/**
+ *
+ */
+void LSM303::update_still(float *result, size_t len){
+  (void)len;
+  float cross[3];
+  float filtered[3];
+  float modulus_cross;
+  float modulus_delta;
+  uint32_t i = 0;
+
+  /* update array of filters */
+  for (i=0; i<3; i++)
+    filtered[i] = abeta[i].update(result[i], *still_flen);
+
+  /* calculate differences between vectors */
+  vector3d_cross(result, filtered, cross);
+  modulus_cross = vector3d_modulus(cross);
+  modulus_delta = vector3d_modulus(result) - vector3d_modulus(filtered);
+
+  if ((fabsf(modulus_delta) > *still_thr) || (fabsf(modulus_cross / 1000.0f) > *still_thr))
+    immobile = false;
+}
 
 /**
  *
@@ -198,6 +222,7 @@ void LSM303::update(float *result, size_t len){
   transmit(txbuf, 2, NULL, 0);
 
   this->pickle(result, len);
+  this->update_still(result, len);
 }
 
 /**
@@ -244,5 +269,23 @@ void LSM303::start(void){
   zerocnt   = (const uint32_t*)param_registry.valueSearch("MAG_zerocnt");
   filterlen = (const int32_t*)param_registry.valueSearch("FLEN_magnetom");
 
+  still_thr = (const float*)param_registry.valueSearch("MAG_still_thr");
+  still_flen= (const int32_t*)param_registry.valueSearch("MAG_still_flen");
+
   ready = true;
+}
+
+
+/**
+ * return true is device was immobile still last call of this function
+ */
+bool LSM303::still(void){
+  bool tmp;
+
+  chSysLock();
+  tmp = immobile;
+  immobile = true;
+  chSysUnlock();
+
+  return tmp;
 }

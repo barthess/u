@@ -52,7 +52,8 @@ param = [
 ("MAG_zpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 # /* declination in degrees */
 ("MAG_declinate",   -90,    7,      90,     "i", "default",     "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
-("MAG_still_thr",    0,    60,      500,    "f", "default",     "Device immobility threshold in uT"),
+("MAG_still_thr",    0,     1,      20,     "f", "default",     "Device immobility threshold in parrots"),
+("MAG_still_flen",  1,    256,      2048,   "i", "default",     "Length of filter used in immobility detector"),
 # /* count of samples to zero calibration */
 ("MAG_zerocnt",     256,    512,    4096,   "i", "default",     "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
@@ -169,11 +170,6 @@ param = [
 ("T_sys_status",    SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
 ("T_position_ned",  SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
 ("T_nav_output",    SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved2",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved3",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved4",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved5",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
-("T_reserved6",     SEND_MIN, 0, SEND_MAX, "u", "send_tmo","NULL"),
 
 #/* Timezone. */
 ("TIME_zone",       -24,    0,      24,     "i", "default",    "Simple offset in hours."),
@@ -213,13 +209,11 @@ param = [
 ("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 
 #/**** Variables for debugging purposes ****/
-("DBG_test2",       17,    19,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ("DBG_reserved0",   0,      0,      10000,  "u", "default",    "NULL"),
 ("DBG_reserved1",   0,      0,      10000,  "u", "default",    "NULL"),
 ("DBG_reserved2",   0,      0,      10000,  "u", "default",    "NULL"),
 
 #/**** fake field with 14 symbols name ****/
-("param_test",      0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ("param_end_mark",  0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),
 ]
 
