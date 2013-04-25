@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "i2c_local.hpp"
+#include "dsp.hpp"
 
 #ifndef ITG3200_H_
 #define ITG3200_H_
@@ -28,18 +29,24 @@ public:
   void update(float *result, size_t len);
   void start(void);
   void stop(void);
+  void startCalibration(void);
+  bool isCalibrating(void);
 
 private:
   void pickle(float *result, size_t len);
   void hw_init_full(void);
   void hw_init_fast(void);
+  AlphaBeta<float> abeta[3];
+  int32_t calsample;
+  bool calibration;
   uint8_t rxbuf[GYRO_RX_DEPTH];
   uint8_t txbuf[GYRO_TX_DEPTH];
   /* calibration coefficients pointers */
   float    const *xsens,     *ysens,     *zsens;
   int32_t  const *xpol,      *ypol,      *zpol;
-  float    const *x_offset,  *y_offset,  *z_offset;
+  float          *x_offset,  *y_offset,  *z_offset;
   uint32_t const *sortmtrx;
+  int32_t  const *zeroflen,  *zerocnt;
 };
 
 

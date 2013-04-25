@@ -99,6 +99,9 @@ static msg_t Imu(void *arg) {
   mma8451.start();
   itg3200.start();
 
+  /* calibrate gyros in very first run */
+  itg3200.startCalibration();
+
   while (!chThdShouldTerminate()) {
     sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
     if (sem_status != RDY_OK){
@@ -110,14 +113,13 @@ static msg_t Imu(void *arg) {
     lsm303.update(mag, 3);
     mma8451.update(acc, 3);
 
-
-
-    if (lsm303.still())
-      palSetPad(GPIOB, GPIOB_LED_R);
-    else
-      palClearPad(GPIOB, GPIOB_LED_R);
-
-
+    /* if gyro calibration in process */
+    if (itg3200.isCalibrating()){
+      /* check immobility and restart if needed */
+      if (!(lsm303.still() && mma8451.still())){
+        itg3200.startCalibration();
+      }
+    }
 
     dcmUpdate(acc, gyro, mag, interval);
 

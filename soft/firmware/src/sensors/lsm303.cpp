@@ -66,7 +66,8 @@ void LSM303::update_still(float *result, size_t len){
   modulus_cross = vector3d_modulus(cross);
   modulus_delta = vector3d_modulus(result) - vector3d_modulus(filtered);
 
-  if ((fabsf(modulus_delta) > *still_thr) || (fabsf(modulus_cross / 1000.0f) > *still_thr))
+  if ((fabsf(modulus_delta) > *still_thr) ||
+      (fabsf(modulus_cross / 1000.0f) > *still_thr))
     immobile = false;
 }
 

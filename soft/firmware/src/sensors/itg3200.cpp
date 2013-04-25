@@ -24,8 +24,9 @@
 extern CompensatedData comp_data;
 extern ParamRegistry param_registry;
 
-extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
+extern mavlink_raw_imu_t    mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
+extern mavlink_system_t     mavlink_system_struct;
 
 uint32_t GyroUpdatePeriodUs = 10000; /* uS */
 
@@ -81,6 +82,38 @@ void ITG3200::pickle(float *result, size_t len){
   result[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
   result[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
 
+  /* calibration update */
+  if (calibration){
+    if (0 == calsample){
+      palClearPad(GPIOB, GPIOB_LED_R);
+      mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+      calibration = true;
+      for(i=0; i<3; i++)
+        abeta[i].reset((float)raw[i], *zeroflen);
+      calsample++;
+    }
+    else{
+      if (*zerocnt > calsample){
+        for(i=0; i<3; i++)
+          abeta[i].update((float)raw[i], *zeroflen);
+        calsample++;
+      }
+      else{
+        /* statistics successfully collected */
+        *x_offset = abeta[0].get(*zeroflen);
+        *y_offset = abeta[1].get(*zeroflen);
+        *z_offset = abeta[2].get(*zeroflen);
+        /* store in EEPROM for fast boot */
+        param_registry.syncParam("GYRO_x_offset");
+        param_registry.syncParam("GYRO_y_offset");
+        param_registry.syncParam("GYRO_z_offset");
+        mavlink_system_struct.state = MAV_STATE_STANDBY;
+        calibration = false;
+        palSetPad(GPIOB, GPIOB_LED_R);
+      }
+    }
+  }
+
   /* calc summary angle for debug purpose */
   for(i=0; i<3; i++)
     comp_data.gyro_angle[i] += get_degrees(result[i]);
@@ -122,7 +155,7 @@ void ITG3200::hw_init_full(void){
   chThdSleepMilliseconds(5);
 
   txbuf[0] = GYRO_SMPLRT_DIV;
-  txbuf[1] = 9; /* sample rate. Approximatelly (1000 / (9 + 1)) = 100Hz*/
+  txbuf[1] = 9; /* calsample rate. Approximatelly (1000 / (9 + 1)) = 100Hz*/
   txbuf[2] = GYRO_DLPF_CFG | GYRO_FS_SEL; /* диапазон измерений и частота среза внутреннего фильтра */
   //txbuf[3] = 0b00110001; /* configure and enable interrupts */
   txbuf[3] = 0b00010001; /* configure and enable interrupts */
@@ -158,11 +191,13 @@ void ITG3200::start(void){
   ypol      = (const int32_t*)param_registry.valueSearch("GYRO_ypol");
   zpol      = (const int32_t*)param_registry.valueSearch("GYRO_zpol");
 
-  x_offset  = (const float*)param_registry.valueSearch("GYRO_x_offset");
-  y_offset  = (const float*)param_registry.valueSearch("GYRO_y_offset");
-  z_offset  = (const float*)param_registry.valueSearch("GYRO_z_offset");
+  x_offset  = (float*)param_registry.valueSearch("GYRO_x_offset");
+  y_offset  = (float*)param_registry.valueSearch("GYRO_y_offset");
+  z_offset  = (float*)param_registry.valueSearch("GYRO_z_offset");
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
+  zerocnt   = (const int32_t*)param_registry.valueSearch("GYRO_zerocnt");
+  zeroflen  = (const int32_t*)param_registry.valueSearch("GYRO_zeroflen");
 
   ready = true;
 }
@@ -171,11 +206,16 @@ void ITG3200::start(void){
  *
  */
 ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
-I2CSensor(i2cdp, addr)
+I2CSensor(i2cdp, addr),
+calsample(0),
+calibration(false)
 {
   ready = false;
 }
 
+/**
+ *
+ */
 void ITG3200::stop(void){
   // TODO: power down sensor here
   ready = false;
@@ -189,4 +229,19 @@ void ITG3200::update(float *result, size_t len){
   txbuf[0] = GYRO_OUT_DATA;
   transmit(txbuf, 1, rxbuf, 8);
   this->pickle(result, len);
+}
+
+/**
+ *
+ */
+void ITG3200::startCalibration(void){
+  calibration = true;
+  calsample = 0;
+}
+
+/**
+ *
+ */
+bool ITG3200::isCalibrating(void){
+  return calibration;
 }

@@ -16,6 +16,7 @@ template<typename T>
 class AlphaBeta{
 public:
   T update(T val, int32_t len);
+  T get(int32_t len);
   void reset(T val, int32_t len);
 private:
   T S;
@@ -26,6 +27,11 @@ T AlphaBeta<T>::update(T val, int32_t len){
   T tmp = S / len;
   S = S - tmp + val;
   return tmp;
+}
+
+template<typename T>
+T AlphaBeta<T>::get(int32_t len){
+  return S / len;
 }
 
 template<typename T>
