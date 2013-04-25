@@ -12,7 +12,7 @@
 class MAX1236: private I2CSensor{
 public:
   MAX1236(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(void);
+  void update(float *result, size_t len);
   void start(void);
   void stop(void);
 

@@ -20,7 +20,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern CompensatedData comp_data;
 extern ParamRegistry param_registry;
 
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
@@ -48,19 +47,12 @@ extern EventSource event_mavlink_out_raw_imu;
  ******************************************************************************
  */
 
-/*
- ******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************
- */
-
-//float lsm303_dcm[9];
-float lsm303_out[3];
-
 /**
  *
  */
-void LSM303::pickle(void){
+inline void LSM303::pickle(float *result, size_t len){
+  (void)len;
+  float tmp[3];
   int32_t raw[3];
   int16_t t;
 
@@ -95,109 +87,26 @@ void LSM303::pickle(void){
   }
 
   /* soft iron correction */
-  comp_data.mag[0] = raw[0] * *ellip_00;
-  comp_data.mag[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
-  comp_data.mag[2] = raw[0] * *ellip_20 + raw[1] * *ellip_21 + raw[2] * *ellip_22;
+  result[0] = raw[0] * *ellip_00;
+  result[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
+  result[2] = raw[0] * *ellip_20 + raw[1] * *ellip_21 + raw[2] * *ellip_22;
 
   /* hard iron correction */
-  comp_data.mag[0] -= *xoffset;
-  comp_data.mag[1] -= *yoffset;
-  comp_data.mag[2] -= *zoffset;
+  result[0] -= *xoffset;
+  result[1] -= *yoffset;
+  result[2] -= *zoffset;
 
-//  lsm303_dcm[0] = *dcm_00;
-//  lsm303_dcm[1] = *dcm_10;
-//  lsm303_dcm[2] = *dcm_20;
-//  lsm303_dcm[3] = *dcm_01;
-//  lsm303_dcm[4] = *dcm_11;
-//  lsm303_dcm[5] = *dcm_21;
-//  lsm303_dcm[6] = *dcm_02;
-//  lsm303_dcm[7] = *dcm_12;
-//  lsm303_dcm[8] = *dcm_22;
+  /* rotate magnetometer according to accelerometer position */
+  matrix_multiply(1, 3, 3, result, dcm, tmp);
 
-//  lsm303_dcm[0] = *dcm_00;
-//  lsm303_dcm[1] = *dcm_01;
-//  lsm303_dcm[2] = *dcm_02;
-//  lsm303_dcm[3] = *dcm_10;
-//  lsm303_dcm[4] = *dcm_11;
-//  lsm303_dcm[5] = *dcm_12;
-//  lsm303_dcm[6] = *dcm_20;
-//  lsm303_dcm[7] = *dcm_21;
-//  lsm303_dcm[8] = *dcm_22;
+  /* fill debugging message */
+  mavlink_out_scaled_imu_struct.xmag = tmp[0];
+  mavlink_out_scaled_imu_struct.ymag = tmp[1];
+  mavlink_out_scaled_imu_struct.zmag = tmp[2];
 
-  //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
-//template <typename T>
-//void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
-//                     const T *A, const T *B, T *C){
-
-  matrix_multiply(3,3,3, comp_data.mag, dcm, lsm303_out);
-
-//  mavlink_out_scaled_imu_struct.xmag = comp_data.xmag;
-//  mavlink_out_scaled_imu_struct.ymag = comp_data.ymag;
-//  mavlink_out_scaled_imu_struct.zmag = comp_data.zmag;
-
-  mavlink_out_scaled_imu_struct.xmag = lsm303_out[0];
-  mavlink_out_scaled_imu_struct.ymag = lsm303_out[1];
-  mavlink_out_scaled_imu_struct.zmag = lsm303_out[2];
-}
-
-/**
- *
- */
-LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
-I2CSensor(i2cdp, addr),
-sample_cnt(0),
-calibration(false)
-{
-  ready = false;
-}
-
-/**
- *
- */
-void LSM303::stop(void){
-  // TODO: power down sensor here
-  ready = false;
-}
-
-/**
- *
- */
-bool LSM303::trigCal(void){
-  if (true == calibration)
-    return CH_FAILED;
-  else{
-    xalphabeta.reset(mavlink_out_raw_imu_struct.xmag, *filterlen);
-    yalphabeta.reset(mavlink_out_raw_imu_struct.ymag, *filterlen);
-    zalphabeta.reset(mavlink_out_raw_imu_struct.zmag, *filterlen);
-
-    sample_cnt = 0;
-    calibration = true;
-    return CH_SUCCESS;
-  }
-}
-
-/**
- *
- */
-void LSM303::update(void){
-  chDbgCheck((true == ready), "not ready");
-
-  if ((sample_cnt % 128) == 0){
-    txbuf[0] = TEMP_OUT_H_M;
-    transmit(txbuf, 1, rxbuf+6, 2);
-  }
-  sample_cnt++;
-
-  /* read previose measurement results */
-  txbuf[0] = OUT_X_H_M;
-  transmit(txbuf, 1, rxbuf, 6);
-
-  /* start new measurement */
-  txbuf[0] = MR_REG_M;
-  txbuf[1] = 0b00000001;
-  transmit(txbuf, 2, NULL, 0);
-
-  this->pickle();
+  /* fill result structure */
+  for (uint32_t i=0; i<3; i++)
+    result[i] = tmp[i];
 }
 
 /**
@@ -221,6 +130,74 @@ void LSM303::hw_init_full(void){
   txbuf[3] = 0b00000001;
 
   transmit(txbuf, 4, NULL, 0);
+}
+
+/**
+ *
+ */
+bool LSM303::trigCal(void){
+  if (true == calibration)
+    return CH_FAILED;
+  else{
+    xalphabeta.reset(mavlink_out_raw_imu_struct.xmag, *filterlen);
+    yalphabeta.reset(mavlink_out_raw_imu_struct.ymag, *filterlen);
+    zalphabeta.reset(mavlink_out_raw_imu_struct.zmag, *filterlen);
+
+    sample_cnt = 0;
+    calibration = true;
+    return CH_SUCCESS;
+  }
+}
+
+/*
+ ******************************************************************************
+ * EXPORTED FUNCTIONS
+ ******************************************************************************
+ */
+/**
+ *
+ */
+LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr),
+sample_cnt(0),
+calibration(false)
+{
+  ready = false;
+}
+
+/**
+ *
+ */
+void LSM303::stop(void){
+  // TODO: power down sensor here
+  ready = false;
+}
+
+/**
+ *
+ */
+void LSM303::update(float *result, size_t len){
+  (void)result;
+  (void)len;
+
+  chDbgCheck((true == ready), "not ready");
+
+  if ((sample_cnt % 128) == 0){
+    txbuf[0] = TEMP_OUT_H_M;
+    transmit(txbuf, 1, rxbuf+6, 2);
+  }
+  sample_cnt++;
+
+  /* read previose measurement results */
+  txbuf[0] = OUT_X_H_M;
+  transmit(txbuf, 1, rxbuf, 6);
+
+  /* start new measurement */
+  txbuf[0] = MR_REG_M;
+  txbuf[1] = 0b00000001;
+  transmit(txbuf, 2, NULL, 0);
+
+  this->pickle(result, len);
 }
 
 /**

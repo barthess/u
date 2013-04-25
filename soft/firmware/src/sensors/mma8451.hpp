@@ -32,14 +32,14 @@
 class MMA8451: private I2CSensor{
 public:
   MMA8451(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(void);
+  void update(float *result, size_t len);
   void start(void);
   void stop(void);
   bool still(void);
 
 private:
-  void pickle(void);
-  void update_still(void);
+  void pickle(float *result, size_t len);
+  void update_still(float *result, size_t len);
   void hw_init_full(void);
   void hw_init_fast(void);
   bool immobile;
@@ -50,7 +50,9 @@ private:
   int32_t  const *xoffset,   *yoffset,   *zoffset;
   int32_t  const *xpol,      *ypol,      *zpol;
   uint32_t const *xsens,     *ysens,     *zsens;
-  uint32_t const *still_thr, *sortmtrx;
+  uint32_t const *sortmtrx;
+  float    const *still_thr;
+  int32_t  const *still_flen;
 };
 
 

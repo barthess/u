@@ -69,7 +69,10 @@ I2CSensor(i2cdp, addr)
  * При частоте 100кГц на вычитывание 4 значений уйдет примерно:
  * 10 * (4 * 2 * 8) + 8.3 * 4 = 673.2 uS
  */
-void MAX1236::update(void) {
+void MAX1236::update(float *result, size_t len){
+  (void)result;
+  (void)len;
+
   q31_t press;
   uint16_t sonar;
   const uint16_t rest = 10000; // constant for compesate filter flyback delay

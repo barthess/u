@@ -63,8 +63,8 @@ int32_t matrix_inverse(int32_t n, T *A)
 {
   // A = input matrix AND result matrix
   // n = number of rows = number of columns in A (n x n)
-  int32_t pivrow;   // keeps track of current pivot row
-  int32_t k,i,j;    // k: overall index along diagonal; i: row index; j: col index
+  int32_t pivrow = 0; // keeps track of current pivot row
+  int32_t k,i,j;      // k: overall index along diagonal; i: row index; j: col index
   int32_t pivrows[n]; // keeps track of rows swaps to undo at end
   T tmp;    // used for finding max value and making column swaps
 

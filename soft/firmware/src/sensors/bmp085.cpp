@@ -160,7 +160,10 @@ I2CSensor(i2cdp, addr)
 /**
  *
  */
-void BMP085::update(void) {
+void BMP085::update(float *result, size_t len){
+  (void)result;
+  (void)len;
+
   chDbgCheck((true == ready), "you must start() this device");
 
   switch(measure){

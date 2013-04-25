@@ -54,7 +54,7 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 /**
  * Get attitude from DCM
  */
-static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct){
+static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyro){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
     mavlink_attitude_struct->pitch  = -asinf(Rxz);
@@ -73,9 +73,9 @@ static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct){
   /* or from Z gyro for dbug reasons */
   //mavlink_attitude_struct->yaw          = -comp_data.zgyro_angle * PI / 180;
 
-  mavlink_attitude_struct->rollspeed    = -comp_data.gyro[0];
-  mavlink_attitude_struct->pitchspeed   = -comp_data.gyro[1];
-  mavlink_attitude_struct->yawspeed     = -comp_data.gyro[2];
+  mavlink_attitude_struct->rollspeed    = -gyro[0];
+  mavlink_attitude_struct->pitchspeed   = -gyro[1];
+  mavlink_attitude_struct->yawspeed     = -gyro[2];
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
 }
 
@@ -89,7 +89,11 @@ static msg_t Imu(void *arg) {
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
-  float interval = 0.01; /* time between 2 gyro measurements */
+
+  float interval = 0.01;  /* time between 2 gyro measurements, S */
+  float acc[3];           /* acceleration in G */
+  float gyro[3];          /* angular rates in rad/s */
+  float mag[3];           /* magnetic flux in T */
 
   lsm303.start();
   mma8451.start();
@@ -102,22 +106,13 @@ static msg_t Imu(void *arg) {
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
 
-    itg3200.update();
-    lsm303.update();
-    mma8451.update();
+    itg3200.update(gyro, 3);
+    lsm303.update(mag, 3);
+    mma8451.update(acc, 3);
 
-    dcmUpdate(comp_data.acc[0],
-              comp_data.acc[1],
-              comp_data.acc[2],
-              comp_data.gyro[0],
-              comp_data.gyro[1],
-              comp_data.gyro[2],
-              comp_data.mag[0],
-              comp_data.mag[1],
-              comp_data.mag[2],
-              interval);
+    dcmUpdate(acc, gyro, mag, interval);
 
-    calc_attitude(&mavlink_out_attitude_struct);
+    calc_attitude(&mavlink_out_attitude_struct, gyro);
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
 

@@ -9,15 +9,9 @@ typedef struct CompensatedData CompensatedData;
 struct CompensatedData{
   /* Integrated angles for debug. Degrease */
   float     gyro_angle[3];
-  /* angular rates in rad/s */
-  float     gyro[3];
   float     gyrotemp;
   /* acceleration in mG (for sending in mavlink messages) */
   int16_t   acc_i16[3];
-  /* acceleration in G (for internal use) */
-  float     acc[3];
-  /* magnetic flux in T */
-  float     mag[3];
   /**/
   float     baro_altitude;      /* высота по барометру bmp085 (m)*/
   float     baro_climb;         /* вертикальная скорость (m/s) */

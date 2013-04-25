@@ -132,11 +132,9 @@ static void dcm_rotate(float dcm[3][3], float w[3]){
  * angular rates in rad/s (scale is MATTER),
  * magnetic flux in uT (scale does not matter because values will be normolized),
  * time in s */
-void dcmUpdate(float xacc,  float yacc,  float zacc,
-               float xgyro, float ygyro, float zgyro,
-               float xmag,  float ymag,  float zmag,
-               float imu_interval){
+void dcmUpdate(float *acc, float *gyro, float *mag, float imu_interval){
 
+  uint32_t i = 0;
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
 
@@ -171,9 +169,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   а не вектор гравитации, то ничего инвертировать не надо.
   Вектор кажущегося ускорения совпадает с зенитным вектором К. */
 
-  Kacc[0] = xacc;
-  Kacc[1] = yacc;
-  Kacc[2] = zacc;
+  for (i = 0; i<3; i++)
+    Kacc[i] = acc[i];
   vector3d_normalize(Kacc);
 
   //calculate correction vector to bring dcmEst's K vector closer to Acc
@@ -194,9 +191,8 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //    Imag[1] = 0;
   //    Imag[2] = dcmEst[0][2];
 
-  Imag[0] = xmag;
-  Imag[1] = ymag;
-  Imag[2] = zmag;
+  for (i = 0; i<3; i++)
+    Imag[i] = mag[i];
 
   /* Проработать комплексирование с нижним рядом DCM вместо вектора
    * гравитации. Какие-то непонятные результаты получаются, или я их
@@ -218,10 +214,12 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   //gyro rate direction is usually specified (in datasheets) as the device's(body's) rotation
   //about a fixed earth's (global) frame, if we look from the perspective of device then
   //the global vectors (I,K,J) rotation direction will be the inverse
+  //rotation rate about accelerometer's X axis (GY output)
+  //rotation rate about accelerometer's Y axis (GX output)
+  //rotation rate about accelerometer's Z axis (GZ output)
   float w[3];     //gyro rates (angular velocity of a global vector in local coordinates)
-  w[0] = -xgyro;  //rotation rate about accelerometer's X axis (GY output)
-  w[1] = -ygyro;  //rotation rate about accelerometer's Y axis (GX output)
-  w[2] = -zgyro;  //rotation rate about accelerometer's Z axis (GZ output)
+  for (i = 0; i<3; i++)
+    w[i] = -gyro[i];
 
   /* correction factors for accelerometer and mognetometer weights */
   float magcor, acccor;
@@ -237,7 +235,6 @@ void dcmUpdate(float xacc,  float yacc,  float zacc,
   float aw = *accweight * acccor;
   float mw = *magweight * magcor;
 
-  uint32_t i;
   for(i=0; i<3; i++){
     w[i] *= imu_interval;  //scale by elapsed time to get angle in radians
     //compute weighted average with the accelerometer correction vector

@@ -12,8 +12,6 @@
  * DEFINES
  ******************************************************************************
  */
-#define IMMOBILE_FILTER_LEN     256
-#define STILL_THRS_MG           6.0f
 
 /*
  ******************************************************************************
@@ -38,10 +36,12 @@ extern ParamRegistry param_registry;
  *******************************************************************************
  *******************************************************************************
  */
+
 /**
  *
  */
-void MMA8451::update_still(void){
+void MMA8451::update_still(float *result, size_t len){
+  (void)len;
   float cross[3];
   float filtered[3];
   float modulus_cross;
@@ -50,44 +50,44 @@ void MMA8451::update_still(void){
 
   /* update array of filters */
   for (i=0; i<3; i++)
-    filtered[i] = abeta[i].update(comp_data.acc[i], IMMOBILE_FILTER_LEN);
+    filtered[i] = abeta[i].update(result[i], *still_flen);
 
   /* calculate differences between vectors */
-  vector3d_cross(comp_data.acc, filtered, cross);
+  vector3d_cross(result, filtered, cross);
   modulus_cross = vector3d_modulus(cross);
-  modulus_delta = vector3d_modulus(comp_data.acc) - vector3d_modulus(filtered);
+  modulus_delta = vector3d_modulus(result) - vector3d_modulus(filtered);
 
-  if ((fabsf(modulus_delta) > STILL_THRS_MG) || (fabsf(modulus_cross) > STILL_THRS_MG))
+  if ((fabsf(modulus_delta) > *still_thr) || (fabsf(modulus_cross) > *still_thr))
     immobile = false;
 }
 
 /**
  *
  */
-void MMA8451::pickle(void) {
+void MMA8451::pickle(float *result, size_t len) {
+  (void)len;
   int32_t raw[3];
-  int32_t Acc[3];
 
   raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
   raw[1] = complement2signed(rxbuf[3], rxbuf[4]);
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
-  sort3(raw, Acc, *sortmtrx);
+  sort3(raw, *sortmtrx);
 
-  Acc[0] *= *xpol;
-  Acc[1] *= *ypol;
-  Acc[2] *= *zpol;
+  raw[0] *= *xpol;
+  raw[1] *= *ypol;
+  raw[2] *= *zpol;
 
-  mavlink_out_raw_imu_struct.xacc = Acc[0];
-  mavlink_out_raw_imu_struct.yacc = Acc[1];
-  mavlink_out_raw_imu_struct.zacc = Acc[2];
+  mavlink_out_raw_imu_struct.xacc = raw[0];
+  mavlink_out_raw_imu_struct.yacc = raw[1];
+  mavlink_out_raw_imu_struct.zacc = raw[2];
 
-  comp_data.acc_i16[0] = (1000 * (Acc[0] + *xoffset)) / *xsens;
-  comp_data.acc_i16[1] = (1000 * (Acc[1] + *yoffset)) / *ysens;
-  comp_data.acc_i16[2] = (1000 * (Acc[2] + *zoffset)) / *zsens;
+  comp_data.acc_i16[0] = (1000 * (raw[0] + *xoffset)) / *xsens;
+  comp_data.acc_i16[1] = (1000 * (raw[1] + *yoffset)) / *ysens;
+  comp_data.acc_i16[2] = (1000 * (raw[2] + *zoffset)) / *zsens;
 
-  comp_data.acc[0] = comp_data.acc_i16[0] / 1000.0f;
-  comp_data.acc[1] = comp_data.acc_i16[1] / 1000.0f;
-  comp_data.acc[2] = comp_data.acc_i16[2] / 1000.0f;
+  result[0] = comp_data.acc_i16[0] / 1000.0f;
+  result[1] = comp_data.acc_i16[1] / 1000.0f;
+  result[2] = comp_data.acc_i16[2] / 1000.0f;
 
   mavlink_out_scaled_imu_struct.xacc = comp_data.acc_i16[0];
   mavlink_out_scaled_imu_struct.yacc = comp_data.acc_i16[1];
@@ -182,7 +182,8 @@ void MMA8451::start(void) {
   zsens     = (const uint32_t*)param_registry.valueSearch("ACC_zsens");
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("ACC_sortmtrx");
-  still_thr = (const uint32_t*)param_registry.valueSearch("IMU_still_thr");
+  still_thr = (const float*)param_registry.valueSearch("ACC_still_thr");
+  still_flen= (const int32_t*)param_registry.valueSearch("ACC_still_flen");
 
   ready = true;
 }
@@ -211,11 +212,11 @@ bool MMA8451::still(void){
 /**
  *
  */
-void MMA8451::update(void) {
+void MMA8451::update(float *result, size_t len){
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = ACCEL_STATUS;
   transmit(txbuf, 1, rxbuf, 7);
 
-  this->pickle();
-  this->update_still();
+  this->pickle(result, len);
+  this->update_still(result, len);
 }

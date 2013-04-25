@@ -80,13 +80,13 @@ static msg_t DcmPrintTread(void *sdp){
     cli_print_long(str, n, nres);
     cli_println("");
 
-    cli_println("Accelration in g [X Y Z]:");
-    nres = snprintf(str, n, format,
-          (double)comp_data.acc[0],
-          (double)comp_data.acc[1],
-          (double)comp_data.acc[2]);
-    cli_print_long(str, n, nres);
-    cli_println("");
+//    cli_println("Accelration in g [X Y Z]:");
+//    nres = snprintf(str, n, format,
+//          (double)comp_data.acc[0],
+//          (double)comp_data.acc[1],
+//          (double)comp_data.acc[2]);
+//    cli_print_long(str, n, nres);
+//    cli_println("");
 
     chThdSleep(DCM_PRINT_PERIOD);
   }

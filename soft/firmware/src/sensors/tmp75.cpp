@@ -101,7 +101,10 @@ accomplished by issuing a slave address byte with the
 R/W bit LOW, followed by the Pointer Register Byte. No
 additional data is required.
 */
-void TMP75::update(void){
+void TMP75::update(float *result, size_t len){
+  (void)result;
+  (void)len;
+
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = 1; // point to Configuration Register
   /* single measurement start

@@ -29,8 +29,6 @@ param = [
 ("SYS_mavtype",     0,      10,     16,     "u", "default",     "Autopilot type (0 - generic, 1 - fixed wing, 10 - ground rover).\\nOther types you can found in enum MAV_TYPE \\nNOTE! You MUST REBOOT device after changing it."),
 ("SH_overxbee",     0,      0,      1,      "u", "default",     "When 1 than drop shell on xbee channel and telemetry on USB_CDC and vice versa."),
 
-("IMU_still_thr",   100,    10000,  100000, "u", "default",     "Stillness threshold of device during calibration (micro g).\\n If acceleration delta less than this value that device is still"),
-
 #/* veights of different components */
 ("IMU_accweight",   0.0,    0.005,  0.5,    "f", "default",     "NULL"),
 ("IMU_magweight",   0.0,    0.05,   0.9,    "f", "default",     "NULL"),
@@ -54,6 +52,7 @@ param = [
 ("MAG_zpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 # /* declination in degrees */
 ("MAG_declinate",   -90,    7,      90,     "i", "default",     "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
+("MAG_still_thr",    0,    60,      500,    "f", "default",     "Device immobility threshold in uT"),
 # /* count of samples to zero calibration */
 ("MAG_zerocnt",     256,    512,    4096,   "i", "default",     "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
@@ -90,7 +89,8 @@ param = [
 ("ACC_ypol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 ("ACC_zpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 ("ACC_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
-("ACC_reserved2",   -1,     1,      1,      "i", "default",     "NULL"),
+("ACC_still_thr",   0,  0.006,      0.1,    "f", "default",     "Device immobility threshold in g"),
+("ACC_still_flen",  1,    256,      2048,   "i", "default",     "Length of filter used in immobility detector"),
 
 #/* Gyroscope */
 #/* sens (LSB/(deg/s)) */

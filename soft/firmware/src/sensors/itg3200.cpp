@@ -54,7 +54,8 @@ static float get_degrees(float raw){
 /**
  *
  */
-void ITG3200::pickle(void){
+void ITG3200::pickle(float *result, size_t len){
+  (void)len;
   int32_t raw[3];
   uint32_t i = 0;
 
@@ -76,46 +77,22 @@ void ITG3200::pickle(void){
   mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular rate in rad/sec */
-  comp_data.gyro[0] = fdeg2rad(((float)raw[0] - *x_offset) / *xsens);
-  comp_data.gyro[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
-  comp_data.gyro[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
+  result[0] = fdeg2rad(((float)raw[0] - *x_offset) / *xsens);
+  result[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
+  result[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
 
   /* calc summary angle for debug purpose */
   for(i=0; i<3; i++)
-    comp_data.gyro_angle[i] += get_degrees(comp_data.gyro[i]);
+    comp_data.gyro_angle[i] += get_degrees(result[i]);
 
   /* fill scaled debug struct */
 //  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
 //  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
 //  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(comp_data.gyro[0] * 1000);
-  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(comp_data.gyro[1] * 1000);
-  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(comp_data.gyro[2] * 1000);
+  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(result[0] * 1000);
+  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(result[1] * 1000);
+  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(result[2] * 1000);
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
-}
-
-/**
- *
- */
-ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
-I2CSensor(i2cdp, addr)
-{
-  ready = false;
-}
-
-void ITG3200::stop(void){
-  // TODO: power down sensor here
-  ready = false;
-}
-
-/**
- *
- */
-void ITG3200::update(void){
-  chDbgCheck((true == ready), "not ready");
-  txbuf[0] = GYRO_OUT_DATA;
-  transmit(txbuf, 1, rxbuf, 8);
-  this->pickle();
 }
 
 /**
@@ -152,6 +129,12 @@ void ITG3200::hw_init_full(void){
   transmit(txbuf, 4, rxbuf, 0);
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
 /**
  *
  */
@@ -184,9 +167,26 @@ void ITG3200::start(void){
   ready = true;
 }
 
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
+/**
+ *
  */
+ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
+I2CSensor(i2cdp, addr)
+{
+  ready = false;
+}
 
+void ITG3200::stop(void){
+  // TODO: power down sensor here
+  ready = false;
+}
+
+/**
+ *
+ */
+void ITG3200::update(float *result, size_t len){
+  chDbgCheck((true == ready), "not ready");
+  txbuf[0] = GYRO_OUT_DATA;
+  transmit(txbuf, 1, rxbuf, 8);
+  this->pickle(result, len);
+}
