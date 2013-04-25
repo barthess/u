@@ -123,7 +123,8 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
 KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/dcm_cli.cpp \
          src/kinematic/airspeed.cpp \
-         src/kinematic/pid.cpp
+         src/kinematic/pid.cpp \
+         src/kinematic/madgwick.cpp
 
 CONTROLLERSRC = src/controller/controller.cpp \
          src/controller/ground_rover.cpp \

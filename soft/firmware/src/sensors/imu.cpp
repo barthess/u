@@ -7,6 +7,7 @@
 #include "geometry.hpp"
 #include "param_registry.hpp"
 #include "logger.hpp"
+#include "madgwick.hpp"
 
 #include "itg3200.hpp"
 #include "lsm303.hpp"
@@ -122,6 +123,7 @@ static msg_t Imu(void *arg) {
     }
 
     dcmUpdate(acc, gyro, mag, interval);
+    MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],acc[0],acc[1],acc[2],mag[0],mag[1],mag[2]);
 
     calc_attitude(&mavlink_out_attitude_struct, gyro);
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
