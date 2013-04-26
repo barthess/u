@@ -165,6 +165,7 @@ CPPSRC = $(CHCPPSRC) \
          src/math/sphere.cpp \
          src/math/geometry.cpp \
          src/math/dsp.cpp \
+         src/math/quaternion.cpp \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \

@@ -222,6 +222,56 @@ float invSqrt(float x) {
 	return y;
 }
 
+
+
+
+//====================================================================================================
+// Matrix based code
+//====================================================================================================
+#include "uav.h"
+#include "vector3d.hpp"
+#include "quaternion.hpp"
+
+static Quaternion Q(1,0,0,0);
+static Vector3d Ab(0,0,0);
+static Vector3d Wb(0,0,0);
+
+Vector3d::Vector3d(void){
+  for (uint32_t i=0; i<sizeof(v)/sizeof(v[0]); i++)
+    v[i] = 0;
+}
+
+Vector3d::Vector3d(float v0, float v1, float v2){
+  v[0] = v0;
+  v[1] = v1;
+  v[2] = v2;
+}
+
+void Vector3d::normalize(void){
+  vector3d_normalize(this->v);
+}
+
+
+
+
+MyAHRS::MyAHRS(void){
+  ;
+}
+
+void MyAHRS::update(float *gyro, float *acc, float *mag){
+  Vector3d a(acc[0],acc[1],acc[2]);
+  Vector3d m(mag[0],mag[1],mag[2]);
+
+  Quaternion quatcon = Q.con();
+
+  a.normalize();
+  m.normalize();
+  (void)quatcon;
+}
+
+
+
+
 //====================================================================================================
 // END OF CODE
 //====================================================================================================

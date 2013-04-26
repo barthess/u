@@ -44,6 +44,7 @@ static float const *declination;
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2,  lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
+static MyAHRS   my_ahrs;
 
 /*
  *******************************************************************************
@@ -124,6 +125,7 @@ static msg_t Imu(void *arg) {
 
     dcmUpdate(acc, gyro, mag, interval);
     MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],acc[0],acc[1],acc[2],mag[0],mag[1],mag[2]);
+    my_ahrs.update(acc, gyro, mag);
 
     calc_attitude(&mavlink_out_attitude_struct, gyro);
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
