@@ -40,27 +40,6 @@
  */
 
 /**
- * @brief   Do alpha beta filtering.
- * @note    There is no saturation mechanism! Accumulator will wrap over zero
- *          if overflows.
- */
-q31_t alphabeta_q31(alphabeta_instance_q31 *S, q31_t val, uint32_t len){
-  *S = *S - (*S >> len) + val;
-  return *S >> len;
-}
-
-/**
- * @brief   Do alpha beta filtering.
- * @note    There is no saturation mechanism! Accumulator will wrap over zero
- *          if overflows.
- */
-float alphabeta_float(alphabeta_instance_float *S, float val, uint32_t len){
-  uint32_t divider = 1UL << len;
-  *S = *S - (*S / (float)divider) + val;
-  return *S / (float)divider;
-}
-
-/**
  * Median filter on 5 points
  * *buf[in]     pointer to fifo buffer
  * sample[in]   new sample

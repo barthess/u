@@ -228,10 +228,7 @@ bool ParamRegistry::load_extensive(void){
 
     /* was parameter previously stored in eeprom */
     if (found){
-      v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
-          eeprombuf[PARAM_ID_SIZE + 1] << 16 |
-          eeprombuf[PARAM_ID_SIZE + 2] << 8  |
-          eeprombuf[PARAM_ID_SIZE + 3];
+      v = pack8to32(&(eeprombuf[PARAM_ID_SIZE]));
     }
     else{
       /* use hardcoded default */
@@ -272,10 +269,7 @@ bool ParamRegistry::load(void){
     /* search value by key and set it if found */
     index = key_index_search((char *)eeprombuf);
     if (index != -1){   /* OK, this parameter already presents in EEPROM */
-      v = eeprombuf[PARAM_ID_SIZE + 0] << 24 |
-          eeprombuf[PARAM_ID_SIZE + 1] << 16 |
-          eeprombuf[PARAM_ID_SIZE + 2] << 8  |
-          eeprombuf[PARAM_ID_SIZE + 3];
+      v = pack8to32(&(eeprombuf[PARAM_ID_SIZE]));
     }
     else{
       /* there is not such parameter in EEPROM. Possible reasons:
@@ -317,11 +311,7 @@ bool ParamRegistry::saveAll(void){
 
     /* now write data */
     v = GlobalParam[i].valuep->u32;
-    eeprombuf[PARAM_ID_SIZE + 0] = (v >> 24) & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 1] = (v >> 16) & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 2] = (v >> 8)  & 0xFF;
-    eeprombuf[PARAM_ID_SIZE + 3] = (v >> 0)  & 0xFF;
-
+    unpack32to8(v, &(eeprombuf[PARAM_ID_SIZE]));
     status = ParamFile.write(eeprombuf, PARAM_RECORD_SIZE);
     chDbgCheck(status == PARAM_RECORD_SIZE, "write failed");
 

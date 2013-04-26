@@ -173,6 +173,8 @@ void sort3(T *v, uint32_t sortmatrix){
 
 uint32_t pack8to32(uint8_t *buf);
 uint16_t pack8to16(uint8_t *buf);
+void unpack32to8(uint32_t v, uint8_t *buf);
+void unpack16to8(uint16_t v, uint8_t *buf);
 int16_t complement2signed(uint8_t msb, uint8_t lsb);
 uint32_t sqrti(uint32_t x);
 int32_t powi(int32_t base, uint32_t exp);

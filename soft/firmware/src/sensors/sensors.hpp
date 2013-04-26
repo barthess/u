@@ -46,9 +46,9 @@ struct RawData{
   uint16_t servo7;
   uint16_t servo8;
   // напряжение и ток бортовой сети
-  uint16_t main_voltage;
-  uint16_t main_current;
-  uint16_t secondary_voltage; // напряга с вторичного источника питания для серв и приемника
+  int16_t main_voltage;
+  int16_t main_current;
+  int16_t secondary_voltage; // напряга с вторичного источника питания для серв и приемника
   // температура c tmp75
   int16_t temp_tmp75;
   // температура с барометра bmp085 (десятые доли градуса)
