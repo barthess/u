@@ -56,9 +56,9 @@ static ADCConfig adccfg; // dummy for STM32
 static adcsample_t samples[ADC_NUM_CHANNELS * ADC_BUF_DEPTH];
 
 /**/
-static alphabeta_instance_q31 main_current_filter;
-static alphabeta_instance_q31 main_voltage_filter;
-static alphabeta_instance_q31 secondary_voltage_filter;
+static AlphaBeta<int32_t> main_current;
+static AlphaBeta<int32_t> main_voltage;
+static AlphaBeta<int32_t> secondary_voltage;
 
 /*
  * ADC conversion group.
@@ -103,16 +103,9 @@ static void adccallback(ADCDriver *adcp, adcsample_t *samples, size_t n) {
   (void)samples;
   (void)n;
 
-  raw_data.main_current = alphabeta_q31(&main_current_filter,
-      samples[ADC_CURRENT_SENS_OFFSET], *flen_adc);
-  raw_data.main_voltage = alphabeta_q31(&main_voltage_filter,
-      samples[ADC_MAIN_VOLTAGE_OFFSET], *flen_adc);
-  raw_data.secondary_voltage = alphabeta_q31(&secondary_voltage_filter,
-      samples[ADC_6V_OFFSET], *flen_adc);
-
-//  raw_data.main_current = samples[ADC_CURRENT_SENS_OFFSET];
-//  raw_data.main_voltage = samples[ADC_MAIN_VOLTAGE_OFFSET];
-//  raw_data.secondary_voltage = samples[ADC_6V_OFFSET];
+  raw_data.main_current = main_current.update(samples[ADC_CURRENT_SENS_OFFSET], *flen_adc);
+  raw_data.main_voltage = main_voltage.update(samples[ADC_MAIN_VOLTAGE_OFFSET], *flen_adc);
+  raw_data.secondary_voltage = secondary_voltage.update(samples[ADC_6V_OFFSET], *flen_adc);
 }
 
 /*

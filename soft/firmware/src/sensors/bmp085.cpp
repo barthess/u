@@ -40,8 +40,8 @@ extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
  ******************************************************************************
  */
 /**/
-static alphabeta_instance_float bmp085_filter;
-static alphabeta_instance_float bmp085_climb_filter;
+static AlphaBeta<float> bmp085_filter;
+static AlphaBeta<float> bmp085_climb_filter;
 
 /* value to calculate time between measurements and climb rate */
 static systime_t measurement_time_prev;
@@ -124,14 +124,14 @@ void BMP085::process_pressure(uint32_t pval){
 //  altitude = press_to_height_tab(pval);
 //  (void)press_to_height_f32(pval);
 
-  comp_data.baro_altitude = alphabeta_float(&bmp085_filter, altitude, *flen_pres_stat);
+  comp_data.baro_altitude = bmp085_filter.update(altitude, *flen_pres_stat);
 
   measurement_time = chTimeNow();
   climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
   measurement_time_prev = measurement_time;
   altitude_prev = comp_data.baro_altitude;
 
-  comp_data.baro_climb = alphabeta_float(&bmp085_climb_filter, climb, *flen_climb);
+  comp_data.baro_climb = bmp085_climb_filter.update(climb, *flen_climb);
 
   mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
   mavlink_out_vfr_hud_struct.climb = comp_data.baro_climb;

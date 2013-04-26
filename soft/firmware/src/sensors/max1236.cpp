@@ -37,7 +37,7 @@ extern mavlink_vfr_hud_t          mavlink_out_vfr_hud_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static alphabeta_instance_q31 press_diff_filter;
+static AlphaBeta<int32_t> press_diff_filter;
 
 /*
  *******************************************************************************
@@ -73,9 +73,8 @@ void MAX1236::update(float *result, size_t len){
   (void)result;
   (void)len;
 
-  q31_t press;
+  int32_t press;
   uint16_t sonar;
-  const uint16_t rest = 10000; // constant for compesate filter flyback delay
 
   chDbgCheck((true == ready), "you must start() this device");
 
@@ -84,7 +83,7 @@ void MAX1236::update(float *result, size_t len){
   press = ((rxbuf[0] & 0xF) << 8) + rxbuf[1];
   sonar = ((rxbuf[2] & 0xF) << 8) + rxbuf[3];
 
-  press = alphabeta_q31(&press_diff_filter, press + rest, *flen_pres_dyn) - rest;
+  press = press_diff_filter.update(press, *flen_pres_dyn);
 
   raw_data.pressure_dynamic = press;
   raw_data.altitude_sonar = sonar;

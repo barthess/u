@@ -28,7 +28,7 @@ void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
   }
 }
 
-// B is matrix of pointers
+// Same as previouse but B is matrix of pointers to values
 template <typename T>
 void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
                      const T *A, const T **B, T *C){
