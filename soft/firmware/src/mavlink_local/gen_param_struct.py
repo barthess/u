@@ -33,9 +33,9 @@ param = [
 ("IMU_accweight",   0.0,    0.005,  0.5,    "f", "default",     "NULL"),
 ("IMU_magweight",   0.0,    0.05,   0.9,    "f", "default",     "NULL"),
 ("IMU_gpsweight",   0.0,    0.05,   0.5,    "f", "default",     "NULL"),
-("IMU_reserved1",   -1,     0,      1,      "f", "default",     "NULL"),
-("IMU_reserved2",   -1,     0,      1,      "f", "default",     "NULL"),
-("IMU_reserved3",   -1,     0,      1,      "f", "default",     "NULL"),
+("IMU_beta",        0.0,    1.0,    20.0,   "f", "default",     "Error rate of gyro in degrees"),
+("IMU_zeta",        0.0,    1.0,    20.0,   "f", "default",     "NULL"),
+("IMU_reset",       0,      0,      1,      "u", "default",     "NULL"),
 
 # /**** Magnetometer ****/
 # /* zero offsets */

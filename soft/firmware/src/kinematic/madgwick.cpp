@@ -17,18 +17,25 @@
 
 #include "madgwick.hpp"
 #include <math.h>
+#include "message.hpp"
+#include "geometry.hpp"
 
 //---------------------------------------------------------------------------------------------------
 // Definitions
 
-#define sampleFreq	512.0f		// sample frequency in Hz
-#define betaDef		0.1f		// 2 * proportional gain
+//#define sampleFreq	100.0f		// sample frequency in Hz
+#define dT          0.01f
+//#define betaDef		  (5 * (sqrtf(3.0f/4.0f) * 3.14159265f / 180.0f))		// 2 * proportional gain
+#define betaDef    (0.07557f)
+
+extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 
 //---------------------------------------------------------------------------------------------------
 // Variable definitions
 
-volatile float beta = betaDef;								// 2 * proportional gain (Kp)
-volatile float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;	// quaternion of sensor frame relative to auxiliary frame
+//static volatile float beta = betaDef;								// 2 * proportional gain (Kp)
+static volatile float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;	// quaternion of sensor frame relative to auxiliary frame
+static float Wb[3] = {0, 0, 0};
 
 //---------------------------------------------------------------------------------------------------
 // Function declarations
@@ -41,18 +48,51 @@ float invSqrt(float x);
 //---------------------------------------------------------------------------------------------------
 // AHRS algorithm update
 
-void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
+
+#include "matrix.hpp"
+
+void QuatMult(float *q, float *r, float *result){
+  float m[16] = {q[0], -q[1], -q[2], -q[3],
+                 q[1],  q[0], -q[3],  q[2],
+                 q[2],  q[3],  q[0], -q[1],
+                 q[3], -q[2],  q[1],  q[0]};
+
+
+  //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
+//template <typename T>
+//void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
+//                     const T *A, const T *B, T *C){
+
+  matrix_multiply(4,4,1, m, r, result);
+}
+
+
+static uint32_t resetCached = 0;
+
+void MadgwickAHRSupdate(float N_g, float W_g, float U_g,
+                        float N_a, float W_a, float U_a,
+                        float N_m, float W_m, float U_m,
+                        float *res, float beta, float zeta, uint32_t reset) {
+
+  float gx = -W_g - Wb[0];
+  float gy = N_g  - Wb[1];
+  float gz = U_g  - Wb[2];
+
+  float ax = -W_a;
+  float ay = N_a;
+  float az = U_a;
+
+  float mx = -W_m;
+  float my = N_m;
+  float mz = U_m;
+
+  float delta_wb[4];
+
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
 	float hx, hy;
 	float _2q0mx, _2q0my, _2q0mz, _2q1mx, _2bx, _2bz, _4bx, _4bz, _2q0, _2q1, _2q2, _2q3, _2q0q2, _2q2q3, q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
-
-	// Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-	if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
-		MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
-		return;
-	}
 
 	// Rate of change of quaternion from gyroscope
 	qDot1 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
@@ -121,13 +161,36 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 		qDot2 -= beta * s1;
 		qDot3 -= beta * s2;
 		qDot4 -= beta * s3;
+
+		float tmp[4] = {q0, -q1, -q2, -q3};
+		float tmp2[4] = {s0, s1, s2, s3};
+		QuatMult(tmp, tmp2, delta_wb);
+		delta_wb[0] *= 2 * zeta * dT;
+		delta_wb[1] *= 2 * zeta * dT;
+		delta_wb[2] *= 2 * zeta * dT;
+		delta_wb[3] *= 2 * zeta * dT;
+
+		//delta_wb = 2 * zeta * dT * obj.quatmult(obj.quatcon(q), step);
+		if (resetCached != reset){
+      resetCached = reset;
+      Wb[0] = 0;
+      Wb[1] = 0;
+      Wb[2] = 0;
+		}
+
+		Wb[0] += delta_wb[1];
+		Wb[1] += delta_wb[2];
+		Wb[2] += delta_wb[3];
+//	  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(frad2deg(Wb[0]) * 100);
+//		mavlink_out_scaled_imu_struct.ygyro = (int16_t)(frad2deg(Wb[1]) * 100);
+//    mavlink_out_scaled_imu_struct.zgyro = (int16_t)(frad2deg(Wb[2]) * 100);
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * (1.0f / sampleFreq);
-	q1 += qDot2 * (1.0f / sampleFreq);
-	q2 += qDot3 * (1.0f / sampleFreq);
-	q3 += qDot4 * (1.0f / sampleFreq);
+	q0 += qDot1 * dT;
+	q1 += qDot2 * dT;
+	q2 += qDot3 * dT;
+	q3 += qDot4 * dT;
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
@@ -135,12 +198,17 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 	q1 *= recipNorm;
 	q2 *= recipNorm;
 	q3 *= recipNorm;
+
+	res[0] = q0;
+	res[1] = q2;
+	res[2] = q3;
+	res[3] = q1;
 }
 
 //---------------------------------------------------------------------------------------------------
 // IMU algorithm update
 
-void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
+void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az, float beta) {
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
@@ -195,10 +263,10 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, flo
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * (1.0f / sampleFreq);
-	q1 += qDot2 * (1.0f / sampleFreq);
-	q2 += qDot3 * (1.0f / sampleFreq);
-	q3 += qDot4 * (1.0f / sampleFreq);
+	q0 += qDot1 * dT;
+	q1 += qDot2 * dT;
+	q2 += qDot3 * dT;
+	q3 += qDot4 * dT;
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
@@ -212,62 +280,64 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, flo
 // Fast inverse square-root
 // See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
 
+//float invSqrt(float x) {
+//	float halfx = 0.5f * x;
+//	float y = x;
+//	long i = *(long*)&y;
+//	i = 0x5f3759df - (i>>1);
+//	y = *(float*)&i;
+//	y = y * (1.5f - (halfx * y * y));
+//	return y;
+//}
+
 float invSqrt(float x) {
-	float halfx = 0.5f * x;
-	float y = x;
-	long i = *(long*)&y;
-	i = 0x5f3759df - (i>>1);
-	y = *(float*)&i;
-	y = y * (1.5f - (halfx * y * y));
-	return y;
+  return 1.0f/sqrtf(x);
 }
-
-
 
 
 //====================================================================================================
 // Matrix based code
 //====================================================================================================
-#include "uav.h"
-#include "vector3d.hpp"
-#include "quaternion.hpp"
-
-static Quaternion Q(1,0,0,0);
-static Vector3d Ab(0,0,0);
-static Vector3d Wb(0,0,0);
-
-Vector3d::Vector3d(void){
-  for (uint32_t i=0; i<sizeof(v)/sizeof(v[0]); i++)
-    v[i] = 0;
-}
-
-Vector3d::Vector3d(float v0, float v1, float v2){
-  v[0] = v0;
-  v[1] = v1;
-  v[2] = v2;
-}
-
-void Vector3d::normalize(void){
-  vector3d_normalize(this->v);
-}
-
-
-
-
-MyAHRS::MyAHRS(void){
-  ;
-}
-
-void MyAHRS::update(float *gyro, float *acc, float *mag){
-  Vector3d a(acc[0],acc[1],acc[2]);
-  Vector3d m(mag[0],mag[1],mag[2]);
-
-  Quaternion quatcon = Q.con();
-
-  a.normalize();
-  m.normalize();
-  (void)quatcon;
-}
+//#include "uav.h"
+//#include "vector3d.hpp"
+//#include "quaternion.hpp"
+//
+//static Quaternion Q(1,0,0,0);
+//static Vector3d Ab(0,0,0);
+//static Vector3d Wb(0,0,0);
+//
+//Vector3d::Vector3d(void){
+//  for (uint32_t i=0; i<sizeof(v)/sizeof(v[0]); i++)
+//    v[i] = 0;
+//}
+//
+//Vector3d::Vector3d(float v0, float v1, float v2){
+//  v[0] = v0;
+//  v[1] = v1;
+//  v[2] = v2;
+//}
+//
+//void Vector3d::normalize(void){
+//  vector3d_normalize(this->v);
+//}
+//
+//
+//
+//
+//MyAHRS::MyAHRS(void){
+//  ;
+//}
+//
+//void MyAHRS::update(float *gyro, float *acc, float *mag){
+//  Vector3d a(acc[0],acc[1],acc[2]);
+//  Vector3d m(mag[0],mag[1],mag[2]);
+//
+//  Quaternion quatcon = Q.con();
+//
+//  a.normalize();
+//  m.normalize();
+//  (void)quatcon;
+//}
 
 
 

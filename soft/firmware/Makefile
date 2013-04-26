@@ -30,7 +30,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = yes
+  USE_VERBOSE_COMPILE = no
 endif
 
 #
@@ -165,7 +165,6 @@ CPPSRC = $(CHCPPSRC) \
          src/math/sphere.cpp \
          src/math/geometry.cpp \
          src/math/dsp.cpp \
-         src/math/quaternion.cpp \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \

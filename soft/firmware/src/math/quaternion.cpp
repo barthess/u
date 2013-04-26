@@ -42,7 +42,7 @@ Quaternion Quaternion::con(void){
 
 Quaternion quatmult(Quaternion *q, Quaternion *r){
   Quaternion res;
-  float m[16] = {q[0], q[1], q[2], q[3],
+  float m[16] = {q[0], -q[1], -q[2], -q[3],
                  q[1],  q[0], -q[3],  q[2],
                  q[2],  q[3],  q[0], -q[1],
                  q[3], -q[2],  q[1],  q[0]};
