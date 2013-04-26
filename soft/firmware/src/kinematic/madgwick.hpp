@@ -12,12 +12,13 @@
 //=====================================================================================================
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
+#include <stdint.h>
 
 //----------------------------------------------------------------------------------------------------
 // Variable declaration
 
-extern volatile float beta;				// algorithm gain
-extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
+//extern volatile float beta;				// algorithm gain
+//extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
 
 //---------------------------------------------------------------------------------------------------
 // Function declarations
@@ -25,11 +26,47 @@ extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to 
 //#ifdef __cplusplus
 //extern "C" {
 //#endif
-  void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-  void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+void MadgwickAHRSupdate(float gx, float gy, float gz,
+                        float ax, float ay, float az,
+                        float mx, float my, float mz,
+                        float *res, float beta, float zeta, uint32_t reset);
+void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
+                           float ax, float ay, float az, float beta);
 //#ifdef __cplusplus
 //}
 //#endif
+
+
+//#include <stdint.h>
+//
+//template<typename T, int32_t row, int32_t col>
+//class Matrix{
+//public:
+//  Matrix(void);
+//private:
+//  float _m[row*col];
+//  int32_t r;
+//  int32_t c;
+//};
+//
+//class Vector3d{
+//public:
+//  Vector3d(void);
+//  Vector3d(float v0, float v1, float v2);
+//  void normalize(void);
+//private:
+//  float v[3];
+//};
+//
+//
+//class MyAHRS{
+//public:
+//  MyAHRS(void);
+//  void update(float *g, float *a, float *m);
+//};
+
+
+
 
 
 #endif

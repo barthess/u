@@ -28,16 +28,16 @@ void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
   }
 }
 
-// Same as previouse but B is matrix of pointers to values
+// Same as previouse but A is matrix of pointers to values
 template <typename T>
 void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
-                     const T *A, const T **B, T *C){
+                     const T **A, const T *B, T *C){
   uint32_t i, j, k;
   for(i=0; i<m; i++){     //each row in A
     for(j=0; j<n; j++){   //each column in B
       C[i*n + j] = 0;
       for(k=0; k<p; k++){ //each element in row A & column B
-        C[i*n + j] += A[i*p + k] * *(B[k*n + j]);
+        C[i*n + j] += *A[i*p + k] * B[k*n + j];
       }
     }
   }
