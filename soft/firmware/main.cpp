@@ -113,7 +113,11 @@ chibios_rt::BinarySemaphore imu_sem(true);
  *******************************************************************************
  *******************************************************************************
  */
+#include "newmatrix.hpp"
+float test;
 int main(void) {
+  test = matrix_test();
+
   halInit();
   System::init();
 

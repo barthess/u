@@ -30,7 +30,7 @@ endif
 
 # Enable this if you want to see the full log while compiling.
 ifeq ($(USE_VERBOSE_COMPILE),)
-  USE_VERBOSE_COMPILE = yes
+  USE_VERBOSE_COMPILE = no
 endif
 
 #
@@ -97,6 +97,12 @@ CSRC = $(PORTSRC) \
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
+MATHSRC = src/math/misc_math.cpp \
+         src/math/sphere.cpp \
+     	 src/math/geometry.cpp \
+     	 src/math/dsp.cpp \
+     	 src/math/newmatrix.cpp \
+     
 SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/adc_local.cpp \
          src/sensors/exti_local.cpp \
@@ -149,6 +155,7 @@ CPPSRC = $(CHCPPSRC) \
 		 $(KINEMATICSRC) \
 		 $(LINKSRC) \
 		 $(CONTROLLERSRC) \
+		 $(MATHSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
@@ -160,11 +167,7 @@ CPPSRC = $(CHCPPSRC) \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom/cpp/eeprom_testsuit.cpp \
          src/sensors/i2c_local.cpp \
-         src/math/misc_math.cpp \
          src/utils/memfunc.cpp \
-         src/math/sphere.cpp \
-         src/math/geometry.cpp \
-         src/math/dsp.cpp \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \
          src/storage/logger_mavencoder.cpp \
