@@ -50,22 +50,7 @@ float invSqrt(float x);
 
 
 #include "matrix.hpp"
-
-void QuatMult(float *q, float *r, float *result){
-  float m[16] = {q[0], -q[1], -q[2], -q[3],
-                 q[1],  q[0], -q[3],  q[2],
-                 q[2],  q[3],  q[0], -q[1],
-                 q[3], -q[2],  q[1],  q[0]};
-
-
-  //multiply matrix A (m x p) by  B(p x n) , put result in C (m x n)
-//template <typename T>
-//void matrix_multiply(const uint32_t m, const uint32_t p, const uint32_t n ,
-//                     const T *A, const T *B, T *C){
-
-  matrix_multiply(4,4,1, m, r, result);
-}
-
+#include "quaternion.hpp"
 
 static uint32_t resetCached = 0;
 

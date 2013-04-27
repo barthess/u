@@ -37,38 +37,6 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
 //#endif
 
 
-//#include <stdint.h>
-//
-//template<typename T, int32_t row, int32_t col>
-//class Matrix{
-//public:
-//  Matrix(void);
-//private:
-//  float _m[row*col];
-//  int32_t r;
-//  int32_t c;
-//};
-//
-//class Vector3d{
-//public:
-//  Vector3d(void);
-//  Vector3d(float v0, float v1, float v2);
-//  void normalize(void);
-//private:
-//  float v[3];
-//};
-//
-//
-//class MyAHRS{
-//public:
-//  MyAHRS(void);
-//  void update(float *g, float *a, float *m);
-//};
-
-
-
-
-
 #endif
 //=====================================================================================================
 // End of file

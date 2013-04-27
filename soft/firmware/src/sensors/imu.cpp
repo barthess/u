@@ -8,6 +8,7 @@
 #include "param_registry.hpp"
 #include "logger.hpp"
 #include "madgwick.hpp"
+#include "quaternion.hpp"
 
 #include "itg3200.hpp"
 #include "lsm303.hpp"
@@ -58,24 +59,10 @@ static volatile int32_t t0, t1;
  *******************************************************************************
  */
 
-static void Quat2Euler(float *q, float *e){
-  float Rlb23, Rlb22, Rlb31, Rlb11, Rlb21;
-
-  Rlb23 = 2 * (q[2] * q[3] - q[0] * q[1]);
-  Rlb22 = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
-  Rlb31 = 2 * (q[1] * q[3] - q[0] * q[2]);
-  Rlb11 = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
-  Rlb21 = 2 * (q[0] * q[3] + q[1] * q[2]);
-
-  e[0] = -atan2f(Rlb23,Rlb22);   //gamma крен
-  e[1] = -atan2f(Rlb31,Rlb11);   //psi рыскание
-  e[2] =  asinf(Rlb21);          //theta тангаж
-}
-
 /**
  * Get attitude from DCM
  */
-static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyro){
+static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyro){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
     mavlink_attitude_struct->pitch  = -asinf(Rxz);
@@ -103,7 +90,8 @@ static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gy
 /**
  *
  */
-static void calc_attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyro, float *q){
+static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
+                          float *gyro, float *q){
   float e[3];
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   Quat2Euler(q, e);
@@ -142,7 +130,7 @@ static msg_t Imu(void *arg) {
   itg3200.start();
 
   /* calibrate gyros in very first run */
-  //itg3200.startCalibration();
+  itg3200.startCalibration();
 
   while (!chThdShouldTerminate()) {
     sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
@@ -163,18 +151,16 @@ static msg_t Imu(void *arg) {
       }
     }
 
-    dcmUpdate(acc, gyro, mag, interval);
-    calc_attitude(&mavlink_out_attitude_struct, gyro);
-
-
     t0 = hal_lld_get_counter_value();
-    MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],
-                        acc[0],acc[1],acc[2],
-                        mag[0],mag[1],mag[2],
-                        q, *madgwick_beta, *madgwick_zeta, *madgwick_reset);
-    calc_attitude(&mavlink_out_attitude_struct, gyro, q);
+    dcmUpdate(acc, gyro, mag, interval);
     t1 = hal_lld_get_counter_value() - t0;
+    dcm2attitude(&mavlink_out_attitude_struct, gyro);
 
+//    MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],
+//                        acc[0],acc[1],acc[2],
+//                        mag[0],mag[1],mag[2],
+//                        q, *madgwick_beta, *madgwick_zeta, *madgwick_reset);
+//    quat2attitude(&mavlink_out_attitude_struct, gyro, q);
 
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
