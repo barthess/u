@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include <math.h>
 
+/*
+ ******************************************************************************
+ * LOW LEVEL
+ * Hi speed functions without size checks
+ ******************************************************************************
+ */
 //transpose matrix A (m x n)  to  B (n x m)
 template <typename T>
 void matrix_transpose(const uint32_t m , const uint32_t n, const T *A,  T *B){
@@ -123,4 +129,182 @@ int32_t matrix_inverse(int32_t n, T *A)
   return 1;
 }
 
-#endif
+/*
+ ******************************************************************************
+ * HI LEVEL
+ * Classes performing size checks
+ ******************************************************************************
+ */
+#include "uav.h"
+
+/**
+ * Main matrix class
+ */
+template<typename T>
+class Matrix{
+public:
+  /**
+   * default constructor
+   */
+  Matrix(T *m, uint32_t r, uint32_t c, size_t bufsize){
+    chDbgCheck(((0 != r) && (0 != c)), "Zero sizes forbidden");
+    chDbgCheck(bufsize == (r * c * sizeof(T)), "Probable overflow");
+    this->m = m;
+    this->col = c;
+    this->row = r;
+  };
+
+  /**
+   * Set single matrix element
+   */
+  void set(uint32_t r, uint32_t c, T v){
+    this->m[c*r] = v;
+  };
+
+  /**
+   * Set single matrix element
+   */
+  T get(uint32_t r, uint32_t c){
+    return this->m[c*r];
+  };
+
+  /**
+   * Initialize matrix using vector of values starting from 0th element
+   */
+  void set(const T *v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      this->m[i] = v[i];
+  };
+
+  /**
+   * Initialize matrix using pattern
+   */
+  void set(T v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      this->m[i] = v;
+  };
+
+  /**
+   * Scale matrix elemets by constant
+   */
+  void scale(T v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      this->m[i] *= v;
+  };
+
+  /**
+   * Modulus
+   */
+  T modulus(void){
+    T R = 0;
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      R += this->m[i] * this->m[i];
+    return sqrt(R);
+  }
+
+  /**
+   * normalize
+   */
+  void normalize(void){
+    T R = this->modulus();
+    chDbgCheck((R > 0), "divizion by zero");
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      this->m[i] /= R;
+  };
+
+  /**
+   * Invers matrix itself
+   */
+  int32_t inverse(){
+    chDbgCheck(this->col == this->row, "matrix must be square");
+    return matrix_inverse(this->col, this->m);
+  };
+
+public:
+  uint32_t row;
+  uint32_t col;
+  T *m;
+};
+
+/**
+ * Class representing a static buffer for matrix
+ */
+template<typename T, int r, int c>
+class MatrixBuf : public Matrix<T>{
+private:
+   T m[r*c];
+
+public:
+  MatrixBuf(void) :
+    Matrix<T>(m, r, c, sizeof(m))
+  {
+    for (uint32_t i=0; i<(c*r); i++)
+      m[i] = 0;
+  };
+
+  MatrixBuf(const T *initvector) :
+    Matrix<T>(m, r, c, sizeof(m))
+  {
+    for (uint32_t i=0; i<(c*r); i++)
+      m[i] = initvector[i];
+  };
+
+  MatrixBuf(T pattern) :
+    Matrix<T>(m, r, c, sizeof(m))
+  {
+    for (uint32_t i=0; i<(c*r); i++)
+      m[i] = pattern;
+  };
+};
+
+/*
+ ******************************************************************************
+ * STATIC METHODS
+ * Fucntions working with classes instances
+ ******************************************************************************
+ */
+
+/**
+ * Matrix multiplication
+ */
+template<typename T>
+static void mul(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
+  chDbgCheck(((left->col == right->row) &&
+              (result->row == left->row) &&
+              (result->col == right->col)), "sizes inconsistent");
+
+  matrix_multiply(left->row, left->col, right->col,
+                  left->m, right->m, result->m);
+}
+
+/**
+ * Dot product of 2 vectors
+ */
+template<typename T>
+static T dot(Matrix<T> *left, Matrix<T> *right){
+  MatrixBuf<T, 1, 1> result;
+  mul(left, right, &result);
+  return result.get(0,0);
+}
+
+/**
+ * cross product in right handed 3-d space
+ */
+template<typename T>
+static void cross(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
+  chDbgCheck((
+      (1 == left->col) && (1 == right->col) && (1 == result->col) &&
+      (3 == left->row) && (3 == right->row) && (3 == result->row)),
+      "sizes inconsistent");
+
+  result->m[0] = left->m[1]*right->m[2] - left->m[2]*right->m[1];
+  result->m[1] = left->m[2]*right->m[0] - left->m[0]*right->m[2];
+  result->m[2] = left->m[0]*right->m[1] - left->m[1]*right->m[0];
+}
+
+#endif /* MATRIX_H */
