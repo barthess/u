@@ -162,10 +162,17 @@ public:
   };
 
   /**
-   * Set single matrix element
+   * Return single matrix element
    */
   T get(uint32_t r, uint32_t c){
     return this->m[c*r];
+  };
+
+  /**
+   * Return pointer to raw matrix data
+   */
+  T *getRaw(void){
+    return this->m;
   };
 
   /**

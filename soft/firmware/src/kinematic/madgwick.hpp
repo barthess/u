@@ -37,6 +37,17 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
 //#endif
 
 
+
+
+class MyAHRS{
+public:
+  MyAHRS(void);
+  void update(float *gyro, float *acc, float *mag);
+};
+
+
+
+
 #endif
 //=====================================================================================================
 // End of file

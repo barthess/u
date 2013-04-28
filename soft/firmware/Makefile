@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -101,6 +101,7 @@ MATHSRC = src/math/misc_math.cpp \
          src/math/sphere.cpp \
      	 src/math/geometry.cpp \
      	 src/math/dsp.cpp \
+     	 src/math/quaternion.cpp \
      
 SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/adc_local.cpp \

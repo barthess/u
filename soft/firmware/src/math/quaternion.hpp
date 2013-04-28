@@ -1,7 +1,7 @@
 #ifndef QUATERNION_HPP_
 #define QUATERNION_HPP_
 #include <stdint.h>
-
+#include <math.h>
 
 inline void Quat2Euler(float *q, float *e){
   float Rlb23, Rlb22, Rlb31, Rlb11, Rlb21;
@@ -24,12 +24,12 @@ public:
   Quaternion(float q0, float q1, float q2, float q3);
   void ccon(void);
   void ccon(Quaternion *result);
-  float& operator[](uint32_t i);
 
-private:
+public:
   float q[4];
 };
 
-void QuatMult(float *q, float *r, float *result);
+
+void QuatMult(Quaternion *q, Quaternion *r, Quaternion *result);
 
 #endif /* QUATERNION_HPP_ */

@@ -149,7 +149,7 @@ void MadgwickAHRSupdate(float N_g, float W_g, float U_g,
 
 		float tmp[4] = {q0, -q1, -q2, -q3};
 		float tmp2[4] = {s0, s1, s2, s3};
-		QuatMult(tmp, tmp2, delta_wb);
+		//QuatMult(tmp, tmp2, delta_wb);
 		delta_wb[0] *= 2 * zeta * dT;
 		delta_wb[1] *= 2 * zeta * dT;
 		delta_wb[2] *= 2 * zeta * dT;
@@ -283,46 +283,30 @@ float invSqrt(float x) {
 //====================================================================================================
 // Matrix based code
 //====================================================================================================
-//#include "uav.h"
-//#include "vector3d.hpp"
-//#include "quaternion.hpp"
-//
-//static Quaternion Q(1,0,0,0);
-//static Vector3d Ab(0,0,0);
-//static Vector3d Wb(0,0,0);
-//
-//Vector3d::Vector3d(void){
-//  for (uint32_t i=0; i<sizeof(v)/sizeof(v[0]); i++)
-//    v[i] = 0;
-//}
-//
-//Vector3d::Vector3d(float v0, float v1, float v2){
-//  v[0] = v0;
-//  v[1] = v1;
-//  v[2] = v2;
-//}
-//
-//void Vector3d::normalize(void){
-//  vector3d_normalize(this->v);
-//}
-//
-//
-//
-//
-//MyAHRS::MyAHRS(void){
-//  ;
-//}
-//
-//void MyAHRS::update(float *gyro, float *acc, float *mag){
-//  Vector3d a(acc[0],acc[1],acc[2]);
-//  Vector3d m(mag[0],mag[1],mag[2]);
-//
-//  Quaternion quatcon = Q.con();
-//
-//  a.normalize();
-//  m.normalize();
-//  (void)quatcon;
-//}
+#include "uav.h"
+#include "matrix.hpp"
+#include "quaternion.hpp"
+
+static Quaternion Q(1,0,0,0);
+
+MyAHRS::MyAHRS(void){
+  ;
+}
+
+void MyAHRS::update(float *gyro, float *acc, float *mag){
+  MatrixBuf<float, 3, 1> g(gyro);
+  MatrixBuf<float, 3, 1> a(acc);
+  MatrixBuf<float, 3, 1> m(mag);
+
+  a.normalize();
+  m.normalize();
+
+  Quaternion h;
+  Quaternion tmp;
+  Quaternion qmag(0, mag[0], mag[1], mag[2]);
+  QuatMult(&qmag, &h, &tmp);
+
+}
 
 
 
