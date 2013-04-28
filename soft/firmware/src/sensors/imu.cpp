@@ -31,6 +31,7 @@ extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_out_attitude_struct;
 extern ParamRegistry param_registry;
 extern chibios_rt::BinarySemaphore itg3200_sem;
+extern chibios_rt::Mailbox red_blink_mb;
 
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
@@ -49,7 +50,10 @@ static uint32_t const *madgwick_reset;
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2,  lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
+
 static volatile int32_t t0, t1;
+static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
+static const int16_t on[3] = {99, -1, 0};
 
 /*
  *******************************************************************************
@@ -123,7 +127,7 @@ static msg_t Imu(void *arg) {
   float acc[3];           /* acceleration in G */
   float gyro[3];          /* angular rates in rad/s */
   float mag[3];           /* magnetic flux in T */
-  float q[4];
+  //float q[4];
 
   lsm303.start();
   mma8451.start();
@@ -131,6 +135,7 @@ static msg_t Imu(void *arg) {
 
   /* calibrate gyros in very first run */
   itg3200.startCalibration();
+  red_blink_mb.post((msg_t)on, TIME_IMMEDIATE);
 
   while (!chThdShouldTerminate()) {
     sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
@@ -148,7 +153,9 @@ static msg_t Imu(void *arg) {
       /* check immobility and restart if needed */
       if (!(lsm303.still() && mma8451.still())){
         itg3200.startCalibration();
+        //red_blink_mb.post((msg_t)fastblink, TIME_IMMEDIATE);
       }
+//      red_blink_mb.post((msg_t)on, TIME_IMMEDIATE);
     }
 
     t0 = hal_lld_get_counter_value();

@@ -79,8 +79,6 @@ bool_t GyroZeroUpdate(int32_t *data){
     *ctx.z_offset = 0;
     ctx.SamplesCnt = *ctx.zerocount;
 
-    SheduleRedBlink(3, MS2ST(20), MS2ST(100));
-
     ctx.gyrocalstate = GYROCAL_COLLECTING;
     break;
 
@@ -95,8 +93,6 @@ bool_t GyroZeroUpdate(int32_t *data){
       *ctx.x_offset = (float)ctx.ZeroSum[0] / (float)(*ctx.zerocount - ctx.SamplesCnt);
       *ctx.y_offset = (float)ctx.ZeroSum[1] / (float)(*ctx.zerocount - ctx.SamplesCnt);
       *ctx.z_offset = (float)ctx.ZeroSum[2] / (float)(*ctx.zerocount - ctx.SamplesCnt);
-
-      SheduleRedBlink(3, MS2ST(20), MS2ST(1));
     }
     else{
       ctx.gyrocalstate = GYROCAL_WAIT_FOR_STILL;

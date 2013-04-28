@@ -85,7 +85,6 @@ void ITG3200::pickle(float *result, size_t len){
   /* calibration update */
   if (calibration){
     if (0 == calsample){
-      palClearPad(GPIOB, GPIOB_LED_R);
       mavlink_system_struct.state = MAV_STATE_CALIBRATING;
       calibration = true;
       for(i=0; i<3; i++)
@@ -109,7 +108,6 @@ void ITG3200::pickle(float *result, size_t len){
         param_registry.syncParam("GYRO_z_offset");
         mavlink_system_struct.state = MAV_STATE_STANDBY;
         calibration = false;
-        palSetPad(GPIOB, GPIOB_LED_R);
       }
     }
   }

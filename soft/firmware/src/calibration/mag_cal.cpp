@@ -106,7 +106,6 @@ static bool_t __update_point(int32_t *data){
     MagSum[1] += data[1];
     MagSum[2] += data[2];
     SamplesCnt--;
-    SheduleRedBlink(3, MS2ST(20), MS2ST(1));
   }
   else
     __clear_state();
@@ -182,12 +181,10 @@ bool_t mag_stat_update(int32_t *data){
         mavlink_system_struct.state = MAV_STATE_STANDBY;
         clearGlobalFlag(GlobalFlags.mag_cal);
         magcalstate = MAGCAL_READY;
-        SheduleRedBlink(10, MS2ST(100), MS2ST(100));
       }
       else{
         mavlink_dbg_print(MAV_SEVERITY_NOTICE, "MAG: waiting for new position");
         magcalstate = MAGCAL_WAIT_NEW_POS;
-        SheduleRedBlink(30000, MS2ST(500), MS2ST(500));
       }
     }
     break;
@@ -205,7 +202,6 @@ bool_t mag_stat_update(int32_t *data){
       "MAG: no new position. Calibration interrupted");
       clearGlobalFlag(GlobalFlags.mag_cal);
       magcalstate = MAGCAL_READY;
-      SheduleRedBlink(3, MS2ST(20), MS2ST(100));/* to cansel blinking */
     }
     __clear_state();
     break;

@@ -45,10 +45,6 @@ extern EventSource event_mavlink_out_heartbeat;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static chibios_rt::BinarySemaphore blink_sem(true);
-static uint32_t BlinkCnt = 0;
-static systime_t offtime = 10, ontime = 10;
-
 static uint32_t BlinksCount;
 
 /*
@@ -121,27 +117,6 @@ static msg_t SanityControlThread(void *arg) {
   }
 }
 
-/**
- * Blinker thread for red LED.
- */
-static WORKING_AREA(RedBlinkThreadWA, 64);
-static msg_t RedBlinkThread(void *arg) {
-  chRegSetThreadName("RedBlink");
-  (void)arg;
-
-  while(TRUE){
-    blink_sem.wait();
-    while(BlinkCnt){
-      palClearPad(GPIOB, GPIOB_LED_R);
-      chThdSleep(ontime);
-      palSetPad(GPIOB, GPIOB_LED_R);
-      chThdSleep(offtime);
-      BlinkCnt--;
-    }
-  }
-  return 0;
-}
-
 /*
  *******************************************************************************
  * EXPORTED FUNCTIONS
@@ -151,6 +126,8 @@ static msg_t RedBlinkThread(void *arg) {
  *
  */
 void SanityControlInit(void){
+
+  chDbgCheck(1 == GlobalFlags.blinker_ready, "blinker not ready");
 
   if (was_softreset())
     BlinksCount = 4;
@@ -167,35 +144,7 @@ void SanityControlInit(void){
           NORMALPRIO,
           SanityControlThread,
           NULL);
-  chThdCreateStatic(RedBlinkThreadWA,
-          sizeof(RedBlinkThreadWA),
-          NORMALPRIO - 10,
-          RedBlinkThread,
-          NULL);
 }
-
-/**
- * Schedule blink sequence.
- * [in] count of blinks and time intervals in sytem ticks
- */
-void SheduleRedBlink(uint32_t cnt, uint32_t on, uint32_t off){
-  const systime_t max = MS2ST(500);
-
-  chSysLock()
-  if (off > max)
-    offtime = max;
-  else
-    offtime = off;
-  if (on > max)
-    ontime = max;
-  else
-    ontime = on;
-  BlinkCnt = cnt;
-  chSysUnlock();
-
-  blink_sem.signal();
-}
-
 
 
 

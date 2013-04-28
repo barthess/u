@@ -147,8 +147,8 @@ void MadgwickAHRSupdate(float N_g, float W_g, float U_g,
 		qDot3 -= beta * s2;
 		qDot4 -= beta * s3;
 
-		float tmp[4] = {q0, -q1, -q2, -q3};
-		float tmp2[4] = {s0, s1, s2, s3};
+		//float tmp[4] = {q0, -q1, -q2, -q3};
+		//float tmp2[4] = {s0, s1, s2, s3};
 		//QuatMult(tmp, tmp2, delta_wb);
 		delta_wb[0] *= 2 * zeta * dT;
 		delta_wb[1] *= 2 * zeta * dT;

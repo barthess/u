@@ -59,6 +59,7 @@ Giovanni
 #include "controller.hpp"
 #include "mavcmd.hpp"
 #include "benchmark.hpp"
+#include "blinker.hpp"
 
 /*
  ******************************************************************************
@@ -100,6 +101,9 @@ chibios_rt::BinarySemaphore itg3200_sem(true);
 chibios_rt::BinarySemaphore lsm303_sem(true);
 chibios_rt::BinarySemaphore imu_sem(true);
 
+chibios_rt::MailboxBuffer<2> red_blink_mb;
+chibios_rt::MailboxBuffer<2> blue_blink_mb;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -117,6 +121,7 @@ float test;
 int main(void) {
   halInit();
   System::init();
+  chThdSleepMilliseconds(1);
 
   /* enable softreset on panic */
   setGlobalFlag(GlobalFlags.allow_softreset);
@@ -135,6 +140,7 @@ int main(void) {
   chHeapInit(&ThdHeap, (uint8_t *)MEM_ALIGN_NEXT(link_thd_buf), THREAD_HEAP_SIZE);
 
   MsgInit();
+  BlinkerInit();
   SanityControlInit();
   I2CInitLocal();
   EepromFileTreeInit();

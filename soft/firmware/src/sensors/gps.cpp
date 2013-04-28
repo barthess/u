@@ -9,6 +9,7 @@
 #include "sensors.hpp"
 #include "geometry.hpp"
 #include "exti_local.hpp"
+#include "logger.hpp"
 
 /**
  * Широта  — это угол между отвесной линией в данной точке и плоскостью экватора,
@@ -269,8 +270,7 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     global_pos_struct->alt = bkpGpsAltitude;
 	}
 
-	chDbgPanic("uncomment next line");
-  //log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
+  log_write_schedule(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, NULL, 0);
 }
 
 static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos_struct){

@@ -160,6 +160,7 @@ CPPSRC = $(CHCPPSRC) \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
          src/sanity.cpp \
+         src/blinker.cpp \
          src/timekeeping.cpp \
          src/pwr_mgmt.cpp \
          src/eeprom/cpp/eeprom_file.cpp \
