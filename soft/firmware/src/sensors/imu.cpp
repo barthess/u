@@ -51,7 +51,7 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 static volatile int32_t t0, t1;
 static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
-static MyAHRS<float> ahrs;
+static MyAHRS ahrs;
 static Quaternion<float> MadgwickQuat;
 
 /*

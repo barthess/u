@@ -351,17 +351,16 @@ static void F_m(const Quaternion<T> *q, Matrix<T> *d, Matrix<T> *s, Matrix<T> *r
   float sy = (*s)(1);
   float sz = (*s)(2);
 
-  (*result)(0) = 2*dx*(0.5 - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3) + 2*dz*(q2*q4 - q1*q3) - sx;
-  (*result)(1) = 2*dx*(q2*q3 - q1*q4) + 2*dy*(0.5 - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
-  (*result)(2) = 2*dx*(q1*q3 + q2*q4) + 2*dy*(q3*q4 - q1*q2) + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
+  (*result)(0) = 2*dx*(0.5 - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3)       + 2*dz*(q2*q4 - q1*q3) - sx;
+  (*result)(1) = 2*dx*(q2*q3 - q1*q4)       + 2*dy*(0.5 - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
+  (*result)(2) = 2*dx*(q1*q3 + q2*q4)       + 2*dy*(q3*q4 - q1*q2)       + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
 }
 
-template <typename T>
-void MyAHRS<T>::update(T *gyro, T *acc, T *mag, Quaternion<T> *result){
-  MatrixBuf<T, 3, 1> Gyroscope(gyro);
-  MatrixBuf<T, 3, 1> Accelerometer(acc);
-  MatrixBuf<T, 3, 1> Magnetometer(mag);
-  MatrixBuf<T, 4, 1> step;
+void MyAHRS::update(float *gyro, float *acc, float *mag, Quaternion<float> *result){
+  MatrixBuf<float, 3, 1> Gyroscope(gyro);
+  MatrixBuf<float, 3, 1> Accelerometer(acc);
+  MatrixBuf<float, 3, 1> Magnetometer(mag);
+  MatrixBuf<float, 4, 1> step;
 
   Accelerometer.normalize();
   Magnetometer.normalize();
@@ -370,8 +369,8 @@ void MyAHRS<T>::update(T *gyro, T *acc, T *mag, Quaternion<T> *result){
 
   Quaternion<float> qmag(0, mag[0], mag[1], mag[2]);
   Q.ccon(&qcon);
-  QuatMult(&qmag, &qcon, &tmp);
-  QuatMult(&Q, &tmp, &h);
+  qmag.mul(&qcon, &tmp);
+  Q.mul(&tmp, &h);
 
   float norm = sqrtf(h(1)*h(1) + h(3)*h(3));
   b(0, 0) = norm;
@@ -393,6 +392,7 @@ void MyAHRS<T>::update(T *gyro, T *acc, T *mag, Quaternion<T> *result){
   step.normalize();
   Gyroscope -= &Wb;
 
+  (void)result;
   return;
 }
 

@@ -37,10 +37,10 @@ public:
    * @brief   complex conjugate.
    */
   void ccon(Quaternion *result){
-    result->m[0] = this->m[0];
-    result->m[1] = this->m[1];
-    result->m[2] = this->m[2];
-    result->m[3] = this->m[3];
+    result->m[0] =  this->m[0];
+    result->m[1] = -this->m[1];
+    result->m[2] = -this->m[2];
+    result->m[3] = -this->m[3];
   };
 
   /**
@@ -50,24 +50,22 @@ public:
     Quat2Euler(this->m, e->m);
   };
 
+  /**
+   * @brief Quaternion multiplications
+   */
+  void mul(const Quaternion<T> *right, Quaternion<T> *result){
+    const T *r = right->m;
+    T *res = result->getArray();
+
+    res[0] = m[0]*r[0] - m[1]*r[1] - m[2]*r[2] - m[3]*r[3];
+    res[1] = m[1]*r[0] + m[0]*r[1] - m[3]*r[2] + m[2]*r[3];
+    res[2] = m[2]*r[0] + m[3]*r[1] + m[0]*r[2] - m[1]*r[3];
+    res[3] = m[3]*r[0] - m[2]*r[1] + m[1]*r[2] + m[0]*r[3];
+  };
+
 private:
   T m[4];
 };
-
-/**
- *
- */
-template <typename T>
-void QuatMult(Quaternion<T> *left, Quaternion<T> *right, Quaternion<T> *result){
-  T *q = left->getArray();
-  T *r = right->getArray();
-  T *res = result->getArray();
-
-  res[0] = q[0]*r[0] - q[1]*r[1] - q[2]*r[2] - q[3]*r[3];
-  res[1] = q[1]*r[0] + q[0]*r[1] - q[3]*r[2] + q[2]*r[3];
-  res[2] = q[2]*r[0] + q[3]*r[1] + q[0]*r[2] - q[1]*r[3];
-  res[3] = q[3]*r[0] - q[2]*r[1] + q[1]*r[2] + q[0]*r[3];
-}
 
 void Quat2Euler(double *q, double *e);
 void Quat2Euler(float *q, float *e);

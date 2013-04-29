@@ -238,8 +238,7 @@ public:
   };
 
   /**
-   * Invers matrix itself
-   * The function returns 1 on success, 0 on failure.
+   * Reshape matrix
    */
   void reshape(const uint32_t r, const uint32_t c){
     chDbgCheck((this->col * this->row) == (c * r), "resulted matrix size differ");
@@ -366,7 +365,7 @@ public:
    * @param v
    * @return the element.
    */
-  float& operator() (const uint32_t v) const{
+  float operator() (const uint32_t v) const{
     chDbgCheck(((1 == col) || (1 == row)) && (v < col*row),
         "This functions works only on 1-d array");
     return this->m[v];
@@ -430,7 +429,7 @@ public:
 
 /**
  * Convenient class
- * representing matrix with automatically allocated static buffer
+ * 1-d vector
  */
 template<typename T, int N>
 class Vector : public Matrix<T>{

@@ -39,10 +39,9 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
 
 #include "quaternion.hpp"
 
-template <typename T>
 class MyAHRS{
 public:
-  void update(T *gyro, T *acc, T *mag, Quaternion<T> *result);
+  void update(float *gyro, float *acc, float *mag, Quaternion<float> *result);
 };
 
 
