@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "uav.h"
+#include "main.h"
 #include "geometry.hpp"
 #include "itg3200.hpp"
 #include "param_registry.hpp"

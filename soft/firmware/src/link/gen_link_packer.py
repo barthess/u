@@ -21,7 +21,7 @@ names = [
 
 def head(f):
     f.write("""
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include <stdio.h>
 #include "message.hpp"

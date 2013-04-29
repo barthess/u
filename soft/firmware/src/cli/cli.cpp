@@ -3,7 +3,7 @@
 
 #include "../microrl/src/microrl.h"
 
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "cli.hpp"
 #include "cli_cmd.hpp"

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "waypoint_db.hpp"

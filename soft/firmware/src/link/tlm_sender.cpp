@@ -3,7 +3,7 @@
 src/link/gen_tlm_sender.py
 Do not edit it manually. 
 */
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "param_registry.hpp"

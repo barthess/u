@@ -5,7 +5,7 @@
 
 #include <math.h>
 
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "dcm.hpp"
 #include "vector3d.hpp"

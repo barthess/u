@@ -1,7 +1,7 @@
 /*
  * Stores functions sutable for ground rover - pulses to speed conversion, etc.
  */
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "servo.hpp"

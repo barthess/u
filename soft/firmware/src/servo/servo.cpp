@@ -4,7 +4,7 @@
  *      Период - 20 mS.
  */
 
-#include "uav.h"
+#include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "servo.hpp"

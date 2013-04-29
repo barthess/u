@@ -4,7 +4,7 @@
  * Рассчитывает воздушную скорость по сырым данным с MPX5100
  */
 
-#include "uav.h"
+#include "main.h"
 #include "airspeed_table.h"
 #include "sensors.hpp"
 #include "misc_math.hpp"

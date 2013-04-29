@@ -135,7 +135,7 @@ int32_t matrix_inverse(int32_t n, T *A)
  * Classes performing size checks
  ******************************************************************************
  */
-#include "uav.h"
+#include "main.h"
 
 /**
  * Main matrix class
