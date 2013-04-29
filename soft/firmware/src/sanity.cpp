@@ -48,7 +48,7 @@ extern chibios_rt::Mailbox blue_blink_mb;
  */
 static const int16_t normal[]      = {50,  -100, 0};
 static const int16_t panic[]       = {50,  -100, 50, -100, 50, -100, 50, -100, 0};
-static const int16_t calibrating[] = {500, -500, 0};
+static const int16_t calibrating[] = {600, -400, 0};
 
 /*
  *******************************************************************************

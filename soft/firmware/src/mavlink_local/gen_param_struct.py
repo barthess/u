@@ -108,8 +108,9 @@ param = [
 ("GYRO_z_offset",  -2000,   0,      2000,   "f", "default",     "Cached zero offset for faster startup"),
 # other
 ("GYRO_zerocnt",    512,    2048,   16384,  "i", "default",     "Sample count for zeroing procedure"),
-("GYRO_sortmtrx",   0,  0b100010001, 1,     "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
+("GYRO_sortmtrx",   0,  0b100010001,1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 ("GYRO_zeroflen",   2,      512,    2048,   "i", "default",     "Filter length used in zero calibration routine"),
+("GYRO_sendangle",  0,      1,      1,      "u", "default",     "1 - send intergrated angles, 0 - angular rates"),
 
 #/**** PMU - pressure measurement unit ****/
 #// coefficients for thermal compensation

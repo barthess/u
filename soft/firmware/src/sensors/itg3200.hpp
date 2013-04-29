@@ -45,7 +45,7 @@ private:
   float    const *xsens,     *ysens,     *zsens;
   int32_t  const *xpol,      *ypol,      *zpol;
   float          *x_offset,  *y_offset,  *z_offset;
-  uint32_t const *sortmtrx;
+  uint32_t const *sortmtrx,  *sendangle;
   int32_t  const *zeroflen,  *zerocnt;
 };
 

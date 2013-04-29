@@ -117,12 +117,16 @@ void ITG3200::pickle(float *result, size_t len){
     comp_data.gyro_angle[i] += get_degrees(result[i]);
 
   /* fill scaled debug struct */
-//  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(10 * comp_data.xgyro_angle);
-//  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(10 * comp_data.ygyro_angle);
-//  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(10 * comp_data.zgyro_angle);
-  mavlink_out_scaled_imu_struct.xgyro = (int16_t)(result[0] * 1000);
-  mavlink_out_scaled_imu_struct.ygyro = (int16_t)(result[1] * 1000);
-  mavlink_out_scaled_imu_struct.zgyro = (int16_t)(result[2] * 1000);
+  if (1 == *sendangle){
+    mavlink_out_scaled_imu_struct.xgyro = (int16_t)(comp_data.gyro_angle[0]);
+    mavlink_out_scaled_imu_struct.ygyro = (int16_t)(comp_data.gyro_angle[1]);
+    mavlink_out_scaled_imu_struct.zgyro = (int16_t)(comp_data.gyro_angle[2]);
+  }
+  else{
+    mavlink_out_scaled_imu_struct.xgyro = (int16_t)(result[0] * 1000);
+    mavlink_out_scaled_imu_struct.ygyro = (int16_t)(result[1] * 1000);
+    mavlink_out_scaled_imu_struct.zgyro = (int16_t)(result[2] * 1000);
+  }
   mavlink_out_scaled_imu_struct.time_boot_ms = TIME_BOOT_MS;
 }
 
@@ -194,6 +198,7 @@ void ITG3200::start(void){
   z_offset  = (float*)param_registry.valueSearch("GYRO_z_offset");
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
+  sendangle = (const uint32_t*)param_registry.valueSearch("GYRO_sendangle");
   zerocnt   = (const int32_t*)param_registry.valueSearch("GYRO_zerocnt");
   zeroflen  = (const int32_t*)param_registry.valueSearch("GYRO_zeroflen");
 
