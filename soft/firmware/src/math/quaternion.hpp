@@ -3,12 +3,19 @@
 
 #include "matrix.hpp"
 
+void Quat2Euler(double *q, double *e);
+void Quat2Euler(float *q, float *e);
+
 /**
  * Quaternion.
  *
  */
 template<typename T>
 class Quaternion : public Vector<T, 4>{
+
+private:
+  T m[4];
+
 public:
   Quaternion(void) :
     Vector<T, 4>()
@@ -22,6 +29,11 @@ public:
     m[1] = q1;
     m[2] = q2;
     m[3] = q3;
+  };
+
+  Quaternion(const T *initvector) :
+    Vector<T, 4>(initvector)
+  {
   };
 
   /**
@@ -47,7 +59,7 @@ public:
    * @brief   Convert quaternion to euler angles.
    */
   void euler(Vector<T, 3> *e){
-    Quat2Euler(this->m, e->m);
+    Quat2Euler(this->m, e->getArray());
   };
 
   /**
@@ -62,12 +74,6 @@ public:
     res[2] = m[2]*r[0] + m[3]*r[1] + m[0]*r[2] - m[1]*r[3];
     res[3] = m[3]*r[0] - m[2]*r[1] + m[1]*r[2] + m[0]*r[3];
   };
-
-private:
-  T m[4];
 };
-
-void Quat2Euler(double *q, double *e);
-void Quat2Euler(float *q, float *e);
 
 #endif /* QUATERNION_HPP_ */

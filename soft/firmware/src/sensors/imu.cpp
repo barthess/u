@@ -94,14 +94,14 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyr
  *
  */
 static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
-                          float *gyro, float *q){
-  float e[3];
+                          float *gyro, Quaternion<float> *q){
+  Vector<float, 3> e;
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-  Quat2Euler(q, e);
+  q->euler(&e);
 
-  mavlink_attitude_struct->pitch  = -e[2];
-  mavlink_attitude_struct->roll   = -e[0];
-  comp_data.heading = -e[1] - 3*PI/2;
+  mavlink_attitude_struct->pitch  = -e(2);
+  mavlink_attitude_struct->roll   = -e(0);
+  comp_data.heading = -e(1) - 3*PI/2;
   mavlink_attitude_struct->yaw = comp_data.heading;
 
   mavlink_attitude_struct->rollspeed    = -gyro[0];
@@ -159,13 +159,12 @@ static msg_t Imu(void *arg) {
 //    t1 = hal_lld_get_counter_value() - t0;
 //    dcm2attitude(&mavlink_out_attitude_struct, gyro);
 
-    float q[4];
-    ahrs.update(gyro, acc, mag, &MadgwickQuat);
-//    MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],
-//                        acc[0],acc[1],acc[2],
-//                        mag[0],mag[1],mag[2],
-//                        q, *madgwick_beta, *madgwick_zeta, *madgwick_reset);
-    quat2attitude(&mavlink_out_attitude_struct, gyro, q);
+    t0 = hal_lld_get_counter_value();
+    ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
+    t1 = hal_lld_get_counter_value() - t0;
+
+    quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
+    (void)dcm2attitude; // warning supressor
 
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
@@ -173,6 +172,13 @@ static msg_t Imu(void *arg) {
   lsm303.stop();
   mma8451.stop();
   itg3200.stop();
+
+
+  Vector3d<float> v1, v2, v3;
+  float test;
+  test = v1.dot(&v2);
+  v1 *= test;
+  v2.cross(&v1, &v3);
 
   chThdExit(0);
   return 0;

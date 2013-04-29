@@ -350,28 +350,6 @@ public:
   };
 
   /**@brief
-   * Subindex for Matrix elements assignation. Single dimension variant.
-   * @param v
-   * @return pointer to the element.
-   */
-  float& operator() (const uint32_t v){
-    chDbgCheck(((1 == col) || (1 == row)) && (v < col*row),
-        "This functions works only on 1-d array");
-    return this->m[v];
-  };
-
-  /**@brief
-   * Subindex for Matrix element. Single dimmension variant.
-   * @param v
-   * @return the element.
-   */
-  float operator() (const uint32_t v) const{
-    chDbgCheck(((1 == col) || (1 == row)) && (v < col*row),
-        "This functions works only on 1-d array");
-    return this->m[v];
-  };
-
-  /**@brief
    * Subindex for Matrix element.
    * @param r
    * @param c
@@ -380,6 +358,18 @@ public:
   float operator() (const uint32_t r, const uint32_t c) const{
     return this->m[calc_subindex(r,c)];
   };
+
+  /**
+   * Matrix multiplication
+   */
+  void mul(const Matrix<T> *right, Matrix<T> *result){
+    chDbgCheck(((this->col == right->row) &&
+                (result->row == this->row) &&
+                (result->col == right->col)), "sizes inconsistent");
+
+    matrix_multiply(this->row, this->col, right->col,
+                    this->m, right->m, result->m);
+  }
 
 private:
   /**
@@ -429,12 +419,12 @@ public:
 
 /**
  * Convenient class
- * 1-d vector
+ * 1-d matrix
  */
 template<typename T, int N>
 class Vector : public Matrix<T>{
 private:
-   T m[N];
+  T m[N];
 
 public:
   Vector(void) :
@@ -457,51 +447,83 @@ public:
     for (uint32_t i=0; i<N; i++)
       m[i] = pattern;
   };
+
+  /**@brief
+   * Subindex for Matrix elements assignation. Single dimension variant.
+   * @param v
+   * @return pointer to the element.
+   */
+  float& operator() (const uint32_t v){
+    chDbgCheck(v < sizeof(m)/sizeof(m[0]),
+        "overflow");
+    return this->m[v];
+  };
+
+  /**@brief
+   * Subindex for Matrix element. Single dimmension variant.
+   * @param v
+   * @return the element.
+   */
+  float operator() (const uint32_t v) const{
+    chDbgCheck(v < sizeof(m)/sizeof(m[0]),
+        "overflow");
+    return this->m[v];
+  };
 };
 
-/*
- ******************************************************************************
- * STATIC METHODS
- * Fucntions working with classes instances
- ******************************************************************************
- */
 
 /**
- * Matrix multiplication
+ * Vector3d.
+ * Convenience class. 3 component vector.
  */
 template<typename T>
-static void mul(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
-  chDbgCheck(((left->getCol() == right->getRow()) &&
-              (result->getRow() == left->getRow()) &&
-              (result->getCol() == right->getCol())), "sizes inconsistent");
+class Vector3d : public Vector<T, 3>{
+private:
+  T m[3];
 
-  matrix_multiply(left->getRow(), left->getCol(), right->getCol(),
-                  left->getArray(), right->getArray(), result->getArray());
-}
+public:
+  Vector3d(void) :
+    Vector<T, 3>()
+  {
+  };
 
-/**
- * Dot product of 2 vectors
- */
-template<typename T>
-static T dot(const Matrix<T> *left, const Matrix<T> *right){
-  MatrixBuf<T, 1, 1> result;
-  mul(left, right, &result);
-  return result.get(0,0);
-}
+  Vector3d(T m0, T m1, T m2) :
+    Vector<T, 3>()
+  {
+    m[0] = m0;
+    m[1] = m1;
+    m[2] = m2;
+  };
 
-/**
- * cross product in right handed 3-d space
- */
-template<typename T>
-static void cross(const Matrix<T> *left, const Matrix<T> *right, Matrix<T> *result){
-  chDbgCheck((
-      (1 == left->col) && (1 == right->col) && (1 == result->col) &&
-      (3 == left->row) && (3 == right->row) && (3 == result->row)),
-      "sizes inconsistent");
+  Vector3d(const T *initvector) :
+    Vector<T, 3>(initvector)
+  {
+  };
 
-  result->m[0] = left->m[1]*right->m[2] - left->m[2]*right->m[1];
-  result->m[1] = left->m[2]*right->m[0] - left->m[0]*right->m[2];
-  result->m[2] = left->m[0]*right->m[1] - left->m[1]*right->m[0];
-}
+  Vector3d(const T pattern) :
+    Vector<T, 3>(pattern)
+  {
+  };
+
+  /**
+   * Dot product of 2 vectors
+   */
+  T dot(Matrix<T> *right){
+    T *a = this->m;
+    T *b = right->getArray();
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  }
+
+  /**
+   * cross product in right handed 3-d space
+   */
+  void cross(Matrix<T> *right, Matrix<T> *result){
+    T *b = right->getArray();
+    T *res = result->getArray();
+    res[0] = m[1]*b[2] - m[2]*b[1];
+    res[1] = m[2]*b[0] - m[0]*b[2];
+    res[2] = m[0]*b[1] - m[1]*b[0];
+  }
+};
 
 #endif /* MATRIX_H */
