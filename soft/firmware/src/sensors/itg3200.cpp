@@ -240,6 +240,10 @@ void ITG3200::update(float *result, size_t len){
 void ITG3200::startCalibration(void){
   calibration = true;
   calsample = 0;
+
+  /* reset accumulated angles to start from clean state */
+  for(uint32_t i=0; i<3; i++)
+    comp_data.gyro_angle[i] = 0;
 }
 
 /**
