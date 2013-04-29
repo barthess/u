@@ -117,12 +117,7 @@ chibios_rt::MailboxBuffer<2> blue_blink_mb;
  *******************************************************************************
  *******************************************************************************
  */
-#include "dsp.hpp"
-static Median<float, 3> test;
-
 int main(void) {
-  test.update(3);
-
   halInit();
   System::init();
   chThdSleepMilliseconds(1);
