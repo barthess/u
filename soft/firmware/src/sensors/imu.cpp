@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include "main.h"
 #include "dcm.hpp"
 #include "sensors.hpp"

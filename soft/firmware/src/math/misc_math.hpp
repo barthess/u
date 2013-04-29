@@ -1,7 +1,9 @@
 #ifndef MISC_MATH2_H_
 #define MISC_MATH2_H_
 
-
+/**
+ * Clamper function
+ */
 template<typename Type>
 Type putinrange(Type v, Type vmin, Type vmax){
 
@@ -95,6 +97,9 @@ void sort3(T *in, T *out, uint32_t sortmatrix){
   }
 }
 
+/**
+ * sort 3 values inplace
+ */
 template <typename T>
 void sort3(T *v, uint32_t sortmatrix){
   T tmp;

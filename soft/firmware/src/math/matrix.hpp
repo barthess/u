@@ -2,7 +2,7 @@
 #define MATRIX_H
 
 #include <stdint.h>
-#include <math.h>
+#include <cmath>
 
 /*
  ******************************************************************************

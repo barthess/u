@@ -17,7 +17,6 @@
  ******************************************************************************
  */
 #define CONTROLLER_TMO      MS2ST(50)
-#define MEDIAN_FILTER_LEN   3
 
 /*
  ******************************************************************************
@@ -41,7 +40,7 @@ extern mavlink_mission_set_current_t mavlink_in_mission_set_current_struct;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t tacho_filter_buf[MEDIAN_FILTER_LEN];
+static Median<uint32_t, 3> tacho_filter;
 static float const *pulse2m;
 static Thread *groundrover_tp = NULL;
 
@@ -147,8 +146,7 @@ void loiter_ground_rover(void){
  */
 float calc_ground_rover_speed(uint32_t rtt){
 
-  uint32_t uS = 0;
-  uS = median_filter_3(tacho_filter_buf, RTT2US(rtt));
+  uint32_t uS = tacho_filter.update(RTT2US(rtt));
 
   if (uS == 0)/* prevent division by zero */
     return 3;
@@ -255,11 +253,6 @@ enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
 Thread *ControllerGroundRoverInit(void){
 
   pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
-
-  /* reset filter */
-  uint32_t i = 0;
-  for (i=0; i < MEDIAN_FILTER_LEN; i++)
-    tacho_filter_buf[i] = 0;
 
   ServoInit();
   Servo4Set(128);
