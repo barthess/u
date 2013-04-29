@@ -13,7 +13,6 @@ classdef MadgwickAHRS < handle
     Q = [1 0 0 0].';     % output quaternion describing the Earth relative to the sensor
 	Beta = 0;               	    % algorithm gain
     Zeta = 0;               	    % algorithm gain
-    Ab = [0 0 0].';               % accel bias
     Wb = [0 0 0].';               % gyro bias
   end
 
@@ -39,11 +38,13 @@ classdef MadgwickAHRS < handle
      
 	  % Reference direction of Earth's G feild
       d = [0 1 0];
+
       %Gradient decent algorithm corrective step
       F = [obj.F_m(q,d,Accelerometer);
            obj.F_m(q,b,Magnetometer)];  
       J = [obj.J_m(q,d);
            obj.J_m(q,b)];
+
       step = J'*F;         
       step = step / norm(step);	% normalise step magnitude
       Gyroscope = Gyroscope-wb.';

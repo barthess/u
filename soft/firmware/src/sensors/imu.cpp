@@ -51,6 +51,8 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 static volatile int32_t t0, t1;
 static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
+static MyAHRS<float> ahrs;
+static Quaternion<float> MadgwickQuat;
 
 /*
  *******************************************************************************
@@ -91,22 +93,22 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyr
 /**
  *
  */
-//static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
-//                          float *gyro, float *q){
-//  float e[3];
-//  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-//  Quat2Euler(q, e);
-//
-//  mavlink_attitude_struct->pitch  = -e[2];
-//  mavlink_attitude_struct->roll   = -e[0];
-//  comp_data.heading = -e[1] - 3*PI/2;
-//  mavlink_attitude_struct->yaw = comp_data.heading;
-//
-//  mavlink_attitude_struct->rollspeed    = -gyro[0];
-//  mavlink_attitude_struct->pitchspeed   = -gyro[1];
-//  mavlink_attitude_struct->yawspeed     = -gyro[2];
-//  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-//}
+static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
+                          float *gyro, float *q){
+  float e[3];
+  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
+  Quat2Euler(q, e);
+
+  mavlink_attitude_struct->pitch  = -e[2];
+  mavlink_attitude_struct->roll   = -e[0];
+  comp_data.heading = -e[1] - 3*PI/2;
+  mavlink_attitude_struct->yaw = comp_data.heading;
+
+  mavlink_attitude_struct->rollspeed    = -gyro[0];
+  mavlink_attitude_struct->pitchspeed   = -gyro[1];
+  mavlink_attitude_struct->yawspeed     = -gyro[2];
+  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
+}
 
 
 /**
@@ -124,7 +126,6 @@ static msg_t Imu(void *arg) {
   float acc[3];           /* acceleration in G */
   float gyro[3];          /* angular rates in rad/s */
   float mag[3];           /* magnetic flux in T */
-  //float q[4];
 
   lsm303.start();
   mma8451.start();
@@ -153,16 +154,18 @@ static msg_t Imu(void *arg) {
       }
     }
 
-    t0 = hal_lld_get_counter_value();
-    dcmUpdate(acc, gyro, mag, interval);
-    t1 = hal_lld_get_counter_value() - t0;
-    dcm2attitude(&mavlink_out_attitude_struct, gyro);
+//    t0 = hal_lld_get_counter_value();
+//    dcmUpdate(acc, gyro, mag, interval);
+//    t1 = hal_lld_get_counter_value() - t0;
+//    dcm2attitude(&mavlink_out_attitude_struct, gyro);
 
+    float q[4];
+    ahrs.update(gyro, acc, mag, &MadgwickQuat);
 //    MadgwickAHRSupdate(gyro[0],gyro[1],gyro[2],
 //                        acc[0],acc[1],acc[2],
 //                        mag[0],mag[1],mag[2],
 //                        q, *madgwick_beta, *madgwick_zeta, *madgwick_reset);
-//    quat2attitude(&mavlink_out_attitude_struct, gyro, q);
+    quat2attitude(&mavlink_out_attitude_struct, gyro, q);
 
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }

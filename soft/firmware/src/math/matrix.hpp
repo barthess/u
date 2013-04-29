@@ -168,16 +168,9 @@ public:
   };
 
   /**
-   * Set single matrix element
-   */
-  void set(const uint32_t r, const uint32_t c, const T v){
-    this->m[c*r] = v;
-  };
-
-  /**
    * Initialize matrix using vector of values starting from 0th element
    */
-  void set(const T *v){
+  void init(const T *v){
     uint32_t len = col * row;
     for (uint32_t i=0; i<len; i++)
       this->m[i] = v[i];
@@ -186,17 +179,10 @@ public:
   /**
    * Initialize matrix using pattern
    */
-  void set(const T pattern){
+  void init(const T pattern){
     uint32_t len = col * row;
     for (uint32_t i=0; i<len; i++)
       this->m[i] = pattern;
-  };
-
-  /**
-   * Return single matrix element
-   */
-  T get(const uint32_t r, const uint32_t c){
-    return this->m[c*r];
   };
 
   /**
@@ -325,6 +311,27 @@ public:
   };
 
   /**
+   *
+   */
+  void operator -= (const T v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++){
+      m[i] -= v;
+    }
+  };
+
+  /**
+   *
+   */
+  void operator -= (const Matrix *M){
+    chDbgCheck((M->col == col) && (M->row == row), "matrix sizes must be same");
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++){
+      m[i] -= M->m[i];
+    }
+  };
+
+  /**
    * Scale matrix elemets by constant
    */
   void operator *= (const T v){
@@ -333,7 +340,57 @@ public:
       this->m[i] *= v;
   };
 
+  /**@brief
+   * Subindex for Matrix elements assignation.
+   * @param r
+   * @param c
+   * @return pointer to the element.
+   */
+  float& operator() (const uint32_t r, const uint32_t c){
+    return this->m[calc_subindex(r,c)];
+  };
+
+  /**@brief
+   * Subindex for Matrix elements assignation. Single dimension variant.
+   * @param v
+   * @return pointer to the element.
+   */
+  float& operator() (const uint32_t v){
+    chDbgCheck(((1 == col) || (1 == row)) && (v < col*row),
+        "This functions works only on 1-d array");
+    return this->m[v];
+  };
+
+  /**@brief
+   * Subindex for Matrix element. Single dimmension variant.
+   * @param v
+   * @return the element.
+   */
+  float& operator() (const uint32_t v) const{
+    chDbgCheck(((1 == col) || (1 == row)) && (v < col*row),
+        "This functions works only on 1-d array");
+    return this->m[v];
+  };
+
+  /**@brief
+   * Subindex for Matrix element.
+   * @param r
+   * @param c
+   * @return the element.
+   */
+  float operator() (const uint32_t r, const uint32_t c) const{
+    return this->m[calc_subindex(r,c)];
+  };
+
 private:
+  /**
+   * @brief calculate subindex from row and col values
+   */
+  uint32_t calc_subindex(const uint32_t r, const uint32_t c){
+    chDbgCheck((c < col) && (r < row), "overflow");
+    return r*col + c;
+  };
+
   uint32_t row;
   uint32_t col;
   T *m;
@@ -371,6 +428,38 @@ public:
   };
 };
 
+/**
+ * Convenient class
+ * representing matrix with automatically allocated static buffer
+ */
+template<typename T, int N>
+class Vector : public Matrix<T>{
+private:
+   T m[N];
+
+public:
+  Vector(void) :
+    Matrix<T>(m, N, 1, sizeof(m))
+  {
+    for (uint32_t i=0; i<N; i++)
+      m[i] = 0;
+  };
+
+  Vector(const T *initvector) :
+    Matrix<T>(m, N, 1, sizeof(m))
+  {
+    for (uint32_t i=0; i<N; i++)
+      m[i] = initvector[i];
+  };
+
+  Vector(T pattern) :
+    Matrix<T>(m, N, 1, sizeof(m))
+  {
+    for (uint32_t i=0; i<N; i++)
+      m[i] = pattern;
+  };
+};
+
 /*
  ******************************************************************************
  * STATIC METHODS
@@ -382,7 +471,7 @@ public:
  * Matrix multiplication
  */
 template<typename T>
-static void mul(const Matrix<T> *left, const Matrix<T> *right, Matrix<T> *result){
+static void mul(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
   chDbgCheck(((left->getCol() == right->getRow()) &&
               (result->getRow() == left->getRow()) &&
               (result->getCol() == right->getCol())), "sizes inconsistent");

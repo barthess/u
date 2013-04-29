@@ -1,43 +1,30 @@
-#include "quaternion.hpp"
-#include "matrix.hpp"
+#include <cmath>
 
-Quaternion::Quaternion(void){
-  for (uint32_t i=0; i<sizeof(q)/sizeof(q[0]); i++)
-    q[i] = 0;
+
+void Quat2Euler(float *q, float *e){
+  float Rlb23, Rlb22, Rlb31, Rlb11, Rlb21;
+
+  Rlb23 = 2 * (q[2] * q[3] - q[0] * q[1]);
+  Rlb22 = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+  Rlb31 = 2 * (q[1] * q[3] - q[0] * q[2]);
+  Rlb11 = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+  Rlb21 = 2 * (q[0] * q[3] + q[1] * q[2]);
+
+  e[0] = -atan2f(Rlb23,Rlb22);   //gamma крен
+  e[1] = -atan2f(Rlb31,Rlb11);   //psi рыскание
+  e[2] =  asinf(Rlb21);          //theta тангаж
 }
 
-Quaternion::Quaternion(float q0, float q1, float q2, float q3){
-  q[0] = q0;
-  q[1] = q1;
-  q[2] = q2;
-  q[3] = q3;
+void Quat2Euler(double *q, double *e){
+  float Rlb23, Rlb22, Rlb31, Rlb11, Rlb21;
+
+  Rlb23 = 2 * (q[2] * q[3] - q[0] * q[1]);
+  Rlb22 = q[0]*q[0] - q[1]*q[1] + q[2]*q[2] - q[3]*q[3];
+  Rlb31 = 2 * (q[1] * q[3] - q[0] * q[2]);
+  Rlb11 = q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3];
+  Rlb21 = 2 * (q[0] * q[3] + q[1] * q[2]);
+
+  e[0] = -atan2(Rlb23,Rlb22);   //gamma крен
+  e[1] = -atan2(Rlb31,Rlb11);   //psi рыскание
+  e[2] =  asin(Rlb21);          //theta тангаж
 }
-
-/* complex conjugate */
-void Quaternion::ccon(void){
-  q[1] = -q[1];
-  q[2] = -q[2];
-  q[3] = -q[3];
-}
-
-/* complex conjugate */
-void Quaternion::ccon(Quaternion *result){
-  float *res = result->q;
-  res[0] =  q[0];
-  res[1] = -q[1];
-  res[2] = -q[2];
-  res[3] = -q[3];
-}
-
-/* quaternion multiplication in right handled coordinate system */
-void QuatMult(Quaternion *left, Quaternion *right, Quaternion *result){
-  float *q = left->q;
-  float *r = right->q;
-  float *res = result->q;
-
-  res[0] = q[0]*r[0] - q[1]*r[1] - q[2]*r[2] - q[3]*r[3];
-  res[1] = q[1]*r[0] + q[0]*r[1] - q[3]*r[2] + q[2]*r[3];
-  res[2] = q[2]*r[0] + q[3]*r[1] + q[0]*r[2] - q[1]*r[3];
-  res[3] = q[3]*r[0] - q[2]*r[1] + q[1]*r[2] + q[0]*r[3];
-}
-
