@@ -21,6 +21,7 @@ extern mavlink_heartbeat_t    mavlink_out_heartbeat_struct;
 extern mavlink_sys_status_t   mavlink_out_sys_status_struct;
 
 extern EventSource event_mavlink_out_heartbeat;
+extern chibios_rt::Mailbox blue_blink_mb;
 
 /*
  ******************************************************************************
@@ -45,7 +46,9 @@ extern EventSource event_mavlink_out_heartbeat;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static uint32_t BlinksCount;
+static const int16_t normal[]      = {50,  -100, 0};
+static const int16_t panic[]       = {50,  -100, 50, -100, 50, -100, 50, -100, 0};
+static const int16_t calibrating[] = {500, -500, 0};
 
 /*
  *******************************************************************************
@@ -55,14 +58,18 @@ static uint32_t BlinksCount;
  *******************************************************************************
  */
 
-static void blue_blinker(void){
-  uint32_t n = BlinksCount;
-  while (n > 0){
-    palClearPad(GPIOB, GPIOB_LED_B); /* blink*/
-    chThdSleep(BLUE_LED_ON_TIME);
-    palSetPad(GPIOB, GPIOB_LED_B);
-    chThdSleep(BLUE_LED_OFF_TIME);
-    n--;
+/**
+ * Heartbeat blinker logic
+ */
+static void heartbeat_blinker(void){
+  if (was_softreset()){
+    blue_blink_mb.post((msg_t)panic, TIME_IMMEDIATE);
+  }
+  else{
+    if (MAV_STATE_CALIBRATING == mavlink_system_struct.state)
+      blue_blink_mb.post((msg_t)calibrating, TIME_IMMEDIATE);
+    else
+      blue_blink_mb.post((msg_t)normal, TIME_IMMEDIATE);
   }
 }
 
@@ -112,7 +119,7 @@ static msg_t SanityControlThread(void *arg) {
       chThdExit(RDY_OK);
     }
 
-    blue_blinker();
+    heartbeat_blinker();
     chThdSleepUntil(t);
   }
 }
@@ -128,11 +135,6 @@ static msg_t SanityControlThread(void *arg) {
 void SanityControlInit(void){
 
   chDbgCheck(1 == GlobalFlags.blinker_ready, "blinker not ready");
-
-  if (was_softreset())
-    BlinksCount = 4;
-  else
-    BlinksCount = 1;
 
   /* write soft reset event to "log" and clean it in case of pad reset */
   if (was_softreset())

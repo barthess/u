@@ -53,7 +53,6 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 static volatile int32_t t0, t1;
 static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
-static const int16_t on[3] = {99, -1, 0};
 
 /*
  *******************************************************************************
@@ -94,22 +93,22 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyr
 /**
  *
  */
-static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
-                          float *gyro, float *q){
-  float e[3];
-  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-  Quat2Euler(q, e);
-
-  mavlink_attitude_struct->pitch  = -e[2];
-  mavlink_attitude_struct->roll   = -e[0];
-  comp_data.heading = -e[1] - 3*PI/2;
-  mavlink_attitude_struct->yaw = comp_data.heading;
-
-  mavlink_attitude_struct->rollspeed    = -gyro[0];
-  mavlink_attitude_struct->pitchspeed   = -gyro[1];
-  mavlink_attitude_struct->yawspeed     = -gyro[2];
-  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
-}
+//static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
+//                          float *gyro, float *q){
+//  float e[3];
+//  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
+//  Quat2Euler(q, e);
+//
+//  mavlink_attitude_struct->pitch  = -e[2];
+//  mavlink_attitude_struct->roll   = -e[0];
+//  comp_data.heading = -e[1] - 3*PI/2;
+//  mavlink_attitude_struct->yaw = comp_data.heading;
+//
+//  mavlink_attitude_struct->rollspeed    = -gyro[0];
+//  mavlink_attitude_struct->pitchspeed   = -gyro[1];
+//  mavlink_attitude_struct->yawspeed     = -gyro[2];
+//  mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
+//}
 
 
 /**
@@ -135,7 +134,6 @@ static msg_t Imu(void *arg) {
 
   /* calibrate gyros in very first run */
   itg3200.startCalibration();
-  red_blink_mb.post((msg_t)on, TIME_IMMEDIATE);
 
   while (!chThdShouldTerminate()) {
     sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
@@ -153,9 +151,8 @@ static msg_t Imu(void *arg) {
       /* check immobility and restart if needed */
       if (!(lsm303.still() && mma8451.still())){
         itg3200.startCalibration();
-        //red_blink_mb.post((msg_t)fastblink, TIME_IMMEDIATE);
+        red_blink_mb.post((msg_t)fastblink, TIME_IMMEDIATE);
       }
-//      red_blink_mb.post((msg_t)on, TIME_IMMEDIATE);
     }
 
     t0 = hal_lld_get_counter_value();
