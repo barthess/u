@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include <cmath>
 
+/**
+ * Overloaded function to use fast hardware square root
+ */
+static inline float sqrt(float v){
+  return sqrtf(v);
+}
+
 /*
  ******************************************************************************
  * LOW LEVEL
@@ -144,9 +151,15 @@ template<typename T>
 class Matrix{
 public:
   /**
-   * default constructor
+   * @brief Constructor
+   *
+   * @param[in] m         pointer to a linear array of matrix data
+   * @param[in] r         number of rows
+   * @param[in] c         number of columns
+   * @param[in] bufsize   size of data array in bytes. Need to check correctness
+   *                      of sizes
    */
-  Matrix(T *m, uint32_t r, uint32_t c, size_t bufsize){
+  Matrix(T *m, const uint32_t r, const uint32_t c, const size_t bufsize){
     chDbgCheck(((0 != r) && (0 != c)), "Zero sizes forbidden");
     chDbgCheck(bufsize == (r * c * sizeof(T)), "Probable overflow");
     this->m = m;
@@ -157,22 +170,8 @@ public:
   /**
    * Set single matrix element
    */
-  void set(uint32_t r, uint32_t c, T v){
+  void set(const uint32_t r, const uint32_t c, const T v){
     this->m[c*r] = v;
-  };
-
-  /**
-   * Return single matrix element
-   */
-  T get(uint32_t r, uint32_t c){
-    return this->m[c*r];
-  };
-
-  /**
-   * Return pointer to raw matrix data
-   */
-  T *getRaw(void){
-    return this->m;
   };
 
   /**
@@ -187,19 +186,38 @@ public:
   /**
    * Initialize matrix using pattern
    */
-  void set(T v){
+  void set(const T pattern){
     uint32_t len = col * row;
     for (uint32_t i=0; i<len; i++)
-      this->m[i] = v;
+      this->m[i] = pattern;
   };
 
   /**
-   * Scale matrix elemets by constant
+   * Return single matrix element
    */
-  void scale(T v){
-    uint32_t len = col * row;
-    for (uint32_t i=0; i<len; i++)
-      this->m[i] *= v;
+  T get(const uint32_t r, const uint32_t c){
+    return this->m[c*r];
+  };
+
+  /**
+   * Return pointer to raw matrix data
+   */
+  T *getArray(void){
+    return this->m;
+  };
+
+  /**
+   * Return pointer to raw matrix data
+   */
+  uint32_t getCol(void){
+    return this->col;
+  };
+
+  /**
+   * Return pointer to raw matrix data
+   */
+  uint32_t getRow(void){
+    return this->row;
   };
 
   /**
@@ -226,20 +244,104 @@ public:
 
   /**
    * Invers matrix itself
+   * The function returns 1 on success, 0 on failure.
    */
   int32_t inverse(){
     chDbgCheck(this->col == this->row, "matrix must be square");
     return matrix_inverse(this->col, this->m);
   };
 
-public:
+  /**
+   * Invers matrix itself
+   * The function returns 1 on success, 0 on failure.
+   */
+  void reshape(const uint32_t r, const uint32_t c){
+    chDbgCheck((this->col * this->row) == (c * r), "resulted matrix size differ");
+    this->col = c;
+    this->row = r;
+  };
+
+  /**
+   * Trnaspose matrix storing result in different matrix
+   */
+  void transpose(Matrix *result){
+    chDbgCheck((col == result->row) && (row == result->col),
+        "matrix sizes incorrect");
+    matrix_transpose(col, row, m, result->m);
+  };
+
+  /**
+   * Transpose inplace
+   * Matrix must be square or
+   * one of dimensions must be equal to 1
+   */
+  void transpose(void){
+    chDbgCheck((1 == col) || (1 == row) || (row == col),
+        "matrix sizes unsupported");
+
+    /* single dimmension vector simly reshaped */
+    if((1 == col) || (1 == row)){
+      uint32_t tmp = col;
+      col = row;
+      row = tmp;
+    }
+
+    /* square matrix can be transposed element by element */
+    else{
+      T tmp;
+      uint32_t submatrix = 0;
+      uint32_t i=0, k=0, p=0;
+      for (submatrix=0; submatrix<(row - 1); submatrix++){
+        for (i=submatrix+1; i<col; i++){
+          k = i + submatrix*col;
+          p = i*col + submatrix;
+          tmp = m[k];
+          m[k] = m[p];
+          m[p] = tmp;
+        }
+      }
+    }
+  };
+
+  /**
+   *
+   */
+  void operator += (const T v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++){
+      m[i] += v;
+    }
+  };
+
+  /**
+   *
+   */
+  void operator += (const Matrix *M){
+    chDbgCheck((M->col == col) && (M->row == row), "matrix sizes must be same");
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++){
+      m[i] += M->m[i];
+    }
+  };
+
+  /**
+   * Scale matrix elemets by constant
+   */
+  void operator *= (const T v){
+    uint32_t len = col * row;
+    for (uint32_t i=0; i<len; i++)
+      this->m[i] *= v;
+  };
+
+private:
   uint32_t row;
   uint32_t col;
   T *m;
 };
 
 /**
- * Class representing a static buffer for matrix
+ * Convenient class
+ * representing matrix with automatically allocated static buffer
  */
 template<typename T, int r, int c>
 class MatrixBuf : public Matrix<T>{
@@ -280,20 +382,20 @@ public:
  * Matrix multiplication
  */
 template<typename T>
-static void mul(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
-  chDbgCheck(((left->col == right->row) &&
-              (result->row == left->row) &&
-              (result->col == right->col)), "sizes inconsistent");
+static void mul(const Matrix<T> *left, const Matrix<T> *right, Matrix<T> *result){
+  chDbgCheck(((left->getCol() == right->getRow()) &&
+              (result->getRow() == left->getRow()) &&
+              (result->getCol() == right->getCol())), "sizes inconsistent");
 
-  matrix_multiply(left->row, left->col, right->col,
-                  left->m, right->m, result->m);
+  matrix_multiply(left->getRow(), left->getCol(), right->getCol(),
+                  left->getArray(), right->getArray(), result->getArray());
 }
 
 /**
  * Dot product of 2 vectors
  */
 template<typename T>
-static T dot(Matrix<T> *left, Matrix<T> *right){
+static T dot(const Matrix<T> *left, const Matrix<T> *right){
   MatrixBuf<T, 1, 1> result;
   mul(left, right, &result);
   return result.get(0,0);
@@ -303,7 +405,7 @@ static T dot(Matrix<T> *left, Matrix<T> *right){
  * cross product in right handed 3-d space
  */
 template<typename T>
-static void cross(Matrix<T> *left, Matrix<T> *right, Matrix<T> *result){
+static void cross(const Matrix<T> *left, const Matrix<T> *right, Matrix<T> *result){
   chDbgCheck((
       (1 == left->col) && (1 == right->col) && (1 == result->col) &&
       (3 == left->row) && (3 == right->row) && (3 == result->row)),

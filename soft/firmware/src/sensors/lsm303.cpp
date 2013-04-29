@@ -121,7 +121,7 @@ inline void LSM303::pickle(float *result, size_t len){
   result[2] -= *zoffset;
 
   /* rotate magnetometer according to accelerometer position */
-//  float dcmf[9] = {1,0,0,0,1,0,0,0,1};
+  //float dcmf[9] = {1,0,0,0,1,0,0,0,1};
   //matrix_multiply(1, 3, 3, result, dcm, tmp);
   matrix_multiply(3, 3, 1, dcm, result, tmp);
 
