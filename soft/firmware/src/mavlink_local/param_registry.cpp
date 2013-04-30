@@ -248,7 +248,7 @@ bool ParamRegistry::load_extensive(void){
  */
 bool ParamRegistry::load(void){
   int32_t  i = 0;
-  int32_t  index = -1;
+  int32_t  cmpresult = -1;
   uint32_t status = 0;
   uint32_t v = 0;
 
@@ -266,9 +266,10 @@ bool ParamRegistry::load(void){
       return PARAM_FAILED;
     }
 
-    /* search value by key and set it if found */
-    index = key_index_search((char *)eeprombuf);
-    if (index != -1){   /* OK, this parameter already presents in EEPROM */
+    /* if no updates was previously in paramter structure than order of
+     * parameters in registry must be the same as in eeprom */
+    cmpresult = strcmp(GlobalParam[i].name, (char *)eeprombuf);
+    if (0 == cmpresult){   /* OK, this parameter already presents in EEPROM */
       v = pack8to32(&(eeprombuf[PARAM_ID_SIZE]));
     }
     else{
@@ -283,7 +284,7 @@ bool ParamRegistry::load(void){
     }
 
     /* check value acceptability and set it */
-    validator.set(&v, &(GlobalParam[index]));
+    validator.set(&v, &(GlobalParam[i]));
   }
 
   release();

@@ -41,6 +41,7 @@ float dcmEst[3][3] = {{1,0,0},
  ******************************************************************************
  */
 static float const *declination;
+static uint32_t const *ahrsmode;
 
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2,  lsm303magaddr);
@@ -98,7 +99,7 @@ static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
 
   mavlink_attitude_struct->pitch  = -e(2);
   mavlink_attitude_struct->roll   = -e(0);
-  comp_data.heading = -e(1) - 3*PI/2;
+  comp_data.heading = -e(1);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
   mavlink_attitude_struct->rollspeed    = -gyro[0];
@@ -152,32 +153,28 @@ static msg_t Imu(void *arg) {
       }
     }
 
-//    t0 = hal_lld_get_counter_value();
-//    dcmUpdate(acc, gyro, mag, interval);
-//    t1 = hal_lld_get_counter_value() - t0;
-//    dcm2attitude(&mavlink_out_attitude_struct, gyro);
+    /* pass data to AHRS */
+    if (0 == *ahrsmode){
+      /* simple DCM */
+      t0 = hal_lld_get_counter_value();
+      dcmUpdate(acc, gyro, mag, interval);
+      t1 = hal_lld_get_counter_value() - t0;
+      dcm2attitude(&mavlink_out_attitude_struct, gyro);
+    }
+    else if (1 == *ahrsmode){
+      /* Madgwick */
+      t0 = hal_lld_get_counter_value();
+      ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
+      t1 = hal_lld_get_counter_value() - t0;
+      quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
+    }
 
-    t0 = hal_lld_get_counter_value();
-    ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
-    t1 = hal_lld_get_counter_value() - t0;
-    quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
-
-    (void)dcm2attitude; // warning supressor
-    (void)quat2attitude; // warning supressor
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
 
   lsm303.stop();
   mma8451.stop();
   itg3200.stop();
-
-  /* test area */
-  Vector3d<float> v1, v2, v3;
-  float test;
-  test = v1.dot(&v2);
-  v1 *= test;
-  v2.cross(&v1, &v3);
-  /* end of test area */
 
   chThdExit(0);
   return 0;
@@ -190,6 +187,8 @@ static msg_t Imu(void *arg) {
  */
 void ImuInit(void){
   declination = (const float*)param_registry.valueSearch("MAG_declinate");
+  ahrsmode = (const uint32_t*)param_registry.valueSearch("IMU_ahrsmode");
+
   dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
 }
