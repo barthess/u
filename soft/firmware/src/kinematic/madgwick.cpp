@@ -1,22 +1,34 @@
 #include <cmath>
 #include "main.h"
-#include "matrix.hpp"
 #include "quaternion.hpp"
-
 #include "madgwick.hpp"
 #include "message.hpp"
+#include "param_registry.hpp"
 
-//---------------------------------------------------------------------------------------------------
-// Definitions
+/*
+ ******************************************************************************
+ * DEFINES
+ ******************************************************************************
+ */
 
-#define betaDef    0.07557f
-#define zetaDef    0.0f
+/*
+ ******************************************************************************
+ * EXTERNS
+ ******************************************************************************
+ */
+extern ParamRegistry param_registry;
 
-extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
+/*
+ ******************************************************************************
+ * PROTOTYPES
+ ******************************************************************************
+ */
 
-//====================================================================================================
-//
-//====================================================================================================
+/*
+ ******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************
+ */
 static Quaternion<float> h(1,0,0,0);
 
 static Vector3d<float> Wb(0,0,0); /* Gyro bias drift */
@@ -37,6 +49,16 @@ static Matrix<typeof(Jbuf[0])> Jdown(Jbuf+12, 3, 4, sizeof(Jbuf) / 2);
 static float JbufT[24];
 static Matrix<typeof(JbufT[0])> JT(JbufT, 4, 6, sizeof(JbufT));
 
+/*
+ ******************************************************************************
+ ******************************************************************************
+ * LOCAL FUNCTIONS
+ ******************************************************************************
+ ******************************************************************************
+ */
+/**
+ *
+ */
 template<typename T>
 static void J_m(const Quaternion<T> *q, Vector3d<T> *d, Matrix<T> *result){
   float dx = (*d)(0);
@@ -64,7 +86,9 @@ static void J_m(const Quaternion<T> *q, Vector3d<T> *d, Matrix<T> *result){
   (*result)(2,3) = 2*dx*q2 + 2*dy*q3;
 }
 
-
+/**
+ *
+ */
 template<typename T>
 static void F_m(const Quaternion<T> *q, Vector3d<T> *d, Vector3d<T> *s, Matrix<T> *result){
   float dx = (*d)(0);
@@ -83,8 +107,27 @@ static void F_m(const Quaternion<T> *q, Vector3d<T> *d, Vector3d<T> *s, Matrix<T
   (*result)(2,0) = 2*dx*(q1*q3 + q2*q4)       + 2*dy*(q3*q4 - q1*q2)       + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
 }
 
-void MyAHRS::update(const float *gyro, const float *acc, const float *mag,
+/*
+ ******************************************************************************
+ * EXPORTED FUNCTIONS
+ ******************************************************************************
+ */
+
+/**
+ *
+ */
+MadgwickAHRS::MadgwickAHRS(void){
+  ready = false;
+}
+
+/**
+ *
+ */
+void MadgwickAHRS::update(const float *gyro, const float *acc, const float *mag,
                     Quaternion<float> *Q, const float dT){
+
+  chDbgCheck(true == ready, "AHRS not ready");
+
   Vector3d<float> Gyroscope(gyro);
   Vector3d<float> Accelerometer(acc);
   Vector3d<float> Magnetometer(mag);
@@ -133,7 +176,7 @@ void MyAHRS::update(const float *gyro, const float *acc, const float *mag,
 
   Q->mul(&tmp, &qDot);
   qDot *= 0.5f;
-  step *= betaDef;
+  step *= *beta;
   qDot -= &step;
 
   //Integrate to yield quaternion
@@ -146,7 +189,7 @@ void MyAHRS::update(const float *gyro, const float *acc, const float *mag,
   //delta_wb = 2*obj.Zeta*obj.dT * quatmult(quatcon(q), step);
   Q->ccon(&qcon);
   qcon.mul(&step, &tmp);
-  tmp *= 2 * zetaDef * dT;
+  tmp *= *zeta * 2 * dT;
 
   //Wb = wb+delta_wb(2:4);
   Wb(0) = tmp(1);
@@ -154,9 +197,12 @@ void MyAHRS::update(const float *gyro, const float *acc, const float *mag,
   Wb(2) = tmp(3);
 }
 
+/**
+ *
+ */
+void MadgwickAHRS::start(void){
+  beta = (const float*)param_registry.valueSearch("IMU_beta");
+  zeta = (const float*)param_registry.valueSearch("IMU_zeta");
 
-
-
-//====================================================================================================
-// END OF CODE
-//====================================================================================================
+  ready = true;
+}

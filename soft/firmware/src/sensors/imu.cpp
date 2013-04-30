@@ -41,9 +41,6 @@ float dcmEst[3][3] = {{1,0,0},
  ******************************************************************************
  */
 static float const *declination;
-static float const *madgwick_beta;
-static float const *madgwick_zeta;
-static uint32_t const *madgwick_reset;
 
 static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2,  lsm303magaddr);
@@ -51,7 +48,7 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 
 static volatile int32_t t0, t1;
 static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
-static MyAHRS ahrs;
+static MadgwickAHRS ahrs;
 static Quaternion<float> MadgwickQuat(1, 0, 0, 0);
 
 /*
@@ -130,6 +127,7 @@ static msg_t Imu(void *arg) {
   lsm303.start();
   mma8451.start();
   itg3200.start();
+  ahrs.start();
 
   /* calibrate gyros in very first run */
   itg3200.startCalibration();
@@ -192,10 +190,6 @@ static msg_t Imu(void *arg) {
  */
 void ImuInit(void){
   declination = (const float*)param_registry.valueSearch("MAG_declinate");
-  madgwick_beta = (const float*)param_registry.valueSearch("IMU_beta");
-  madgwick_zeta = (const float*)param_registry.valueSearch("IMU_zeta");
-  madgwick_reset = (const uint32_t*)param_registry.valueSearch("IMU_reset");
-
   dcmInit();
   chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
 }
