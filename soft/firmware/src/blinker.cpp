@@ -82,40 +82,40 @@ void blink_cycle(int16_t *seq, uint32_t led){
  * Blinker thread for red LED.
  */
 static WORKING_AREA(RedBlinkThreadWA, 192);
+__attribute__ ((__noreturn__))
 static msg_t RedBlinkThread(void *arg) {
   chRegSetThreadName("RedBlink");
   (void)arg;
   msg_t rx = 0;
   msg_t status = RDY_RESET;
 
-  while(!chThdShouldTerminate()){
+  while(true){
     status = red_blink_mb.fetch(&rx, MS2ST(100));
 
     if (RDY_OK == status){
       blink_cycle((int16_t *)rx, GPIOB_LED_R);
     }
   }
-  return 0;
 }
 
 /**
  * Blinker thread for red LED.
  */
 static WORKING_AREA(BlueBlinkThreadWA, 192);
+__attribute__ ((__noreturn__))
 static msg_t BlueBlinkThread(void *arg) {
   chRegSetThreadName("BlueBlink");
   (void)arg;
   msg_t rx = 0;
   msg_t status = RDY_RESET;
 
-  while(!chThdShouldTerminate()){
+  while(true){
     status = blue_blink_mb.fetch(&rx, MS2ST(100));
 
     if (RDY_OK == status){
       blink_cycle((int16_t *)rx, GPIOB_LED_B);
     }
   }
-  return 0;
 }
 /*
  ******************************************************************************
