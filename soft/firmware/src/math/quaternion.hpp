@@ -42,6 +42,10 @@ public:
   Quaternion(void) :
     Vector<T, 4>()
   {
+    this->m[0] = 1;
+    this->m[1] = 0;
+    this->m[2] = 0;
+    this->m[3] = 0;
   };
 
   Quaternion(T q0, T q1, T q2, T q3) :

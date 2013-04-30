@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 #include "main.h"
 #include "quaternion.hpp"
 #include "madgwick.hpp"
@@ -102,9 +102,9 @@ static void F_m(const Quaternion<T> *q, Vector3d<T> *d, Vector3d<T> *s, Matrix<T
   float sy = (*s)(1);
   float sz = (*s)(2);
 
-  (*result)(0,0) = 2*dx*(0.5 - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3)       + 2*dz*(q2*q4 - q1*q3) - sx;
-  (*result)(1,0) = 2*dx*(q2*q3 - q1*q4)       + 2*dy*(0.5 - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
-  (*result)(2,0) = 2*dx*(q1*q3 + q2*q4)       + 2*dy*(q3*q4 - q1*q2)       + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
+  (*result)(0,0) = 2*dx*(0.5f - q3*q3 - q4*q4) + 2*dy*(q1*q4 + q2*q3)        + 2*dz*(q2*q4 - q1*q3) - sx;
+  (*result)(1,0) = 2*dx*(q2*q3 - q1*q4)        + 2*dy*(0.5f - q2*q2 - q4*q4) + 2*dz*(q1*q2 + q3*q4) - sy;
+  (*result)(2,0) = 2*dx*(q1*q3 + q2*q4)        + 2*dy*(q3*q4 - q1*q2)        + 2*dz*(0.5f - q2*q2 - q3*q3) - sz;
 }
 
 /*
@@ -128,9 +128,9 @@ void MadgwickAHRS::update(const float *gyro, const float *acc, const float *mag,
 
   chDbgCheck(true == ready, "AHRS not ready");
 
-  Vector3d<float> Gyroscope(gyro);
-  Vector3d<float> Accelerometer(acc);
-  Vector3d<float> Magnetometer(mag);
+  Vector3d<float>   Gyroscope(gyro);
+  Vector3d<float>   Accelerometer(acc);
+  Vector3d<float>   Magnetometer(mag);
   Quaternion<float> step(1,0,0,0);
 
   Accelerometer.normalize();

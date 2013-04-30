@@ -108,7 +108,6 @@ static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
 }
 
-
 /**
  *
  */

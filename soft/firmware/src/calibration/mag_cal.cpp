@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 
 #include "main.h"
 #include "global_flags.h"

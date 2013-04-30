@@ -2,7 +2,7 @@
 #define MATRIX_H
 
 #include <stdint.h>
-#include <cmath>
+#include <math.h>
 
 /**
  * Overloaded function to use fast hardware square root

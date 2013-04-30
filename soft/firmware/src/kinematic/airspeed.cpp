@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 /*
  * Pressure measurement unit
  * Рассчитывает воздушную скорость по сырым данным с MPX5100

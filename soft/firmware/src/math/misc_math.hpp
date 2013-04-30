@@ -2,6 +2,16 @@
 #define MISC_MATH2_H_
 
 /**
+ * Fast hardware square root
+ */
+__attribute__((always_inline)) __STATIC_INLINE float __VSQRT(float value)
+{
+  float result;
+  __ASM volatile ("vsqrt.f32 %0, %1" : "=w"(result) : "w"(value));
+  return(result);
+}
+
+/**
  * Clamper function
  */
 template<typename Type>
