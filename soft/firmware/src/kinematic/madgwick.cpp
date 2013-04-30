@@ -24,9 +24,10 @@
 // Definitions
 
 //#define sampleFreq	100.0f		// sample frequency in Hz
-#define dT          0.01f
+//#define dT          0.01f
 //#define betaDef		  (5 * (sqrtf(3.0f/4.0f) * 3.14159265f / 180.0f))		// 2 * proportional gain
 #define betaDef    (0.07557f)
+#define zetaDef     1.0f
 
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 
@@ -289,7 +290,7 @@ float invSqrt(float x) {
 #include "quaternion.hpp"
 
 static Quaternion<float> Q(1,0,0,0);
-static Quaternion<float> qcon(0,0,0,0);
+static Quaternion<float> qcon(1,0,0,0);
 static Quaternion<float> h(1,0,0,0);
 
 static Vector3d<float> Wb;
@@ -356,22 +357,28 @@ static void F_m(const Quaternion<T> *q, Vector3d<T> *d, Vector3d<T> *s, Matrix<T
   (*result)(2,0) = 2*dx*(q1*q3 + q2*q4)       + 2*dy*(q3*q4 - q1*q2)       + 2*dz*(0.5 - q2*q2 - q3*q3) - sz;
 }
 
-void MyAHRS::update(const float *gyro, float *acc, float *mag, Quaternion<float> *result, float interval){
+void MyAHRS::update(const float *gyro, const float *acc, const float *mag,
+                    Quaternion<float> *result, const float dT){
   Vector3d<float> Gyroscope(gyro);
   Vector3d<float> Accelerometer(acc);
   Vector3d<float> Magnetometer(mag);
-  Quaternion<float> step;
+  Quaternion<float> step(1,0,0,0);
 
   Accelerometer.normalize();
   Magnetometer.normalize();
 
   Quaternion<float> tmp;
+  Quaternion<float> qDot;
 
-  Quaternion<float> qmag(0, mag[0], mag[1], mag[2]);
+  //h = quatmult(q, quatmult([0 Magnetometer].', quatcon(q)));
+  Quaternion<float> qmag(0, Magnetometer(0), Magnetometer(1), Magnetometer(2));
   Q.ccon(&qcon);
   qmag.mul(&qcon, &tmp);
   Q.mul(&tmp, &h);
 
+  //b = [norm([m_n m_e]) m_u 0];
+  //% Reference direction of Earth's G feild
+  //d = [0 1 0];
   b(0) = sqrtf(h(1)*h(1) + h(3)*h(3));
   b(1) = h(2);
   b(2) = 0;
@@ -380,6 +387,7 @@ void MyAHRS::update(const float *gyro, float *acc, float *mag, Quaternion<float>
   d(1) = 1;
   d(2) = 0;
 
+  //Gradient decent algorithm corrective step
   F_m(&Q, &d, &Accelerometer, &Ftop);
   F_m(&Q, &b, &Magnetometer, &Fdown);
 
@@ -391,9 +399,34 @@ void MyAHRS::update(const float *gyro, float *acc, float *mag, Quaternion<float>
   step.normalize();
   Gyroscope -= &Wb;
 
-  (void)result;
-  (void)interval;
-  return;
+  //Compute rate of change of quaternion
+  //qDot_w = 0.5*quatmult(q, [0 Gyroscope(1) Gyroscope(2) Gyroscope(3)].');
+  //qDot = qDot_w - obj.Beta * step;
+  //obj.Q_w = q_w/norm(q_w);
+  Quaternion<float> qGyr(0, gyro[0], gyro[1], gyro[2]);
+  Q.mul(&qGyr, &qDot);
+  qDot *= 0.5f;
+  step *= betaDef;
+  qDot -= &step;
+
+  //Integrate to yield quaternion
+  //q = q + qDot*obj.dT;
+  //obj.Q = q/norm(q); % normalise quaternion
+  qDot *= dT;
+  Q += &qDot;
+  Q.normalize();
+
+  //delta_wb = 2*obj.Zeta*obj.dT * quatmult(quatcon(q), step);
+  Q.ccon(&qcon);
+  qcon.mul(&step, &tmp);
+  tmp *= 2 * zetaDef * dT;
+
+  //Wb = wb+delta_wb(2:4);
+  Wb(0) = tmp(1);
+  Wb(1) = tmp(2);
+  Wb(2) = tmp(3);
+
+  *result = Q;
 }
 
 

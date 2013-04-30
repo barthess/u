@@ -250,6 +250,9 @@ public:
    * Trnaspose matrix storing result in different matrix
    */
   void transpose(Matrix *result){
+    chDbgCheck(result != this,
+        "this functions can not work inplace");
+
     chDbgCheck((col == result->row) && (row == result->col),
         "matrix sizes incorrect");
     matrix_transpose(col, row, m, result->m);
@@ -363,6 +366,10 @@ public:
    * Matrix multiplication
    */
   void mul(const Matrix<T> *right, Matrix<T> *result){
+
+    chDbgCheck(((this != right) && (this != result) && (result != right)),
+                                    "this functions can not work inplace");
+
     chDbgCheck(((this->col == right->row) &&
                 (result->row == this->row) &&
                 (result->col == right->col)), "sizes inconsistent");
@@ -391,7 +398,7 @@ private:
  */
 template<typename T, int r, int c>
 class MatrixBuf : public Matrix<T>{
-private:
+protected:
    T m[r*c];
 
 public:
@@ -423,7 +430,7 @@ public:
  */
 template<typename T, int N>
 class Vector : public Matrix<T>{
-private:
+protected:
   T m[N];
 
 public:
@@ -478,8 +485,6 @@ public:
  */
 template<typename T>
 class Vector3d : public Vector<T, 3>{
-private:
-  T m[3];
 
 public:
   Vector3d(void) :
@@ -490,9 +495,9 @@ public:
   Vector3d(T m0, T m1, T m2) :
     Vector<T, 3>()
   {
-    m[0] = m0;
-    m[1] = m1;
-    m[2] = m2;
+    this->m[0] = m0;
+    this->m[1] = m1;
+    this->m[2] = m2;
   };
 
   Vector3d(const T *initvector) :
@@ -508,18 +513,23 @@ public:
   /**
    * Dot product of 2 vectors
    */
-  T dot(Matrix<T> *right){
+  T dot(Vector3d<T> *right){
     T *a = this->m;
-    T *b = right->getArray();
+    T *b = right->m;
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
   }
 
   /**
    * cross product in right handed 3-d space
    */
-  void cross(Matrix<T> *right, Matrix<T> *result){
-    T *b = right->getArray();
-    T *res = result->getArray();
+  void cross(Vector3d<T> *right, Vector3d<T> *result){
+    T *b = right->m;
+    T *res = result->m;
+    T *m = this->m;
+
+    chDbgCheck(((b != res) && (b != m) && (res != m)),
+        "this functions can not work inplace");
+
     res[0] = m[1]*b[2] - m[2]*b[1];
     res[1] = m[2]*b[0] - m[0]*b[2];
     res[2] = m[0]*b[1] - m[1]*b[0];

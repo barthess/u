@@ -41,8 +41,8 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
 
 class MyAHRS{
 public:
-  void update(const float *gyro, float *acc, float *mag, Quaternion<float> *result,
-              float interval);
+  void update(const float *gyro, const float *acc, const float *mag,
+      Quaternion<float> *result, const float interval);
 };
 
 

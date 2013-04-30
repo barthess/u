@@ -162,10 +162,10 @@ static msg_t Imu(void *arg) {
     t0 = hal_lld_get_counter_value();
     ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
     t1 = hal_lld_get_counter_value() - t0;
-
     quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
-    (void)dcm2attitude; // warning supressor
 
+    (void)dcm2attitude; // warning supressor
+    (void)quat2attitude; // warning supressor
     log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
   }
 
@@ -173,12 +173,13 @@ static msg_t Imu(void *arg) {
   mma8451.stop();
   itg3200.stop();
 
-
+  /* test area */
   Vector3d<float> v1, v2, v3;
   float test;
   test = v1.dot(&v2);
   v1 *= test;
   v2.cross(&v1, &v3);
+  /* end of test area */
 
   chThdExit(0);
   return 0;
