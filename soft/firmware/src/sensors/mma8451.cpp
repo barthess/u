@@ -77,6 +77,7 @@ void MMA8451::pickle(float *result, size_t len) {
   raw[1] *= *ypol;
   raw[2] *= *zpol;
 
+  nwu2nue(raw);
   mavlink_out_raw_imu_struct.xacc = raw[0];
   mavlink_out_raw_imu_struct.yacc = raw[1];
   mavlink_out_raw_imu_struct.zacc = raw[2];

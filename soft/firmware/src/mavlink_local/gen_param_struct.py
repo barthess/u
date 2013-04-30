@@ -36,6 +36,7 @@ param = [
 ("IMU_beta",        0.0,    1.0,    20.0,   "f", "default",     "Error rate of gyro in degrees"),
 ("IMU_zeta",        0.0,    1.0,    20.0,   "f", "default",     "NULL"),
 ("IMU_reset",       0,      0,      1,      "u", "default",     "NULL"),
+# ("IMU_ahrsmode",    0,      0,      1,      "u", "default",     "0 - simple DCM, 1 - Madgwick"),
 
 # /**** Magnetometer ****/
 # /* zero offsets */
@@ -75,6 +76,7 @@ param = [
 ("MAG_dcm_20",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
 ("MAG_dcm_21",      -1.0,   0.0,    1.0,    "f", "default",     "NULL"),
 ("MAG_dcm_22",      -1.0,   1.0,    1.0,    "f", "default",     "NULL"),
+# ("MAG_picklmode",   0,      0,      1,      "u", "default",     "0 - simple spherical shift, 1 - egg compensate"),
 
 #/**** accelerometer ****/
 #/* zero offsets */

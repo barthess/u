@@ -93,22 +93,11 @@ inline void LSM303::pickle(float *result, size_t len){
   raw[1] *= *ypol;
   raw[2] *= *zpol;
 
-  /* calibration aid */
-  if (calibration){
-    mavlink_out_raw_imu_struct.xmag = xalphabeta.update(raw[0], *filterlen);
-    mavlink_out_raw_imu_struct.ymag = yalphabeta.update(raw[1], *filterlen);
-    mavlink_out_raw_imu_struct.zmag = zalphabeta.update(raw[2], *filterlen);
-    sample_cnt++;
-    if (*zerocnt <= sample_cnt){
-      calibration = false;
-      chEvtBroadcastFlags(&event_mavlink_out_raw_imu, EVMSK_MAVLINK_OUT_RAW_IMU);
-    }
-  }
-  else{
-    mavlink_out_raw_imu_struct.xmag = raw[0];
-    mavlink_out_raw_imu_struct.ymag = raw[1];
-    mavlink_out_raw_imu_struct.zmag = raw[2];
-  }
+//  nwu2nue(raw);
+
+  mavlink_out_raw_imu_struct.xmag = raw[0];
+  mavlink_out_raw_imu_struct.ymag = raw[1];
+  mavlink_out_raw_imu_struct.zmag = raw[2];
 
   /* soft iron correction */
   result[0] = raw[0] * *ellip_00;

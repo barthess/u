@@ -137,6 +137,9 @@ void dcmUpdate(float *acc, float *gyro, float *mag, float imu_interval){
   uint32_t i = 0;
   float Kacc[3];  //K(b) vector according to accelerometer in body's coordinates
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
+  float w[3];     //gyro rates (angular velocity of a global vector in local coordinates)
+  float wA[3];    //correction vector to bring dcmEst's K vector closer to Acc
+  float wM[3];    // correction vector to bring dcmEst's I vector closer
 
   //interval since last call
   //imu_interval_ms = itg3200_period;
@@ -168,31 +171,30 @@ void dcmUpdate(float *acc, float *gyro, float *mag, float imu_interval){
   /* Поскольку на вход функции мы подаем значения измеренных ускорений по осям,
   а не вектор гравитации, то ничего инвертировать не надо.
   Вектор кажущегося ускорения совпадает с зенитным вектором К. */
-
   for (i = 0; i<3; i++)
     Kacc[i] = acc[i];
+  nue2nwu(Kacc);
+
   vector3d_normalize(Kacc);
 
-  //calculate correction vector to bring dcmEst's K vector closer to Acc
+  // calculate correction vector to bring dcmEst's K vector closer to Acc
   // vector (K vector according to accelerometer)
-  float wA[3];
   // wA = Kgyro x  Kacc , rotation needed to bring Kacc to Kgyro
   vector3d_cross(dcmEst[2], Kacc, wA);
 
   //---------------
   //Magnetomer
   //---------------
-  //calculate correction vector to bring dcmEst's I vector closer
+  // calculate correction vector to bring dcmEst's I vector closer
   // to Mag vector (I vector according to magnetometer)
-  float wM[3];
-  //in the absense of magnetometer let's assume North vector (I) is
+  // in the absense of magnetometer let's assume North vector (I) is
   // always in XZ plane of the device (y coordinate is 0)
   //    Imag[0] = sqrtf(1 - dcmEst[0][2] * dcmEst[0][2]);
   //    Imag[1] = 0;
   //    Imag[2] = dcmEst[0][2];
-
   for (i = 0; i<3; i++)
     Imag[i] = mag[i];
+  nue2nwu(Imag);
 
   /* Проработать комплексирование с нижним рядом DCM вместо вектора
    * гравитации. Какие-то непонятные результаты получаются, или я их
@@ -217,9 +219,9 @@ void dcmUpdate(float *acc, float *gyro, float *mag, float imu_interval){
   //rotation rate about accelerometer's X axis (GY output)
   //rotation rate about accelerometer's Y axis (GX output)
   //rotation rate about accelerometer's Z axis (GZ output)
-  float w[3];     //gyro rates (angular velocity of a global vector in local coordinates)
   for (i = 0; i<3; i++)
     w[i] = -gyro[i];
+  nue2nwu(w);
 
   /* correction factors for accelerometer and mognetometer weights */
   float magcor, acccor;

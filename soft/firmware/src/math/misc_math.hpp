@@ -176,6 +176,34 @@ void sort3(T *v, uint32_t sortmatrix){
   }
 }
 
+template <typename T>
+void nwu2nue(T *v){
+  T tmp;
+  tmp  = v[2];
+  v[2] = -v[1];
+  v[1] = tmp;
+}
+
+template <typename T>
+void nue2nwu(T *v){
+  T tmp;
+  tmp  = v[1];
+  v[1] = -v[2];
+  v[2] = tmp;
+}
+
+template <typename T>
+void ned2nue(T *v){
+  /* it is equivalent to nwu2nwu */
+  nue2nwu(v);
+}
+
+template <typename T>
+void nue2ned(T *v){
+  /* it is equivalent to nwu2nue */
+  nwu2nue(v);
+}
+
 uint32_t pack8to32(uint8_t *buf);
 uint16_t pack8to16(uint8_t *buf);
 void unpack32to8(uint32_t v, uint8_t *buf);

@@ -52,7 +52,7 @@ static MMA8451  mma8451(&I2CD2, mma8451addr);
 static volatile int32_t t0, t1;
 static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
 static MyAHRS ahrs;
-static Quaternion<float> MadgwickQuat;
+static Quaternion<float> MadgwickQuat(1, 0, 0, 0);
 
 /*
  *******************************************************************************
@@ -77,7 +77,7 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyr
   }
 
   /* get yaw from DCM */
-  comp_data.heading = atan2f(Rxy, -Rxx) + PI - fdeg2rad(*declination);
+  comp_data.heading = atan2f(Rxy, -Rxx) - fdeg2rad(*declination);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
