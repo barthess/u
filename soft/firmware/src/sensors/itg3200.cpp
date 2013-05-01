@@ -64,9 +64,9 @@ void ITG3200::pickle(float *result, size_t len){
   raw[0] = complement2signed(rxbuf[2], rxbuf[3]);
   raw[1] = complement2signed(rxbuf[4], rxbuf[5]);
   raw[2] = complement2signed(rxbuf[6], rxbuf[7]);
-  sort3(raw, *sortmtrx);
 
-  /* adjust rotation direction */
+  /* convert to NUE coordinate system */
+  sort3(raw, *sortmtrx);
   raw[0] *= *xpol;
   raw[1] *= *ypol;
   raw[2] *= *zpol;

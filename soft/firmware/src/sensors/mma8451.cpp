@@ -40,7 +40,7 @@ extern ParamRegistry param_registry;
 /**
  *
  */
-void MMA8451::update_still(float *result, size_t len){
+void MMA8451::update_stillness(float *result, size_t len){
   (void)len;
   float cross[3];
   float filtered[3];
@@ -71,13 +71,13 @@ void MMA8451::pickle(float *result, size_t len) {
   raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
   raw[1] = complement2signed(rxbuf[3], rxbuf[4]);
   raw[2] = complement2signed(rxbuf[5], rxbuf[6]);
-  sort3(raw, *sortmtrx);
 
+  /* convert to NUE coordinate system */
+  sort3(raw, *sortmtrx);
   raw[0] *= *xpol;
   raw[1] *= *ypol;
   raw[2] *= *zpol;
 
-  nwu2nue(raw);
   mavlink_out_raw_imu_struct.xacc = raw[0];
   mavlink_out_raw_imu_struct.yacc = raw[1];
   mavlink_out_raw_imu_struct.zacc = raw[2];
@@ -197,7 +197,7 @@ void MMA8451::stop(void) {
 }
 
 /**
- * return true is device was immobile still last call of this function
+ * return true if device was immobile still last call of this function
  */
 bool MMA8451::still(void){
   bool tmp;
@@ -219,5 +219,5 @@ void MMA8451::update(float *result, size_t len){
   transmit(txbuf, 1, rxbuf, 7);
 
   this->pickle(result, len);
-  this->update_still(result, len);
+  this->update_stillness(result, len);
 }

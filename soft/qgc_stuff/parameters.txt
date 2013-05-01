@@ -1,14 +1,14 @@
 # Onboard parameters for system MAV 020
 #
 # MAV ID  COMPONENT ID  PARAM NAME  VALUE (FLOAT)
-20	0	ACC_sortmtrx	273	5
+20	0	ACC_sortmtrx	266	5
 20	0	ACC_still_flen	256	6
 20	0	ACC_still_thr	         0.00999999977648	9
 20	0	ACC_xoffset	0	6
 20	0	ACC_xpol	-1	6
 20	0	ACC_xsens	8192	5
 20	0	ACC_yoffset	0	6
-20	0	ACC_ypol	1	6
+20	0	ACC_ypol	-1	6
 20	0	ACC_ysens	8192	5
 20	0	ACC_zoffset	0	6
 20	0	ACC_zpol	-1	6
@@ -34,13 +34,13 @@
 20	0	FLEN_reserved4	6	6
 20	0	GYRO_sendangle	1	5
 20	0	GYRO_sortmtrx	140	5
-20	0	GYRO_x_offset	           -19.7417488098	9
+20	0	GYRO_x_offset	           -21.2685375214	9
 20	0	GYRO_xpol	1	6
 20	0	GYRO_xsens	                   14.375	9
-20	0	GYRO_y_offset	            3.18824243546	9
+20	0	GYRO_y_offset	            6.66338682175	9
 20	0	GYRO_ypol	-1	6
 20	0	GYRO_ysens	                   14.375	9
-20	0	GYRO_z_offset	            42.6296157837	9
+20	0	GYRO_z_offset	             42.552532196	9
 20	0	GYRO_zerocnt	512	6
 20	0	GYRO_zeroflen	512	6
 20	0	GYRO_zpol	-1	6

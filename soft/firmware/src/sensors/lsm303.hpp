@@ -30,7 +30,7 @@ public:
 
 private:
   void pickle(float *result, size_t len);
-  void update_still(float *result, size_t len);
+  void update_stillness(float *result, size_t len);
   void hw_init_full(void);
   void hw_init_fast(void);
   uint8_t rxbuf[LSM_RX_DEPTH];

@@ -139,7 +139,7 @@ void dcmUpdate(float *acc, float *gyro, float *mag, float imu_interval){
   float Imag[3];  //I(b) vector accordng to magnetometer in body's coordinates
   float w[3];     //gyro rates (angular velocity of a global vector in local coordinates)
   float wA[3];    //correction vector to bring dcmEst's K vector closer to Acc
-  float wM[3];    // correction vector to bring dcmEst's I vector closer
+  float wM[3];    //correction vector to bring dcmEst's I vector closer
 
   //interval since last call
   //imu_interval_ms = itg3200_period;

@@ -25,8 +25,6 @@ extern ParamRegistry param_registry;
 extern mavlink_raw_imu_t mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 
-extern EventSource event_mavlink_out_raw_imu;
-
 /*
  ******************************************************************************
  * PROTOTYPES
@@ -49,7 +47,7 @@ extern EventSource event_mavlink_out_raw_imu;
 /**
  *
  */
-void LSM303::update_still(float *result, size_t len){
+void LSM303::update_stillness(float *result, size_t len){
   (void)len;
   float cross[3];
   float filtered[3];
@@ -87,32 +85,35 @@ inline void LSM303::pickle(float *result, size_t len){
   t      = complement2signed(rxbuf[6], rxbuf[7]) / 16; // deg * 8
   (void)t;
 
+  /* convert to NUE coordinate system */
   sort3(raw, *sortmtrx);
-
   raw[0] *= *xpol;
   raw[1] *= *ypol;
   raw[2] *= *zpol;
-
-//  nwu2nue(raw);
 
   mavlink_out_raw_imu_struct.xmag = raw[0];
   mavlink_out_raw_imu_struct.ymag = raw[1];
   mavlink_out_raw_imu_struct.zmag = raw[2];
 
   /* soft iron correction */
-  result[0] = raw[0] * *ellip_00;
-  result[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
-  result[2] = raw[0] * *ellip_20 + raw[1] * *ellip_21 + raw[2] * *ellip_22;
+  //result[0] = raw[0] * *ellip_00;
+  //result[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
+  //result[2] = raw[0] * *ellip_20 + raw[1] * *ellip_21 + raw[2] * *ellip_22;
 
   /* hard iron correction */
   result[0] -= *xoffset;
   result[1] -= *yoffset;
   result[2] -= *zoffset;
 
+  /* compensate sensitivity */
+  result[0] /= *xsens;
+  result[1] /= *ysens;
+  result[2] /= *zsens;
+
   /* rotate magnetometer according to accelerometer position */
   //float dcmf[9] = {1,0,0,0,1,0,0,0,1};
   //matrix_multiply(1, 3, 3, result, dcm, tmp);
-  matrix_multiply(3, 3, 1, dcm, result, tmp);
+  //matrix_multiply(3, 3, 1, dcm, result, tmp);
 
   /* fill debugging message */
   mavlink_out_scaled_imu_struct.xmag = tmp[0];
@@ -213,7 +214,7 @@ void LSM303::update(float *result, size_t len){
   transmit(txbuf, 2, NULL, 0);
 
   this->pickle(result, len);
-  this->update_still(result, len);
+  this->update_stillness(result, len);
 }
 
 /**
@@ -268,7 +269,7 @@ void LSM303::start(void){
 
 
 /**
- * return true is device was immobile still last call of this function
+ * return true if device was immobile still last call of this function
  */
 bool LSM303::still(void){
   bool tmp;
