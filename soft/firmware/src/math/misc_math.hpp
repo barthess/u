@@ -1,6 +1,8 @@
 #ifndef MISC_MATH2_H_
 #define MISC_MATH2_H_
 
+#include "math.h"
+
 /**
  * Fast hardware square root
  */
@@ -9,6 +11,17 @@ __attribute__((always_inline)) __STATIC_INLINE float __VSQRT(float value)
   float result;
   __ASM volatile ("vsqrt.f32 %0, %1" : "=w"(result) : "w"(value));
   return(result);
+}
+
+/**
+ * Overload function
+ */
+inline float sqrt(float v){
+#if CORTEX_USE_FPU
+  return __VSQRT(v);
+#else
+  return sqrtf(v);
+#endif /* CORTEX_USE_FPU */
 }
 
 /**
@@ -187,7 +200,7 @@ void sort3(T *v, uint32_t sortmatrix){
 }
 
 template <typename T>
-void nwu2nue(T *v){
+inline void nwu2nue(T *v){
   T tmp;
   tmp  = v[2];
   v[2] = -v[1];
@@ -195,7 +208,7 @@ void nwu2nue(T *v){
 }
 
 template <typename T>
-void nue2nwu(T *v){
+inline void nue2nwu(T *v){
   T tmp;
   tmp  = v[1];
   v[1] = -v[2];
@@ -203,13 +216,13 @@ void nue2nwu(T *v){
 }
 
 template <typename T>
-void ned2nue(T *v){
+inline void ned2nue(T *v){
   /* it is equivalent to nwu2nwu */
   nue2nwu(v);
 }
 
 template <typename T>
-void nue2ned(T *v){
+inline void nue2ned(T *v){
   /* it is equivalent to nwu2nue */
   nwu2nue(v);
 }

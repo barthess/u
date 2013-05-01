@@ -112,6 +112,7 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/itg3200.cpp \
          src/sensors/itg3200_cal.cpp \
          src/sensors/lsm303.cpp \
+         src/sensors/lsm303_cal.cpp \
          src/sensors/mma8451.cpp \
          src/sensors/bmp085.cpp \
          src/sensors/max1236.cpp \

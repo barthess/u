@@ -3,6 +3,7 @@
 #include "sensors.hpp"
 #include "itg3200_cal.hpp"
 #include "param_registry.hpp"
+#include "mavdbg.hpp"
 
 /*
  ******************************************************************************
@@ -31,7 +32,7 @@ extern chibios_rt::Mailbox  red_blink_mb;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
+static const int16_t fastblink[] = {20, -100, 20, -100, 20, -100, 0};
 
 /*
  ******************************************************************************
@@ -60,7 +61,7 @@ void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
   uint32_t i;
 
   /* check current system state */
-  if (SLEEP == state)
+  if (ITG3200_CAL_SLEEP == state)
     return;
 
   /* check immobility */
@@ -72,7 +73,7 @@ void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
 
   /* looks like all ready */
   if (0 == sample){
-    state = COLLECTING;
+    state = ITG3200_CAL_COLLECTING;
     for(i=0; i<3; i++)
       abeta[i].reset((float)raw[i], *zeroflen);
     sample++;
@@ -85,9 +86,9 @@ void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
     }
     else{
       /* statistics successfully collected */
-      *x_offset = abeta[0].get(*zeroflen);
-      *y_offset = abeta[1].get(*zeroflen);
-      *z_offset = abeta[2].get(*zeroflen);
+      *(float*)param_registry.valueSearch("GYRO_x_offset") = abeta[0].get(*zeroflen);
+      *(float*)param_registry.valueSearch("GYRO_y_offset") = abeta[1].get(*zeroflen);
+      *(float*)param_registry.valueSearch("GYRO_z_offset") = abeta[2].get(*zeroflen);
 
       /* store in EEPROM for fast boot */
       param_registry.syncParam("GYRO_x_offset");
@@ -95,8 +96,9 @@ void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
       param_registry.syncParam("GYRO_z_offset");
 
       /* final stuff */
+      mavlink_dbg_print(MAV_SEVERITY_INFO, "GYRO: calibration finished");
       mavlink_system_struct.state = MAV_STATE_STANDBY;
-      state = SLEEP;
+      state = ITG3200_CAL_SLEEP;
     }
   }
 }
@@ -104,25 +106,33 @@ void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
 /**
  *
  */
-void ITG3200calibrator::trig(void){
-  chDbgCheck((SLEEP == state), "inconsistent state");
-  this->reset_stats();
-  state = COLLECTING;
-  mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+bool ITG3200calibrator::trig(void){
+  switch(state){
+  case ITG3200_CAL_SLEEP:
+    this->reset_stats();
+    state = ITG3200_CAL_COLLECTING;
+    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+    mavlink_dbg_print(MAV_SEVERITY_INFO, "GYRO: calibration started");
+    return CH_SUCCESS;
+    break;
+  default:
+    return CH_FAILED;
+    break;
+  }
 }
 
 /**
  *
  */
 void ITG3200calibrator::abort(void){
-  chDbgCheck((UNINIT != state), "unitialized yet");
+  chDbgCheck((ITG3200_CAL_UNINIT != state), "unitialized yet");
 
-  if (SLEEP == state){ /* nothing to do */
+  if (ITG3200_CAL_SLEEP == state){ /* nothing to do */
     return;
   }
   else{
     chSysLock();
-    state = SLEEP;
+    state = ITG3200_CAL_SLEEP;
     this->reset_stats();
     chSysUnlock();
     mavlink_system_struct.state = MAV_STATE_STANDBY;
@@ -133,28 +143,24 @@ void ITG3200calibrator::abort(void){
  *
  */
 void ITG3200calibrator::start(void){
-  x_offset  = (float*)param_registry.valueSearch("GYRO_x_offset");
-  y_offset  = (float*)param_registry.valueSearch("GYRO_y_offset");
-  z_offset  = (float*)param_registry.valueSearch("GYRO_z_offset");
-
   zerocnt   = (const int32_t*)param_registry.valueSearch("GYRO_zerocnt");
   zeroflen  = (const int32_t*)param_registry.valueSearch("GYRO_zeroflen");
 
-  state = SLEEP;
+  state = ITG3200_CAL_SLEEP;
 }
 
 /**
  *
  */
 ITG3200calibrator::ITG3200calibrator(void){
-  state = UNINIT;
+  state = ITG3200_CAL_UNINIT;
 }
 
 /**
  *
  */
 bool ITG3200calibrator::isCalibrating(void) {
-  if (COLLECTING == state)
+  if (ITG3200_CAL_COLLECTING == state)
     return true;
   else
     return false;

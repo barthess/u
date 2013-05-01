@@ -90,7 +90,7 @@ static float determinant(float a[4][4], uint32_t n)
  * o0 - 73561 fpu
  * o2 - 38309 fpu
  */
-void SolveSphere(Sphere *S, int32_t P[4][3]){
+void SolveSphere(Sphere *S, float P[4][3]){
   uint32_t i;
   float m11, m12, m13, m14, m15;
   float a[4][4] = {{0,0,0,0},
@@ -146,6 +146,7 @@ void SolveSphere(Sphere *S, int32_t P[4][3]){
     S->c[0] =  0.5f * (m12 / m11);
     S->c[1] = -0.5f * (m13 / m11);
     S->c[2] =  0.5f * (m14 / m11);
-    S->r    = sqrtf(S->c[0]*S->c[0] + S->c[1]*S->c[1] + S->c[2]*S->c[2] - m15/m11);
+    S->r    = sqrt(S->c[0]*S->c[0] + S->c[1]*S->c[1] + S->c[2]*S->c[2] - m15/m11);
+    //S->r    = sqrtf(S->c[0]*S->c[0] + S->c[1]*S->c[1] + S->c[2]*S->c[2] - m15/m11);
   }
 }

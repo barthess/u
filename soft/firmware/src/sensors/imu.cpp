@@ -75,7 +75,7 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyr
   }
 
   /* get yaw from DCM */
-  comp_data.heading = atan2f(Rxy, -Rxx) - fdeg2rad(*declination);
+  comp_data.heading = atan2f(Rxy, -Rxx) - PI - fdeg2rad(*declination);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
@@ -207,31 +207,16 @@ void ImuInit(void){
 /**
  *
  */
-bool ImuTrigCalibrateGyro(void){
-  itg3200.trigCalibration();
-  return CH_SUCCESS;
+bool TrigCalibrateGyro(void){
+  return itg3200.trigCalibration();
 }
 
 /**
  *
  */
-bool ImuTrigCalibrateMag(void){
-  lsm303.trigCalibration();
-  return CH_SUCCESS;
+bool TrigCalibrateMag(void){
+  return lsm303.trigCalibration();
 }
 
-/**
- *
- */
-bool IsDeviceStill(void){
-  return true;
-}
-
-/**
- *
- */
-void ImuReset(void){
-
-}
 
 

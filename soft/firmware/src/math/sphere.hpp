@@ -17,6 +17,6 @@ struct Sphere{
   float r;
 };
 
-void SolveSphere(Sphere *S, int32_t P[4][3]);
+void SolveSphere(Sphere *S, float P[4][3]);
 
 #endif /* SPHERE_H_ */

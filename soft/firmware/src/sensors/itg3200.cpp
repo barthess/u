@@ -54,6 +54,14 @@ static float get_degrees(float raw){
 /**
  *
  */
+void ITG3200::update_stillness(const float *result){
+  if ((result[0] > *stillthr) || (result[1] > *stillthr) || (result[2] > *stillthr))
+    immobile = false;
+}
+
+/**
+ *
+ */
 void ITG3200::pickle(float *result, uint32_t still_msk){
   int32_t raw[3];
   uint32_t i = 0;
@@ -170,6 +178,7 @@ void ITG3200::start(void){
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
   sendangle = (const uint32_t*)param_registry.valueSearch("GYRO_sendangle");
+  stillthr  = (const float*)param_registry.valueSearch("GYRO_stillthr");
 
   calibrator.start();
 
@@ -202,15 +211,16 @@ void ITG3200::update(float *result, uint32_t still_msk){
   txbuf[0] = GYRO_OUT_DATA;
   transmit(txbuf, 1, rxbuf, 8);
   this->pickle(result, still_msk);
+  this->update_stillness(result);
 }
 
 /**
  *
  */
-void ITG3200::trigCalibration(void){
+bool ITG3200::trigCalibration(void){
   for(uint32_t i=0; i<3; i++)
     comp_data.gyro_angle[i] = 0;
-  calibrator.trig();
+  return calibrator.trig();
 }
 
 /**

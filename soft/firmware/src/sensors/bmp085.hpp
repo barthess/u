@@ -50,5 +50,6 @@ private:
   uint16_t ac4, ac5, ac6;
 };
 
+bool TrigCalibrateBaro();
 
 #endif /* BMP085_H_ */

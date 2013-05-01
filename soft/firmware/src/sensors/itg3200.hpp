@@ -28,12 +28,13 @@ public:
   void update(float *result, uint32_t still_msk);
   void start(void);
   void stop(void);
-  void trigCalibration(void);
+  bool trigCalibration(void);
   bool isCalibrating(void);
   bool still(void);
 
 private:
   ITG3200calibrator calibrator;
+  void update_stillness(const float *result);
   void pickle(float *result, uint32_t still_msk);
   void hw_init_full(void);
   void hw_init_fast(void);
@@ -45,6 +46,7 @@ private:
   int32_t  const *xpol,      *ypol,      *zpol;
   float          *x_offset,  *y_offset,  *z_offset;
   uint32_t const *sortmtrx,  *sendangle;
+  float const    *stillthr;
 };
 
 

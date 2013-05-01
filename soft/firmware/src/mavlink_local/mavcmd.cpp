@@ -4,6 +4,7 @@
 #include "param_registry.hpp"
 #include "ground_rover.hpp"
 #include "imu.hpp"
+#include "bmp085.hpp"
 
 /*
  ******************************************************************************
@@ -70,20 +71,31 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
 
   /* Gyro */
   if (cl->param1 == 1){
-    result = ImuTrigCalibrateGyro();
+    result = TrigCalibrateGyro();
     if (CH_SUCCESS == result)
       return MAV_RESULT_ACCEPTED;
     else
       return MAV_RESULT_FAILED;
   }
+
   /* Magnetometer */
   else if (cl->param2 == 1){
-    result = ImuTrigCalibrateMag();
+    result = TrigCalibrateMag();
     if (CH_SUCCESS == result)
       return MAV_RESULT_ACCEPTED;
     else
       return MAV_RESULT_FAILED;
   }
+
+  /* Barometer */
+  else if (cl->param3 == 1){
+    result = TrigCalibrateBaro();
+    if (CH_SUCCESS == result)
+      return MAV_RESULT_ACCEPTED;
+    else
+      return MAV_RESULT_FAILED;
+  }
+
   /* unknown */
   else
     return MAV_RESULT_DENIED;

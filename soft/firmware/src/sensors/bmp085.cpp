@@ -265,3 +265,9 @@ void BMP085::hw_init_fast(void) {
   this->hw_init_full();
 }
 
+/**
+ *
+ */
+bool TrigCalibrateBaro(){
+  return CH_FAILED;
+}

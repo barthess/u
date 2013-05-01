@@ -3,7 +3,7 @@
 
 #include "i2c_local.hpp"
 #include "dsp.hpp"
-
+#include "lsm303_cal.hpp"
 
 #define lsm303accaddr       0b0011001
 #define lsm303magaddr       0b0011110
@@ -26,21 +26,20 @@ public:
   bool still(void);
   void start(void);
   void stop(void);
-  void trigCalibration(void);
+  bool trigCalibration(void);
 
 private:
   void pickle(float *result, uint32_t still_msk);
   void update_stillness(const float *result);
-  void update_calibration(float *data);
   void hw_init_full(void);
   void hw_init_fast(void);
+
+  LSM303calibrator calibrator;
   uint8_t rxbuf[LSM_RX_DEPTH];
   uint8_t txbuf[LSM_TX_DEPTH];
   uint32_t sample_cnt;
   bool immobile;
   AlphaBeta<float> abeta[3];
-  bool calibration;
-  AlphaBeta<int32_t> xalphabeta, yalphabeta, zalphabeta;
 
   /* calibration coefficients pointers */
   float    const *xsens,    *ysens,    *zsens;

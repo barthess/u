@@ -4,10 +4,10 @@
 #include "dsp.hpp"
 
 
-enum cal_state{
-  UNINIT,
-  SLEEP,
-  COLLECTING,
+enum itg3200_cal_state{
+  ITG3200_CAL_UNINIT,
+  ITG3200_CAL_SLEEP,
+  ITG3200_CAL_COLLECTING,
 };
 
 
@@ -16,7 +16,7 @@ public:
   ITG3200calibrator(void);
   void start(void);
   void update(const int32_t *raw, uint32_t still_msk);
-  void trig(void);
+  bool trig(void);
   void abort(void);
   bool isCalibrating(void);
 
@@ -24,8 +24,7 @@ private:
   void reset_stats(void);
   int32_t sample;
   AlphaBeta<float> abeta[3];
-  cal_state state;
-  float          *x_offset,  *y_offset,  *z_offset;
+  itg3200_cal_state state;
   int32_t  const *zeroflen,  *zerocnt;
 };
 

@@ -40,9 +40,9 @@ param = [
 
 # /**** Magnetometer ****/
 # /* zero offsets */
-("MAG_xoffset",     -5000,  0,      5000,   "f", "default",     "NULL"),
-("MAG_yoffset",     -5000,  0,      5000,   "f", "default",     "NULL"),
-("MAG_zoffset",     -5000,  0,      5000,   "f", "default",     "NULL"),
+("MAG_xoffset",     -500,   0,      500,   "f", "default",     "Offset in uT"),
+("MAG_yoffset",     -500,   0,      500,   "f", "default",     "Offset in uT"),
+("MAG_zoffset",     -500,   0,      500,   "f", "default",     "Offset in uT"),
 # /* axis sensitivity */
 ("MAG_xsens",       0.001,  0.1,    100.0,  "f", "default",     "Divide by this value to acquire uT"),
 ("MAG_ysens",       0.001,  0.1,    100.0,  "f", "default",     "Divide by this value to acquire uT"),
@@ -51,14 +51,15 @@ param = [
 ("MAG_xpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 ("MAG_ypol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 ("MAG_zpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
-# /* declination in degrees */
+#
 ("MAG_declinate",   -90,    7,      90,     "i", "default",     "Magnetic declination. \\nThe declination is positive when the magnetic north is east of true north. \\nhttp://www.ngdc.noaa.gov/geomagmodels/Declination.jsp"),
 ("MAG_still_thr",    0,     1,      20,     "f", "default",     "Device immobility threshold in parrots"),
 ("MAG_still_flen",  1,    256,      2048,   "i", "default",     "Length of filter used in immobility detector"),
 # /* count of samples to zero calibration */
+("MAG_zeroflen",    1,    256,      2048,   "i", "default",     "Length of filter used in immobility detector"),
 ("MAG_zerocnt",     256,    512,    4096,   "i", "default",     "NULL"),
 ("MAG_sortmtrx",    0, 0b100010001, 1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
-("MAG_vectorlen",   0,      10,     4096,   "u", "default",     "Length of magnetic flux vector acquired during sphere offset calculation"),
+("MAG_vectorlen",   0,      10,     512,    "f", "default",     "Length of magnetic flux vector in uT acquired during sphere offset calculation"),
 # ellipsoid correction coefficients
 ("MAG_ellip_00",    -5.0,   0,      5.0,    "f", "default",     "ellipsoid correction coefficient"),
 ("MAG_ellip_10",    -5.0,   0,      5.0,    "f", "default",     "ellipsoid correction coefficient"),
@@ -113,6 +114,7 @@ param = [
 ("GYRO_sortmtrx",   0,  0b100010001,1,      "u", "sort_mtrx",   "Sorting matrix for acquired gyro values\\nto correspond with real device axis"),
 ("GYRO_zeroflen",   2,      512,    2048,   "i", "default",     "Filter length used in zero calibration routine"),
 ("GYRO_sendangle",  0,      1,      1,      "u", "default",     "1 - send intergrated angles, 0 - angular rates"),
+("GYRO_stillthr",   0,      0.1,    1,      "f", "default",     "Rad/S"),
 
 #/**** PMU - pressure measurement unit ****/
 #// coefficients for thermal compensation

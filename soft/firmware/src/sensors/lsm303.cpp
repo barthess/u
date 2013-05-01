@@ -71,13 +71,6 @@ void LSM303::update_stillness(const float *result){
 /**
  *
  */
-void LSM303::update_calibration(float* data) {
-  (void)data;
-}
-
-/**
- *
- */
 inline void LSM303::pickle(float *result, uint32_t still_msk){
   (void)still_msk;
 
@@ -109,6 +102,9 @@ inline void LSM303::pickle(float *result, uint32_t still_msk){
   result[0] /= *xsens;
   result[1] /= *ysens;
   result[2] /= *zsens;
+
+  /* */
+  calibrator.update(result, still_msk);
 
   /* soft iron correction */
   //result[0] = raw[0] * *ellip_00;
@@ -152,12 +148,8 @@ void LSM303::hw_init_full(void){
 /**
  *
  */
-void LSM303::trigCalibration(void){
-    xalphabeta.reset(mavlink_out_raw_imu_struct.xmag, *filterlen);
-    yalphabeta.reset(mavlink_out_raw_imu_struct.ymag, *filterlen);
-    zalphabeta.reset(mavlink_out_raw_imu_struct.zmag, *filterlen);
-    sample_cnt = 0;
-    calibration = true;
+bool LSM303::trigCalibration(void){
+  return calibrator.trig();
 }
 
 /*
@@ -170,8 +162,7 @@ void LSM303::trigCalibration(void){
  */
 LSM303::LSM303(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr),
-sample_cnt(0),
-calibration(false)
+sample_cnt(0)
 {
   ready = false;
 }
@@ -256,6 +247,7 @@ void LSM303::start(void){
   still_thr = (const float*)param_registry.valueSearch("MAG_still_thr");
   still_flen= (const int32_t*)param_registry.valueSearch("MAG_still_flen");
 
+  calibrator.start();
   ready = true;
 }
 

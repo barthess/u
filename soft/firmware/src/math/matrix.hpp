@@ -2,14 +2,7 @@
 #define MATRIX_H
 
 #include <stdint.h>
-#include <math.h>
-
-/**
- * Overloaded function to use fast hardware square root
- */
-static inline float sqrt(float v){
-  return sqrtf(v);
-}
+#include <misc_math.hpp>
 
 /*
  ******************************************************************************
