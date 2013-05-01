@@ -40,8 +40,7 @@ extern ParamRegistry param_registry;
 /**
  *
  */
-void MMA8451::update_stillness(float *result, size_t len){
-  (void)len;
+void MMA8451::update_stillness(float *result){
   float cross[3];
   float filtered[3];
   float modulus_cross;
@@ -64,8 +63,8 @@ void MMA8451::update_stillness(float *result, size_t len){
 /**
  *
  */
-void MMA8451::pickle(float *result, size_t len) {
-  (void)len;
+void MMA8451::pickle(float *result, uint32_t still_msk) {
+  (void)still_msk;
   int32_t raw[3];
 
   raw[0] = complement2signed(rxbuf[1], rxbuf[2]);
@@ -213,13 +212,11 @@ bool MMA8451::still(void){
 /**
  *
  */
-void MMA8451::update(float *result, size_t len, uint32_t still_msk){
-  (void)still_msk;
-
+void MMA8451::update(float *result, uint32_t still_msk){
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = ACCEL_STATUS;
   transmit(txbuf, 1, rxbuf, 7);
 
-  this->pickle(result, len);
-  this->update_stillness(result, len);
+  this->pickle(result, still_msk);
+  this->update_stillness(result);
 }

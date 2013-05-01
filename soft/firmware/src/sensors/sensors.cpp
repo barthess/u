@@ -67,7 +67,7 @@ static msg_t PollTmp75Thread(void *arg){
   tmp75.start();
   while (!chThdShouldTerminate()) {
     chThdSleepMilliseconds(2000);
-    tmp75.update(NULL, 0, 0);
+    tmp75.update();
   }
   tmp75.stop();
   chThdExit(0);
@@ -93,7 +93,7 @@ static msg_t PollBaroThread(void *arg){
       chDbgAssert(retry > 0, "PollAccelThread(), #1",
           "probably no interrupts from pressure sensor");
     }
-    bmp085.update(NULL, 0, 0);
+    bmp085.update();
   }
 
   bmp085.stop();
@@ -112,7 +112,7 @@ static msg_t PollMax1236Thread(void *arg) {
   max1236.start();
   while (!chThdShouldTerminate()) {
     chThdSleepMilliseconds(20);
-    max1236.update(NULL, 0, 0);
+    max1236.update();
   }
 
   max1236.stop();

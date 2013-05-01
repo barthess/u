@@ -47,8 +47,7 @@ extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 /**
  *
  */
-void LSM303::update_stillness(float *result, size_t len){
-  (void)len;
+void LSM303::update_stillness(float *result){
   float cross[3];
   float filtered[3];
   float modulus_cross;
@@ -79,8 +78,9 @@ void LSM303::update_calibration(float* data) {
 /**
  *
  */
-inline void LSM303::pickle(float *result, size_t len){
-  (void)len;
+inline void LSM303::pickle(float *result, uint32_t still_msk){
+  (void)still_msk;
+
   float tmp[3];
   int32_t raw[3];
   int16_t t;
@@ -199,11 +199,7 @@ void LSM303::stop(void){
 /**
  *
  */
-void LSM303::update(float *result, size_t len, uint32_t still_msk){
-  (void)result;
-  (void)len;
-  (void)still_msk;
-
+void LSM303::update(float *result, uint32_t still_msk){
   chDbgCheck((true == ready), "not ready");
 
   if ((sample_cnt % 128) == 0){
@@ -221,8 +217,8 @@ void LSM303::update(float *result, size_t len, uint32_t still_msk){
   txbuf[1] = 0b00000001;
   transmit(txbuf, 2, NULL, 0);
 
-  this->pickle(result, len);
-  this->update_stillness(result, len);
+  this->pickle(result, still_msk);
+  this->update_stillness(result);
 }
 
 /**

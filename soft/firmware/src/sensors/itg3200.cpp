@@ -54,8 +54,7 @@ static float get_degrees(float raw){
 /**
  *
  */
-void ITG3200::pickle(float *result, size_t len, uint32_t still_msk){
-  (void)len;
+void ITG3200::pickle(float *result, uint32_t still_msk){
   int32_t raw[3];
   uint32_t i = 0;
 
@@ -198,11 +197,11 @@ void ITG3200::stop(void){
 /**
  *
  */
-void ITG3200::update(float *result, size_t len, uint32_t still_msk){
+void ITG3200::update(float *result, uint32_t still_msk){
   chDbgCheck((true == ready), "not ready");
   txbuf[0] = GYRO_OUT_DATA;
   transmit(txbuf, 1, rxbuf, 8);
-  this->pickle(result, len, still_msk);
+  this->pickle(result, still_msk);
 }
 
 /**

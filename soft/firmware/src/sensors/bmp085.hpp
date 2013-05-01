@@ -27,7 +27,7 @@ typedef enum {
 class BMP085: private I2CSensor{
 public:
   BMP085(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(float *result, size_t len, uint32_t still_msk);
+  void update(void);
   void start(void);
   void stop(void);
 

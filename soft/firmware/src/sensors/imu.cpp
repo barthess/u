@@ -158,9 +158,9 @@ static msg_t Imu(void *arg) {
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
 
-    itg3200.update(gyro, 3, still_msk);
-    lsm303.update(mag,   3, still_msk);
-    mma8451.update(acc,  3, still_msk);
+    itg3200.update(gyro, still_msk);
+    lsm303.update(mag,   still_msk);
+    mma8451.update(acc,  still_msk);
 
     update_still_msk();
 

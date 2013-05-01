@@ -10,7 +10,6 @@ protected:
                        uint8_t *rxbuf, size_t rxbytes);
   msg_t receive(uint8_t *rxbuf, size_t rxbytes);
   virtual void start(void) = 0;
-  virtual void update(float *result, size_t len, uint32_t still_msk) = 0;
   virtual void stop(void) = 0;
   virtual void hw_init_fast(void) = 0;
   virtual void hw_init_full(void) = 0;

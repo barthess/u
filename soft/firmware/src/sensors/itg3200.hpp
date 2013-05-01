@@ -25,7 +25,7 @@
 class ITG3200: private I2CSensor{
 public:
   ITG3200(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(float *result, size_t len, uint32_t still_msk);
+  void update(float *result, uint32_t still_msk);
   void start(void);
   void stop(void);
   void trigCalibration(void);
@@ -34,7 +34,7 @@ public:
 
 private:
   ITG3200calibrator calibrator;
-  void pickle(float *result, size_t len, uint32_t still_msk);
+  void pickle(float *result, uint32_t still_msk);
   void update_calibration(int32_t *raw);
   void hw_init_full(void);
   void hw_init_fast(void);
