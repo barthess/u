@@ -34,11 +34,12 @@ public:
 
 private:
   void pickle(float *result, size_t len);
+  void update_calibration(int32_t *raw);
   void hw_init_full(void);
   void hw_init_fast(void);
   AlphaBeta<float> abeta[3];
   int32_t calsample;
-  bool calibration;
+  bool calibrating;
   uint8_t rxbuf[GYRO_RX_DEPTH];
   uint8_t txbuf[GYRO_TX_DEPTH];
   /* calibration coefficients pointers */

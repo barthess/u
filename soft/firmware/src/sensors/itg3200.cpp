@@ -53,6 +53,40 @@ static float get_degrees(float raw){
 }
 
 /**
+ * Updates calibration data.
+ */
+void ITG3200::update_calibration(int32_t *raw){
+  uint32_t i;
+
+  if (0 == calsample){
+    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
+    calibrating = true;
+    for(i=0; i<3; i++)
+      abeta[i].reset((float)raw[i], *zeroflen);
+    calsample++;
+  }
+  else{
+    if (*zerocnt > calsample){
+      for(i=0; i<3; i++)
+        abeta[i].update((float)raw[i], *zeroflen);
+      calsample++;
+    }
+    else{
+      /* statistics successfully collected */
+      *x_offset = abeta[0].get(*zeroflen);
+      *y_offset = abeta[1].get(*zeroflen);
+      *z_offset = abeta[2].get(*zeroflen);
+      /* store in EEPROM for fast boot */
+      param_registry.syncParam("GYRO_x_offset");
+      param_registry.syncParam("GYRO_y_offset");
+      param_registry.syncParam("GYRO_z_offset");
+      mavlink_system_struct.state = MAV_STATE_STANDBY;
+      calibrating = false;
+    }
+  }
+}
+
+/**
  *
  */
 void ITG3200::pickle(float *result, size_t len){
@@ -82,35 +116,9 @@ void ITG3200::pickle(float *result, size_t len){
   result[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
   result[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
 
-  /* calibration update */
-  if (calibration){
-    if (0 == calsample){
-      mavlink_system_struct.state = MAV_STATE_CALIBRATING;
-      calibration = true;
-      for(i=0; i<3; i++)
-        abeta[i].reset((float)raw[i], *zeroflen);
-      calsample++;
-    }
-    else{
-      if (*zerocnt > calsample){
-        for(i=0; i<3; i++)
-          abeta[i].update((float)raw[i], *zeroflen);
-        calsample++;
-      }
-      else{
-        /* statistics successfully collected */
-        *x_offset = abeta[0].get(*zeroflen);
-        *y_offset = abeta[1].get(*zeroflen);
-        *z_offset = abeta[2].get(*zeroflen);
-        /* store in EEPROM for fast boot */
-        param_registry.syncParam("GYRO_x_offset");
-        param_registry.syncParam("GYRO_y_offset");
-        param_registry.syncParam("GYRO_z_offset");
-        mavlink_system_struct.state = MAV_STATE_STANDBY;
-        calibration = false;
-      }
-    }
-  }
+  /* calibrating data update */
+  if (calibrating)
+    update_calibration(raw);
 
   /* calc summary angle for debug purpose */
   for(i=0; i<3; i++)
@@ -211,7 +219,7 @@ void ITG3200::start(void){
 ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr),
 calsample(0),
-calibration(false)
+calibrating(false)
 {
   ready = false;
 }
@@ -238,7 +246,7 @@ void ITG3200::update(float *result, size_t len){
  *
  */
 void ITG3200::startCalibration(void){
-  calibration = true;
+  calibrating = true;
   calsample = 0;
 
   /* reset accumulated angles to start from clean state */
@@ -250,5 +258,5 @@ void ITG3200::startCalibration(void){
  *
  */
 bool ITG3200::isCalibrating(void){
-  return calibration;
+  return calibrating;
 }
