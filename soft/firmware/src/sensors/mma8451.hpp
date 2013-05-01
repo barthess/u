@@ -32,7 +32,7 @@
 class MMA8451: private I2CSensor{
 public:
   MMA8451(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(float *result, size_t len);
+  void update(float *result, size_t len, uint32_t still_msk);
   void start(void);
   void stop(void);
   bool still(void);

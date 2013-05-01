@@ -110,6 +110,7 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/sensors_cli.cpp \
          src/sensors/tmp75.cpp \
          src/sensors/itg3200.cpp \
+         src/sensors/itg3200_cal.cpp \
          src/sensors/lsm303.cpp \
          src/sensors/mma8451.cpp \
          src/sensors/bmp085.cpp \
@@ -167,7 +168,7 @@ CPPSRC = $(CHCPPSRC) \
          src/eeprom/cpp/eeprom_fs.cpp \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom/cpp/eeprom_testsuit.cpp \
-         src/sensors/i2c_local.cpp \
+         src/i2c_local.cpp \
          src/utils/memfunc.cpp \
          src/storage/microsd.cpp \
          src/storage/logger.cpp \

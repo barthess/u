@@ -213,7 +213,9 @@ bool MMA8451::still(void){
 /**
  *
  */
-void MMA8451::update(float *result, size_t len){
+void MMA8451::update(float *result, size_t len, uint32_t still_msk){
+  (void)still_msk;
+
   chDbgCheck((true == ready), "you must start() this device");
   txbuf[0] = ACCEL_STATUS;
   transmit(txbuf, 1, rxbuf, 7);

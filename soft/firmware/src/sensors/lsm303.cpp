@@ -72,6 +72,13 @@ void LSM303::update_stillness(float *result, size_t len){
 /**
  *
  */
+void LSM303::update_calibration(float* data) {
+  (void)data;
+}
+
+/**
+ *
+ */
 inline void LSM303::pickle(float *result, size_t len){
   (void)len;
   float tmp[3];
@@ -192,9 +199,10 @@ void LSM303::stop(void){
 /**
  *
  */
-void LSM303::update(float *result, size_t len){
+void LSM303::update(float *result, size_t len, uint32_t still_msk){
   (void)result;
   (void)len;
+  (void)still_msk;
 
   chDbgCheck((true == ready), "not ready");
 

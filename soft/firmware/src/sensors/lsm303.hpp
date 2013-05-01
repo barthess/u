@@ -22,7 +22,7 @@
 class LSM303: private I2CSensor{
 public:
   LSM303(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(float *result, size_t len);
+  void update(float *result, size_t len, uint32_t still_msk);
   bool still(void);
   void start(void);
   void stop(void);
@@ -31,6 +31,7 @@ public:
 private:
   void pickle(float *result, size_t len);
   void update_stillness(float *result, size_t len);
+  void update_calibration(float *data);
   void hw_init_full(void);
   void hw_init_fast(void);
   uint8_t rxbuf[LSM_RX_DEPTH];

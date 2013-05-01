@@ -29,7 +29,6 @@ extern CompensatedData comp_data;
 extern mavlink_attitude_t mavlink_out_attitude_struct;
 extern ParamRegistry param_registry;
 extern chibios_rt::BinarySemaphore itg3200_sem;
-extern chibios_rt::Mailbox red_blink_mb;
 
 float dcmEst[3][3] = {{1,0,0},
                       {0,1,0},
@@ -47,8 +46,9 @@ static ITG3200  itg3200(&I2CD2, itg3200addr);
 static LSM303   lsm303(&I2CD2,  lsm303magaddr);
 static MMA8451  mma8451(&I2CD2, mma8451addr);
 
+static uint32_t still_msk = 0;
+
 static volatile int32_t t0, t1;
-static const int16_t fastblink[7] = {20, -100, 20, -100, 20, -100, 0};
 static MadgwickAHRS ahrs;
 static Quaternion<float> MadgwickQuat(1, 0, 0, 0);
 
@@ -111,6 +111,26 @@ static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
 /**
  *
  */
+static void update_still_msk(void){
+  if(lsm303.still())
+    still_msk |= STILL_MAG_MSK;
+  else
+    still_msk &= ~STILL_MAG_MSK;
+
+  if(mma8451.still())
+    still_msk |= STILL_ACC_MSK;
+  else
+    still_msk &= ~STILL_ACC_MSK;
+
+  if(itg3200.still())
+    still_msk |= STILL_GYRO_MSK;
+  else
+    still_msk &= ~STILL_GYRO_MSK;
+}
+
+/**
+ *
+ */
 static WORKING_AREA(waImu, 768);
 static msg_t Imu(void *arg) {
   (void)arg;
@@ -118,7 +138,6 @@ static msg_t Imu(void *arg) {
 
   msg_t sem_status = RDY_OK;
   int32_t retry = 10;
-
   float interval = 0.01;  /* time between 2 gyro measurements, S */
   float acc[3];           /* acceleration in G */
   float gyro[3];          /* angular rates in rad/s */
@@ -130,7 +149,7 @@ static msg_t Imu(void *arg) {
   ahrs.start();
 
   /* calibrate gyros in very first run */
-  itg3200.startCalibration();
+  itg3200.trigCalibration();
 
   while (!chThdShouldTerminate()) {
     sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
@@ -139,18 +158,11 @@ static msg_t Imu(void *arg) {
       chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
     }
 
-    itg3200.update(gyro, 3);
-    lsm303.update(mag, 3);
-    mma8451.update(acc, 3);
+    itg3200.update(gyro, 3, still_msk);
+    lsm303.update(mag,   3, still_msk);
+    mma8451.update(acc,  3, still_msk);
 
-    /* if gyro calibration in process */
-    if (itg3200.isCalibrating()){
-      /* check immobility and restart if needed */
-      if (!(lsm303.still() && mma8451.still())){
-        itg3200.startCalibration();
-        red_blink_mb.post((msg_t)fastblink, TIME_IMMEDIATE);
-      }
-    }
+    update_still_msk();
 
     /* pass data to AHRS */
     if (0 == *ahrsmode){

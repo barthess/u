@@ -1,6 +1,10 @@
 #ifndef SENSORS_H_
 #define SENSORS_H_
 
+/* immobility masks detected by different sensors */
+#define STILL_GYRO_MSK    1
+#define STILL_MAG_MSK     2
+#define STILL_ACC_MSK     4
 
 /*
  *

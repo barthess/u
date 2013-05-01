@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "i2c_local.hpp"
-#include "dsp.hpp"
+#include "itg3200_cal.hpp"
 
 #ifndef ITG3200_H_
 #define ITG3200_H_
@@ -22,24 +22,23 @@
 #define GYRO_PWR_MGMT   0x3E
 
 
-
 class ITG3200: private I2CSensor{
 public:
   ITG3200(I2CDriver *i2cdp, i2caddr_t addr);
-  void update(float *result, size_t len);
+  void update(float *result, size_t len, uint32_t still_msk);
   void start(void);
   void stop(void);
-  void startCalibration(void);
+  void trigCalibration(void);
   bool isCalibrating(void);
+  bool still(void);
 
 private:
-  void pickle(float *result, size_t len);
+  ITG3200calibrator calibrator;
+  void pickle(float *result, size_t len, uint32_t still_msk);
   void update_calibration(int32_t *raw);
   void hw_init_full(void);
   void hw_init_fast(void);
-  AlphaBeta<float> abeta[3];
-  int32_t calsample;
-  bool calibrating;
+  bool immobile;
   uint8_t rxbuf[GYRO_RX_DEPTH];
   uint8_t txbuf[GYRO_TX_DEPTH];
   /* calibration coefficients pointers */
@@ -47,7 +46,6 @@ private:
   int32_t  const *xpol,      *ypol,      *zpol;
   float          *x_offset,  *y_offset,  *z_offset;
   uint32_t const *sortmtrx,  *sendangle;
-  int32_t  const *zeroflen,  *zerocnt;
 };
 
 

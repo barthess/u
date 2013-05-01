@@ -26,7 +26,6 @@ extern ParamRegistry param_registry;
 
 extern mavlink_raw_imu_t    mavlink_out_raw_imu_struct;
 extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
-extern mavlink_system_t     mavlink_system_struct;
 
 uint32_t GyroUpdatePeriodUs = 10000; /* uS */
 
@@ -53,43 +52,9 @@ static float get_degrees(float raw){
 }
 
 /**
- * Updates calibration data.
- */
-void ITG3200::update_calibration(int32_t *raw){
-  uint32_t i;
-
-  if (0 == calsample){
-    mavlink_system_struct.state = MAV_STATE_CALIBRATING;
-    calibrating = true;
-    for(i=0; i<3; i++)
-      abeta[i].reset((float)raw[i], *zeroflen);
-    calsample++;
-  }
-  else{
-    if (*zerocnt > calsample){
-      for(i=0; i<3; i++)
-        abeta[i].update((float)raw[i], *zeroflen);
-      calsample++;
-    }
-    else{
-      /* statistics successfully collected */
-      *x_offset = abeta[0].get(*zeroflen);
-      *y_offset = abeta[1].get(*zeroflen);
-      *z_offset = abeta[2].get(*zeroflen);
-      /* store in EEPROM for fast boot */
-      param_registry.syncParam("GYRO_x_offset");
-      param_registry.syncParam("GYRO_y_offset");
-      param_registry.syncParam("GYRO_z_offset");
-      mavlink_system_struct.state = MAV_STATE_STANDBY;
-      calibrating = false;
-    }
-  }
-}
-
-/**
  *
  */
-void ITG3200::pickle(float *result, size_t len){
+void ITG3200::pickle(float *result, size_t len, uint32_t still_msk){
   (void)len;
   int32_t raw[3];
   uint32_t i = 0;
@@ -117,8 +82,7 @@ void ITG3200::pickle(float *result, size_t len){
   result[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
 
   /* calibrating data update */
-  if (calibrating)
-    update_calibration(raw);
+  calibrator.update(raw, still_msk);
 
   /* calc summary angle for debug purpose */
   for(i=0; i<3; i++)
@@ -207,8 +171,8 @@ void ITG3200::start(void){
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("GYRO_sortmtrx");
   sendangle = (const uint32_t*)param_registry.valueSearch("GYRO_sendangle");
-  zerocnt   = (const int32_t*)param_registry.valueSearch("GYRO_zerocnt");
-  zeroflen  = (const int32_t*)param_registry.valueSearch("GYRO_zeroflen");
+
+  calibrator.start();
 
   ready = true;
 }
@@ -218,8 +182,7 @@ void ITG3200::start(void){
  */
 ITG3200::ITG3200(I2CDriver *i2cdp, i2caddr_t addr):
 I2CSensor(i2cdp, addr),
-calsample(0),
-calibrating(false)
+immobile(false)
 {
   ready = false;
 }
@@ -235,28 +198,39 @@ void ITG3200::stop(void){
 /**
  *
  */
-void ITG3200::update(float *result, size_t len){
+void ITG3200::update(float *result, size_t len, uint32_t still_msk){
   chDbgCheck((true == ready), "not ready");
   txbuf[0] = GYRO_OUT_DATA;
   transmit(txbuf, 1, rxbuf, 8);
-  this->pickle(result, len);
+  this->pickle(result, len, still_msk);
 }
 
 /**
  *
  */
-void ITG3200::startCalibration(void){
-  calibrating = true;
-  calsample = 0;
-
-  /* reset accumulated angles to start from clean state */
+void ITG3200::trigCalibration(void){
   for(uint32_t i=0; i<3; i++)
     comp_data.gyro_angle[i] = 0;
+  calibrator.trig();
 }
 
 /**
  *
  */
 bool ITG3200::isCalibrating(void){
-  return calibrating;
+  return calibrator.isCalibrating();
+}
+
+/**
+ * return true if device was immobile still last call of this function
+ */
+bool ITG3200::still(void){
+  bool tmp;
+
+  chSysLock();
+  tmp = immobile;
+  immobile = true;
+  chSysUnlock();
+
+  return tmp;
 }
