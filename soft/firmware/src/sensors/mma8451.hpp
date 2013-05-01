@@ -39,7 +39,7 @@ public:
 
 private:
   void pickle(float *result, uint32_t still_msk);
-  void update_stillness(float *result);
+  void update_stillness(const float *result);
   void hw_init_full(void);
   void hw_init_fast(void);
   bool immobile;

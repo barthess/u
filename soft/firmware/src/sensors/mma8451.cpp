@@ -40,7 +40,7 @@ extern ParamRegistry param_registry;
 /**
  *
  */
-void MMA8451::update_stillness(float *result){
+void MMA8451::update_stillness(const float *result){
   float cross[3];
   float filtered[3];
   float modulus_cross;

@@ -56,7 +56,7 @@ void ITG3200calibrator::reset_stats(void){
 /**
  * Updates calibration data.
  */
-void ITG3200calibrator::update(int32_t *raw, uint32_t still_msk){
+void ITG3200calibrator::update(const int32_t *raw, uint32_t still_msk){
   uint32_t i;
 
   /* check current system state */

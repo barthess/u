@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O1 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 endif
 
 # C specific options here (added to USE_OPT).
@@ -116,7 +116,7 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/bmp085.cpp \
          src/sensors/max1236.cpp \
          src/sensors/speedometer.cpp \
-         src/kinematic/imu.cpp \
+         src/sensors/imu.cpp \
 
 MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
@@ -179,8 +179,6 @@ CPPSRC = $(CHCPPSRC) \
          src/servo/servo.cpp \
          src/servo/servo_cli.cpp \
          src/irq_storm.cpp \
-         src/calibration/gyro_cal.cpp \
-         src/calibration/mag_cal.cpp \
          src/calibration/cli_cal.cpp \
          src/benchmark/benchmark.cpp \
          

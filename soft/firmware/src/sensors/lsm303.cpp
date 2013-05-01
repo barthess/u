@@ -47,7 +47,7 @@ extern mavlink_scaled_imu_t mavlink_out_scaled_imu_struct;
 /**
  *
  */
-void LSM303::update_stillness(float *result){
+void LSM303::update_stillness(const float *result){
   float cross[3];
   float filtered[3];
   float modulus_cross;
@@ -64,7 +64,7 @@ void LSM303::update_stillness(float *result){
   modulus_delta = vector3d_modulus(result) - vector3d_modulus(filtered);
 
   if ((fabsf(modulus_delta) > *still_thr) ||
-      (fabsf(modulus_cross / 1000.0f) > *still_thr))
+      (fabsf(modulus_cross / 100.0f) > *still_thr))
     immobile = false;
 }
 
@@ -81,7 +81,6 @@ void LSM303::update_calibration(float* data) {
 inline void LSM303::pickle(float *result, uint32_t still_msk){
   (void)still_msk;
 
-  float tmp[3];
   int32_t raw[3];
   int16_t t;
 
@@ -102,6 +101,15 @@ inline void LSM303::pickle(float *result, uint32_t still_msk){
   mavlink_out_raw_imu_struct.ymag = raw[1];
   mavlink_out_raw_imu_struct.zmag = raw[2];
 
+  result[0] = raw[0];
+  result[1] = raw[1];
+  result[2] = raw[2];
+
+  /* obtain uT from parrots */
+  result[0] /= *xsens;
+  result[1] /= *ysens;
+  result[2] /= *zsens;
+
   /* soft iron correction */
   //result[0] = raw[0] * *ellip_00;
   //result[1] = raw[0] * *ellip_10 + raw[1] * *ellip_11;
@@ -112,24 +120,10 @@ inline void LSM303::pickle(float *result, uint32_t still_msk){
   result[1] -= *yoffset;
   result[2] -= *zoffset;
 
-  /* compensate sensitivity */
-  result[0] /= *xsens;
-  result[1] /= *ysens;
-  result[2] /= *zsens;
-
-  /* rotate magnetometer according to accelerometer position */
-  //float dcmf[9] = {1,0,0,0,1,0,0,0,1};
-  //matrix_multiply(1, 3, 3, result, dcm, tmp);
-  //matrix_multiply(3, 3, 1, dcm, result, tmp);
-
-  /* fill debugging message */
-  mavlink_out_scaled_imu_struct.xmag = tmp[0];
-  mavlink_out_scaled_imu_struct.ymag = tmp[1];
-  mavlink_out_scaled_imu_struct.zmag = tmp[2];
-
-  /* fill result structure */
-  for (uint32_t i=0; i<3; i++)
-    result[i] = tmp[i];
+  /* fill debugging message with nT */
+  mavlink_out_scaled_imu_struct.xmag = result[0];
+  mavlink_out_scaled_imu_struct.ymag = result[1];
+  mavlink_out_scaled_imu_struct.zmag = result[2];
 }
 
 /**
@@ -158,18 +152,12 @@ void LSM303::hw_init_full(void){
 /**
  *
  */
-bool LSM303::trigCal(void){
-  if (true == calibration)
-    return CH_FAILED;
-  else{
+void LSM303::trigCalibration(void){
     xalphabeta.reset(mavlink_out_raw_imu_struct.xmag, *filterlen);
     yalphabeta.reset(mavlink_out_raw_imu_struct.ymag, *filterlen);
     zalphabeta.reset(mavlink_out_raw_imu_struct.zmag, *filterlen);
-
     sample_cnt = 0;
     calibration = true;
-    return CH_SUCCESS;
-  }
 }
 
 /*

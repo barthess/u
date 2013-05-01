@@ -5,15 +5,15 @@
 #include "misc_math.hpp"
 
 //get modulus of a 3d vector sqrt(x^2+y^2+z^2)
-inline double vector3d_modulus(double *v){
+inline double vector3d_modulus(const double *v){
   return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
-inline float vector3d_modulus(float *v){
+inline float vector3d_modulus(const float *v){
   return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
-inline int32_t vector3d_modulus(int32_t *v){
+inline int32_t vector3d_modulus(const int32_t *v){
   return sqrti(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 

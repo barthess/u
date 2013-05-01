@@ -44,9 +44,9 @@ param = [
 ("MAG_yoffset",     -5000,  0,      5000,   "f", "default",     "NULL"),
 ("MAG_zoffset",     -5000,  0,      5000,   "f", "default",     "NULL"),
 # /* axis sensitivity */
-("MAG_xsens",       0.001,  0.1,    1.0,    "f", "default",     "NULL"),
-("MAG_ysens",       0.001,  0.1,    1.0,    "f", "default",     "NULL"),
-("MAG_zsens",       0.001,  0.1,    1.0,    "f", "default",     "NULL"),
+("MAG_xsens",       0.001,  0.1,    100.0,  "f", "default",     "Divide by this value to acquire uT"),
+("MAG_ysens",       0.001,  0.1,    100.0,  "f", "default",     "Divide by this value to acquire uT"),
+("MAG_zsens",       0.001,  0.1,    100.0,  "f", "default",     "Divide by this value to acquire uT"),
 # /* axis polarities. Relative to device axis */
 ("MAG_xpol",        -1,     1,      1,      "i", "polarity",    "NULL"),
 ("MAG_ypol",        -1,     1,      1,      "i", "polarity",    "NULL"),

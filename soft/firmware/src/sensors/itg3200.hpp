@@ -35,7 +35,6 @@ public:
 private:
   ITG3200calibrator calibrator;
   void pickle(float *result, uint32_t still_msk);
-  void update_calibration(int32_t *raw);
   void hw_init_full(void);
   void hw_init_fast(void);
   bool immobile;

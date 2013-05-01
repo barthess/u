@@ -15,7 +15,7 @@ class ITG3200calibrator{
 public:
   ITG3200calibrator(void);
   void start(void);
-  void update(int32_t *raw, uint32_t still_msk);
+  void update(const int32_t *raw, uint32_t still_msk);
   void trig(void);
   void abort(void);
   bool isCalibrating(void);

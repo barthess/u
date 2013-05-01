@@ -141,7 +141,7 @@ static msg_t Imu(void *arg) {
   float interval = 0.01;  /* time between 2 gyro measurements, S */
   float acc[3];           /* acceleration in G */
   float gyro[3];          /* angular rates in rad/s */
-  float mag[3];           /* magnetic flux in T */
+  float mag[3];           /* magnetic flux in uT */
 
   lsm303.start();
   mma8451.start();
@@ -208,14 +208,16 @@ void ImuInit(void){
  *
  */
 bool ImuTrigCalibrateGyro(void){
-  return CH_FAILED;
+  itg3200.trigCalibration();
+  return CH_SUCCESS;
 }
 
 /**
  *
  */
 bool ImuTrigCalibrateMag(void){
-  return lsm303.trigCal();
+  lsm303.trigCalibration();
+  return CH_SUCCESS;
 }
 
 /**
