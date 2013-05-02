@@ -143,10 +143,6 @@ ParamRegistry::ParamRegistry(void){
         chDbgPanic("name collision detected");
     }
   }
-
-  /* check reserved space in EEPROM */
-  chDbgCheck(((PARAM_RECORD_SIZE * this->paramCount()) < EEPROM_SETTINGS_SIZE),
-          "not enough space in file");
 }
 
 /**
@@ -253,6 +249,10 @@ bool ParamRegistry::load(void){
   uint32_t v = 0;
 
   chDbgCheck(GlobalFlags.i2c_ready == 1, "bus not ready");
+
+  /* check reserved space in EEPROM */
+  chDbgCheck(((PARAM_RECORD_SIZE * this->paramCount()) < ParamFile.getSize()),
+          "not enough space in file");
 
   acquire();
   ParamFile.setPosition(0);

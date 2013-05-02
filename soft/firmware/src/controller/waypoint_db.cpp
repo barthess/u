@@ -92,6 +92,7 @@ bool WpDB::massErase(void){
  */
 bool WpDB::clear(void){
   size_t result = 0;
+  count = 0;
   dbfile->setPosition(0);
   result = dbfile->writeHalfWord(0);
   if (HEADER_SIZE == result)
@@ -110,26 +111,29 @@ bool WpDB::save(const mavlink_mission_item_t *wpp, uint16_t seq){
   chDbgCheck((NULL != this->dbfile), "DB unconnected");
   chDbgCheck((NULL != wpp), "");
 
-  if (seq >= count)
-    return CH_FAILED;
-  else{
-    offset = HEADER_SIZE + seq * WAYPOINT_SIZE;
-    dbfile->setPosition(offset);
-    result = dbfile->write((uint8_t *)wpp, WAYPOINT_SIZE);
-    if (WAYPOINT_SIZE == result){
-      count++;
-      return CH_SUCCESS;
-    }
-    else
-      return CH_FAILED;
+  offset = HEADER_SIZE + seq * WAYPOINT_SIZE;
+  dbfile->setPosition(offset);
+  result = dbfile->write((uint8_t *)wpp, WAYPOINT_SIZE);
+  if (WAYPOINT_SIZE == result){
+    count++;
+    return CH_SUCCESS;
   }
+  else
+    return CH_FAILED;
 }
 
 /**
  *
  */
-uint16_t WpDB::len(void){
+uint16_t WpDB::getCount(void){
   return count;
+}
+
+/**
+ *
+ */
+uint16_t WpDB::getCapacity(void){
+  return (dbfile->getSize() - HEADER_SIZE) / WAYPOINT_SIZE;
 }
 
 /**

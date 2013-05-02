@@ -143,7 +143,7 @@ WAIT_NEW_MISSION:
 
   currWpFrame = MAV_FRAME_GLOBAL;
   seq = 0;
-  wp_cnt = wpdb.len();
+  wp_cnt = wpdb.getCount();
 
   /* are there some waypoints on board? */
   if (wp_cnt == 0)

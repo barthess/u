@@ -20,7 +20,8 @@ public:
   bool load(mavlink_mission_item_t *wpp, uint16_t seq);
   bool massErase(void);
   bool clear(void);
-  uint16_t len(void);
+  uint16_t getCount(void);
+  uint16_t getCapacity(void);
   bool finalize(void);
 
 private:

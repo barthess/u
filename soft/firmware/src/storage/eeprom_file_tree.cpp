@@ -33,21 +33,28 @@ extern GlobalFlags_t GlobalFlags;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+#define EEPROM_SETTINGS_SIZE          4096
+#define EEPROM_SETTINGS_START_PAGE    (EEPROM_FS_TOC_SIZE / EEPROM_PAGE_SIZE)
+
+#define EEPROM_MISSION_START_PAGE     (EEPROM_SETTINGS_START_PAGE + (EEPROM_SETTINGS_SIZE / EEPROM_PAGE_SIZE))
+#define EEPROM_MISSION_SIZE           8192
+
 /**
  * During boot process system must verify correctness of data in EEPROM.
  * This array used for automatic detection of changes in file "tree".
  */
 static const inode_t param_inode = {
-    EEPROM_FS_TOC_SIZE / EEPROM_PAGE_SIZE,
+    EEPROM_SETTINGS_START_PAGE,
     0,
     EEPROM_SETTINGS_SIZE,
 };
 
 static const inode_t mission_inode = {
-    128,
+    EEPROM_MISSION_START_PAGE,
     0,
-    64,
+    EEPROM_MISSION_SIZE,
 };
+
 
 static const toc_record_t reftoc[EEPROM_FS_MAX_FILE_COUNT] = {
     {(char*)"param",   param_inode},

@@ -14,9 +14,10 @@
  ******************************************************************************
  */
 //MAVLINK_WPM_PROTOCOL_TIMEOUT_DEFAULT
-#define PLANNER_STANDBY_TMO   MS2ST(20) /* poll inbox period waiting message from ground */
-#define PLANNER_RETRY_CNT     5
-#define PLANNER_RETRY_TMO     MS2ST(1000)
+#define PLANNER_STANDBY_TMO     MS2ST(20) /* poll inbox period waiting message from ground */
+#define PLANNER_RETRY_CNT       5
+#define PLANNER_RETRY_TMO       MS2ST(1000)
+#define PLANNER_ADDITIONAL_TMO  MS2ST(10)
 
 #define TARGET_RADIUS         param2  /* dirty fix to correspond QGC not mavlink lib */
 #define MIN_TARGET_RADIUS     5       /* minimal allowed waypoint radius */
@@ -66,7 +67,7 @@ extern EventSource event_mavlink_out_mission_ack;
  ******************************************************************************
  */
 static Thread *planner_tp = NULL;
-static uint16_t waypoint_cnt = 0;
+static uint16_t N = 0;
 static char dbg_str[64];
 
 /*
@@ -83,6 +84,7 @@ static void send_ack(uint8_t type){
   /* logically the target_component must be MAV_COMP_ID_MISSIONPLANNER,
    * but QGC does not accept them. */
   mavlink_out_mission_ack_struct.target_component = MAV_COMP_ID_ALL;
+  //mavlink_out_mission_ack_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
   mavlink_out_mission_ack_struct.target_system = GROUND_STATION_ID;
   mavlink_out_mission_ack_struct.type = type;
 
@@ -93,26 +95,28 @@ static void send_ack(uint8_t type){
  * Lazy clear all routine.
  */
 static void mission_clear_all(void){
-  wpdb.clear();
-  send_ack(MAV_MISSION_ACCEPTED);
+  if (CH_SUCCESS == wpdb.clear())
+    send_ack(MAV_MISSION_ACCEPTED);
+  else
+    send_ack(MAV_MISSION_ERROR);
 }
 
 /**
  * helper functions
  */
-static void __send(uint32_t out_evid){
-  switch(out_evid){
-  case EVMSK_MAVLINK_OUT_MISSION_COUNT:
-    chEvtBroadcastFlags(&event_mavlink_out_mission_count, EVMSK_MAVLINK_OUT_MISSION_COUNT);
-    break;
-  case EVMSK_MAVLINK_OUT_MISSION_ITEM:
-    chEvtBroadcastFlags(&event_mavlink_out_mission_item, EVMSK_MAVLINK_OUT_MISSION_ITEM);
-    break;
-  case EVMSK_MAVLINK_OUT_MISSION_REQUEST:
-    chEvtBroadcastFlags(&event_mavlink_out_mission_request, EVMSK_MAVLINK_OUT_MISSION_REQUEST);
-    break;
-  }
-}
+//static void __send(uint32_t out_evid){
+//  switch(out_evid){
+//  case EVMSK_MAVLINK_OUT_MISSION_COUNT:
+//    chEvtBroadcastFlags(&event_mavlink_out_mission_count, EVMSK_MAVLINK_OUT_MISSION_COUNT);
+//    break;
+//  case EVMSK_MAVLINK_OUT_MISSION_ITEM:
+//    chEvtBroadcastFlags(&event_mavlink_out_mission_item, EVMSK_MAVLINK_OUT_MISSION_ITEM);
+//    break;
+//  case EVMSK_MAVLINK_OUT_MISSION_REQUEST:
+//    chEvtBroadcastFlags(&event_mavlink_out_mission_request, EVMSK_MAVLINK_OUT_MISSION_REQUEST);
+//    break;
+//  }
+//}
 
 /**
  * @brief   Broadcasts event for sending of data.
@@ -127,22 +131,124 @@ static void __send(uint32_t out_evid){
  * @retval 0            if the operation has timed out, or no confirmation
  *                      needed.
  */
-static eventmask_t send_with_confirm(uint32_t out_evid, uint32_t in_evid_msk, int32_t retry_cnt){
+//static eventmask_t send_with_confirm(uint32_t out_evid, uint32_t in_evid_msk, int32_t retry_cnt){
+//  eventmask_t evt = 0;
+//
+//  do{
+//    __send(out_evid);
+//    if (in_evid_msk == 0) // no need of confirmation
+//      return 0;
+//
+//    evt = chEvtWaitOneTimeout(in_evid_msk, PLANNER_RETRY_TMO);
+//    if (evt & in_evid_msk)
+//      return evt;
+//    else
+//      retry_cnt--;
+//  }while(retry_cnt > 0);
+//
+//  return 0;
+//}
+
+
+
+/**
+ * Perform waypoint checking
+ */
+static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
+//  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
+//    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+//                                 "PLANNER: Unsupported frame #", (int)wp->seq);
+//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+//    return MAV_MISSION_UNSUPPORTED_FRAME;
+//  }
+//  if (wp->seq != seq){
+//    snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
+//                        "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
+//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+//    return MAV_MISSION_INVALID_SEQUENCE;
+//  }
+//  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
+//    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+//                          "PLANNER: Not enough target radius #", (int)wp->seq);
+//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+//    return MAV_MISSION_INVALID_PARAM1;
+//  }
+
+  /* no errors found */
+  return MAV_MISSION_ACCEPTED;
+}
+
+/**
+ *
+ */
+static bool gcs2mav(uint16_t N){
+  uint32_t seq = 0;
+  uint32_t retry_cnt = PLANNER_RETRY_CNT;
   eventmask_t evt = 0;
+  mavlink_mission_item_t mi;        /* local copy */
+  uint8_t status = MAV_MISSION_ERROR;
 
-  do{
-    __send(out_evid);
-    if (in_evid_msk == 0) // no need of confirmation
-      return 0;
+  /* check available space */
+  if (N > wpdb.getCapacity()){
+    send_ack(MAV_MISSION_NO_SPACE);
+    return CH_FAILED;
+  }
 
-    evt = chEvtWaitOneTimeout(in_evid_msk, PLANNER_RETRY_TMO);
-    if (evt & in_evid_msk)
-      return evt;
-    else
+  /* prepare to harvest waypoints */
+  struct EventListener el_mission_item;
+  chEvtRegisterMask(&event_mavlink_in_mission_item, &el_mission_item, EVMSK_MAVLINK_IN_MISSION_ITEM);
+  chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, 1);/* fake wait to clear "queue" */
+  if (CH_FAILED == wpdb.clear())
+    chDbgPanic("");
+
+  for (seq=0; seq<N; seq++){
+    /* prepare request to ground */
+    mavlink_out_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    mavlink_out_mission_request_struct.target_system = GROUND_STATION_ID;
+    mavlink_out_mission_request_struct.seq = seq;
+    retry_cnt = PLANNER_RETRY_CNT;
+    chThdSleep(PLANNER_ADDITIONAL_TMO);
+
+    do{
+      /* drop message */
+      chEvtBroadcastFlags(&event_mavlink_out_mission_request, EVMSK_MAVLINK_OUT_MISSION_REQUEST);
+
+      /* wait answer */
+      evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, PLANNER_RETRY_TMO);
+      if (EVMSK_MAVLINK_IN_MISSION_ITEM == evt){
+        chSysLock();
+        mi = mavlink_in_mission_item_struct;
+        chSysUnlock();
+
+        /* check waypoint cosherness and write it if cosher */
+        status = check_wp(&mi, seq);
+        if (status != MAV_MISSION_ACCEPTED)
+          goto EXIT;
+        else{
+          if (CH_FAILED == wpdb.save(&mi, seq))
+            chDbgPanic("");
+          break; /* do-while */
+        }
+      }
+
       retry_cnt--;
-  }while(retry_cnt > 0);
+      if(0 == retry_cnt)
+        goto EXIT;
 
-  return 0;
+    }while(retry_cnt);
+  }
+  /* save waypoint count in eeprom only in the very end of transaction */
+  if (CH_FAILED == wpdb.finalize())
+    chDbgPanic("");
+
+  /* final stuff */
+EXIT:
+  chEvtUnregister(&event_mavlink_in_mission_item, &el_mission_item);
+  send_ack(status);
+  if (0 == retry_cnt)
+    return CH_FAILED;
+  else
+    return CH_SUCCESS;
 }
 
 /**
@@ -154,143 +260,86 @@ static eventmask_t send_with_confirm(uint32_t out_evid, uint32_t in_evid_msk, in
  *             gets the WAYPOINT_ACK or another message that starts
  *             a different transaction or a timeout happens.
  */
-static MAVLINK_WPM_STATES mission_item_request_handler(void){
-  eventmask_t status = 0;
+static bool mav2gcs(void){
+  eventmask_t evt = 0;
+  bool status = CH_FAILED;
+  uint32_t retry_cnt = PLANNER_RETRY_CNT;
 
-  // NOTE: first mission request already received
-  do{
-    if (mavlink_in_mission_request_struct.seq >= waypoint_cnt) // prevent EEPROM overflow
-      return MAVLINK_WPM_STATE_IDLE;
+  struct EventListener el_mission_request;
+  struct EventListener el_mission_ack;
+  struct EventListener el_mission_request_list;
+  chEvtRegisterMask(&event_mavlink_in_mission_request_list, &el_mission_request_list, EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST);
+  chEvtRegisterMask(&event_mavlink_in_mission_request,      &el_mission_request,      EVMSK_MAVLINK_IN_MISSION_REQUEST);
+  chEvtRegisterMask(&event_mavlink_in_mission_ack,          &el_mission_ack,          EVMSK_MAVLINK_IN_MISSION_ACK);
 
-    wpdb.load(&mavlink_out_mission_item_struct, mavlink_in_mission_request_struct.seq);
-    mavlink_out_mission_item_struct.target_system = GROUND_STATION_ID;
-    mavlink_out_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-
-    status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_ITEM,
-                               EVMSK_MAVLINK_IN_MISSION_REQUEST | EVMSK_MAVLINK_IN_MISSION_ACK,
-                               PLANNER_RETRY_CNT);
-
-    if (status == 0) // time is out
-      return MAVLINK_WPM_STATE_IDLE;
-
-    if (status & EVMSK_MAVLINK_IN_MISSION_ACK)// the end
-      return MAVLINK_WPM_STATE_IDLE;
-
-    if (status & EVMSK_MAVLINK_IN_MISSION_REQUEST) // GCS wants next WP
-      continue;
-  }while(TRUE);
-
-  return MAVLINK_WPM_STATE_IDLE;
-}
-
-/**
- * Handle mission request list message.
- */
-static MAVLINK_WPM_STATES mission_request_list_handler(void){
-
-  eventmask_t status = 0;
-
-  waypoint_cnt = wpdb.len();
-  mavlink_out_mission_count_struct.count = waypoint_cnt;
+START:
   mavlink_out_mission_count_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
   mavlink_out_mission_count_struct.target_system = GROUND_STATION_ID;
+  mavlink_out_mission_count_struct.count = wpdb.getCount();
 
-  if (mavlink_out_mission_count_struct.count == 0){
-    send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_COUNT, 0, 0);
-    return MAVLINK_WPM_STATE_IDLE;
-  }
-  else{
-    status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_COUNT,
-                               EVMSK_MAVLINK_IN_MISSION_REQUEST,
-                               PLANNER_RETRY_CNT);
-    if (status == EVMSK_MAVLINK_IN_MISSION_REQUEST){
-      /* start long and slow receiving cycle */
-      return mission_item_request_handler();
-    }
-    else
-      return MAVLINK_WPM_STATE_IDLE;
-  }
-}
+  chEvtBroadcastFlags(&event_mavlink_out_mission_count, EVMSK_MAVLINK_OUT_MISSION_COUNT);
 
-/**
- * Perform waypoint checking
- */
-static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
-  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
-    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-                                 "PLANNER: Unsupported frame #", (int)wp->seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-    return MAV_MISSION_UNSUPPORTED_FRAME;
-  }
-  if (wp->seq != seq){
-    snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
-                        "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-    return MAV_MISSION_INVALID_SEQUENCE;
-  }
-  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
-    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-                          "PLANNER: Not enough target radius #", (int)wp->seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-    return MAV_MISSION_INVALID_PARAM1;
+  if (0 == mavlink_out_mission_count_struct.count){
+    status = CH_SUCCESS;
+    goto EXIT;
   }
 
-  /* no errors found */
-  return MAV_MISSION_ACCEPTED;
-}
 
-/**
- * Save waypoints in EEPROM
- */
-static bool_t mission_count_handler(void){
-  eventmask_t status = 0;
+  /* теперь нам надо понять, дошло сообщение с количеством вейпоинтов, или нет.
+   * Если нет - земля пришле повторный запрос MISSION_REQUEST_LIST */
+  evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST |
+                            EVMSK_MAVLINK_IN_MISSION_REQUEST |
+                            EVMSK_MAVLINK_IN_MISSION_ACK,
+                            PLANNER_RETRY_TMO * PLANNER_RETRY_CNT);
+  switch(evt){
+  case EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST:
+    /* надобно повторить */
+    goto START;
 
-  waypoint_cnt = mavlink_in_mission_count_struct.count;
+  /* maint loooong loop */
+  case EVMSK_MAVLINK_IN_MISSION_REQUEST:
+    do{
+      wpdb.load(&mavlink_out_mission_item_struct, mavlink_in_mission_request_struct.seq);
+      mavlink_out_mission_item_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
+      mavlink_out_mission_item_struct.target_system = GROUND_STATION_ID;
+      chEvtBroadcastFlags(&event_mavlink_out_mission_item, EVMSK_MAVLINK_OUT_MISSION_ITEM);
+      /* wait next request or ack */
+      evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_REQUEST |
+                                EVMSK_MAVLINK_IN_MISSION_ACK,
+                                PLANNER_RETRY_TMO);
+      switch(evt){
+      case EVMSK_MAVLINK_IN_MISSION_REQUEST:
+        continue;
 
-  mavlink_out_mission_request_struct.seq = 0;
-  uint8_t type = MAV_MISSION_ERROR;
-
-  /* check available space */
-  if (waypoint_cnt * sizeof(mavlink_mission_item_t) > EEPROM_MISSION_SIZE){
-    send_ack(MAV_MISSION_NO_SPACE);
-    return MAVLINK_WPM_STATE_IDLE;
-  }
-
-  /* start transaction from clean state to be safer */
-  wpdb.clear();
-
-  /* delete from "queue" probably stored old message */
-  chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_ITEM, MS2ST(1));
-
-  /* save waypoints one by one */
-  do{
-    mavlink_out_mission_request_struct.target_component = MAV_COMP_ID_MISSIONPLANNER;
-    mavlink_out_mission_request_struct.target_system = GROUND_STATION_ID;
-
-    /* send request to ground */
-    status = send_with_confirm(EVMSK_MAVLINK_OUT_MISSION_REQUEST,
-                               EVMSK_MAVLINK_IN_MISSION_ITEM,
-                               PLANNER_RETRY_CNT);
-    /* handle answer */
-    if (status == EVMSK_MAVLINK_IN_MISSION_ITEM){
-      type = check_wp(&mavlink_in_mission_item_struct, mavlink_out_mission_request_struct.seq);
-      if (type != MAV_MISSION_ACCEPTED)
+      case EVMSK_MAVLINK_IN_MISSION_ACK:
+        status = CH_SUCCESS;
         goto EXIT;
-      else{
-        wpdb.save(&mavlink_in_mission_item_struct, mavlink_out_mission_request_struct.seq);
-        mavlink_out_mission_request_struct.seq++;
-      }
-    }
-    else
-      goto EXIT;
-  }while(mavlink_out_mission_request_struct.seq < waypoint_cnt);
+        break;
 
-  /* save waypoint count in eeprom only in the very end of transaction */
-  wpdb.finalize();
+      default:
+        retry_cnt--;
+        status = CH_FAILED;
+        break;
+      }
+    }while(retry_cnt);
+    break; /* case EVMSK_MAVLINK_IN_MISSION_REQUEST */
+
+  case EVMSK_MAVLINK_IN_MISSION_ACK:
+    status = CH_SUCCESS;
+    break;
+
+  default:
+    status = CH_FAILED;
+    break;
+  }
+
 EXIT:
-  send_ack(type);
-  return MAVLINK_WPM_STATE_IDLE;
+  chEvtUnregister(&event_mavlink_in_mission_request, &el_mission_request);
+  chEvtUnregister(&event_mavlink_in_mission_ack,     &el_mission_ack);
+  chEvtUnregister(&event_mavlink_in_mission_request_list, &el_mission_request_list);
+  return status;
 }
+
 
 /**
  * Planner thread.
@@ -304,42 +353,50 @@ static msg_t PlannerThread(void* arg){
   while(GlobalFlags.messaging_ready == 0)
     chThdSleepMilliseconds(50);
 
-  /* register here _all_ events used by planner. Some of them will be
-   * handled in subroutines called in thread context. */
   struct EventListener el_mission_request_list;
   struct EventListener el_mission_count;
   struct EventListener el_mission_clear_all;
   struct EventListener el_mission_item;
-  struct EventListener el_mission_request;
-  struct EventListener el_mission_ack;
 
-  chEvtRegisterMask(&event_mavlink_in_mission_request,      &el_mission_request,      EVMSK_MAVLINK_IN_MISSION_REQUEST);
   chEvtRegisterMask(&event_mavlink_in_mission_request_list, &el_mission_request_list, EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST);
   chEvtRegisterMask(&event_mavlink_in_mission_count,        &el_mission_count,        EVMSK_MAVLINK_IN_MISSION_COUNT);
   chEvtRegisterMask(&event_mavlink_in_mission_clear_all,    &el_mission_clear_all,    EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL);
   chEvtRegisterMask(&event_mavlink_in_mission_item,         &el_mission_item,         EVMSK_MAVLINK_IN_MISSION_ITEM);
-  chEvtRegisterMask(&event_mavlink_in_mission_ack,          &el_mission_ack,          EVMSK_MAVLINK_IN_MISSION_ACK);
 
   eventmask_t evt = 0;
   while (!chThdShouldTerminate()) {
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST |
                               EVMSK_MAVLINK_IN_MISSION_COUNT |
-                              EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL,
+                              EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL |
+                              EVMSK_MAVLINK_IN_MISSION_ITEM,
                               MS2ST(100));
     switch (evt){
+
+    /* ground want to know how many items we have */
     case EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST:
-      /* ground want to know how many items we have */
-      mission_request_list_handler();
+      chEvtUnregister(&event_mavlink_in_mission_request_list, &el_mission_request_list);
+      mav2gcs();
+      chEvtRegisterMask(&event_mavlink_in_mission_request_list, &el_mission_request_list, EVMSK_MAVLINK_IN_MISSION_REQUEST_LIST);
       break;
 
+    /* ground says how many items it wants to send here */
     case EVMSK_MAVLINK_IN_MISSION_COUNT:
-      /* ground says how many items it wants to send here */
-      mission_count_handler();
+      /* this event now will be handled inside write loop */
+      chEvtUnregister(&event_mavlink_in_mission_item, &el_mission_item);
+      gcs2mav(mavlink_in_mission_count_struct.count);
+      /* register event back to main cycle */
+      chEvtRegisterMask(&event_mavlink_in_mission_item, &el_mission_item, EVMSK_MAVLINK_IN_MISSION_ITEM);
       break;
 
+    /* ground wants erase all wps */
     case EVMSK_MAVLINK_IN_MISSION_CLEAR_ALL:
-      /* ground wants erase all wps */
       mission_clear_all();
+      break;
+
+    case EVMSK_MAVLINK_IN_MISSION_ITEM:
+      /* If a waypoint planner component receives WAYPOINT messages outside
+       * of transactions it answers with a WAYPOINT_ACK message. */
+      send_ack(MAV_MISSION_DENIED);
       break;
 
     default:
@@ -351,9 +408,7 @@ static msg_t PlannerThread(void* arg){
   chEvtUnregister(&event_mavlink_in_mission_request_list, &el_mission_request_list);
   chEvtUnregister(&event_mavlink_in_mission_count,        &el_mission_count);
   chEvtUnregister(&event_mavlink_in_mission_clear_all,    &el_mission_clear_all);
-  chEvtUnregister(&event_mavlink_in_mission_request,      &el_mission_request);
   chEvtUnregister(&event_mavlink_in_mission_item,         &el_mission_item);
-  chEvtUnregister(&event_mavlink_in_mission_ack,          &el_mission_ack);
 
   chThdExit(0);
   return 0;

@@ -55,7 +55,7 @@ extern EventSource event_mavlink_out_mission_item_reached;
  *
  */
 void WpSeqOverwrite(uint16_t seq){
-  if (WpSeqNew < wpdb.len()){
+  if (WpSeqNew < wpdb.getCount()){
     chSysLock();
     WpSeqNew = seq;
     chSysUnlock();
