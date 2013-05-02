@@ -21,6 +21,7 @@
 
 #define TARGET_RADIUS         param2  /* dirty fix to correspond QGC not mavlink lib */
 #define MIN_TARGET_RADIUS     5       /* minimal allowed waypoint radius */
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -67,7 +68,6 @@ extern EventSource event_mavlink_out_mission_ack;
  ******************************************************************************
  */
 static Thread *planner_tp = NULL;
-static uint16_t N = 0;
 static char dbg_str[64];
 
 /*
@@ -102,77 +102,27 @@ static void mission_clear_all(void){
 }
 
 /**
- * helper functions
- */
-//static void __send(uint32_t out_evid){
-//  switch(out_evid){
-//  case EVMSK_MAVLINK_OUT_MISSION_COUNT:
-//    chEvtBroadcastFlags(&event_mavlink_out_mission_count, EVMSK_MAVLINK_OUT_MISSION_COUNT);
-//    break;
-//  case EVMSK_MAVLINK_OUT_MISSION_ITEM:
-//    chEvtBroadcastFlags(&event_mavlink_out_mission_item, EVMSK_MAVLINK_OUT_MISSION_ITEM);
-//    break;
-//  case EVMSK_MAVLINK_OUT_MISSION_REQUEST:
-//    chEvtBroadcastFlags(&event_mavlink_out_mission_request, EVMSK_MAVLINK_OUT_MISSION_REQUEST);
-//    break;
-//  }
-//}
-
-/**
- * @brief   Broadcasts event for sending of data.
- * @details Do some tries and waits until confirm message got.
- *
- * @param[in] out_evid    event ID scheduled for broadcast.
- * @param[in] in_evid_msk event ID confirmation message. Can be mask
- *                        of some events at onece. Set it to 0 to disable
- *                        waiting of confirmation.
- *
- * @return              Catched confirmation message id.
- * @retval 0            if the operation has timed out, or no confirmation
- *                      needed.
- */
-//static eventmask_t send_with_confirm(uint32_t out_evid, uint32_t in_evid_msk, int32_t retry_cnt){
-//  eventmask_t evt = 0;
-//
-//  do{
-//    __send(out_evid);
-//    if (in_evid_msk == 0) // no need of confirmation
-//      return 0;
-//
-//    evt = chEvtWaitOneTimeout(in_evid_msk, PLANNER_RETRY_TMO);
-//    if (evt & in_evid_msk)
-//      return evt;
-//    else
-//      retry_cnt--;
-//  }while(retry_cnt > 0);
-//
-//  return 0;
-//}
-
-
-
-/**
  * Perform waypoint checking
  */
 static uint8_t check_wp(mavlink_mission_item_t *wp, uint16_t seq){
-//  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
-//    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-//                                 "PLANNER: Unsupported frame #", (int)wp->seq);
-//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-//    return MAV_MISSION_UNSUPPORTED_FRAME;
-//  }
-//  if (wp->seq != seq){
-//    snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
-//                        "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
-//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-//    return MAV_MISSION_INVALID_SEQUENCE;
-//  }
-//  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
-//    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
-//                          "PLANNER: Not enough target radius #", (int)wp->seq);
-//    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
-//    return MAV_MISSION_INVALID_PARAM1;
-//  }
+  if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+                                 "PLANNER: Unsupported frame #", (int)wp->seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    return MAV_MISSION_UNSUPPORTED_FRAME;
+  }
+  if (wp->seq != seq){
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
+                        "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    return MAV_MISSION_INVALID_SEQUENCE;
+  }
+  if (wp->TARGET_RADIUS < MIN_TARGET_RADIUS){
+    snprintf(dbg_str, sizeof(dbg_str), "%s%d",
+                          "PLANNER: Not enough target radius #", (int)wp->seq);
+    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    return MAV_MISSION_INVALID_PARAM1;
+  }
 
   /* no errors found */
   return MAV_MISSION_ACCEPTED;

@@ -4,18 +4,22 @@
 #
 
 # Compiler options here.
+__OPT = -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
 ifeq ($(USE_OPT),)
-  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-strict-aliasing
+  USE_OPT     = -O2 $(__OPT)
+  USE_OPT_DBG = -O0 $(__OPT)
 endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT = -std=gnu99
+  USE_COPT     = -std=gnu99
+  USE_COPT_DBG = $(USE_COPT)
 endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti -fno-exceptions
+  USE_CPPOPT     = -fno-rtti -fno-exceptions
+  USE_CPPOPT_DBG = $(USE_CPPOPT)
 endif
 
 # Enable this if you want the linker to remove unused code and data
@@ -91,9 +95,9 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/chprintf.c \
        $(CHIBIOS)/os/various/chrtclib.c \
        $(CHIBIOS)/os/various/shell.c \
-       src/fault_handlers.c \
-       src/microrl/src/microrl.c \
-        
+       src/microrl/src/microrl.c\
+       
+CSRC_DBG = src/fault_handlers.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -156,7 +160,6 @@ CPPSRC = $(CHCPPSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
 		 $(LINKSRC) \
-		 $(CONTROLLERSRC) \
 		 $(MATHSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
@@ -165,7 +168,7 @@ CPPSRC = $(CHCPPSRC) \
          src/blinker.cpp \
          src/timekeeping.cpp \
          src/pwr_mgmt.cpp \
-         src/eeprom/cpp/eeprom_file.cpp \
+		 src/eeprom/cpp/eeprom_file.cpp \
          src/eeprom/cpp/eeprom_fs.cpp \
          src/eeprom/cpp/eeprom_mtd.cpp \
          src/eeprom/cpp/eeprom_testsuit.cpp \
@@ -181,9 +184,10 @@ CPPSRC = $(CHCPPSRC) \
          src/servo/servo_cli.cpp \
          src/irq_storm.cpp \
          src/calibration/cli_cal.cpp \
-         src/benchmark/benchmark.cpp \
-         
-       
+         src/benchmark/benchmark.cpp
+
+CPPSRC_DBG = $(CONTROLLERSRC) \
+
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
 #       option that results in lower performance and larger code size.
@@ -244,7 +248,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
 
 # -lm - это указание линкеру для подключения математической либы.
 # добавлено именно здесь, потому что больше некуда
-MCU  = cortex-m4 -lm
+MCU  = cortex-m4
 #MCU  = cortex-m3 -lm
 
 TRGT = arm-none-eabi-
@@ -304,7 +308,7 @@ DINCDIR =
 DLIBDIR =
 
 # List all default libraries here
-DLIBS =
+DLIBS = -lm
 
 #
 # End of default section
@@ -334,8 +338,10 @@ ULIBS =
 ##############################################################################
 
 ifeq ($(USE_FPU),yes)
-  USE_OPT += -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -fsingle-precision-constant
-  #USE_OPT += -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+  FPU_OPT = -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+  #FPU_OPT = -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
+  USE_OPT     += $(FPU_OPT)
+  USE_OPT_DBG += $(FPU_OPT)
   DDEFS += -DCORTEX_USE_FPU=TRUE
 else
   DDEFS += -DCORTEX_USE_FPU=FALSE
