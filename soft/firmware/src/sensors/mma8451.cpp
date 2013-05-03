@@ -92,6 +92,7 @@ void MMA8451::pickle(float *result, uint32_t still_msk) {
   mavlink_out_scaled_imu_struct.xacc = comp_data.acc_i16[0];
   mavlink_out_scaled_imu_struct.yacc = comp_data.acc_i16[1];
   mavlink_out_scaled_imu_struct.zacc = comp_data.acc_i16[2];
+  //mavlink_out_scaled_imu_struct.zacc = vector3d_modulus(result) * 1000;
 }
 
 /**
