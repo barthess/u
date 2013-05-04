@@ -39,7 +39,7 @@ extern WpDB wpdb;
 /**
  *
  */
-acs_status_t ACS::navigate(const acs_input_t *in, acs_output_t *out){
+acs_status_t ACS::navigating(const StateVector *in, Impact *out){
   (void)in;
   (void)out;
   return ACS_STATUS_ERROR;
@@ -48,7 +48,7 @@ acs_status_t ACS::navigate(const acs_input_t *in, acs_output_t *out){
 /**
  *
  */
-acs_status_t ACS::pass(const acs_input_t *in, acs_output_t *out){
+acs_status_t ACS::passing_wp(const StateVector *in, Impact *out){
   (void)in;
   (void)out;
   return ACS_STATUS_ERROR;
@@ -57,7 +57,7 @@ acs_status_t ACS::pass(const acs_input_t *in, acs_output_t *out){
 /**
  *
  */
-acs_status_t ACS::loiter(const acs_input_t *in, acs_output_t *out){
+acs_status_t ACS::loitering(const StateVector *in, Impact *out){
   (void)in;
   (void)out;
   return ACS_STATUS_ERROR;
@@ -93,9 +93,18 @@ void ACS::start(void){
 }
 
 /**
+ * @brief         Loiter specified time.
+ * @param[in] t   time to loiter
+ */
+acs_status_t loiter(systime_t t){
+  (void)t;
+  return ACS_STATUS_OK;
+}
+
+/**
  *
  */
-acs_status_t ACS::update(const acs_input_t *in, acs_output_t *out){
+acs_status_t ACS::update(const StateVector *in, Impact *out){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
   chDbgCheck((NULL != in) && (NULL != out), "");
 
@@ -105,15 +114,15 @@ acs_status_t ACS::update(const acs_input_t *in, acs_output_t *out){
     break;
 
   case ACS_STATE_NAVIGATE_TO_WAYPOINT:
-    return navigate(in, out);
+    return navigating(in, out);
     break;
 
   case ACS_STATE_PASS_WAYPOINT:
-    return pass(in, out);
+    return passing_wp(in, out);
     break;
 
   case ACS_STATE_LOITER:
-    return loiter(in, out);
+    return loitering(in, out);
     break;
 
   default:

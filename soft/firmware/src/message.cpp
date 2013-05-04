@@ -71,6 +71,7 @@ mavlink_mission_item_reached_t  mavlink_in_mission_item_reached_struct;
  * @brief   Event sources.
  */
 EventSource event_gps_time_got;
+EventSource event_gps_updated;
 
 EventSource event_mavlink_out_heartbeat;
 EventSource event_mavlink_out_gps_raw_int;
@@ -139,6 +140,7 @@ EventSource event_mavlink_in_mission_ack;// it has output counterpart
  */
 void MsgInit(void){
   chEvtInit(&event_gps_time_got);
+  chEvtInit(&event_gps_updated);
 
   chEvtInit(&event_mavlink_out_heartbeat);
   chEvtInit(&event_mavlink_out_gps_raw_int);

@@ -29,6 +29,8 @@ extern mavlink_command_long_t mavlink_in_command_long_struct;
 extern EventSource event_mavlink_out_command_ack;
 extern EventSource event_mavlink_in_command_long;
 
+extern IMU imu;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
@@ -71,7 +73,7 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
 
   /* Gyro */
   if (cl->param1 == 1){
-    result = TrigCalibrateGyro();
+    result = imu.trigCalibrateGyro();
     if (CH_SUCCESS == result)
       return MAV_RESULT_ACCEPTED;
     else
@@ -80,7 +82,7 @@ static enum MAV_RESULT cmd_calibration_handler(mavlink_command_long_t *cl){
 
   /* Magnetometer */
   else if (cl->param2 == 1){
-    result = TrigCalibrateMag();
+    result = imu.trigCalibrateMag();
     if (CH_SUCCESS == result)
       return MAV_RESULT_ACCEPTED;
     else

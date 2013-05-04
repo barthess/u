@@ -151,7 +151,6 @@ void SensorsInit(void){
           PollBaroThread,
           NULL);
 
-  ImuInit();
   GPSInit();
 }
 

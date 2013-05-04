@@ -183,6 +183,7 @@ CPPSRC = $(CHCPPSRC) \
          src/cli/cli.cpp \
          src/cli/cli_cmd.cpp \
          src/servo/servo.cpp \
+         src/servo/drivetrain.cpp \
          src/servo/servo_cli.cpp \
          src/irq_storm.cpp \
          src/calibration/cli_cal.cpp \

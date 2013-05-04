@@ -43,6 +43,7 @@
 
 /* other events */
 #define EVMSK_GPS_TIME_GOT                                  (1UL << 0)
+#define EVMSK_GPS_UPATED                                    (1UL << 1)
 
 /* function prototypes */
 void MsgInit(void);

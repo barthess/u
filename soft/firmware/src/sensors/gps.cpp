@@ -57,16 +57,18 @@ including, the "$" and "*".
  */
 extern GlobalFlags_t GlobalFlags;
 extern RawData raw_data;
-extern CompensatedData comp_data;
 
 extern mavlink_global_position_int_t  mavlink_out_global_position_int_struct;
 extern mavlink_vfr_hud_t              mavlink_out_vfr_hud_struct;
 
 extern EventSource event_mavlink_out_global_position_int;
+extern EventSource event_gps_updated;
 
 extern struct tm gps_timp;
 
 float LongitudeScale = 0;
+
+extern StateVector state_vector;
 
 /*
  ******************************************************************************
@@ -255,6 +257,12 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     /**/
     if (LongitudeScale == 0)
       LongitudeScale = cosf(fdeg2rad((float)gps_longitude / GPS_FIXED_POINT_SCALE));
+
+    state_vector.lat  = fdeg2rad((float)gps_latitude / 10000000.0f);
+    state_vector.lon  = fdeg2rad((float)gps_longitude / 10000000.0f);
+    state_vector.hmsl = (float)gps_latitude / 1000.0f;
+
+    chEvtBroadcastFlags(&event_gps_updated, EVMSK_GPS_UPATED);
 	}
 	else{
 	  raw_data.gps_valid = FALSE;
@@ -316,8 +324,8 @@ static void parse_rmc(uint8_t *rmcbuf, mavlink_global_position_int_t *global_pos
   if (valid == 'A'){                              /* если координаты достоверны */
   	raw_data.gps_course      = gps_course;
   	raw_data.gps_speed_knots = gps_speed_knots;
-  	comp_data.groundspeed_gps = (float)(gps_speed_knots * 51) / 100.0f;
-    mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_gps;
+  	state_vector.vgps = (float)(gps_speed_knots * 51) / 100.0f;
+    mavlink_out_vfr_hud_struct.groundspeed = state_vector.vgps;
     get_time(&gps_timp, buft, bufd);
     raw_data.gps_valid = TRUE;
   }

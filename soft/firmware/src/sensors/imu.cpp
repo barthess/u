@@ -5,13 +5,7 @@
 #include "geometry.hpp"
 #include "param_registry.hpp"
 #include "logger.hpp"
-#include "madgwick.hpp"
-#include "quaternion.hpp"
-
-#include "itg3200.hpp"
-#include "lsm303.hpp"
-#include "mma8451.hpp"
-#include "max1236.hpp"
+#include "imu.hpp"
 
 /*
  ******************************************************************************
@@ -19,6 +13,7 @@
  ******************************************************************************
  */
 #define GYRO_TIMEOUT        MS2ST(100)
+#define GYRO_RETRY          10
 
 /*
  ******************************************************************************
@@ -39,18 +34,6 @@ float dcmEst[3][3] = {{1,0,0},
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float const *declination;
-static uint32_t const *ahrsmode;
-
-static ITG3200  itg3200(&I2CD2, itg3200addr);
-static LSM303   lsm303(&I2CD2,  lsm303magaddr);
-static MMA8451  mma8451(&I2CD2, mma8451addr);
-
-static uint32_t still_msk = 0;
-
-static volatile int32_t t0, t1;
-static MadgwickAHRS ahrs;
-static Quaternion<float> MadgwickQuat(1, 0, 0, 0);
 
 /*
  *******************************************************************************
@@ -63,7 +46,8 @@ static Quaternion<float> MadgwickQuat(1, 0, 0, 0);
 /**
  * Get attitude from DCM
  */
-static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct, float *gyro){
+static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct,
+                        const float *gyro, const float *declination){
   mavlink_attitude_struct->time_boot_ms = TIME_BOOT_MS;
   if (Rzz >= 0){
     mavlink_attitude_struct->pitch  = -asinf(Rxz);
@@ -111,7 +95,7 @@ static void quat2attitude(mavlink_attitude_t *mavlink_attitude_struct,
 /**
  *
  */
-static void update_still_msk(void){
+void IMU::update_still_msk(void){
   if(lsm303.still())
     still_msk |= STILL_MAG_MSK;
   else
@@ -128,20 +112,37 @@ static void update_still_msk(void){
     still_msk &= ~STILL_GYRO_MSK;
 }
 
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
 /**
  *
  */
-static WORKING_AREA(waImu, 768);
-static msg_t Imu(void *arg) {
-  (void)arg;
-  chRegSetThreadName("IMU");
+IMU::IMU(void):
+  itg3200(&I2CD2, itg3200addr),
+  lsm303(&I2CD2,  lsm303magaddr),
+  mma8451(&I2CD2, mma8451addr),
+  retry(GYRO_RETRY)
+{
+  state = IMU_STATE_UNINIT;
+  still_msk = 0;
+  t0 = 0;
+  t1 = 0;
+  sem_status = RDY_OK;
+  interval = 0.01;
+};
 
-  msg_t sem_status = RDY_OK;
-  int32_t retry = 10;
-  float interval = 0.01;  /* time between 2 gyro measurements, S */
-  float acc[3];           /* acceleration in G */
-  float gyro[3];          /* angular rates in rad/s */
-  float mag[3];           /* magnetic flux in uT */
+/**
+ *
+ */
+void IMU::start(void){
+  declination = (const float*)param_registry.valueSearch("MAG_declinate");
+  ahrsmode = (const uint32_t*)param_registry.valueSearch("IMU_ahrsmode");
+
+  dcmInit();
 
   lsm303.start();
   mma8451.start();
@@ -151,71 +152,59 @@ static msg_t Imu(void *arg) {
   /* calibrate gyros in very first run */
   itg3200.trigCalibration();
 
-  while (!chThdShouldTerminate()) {
-    sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
-    if (sem_status != RDY_OK){
-      retry--;
-      chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
-    }
+  state = IMU_STATE_IDLE;
+}
 
-    itg3200.update(gyro, still_msk);
-    lsm303.update(mag,   still_msk);
-    mma8451.update(acc,  still_msk);
-
-    update_still_msk();
-
-    /* pass data to AHRS */
-    if (0 == *ahrsmode){
-      /* simple DCM */
-      t0 = hal_lld_get_counter_value();
-      dcmUpdate(acc, gyro, mag, interval);
-      t1 = hal_lld_get_counter_value() - t0;
-      dcm2attitude(&mavlink_out_attitude_struct, gyro);
-    }
-    else if (1 == *ahrsmode){
-      /* Madgwick */
-      t0 = hal_lld_get_counter_value();
-      ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
-      t1 = hal_lld_get_counter_value() - t0;
-      quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
-    }
-
-    log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
-  }
-
+/**
+ *
+ */
+void IMU::stop(void){
   lsm303.stop();
   mma8451.stop();
   itg3200.stop();
-
-  chThdExit(0);
-  return 0;
-}
-
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-void ImuInit(void){
-  declination = (const float*)param_registry.valueSearch("MAG_declinate");
-  ahrsmode = (const uint32_t*)param_registry.valueSearch("IMU_ahrsmode");
-
-  dcmInit();
-  chThdCreateStatic(waImu, sizeof(waImu), NORMALPRIO, Imu, NULL);
 }
 
 /**
  *
  */
-bool TrigCalibrateGyro(void){
-  return itg3200.trigCalibration();
-}
+imu_update_result_t IMU::update(StateVector *state_vector){
 
-/**
- *
- */
-bool TrigCalibrateMag(void){
-  return lsm303.trigCalibration();
+  sem_status = itg3200_sem.waitTimeout(GYRO_TIMEOUT);
+  if (sem_status != RDY_OK){
+    retry--;
+    chDbgAssert(retry > 0, "PollGyroThread(), #1", "no interrupts from gyro");
+    return IMU_UPDATE_RESULT_EMPTY;
+  }
+
+  state = IMU_STATE_UPDATING;
+
+  itg3200.update(gyro, still_msk);
+  lsm303.update(mag,   still_msk);
+  mma8451.update(acc,  still_msk);
+
+  this->update_still_msk();
+
+  /* pass data to AHRS */
+  if (0 == *ahrsmode){
+    /* starlino DCM */
+    t0 = hal_lld_get_counter_value();
+    dcmUpdate(acc, gyro, mag, interval);
+    t1 = hal_lld_get_counter_value() - t0;
+    dcm2attitude(&mavlink_out_attitude_struct, gyro, declination);
+  }
+  else if (1 == *ahrsmode){
+    /* Madgwick */
+    t0 = hal_lld_get_counter_value();
+    ahrs.update(gyro, acc, mag, &MadgwickQuat, interval);
+    t1 = hal_lld_get_counter_value() - t0;
+    quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
+  }
+
+  state_vector->psi = comp_data.heading;
+  log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);
+
+  state = IMU_STATE_IDLE;
+  return IMU_UPDATE_RESULT_OK;
 }
 
 

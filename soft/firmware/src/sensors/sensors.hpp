@@ -27,7 +27,6 @@ struct CompensatedData{
   uint16_t  secondary_voltage; // mV напряга с вторичного источника питания для серв и приемника
 
   float     groundspeed_odo;   // Current ground speed by odometer (m/s)
-  float     groundspeed_gps;   // Current ground speed by gps (m/s)
   float     heading;           // Current heading in radians
 };
 
@@ -74,6 +73,35 @@ struct RawData{
 
   uint32_t battery_consumed;  /* mAc sourced from battery since startup */
 };
+
+
+/**
+ * @brief   System attitude calculated by IMU and GPS
+ */
+typedef struct {
+  float     gamma;    // roll (rad)
+  float     theta;    // pitch (rad)
+  float     psi;      // heading (rad)
+  float     lat;      // lattitude from GNSS (WGS-84, rad)
+  float     lon;      // longitude from GNSS (WGS-84, rad)
+  float     hmsl;     // altitude from GNSS (WGS-84, m)
+  float     xn;       // X coordinate, North (m)
+  float     hup;      // H coordinate, Up (m)
+  float     ye;       // Y coordinate, East (m)
+  float     vgps;     // speed from GPS (m/s)
+  float     vodo;     // speed from odometer (m/s)
+}StateVector;
+
+
+/**
+ * @brief   Output data from ACS
+ */
+typedef struct {
+  float     angle0;   // (rad)
+  float     angle1;   // (rad)
+  float     angle2;   // (rad)
+  uint8_t   thrust;   // (percents)
+}Impact;
 
 
 void SensorsInit(void);

@@ -62,6 +62,10 @@ Giovanni
 #include "blinker.hpp"
 #include "waypoint_db.hpp"
 
+#include "imu.hpp"
+#include "acs.hpp"
+#include "drivetrain.hpp"
+
 /*
  ******************************************************************************
  * EXTERNS
@@ -108,11 +112,23 @@ chibios_rt::MailboxBuffer<2> blue_blink_mb;
 /* waypoint DB interface */
 WpDB wpdb;
 
+/* inertial measurement unit */
+IMU imu;
+StateVector state_vector;
+
+/* automated control system */
+ACS acs;
+Impact impact;
+
+/**/
+Drivetrain drivetrain;
+
 /*
  ******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************
  */
+
 
 /*
  *******************************************************************************
@@ -162,10 +178,19 @@ int main(void) {
   LastResetFlags = RCC->CSR;
   clear_reset_flags();
 
+  /* main cycle */
+  imu.start();
+  acs.start();
+
   while (TRUE){
-    chThdSleepMilliseconds(666);
+    if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){
+      acs.update(&state_vector, &impact);
+      drivetrain.update(&impact);
+    }
   }
 
   return 0;
 }
+
+
 
