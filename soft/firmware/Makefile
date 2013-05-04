@@ -132,6 +132,7 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_cli.cpp \
          src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
+         src/mavlink_local/waypoint_db.cpp \
          
 KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/dcm_cli.cpp \
@@ -139,15 +140,14 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/pid.cpp \
          src/kinematic/madgwick.cpp
 
-CONTROLLERSRC = src/controller/controller.cpp \
-         src/controller/ground_rover.cpp \
-         src/controller/fixed_wing.cpp \
-         src/controller/planner.cpp \
-         src/controller/stab.cpp \
-         src/controller/waypoint_db.cpp \
-         src/controller/wp.cpp \
-         src/controller/wp_local.cpp \
-         src/controller/wp_global.cpp \
+ACSSRC = src/acs/controller.cpp \
+         src/acs/ground_rover.cpp \
+         src/acs/fixed_wing.cpp \
+         src/acs/planner.cpp \
+         src/acs/stab.cpp \
+         src/acs/wp.cpp \
+         src/acs/wp_local.cpp \
+         src/acs/wp_global.cpp \
 
 LINKSRC = src/link/linkmgr.cpp \
          src/link/link.cpp \
@@ -187,7 +187,7 @@ CPPSRC = $(CHCPPSRC) \
          src/calibration/cli_cal.cpp \
          src/benchmark/benchmark.cpp
 
-CPPSRC_DBG = $(CONTROLLERSRC) \
+CPPSRC_DBG = $(ACSSRC) \
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -228,7 +228,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/sensors \
          src/storage \
          src/kinematic \
-         src/controller \
+         src/acs \
          src/mavlink_local \
          src/servo \
          src/math \
