@@ -2,7 +2,6 @@
 #define MESSAGE_H_
 
 #include <mavlink.h>
-#include <common.h>
 
 /* output messages events */
 #define EVMSK_MAVLINK_OUT_HEARTBEAT                         (1UL << 0)

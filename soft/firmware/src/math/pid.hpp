@@ -64,7 +64,7 @@ T PIDControl<T>::update(T error, T position){
   dTerm = *dGain * (position - dState);
   dState = position;
 
-  return (pTerm + iTerm - dTerm);;
+  return (pTerm + iTerm - dTerm);
 };
 
 /**
@@ -92,7 +92,7 @@ T PIDControl<T>::update(T error, T position, T d){
   dTerm = *dGain * d;
   this->dState = d;
 
-  return (pTerm + iTerm - dTerm);;
+  return (pTerm + iTerm - dTerm);
 };
 
 #endif /* PID_H_ */

@@ -97,7 +97,8 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/shell.c \
        src/microrl/src/microrl.c\
        
-CSRC_DBG = src/fault_handlers.c
+CSRC_DBG = src/fault_handlers.c \
+
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -146,7 +147,7 @@ CONTROLLERSRC = src/controller/controller.cpp \
          src/controller/waypoint_db.cpp \
          src/controller/wp.cpp \
          src/controller/wp_local.cpp \
-         src/controller/wp_global.cpp
+         src/controller/wp_global.cpp \
 
 LINKSRC = src/link/linkmgr.cpp \
          src/link/link.cpp \
@@ -234,9 +235,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/calibration \
          src/utils \
          src/benchmark \
-         $(MAVLINKDIR) \
          $(MAVLINKDIR)/common \
-         $(MAVLINKDIR)/bart
          
 #
 # Project, sources and paths
