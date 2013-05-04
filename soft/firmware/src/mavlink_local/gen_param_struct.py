@@ -192,23 +192,23 @@ param = [
 #/*  */
 ("SPD_pulse2m",     0.0,    0.0555555, 1.0, "f", "default",    "Multiply odometer pulses count by this coefficient to get\\ntrip in meters. Coarse value is 0.05555555"),
 #/**** pid coefficients for speed control ****/
-("SPD_iGain",       -1.0,   0,      1.0,    "f", "default",    "NULL"),
-("SPD_pGain",       -200.0, 0,      200.0,  "f", "default",    "NULL"),
+("SPD_iGain",       -1.0,     0, 1.0,       "f", "default",    "NULL"),
+("SPD_pGain",       -200.0,   0, 200.0,     "f", "default",    "NULL"),
 ("SPD_dGain",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 ("SPD_iMin",        -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 ("SPD_iMax",        -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 #/**** pid coefficients for heading control ****/
-("HEAD_iGain",      -1.0,   0,      1.0,    "f", "default",    "NULL"),
-("HEAD_pGain",      -200.0, 0,      200.0,  "f", "default",    "NULL"),
-("HEAD_dGain",      -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
-("HEAD_iMin",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
-("HEAD_iMax",       -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
+("HDG_iGain",      -1.0,     0,  1.0,       "f", "default",    "NULL"),
+("HDG_pGain",      -200.0,   0,  200.0,     "f", "default",    "NULL"),
+("HDG_dGain",      -10000.0, 0,  10000.0,   "f", "default",    "NULL"),
+("HDG_iMin",       -10000.0, 0,  10000.0,   "f", "default",    "NULL"),
+("HDG_iMax",       -10000.0, 0,  10000.0,   "f", "default",    "NULL"),
 #/* device's speed limits */
 ("SPD_speed_min",   0.0,    0,      60.0,   "f", "default",    "NULL"),
 ("SPD_speed_max",   0.0,    0,      60.0,   "f", "default",    "NULL"),
 #/**** pid coefficients for cross track correction ****/
-("XTRACK_iGain",    -1.0,   0,      1.0,    "f", "default",    "NULL"),
-("XTRACK_pGain",    -200.0, 0,      200.0,  "f", "default",    "NULL"),
+("XTRACK_iGain",    -1.0,     0, 1.0,       "f", "default",    "NULL"),
+("XTRACK_pGain",    -200.0,   0, 200.0,     "f", "default",    "NULL"),
 ("XTRACK_dGain",    -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 ("XTRACK_iMin",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 ("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),

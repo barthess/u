@@ -15,7 +15,7 @@
  ******************************************************************************
  */
 #define TARGET_RADIUS       param2      /* dirty fix to correspond QGC not mavlink lib */
-#define METERS_IN_DEGREE    111194.93f  /* meter in degree on equator */
+#define METERS_IN_DEGREE    111194.93f  /* meters in one degree on equator */
 
 /*
  ******************************************************************************

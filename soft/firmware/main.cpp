@@ -60,6 +60,7 @@ Giovanni
 #include "mavcmd.hpp"
 #include "benchmark.hpp"
 #include "blinker.hpp"
+#include "waypoint_db.hpp"
 
 /*
  ******************************************************************************
@@ -103,6 +104,9 @@ chibios_rt::BinarySemaphore imu_sem(true);
 
 chibios_rt::MailboxBuffer<2> red_blink_mb;
 chibios_rt::MailboxBuffer<2> blue_blink_mb;
+
+/* waypoint DB interface */
+WpDB wpdb;
 
 /*
  ******************************************************************************

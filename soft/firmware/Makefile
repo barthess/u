@@ -148,7 +148,8 @@ ACSSRC = src/acs/controller.cpp \
          src/acs/wp.cpp \
          src/acs/wp_local.cpp \
          src/acs/wp_global.cpp \
-
+		 src/acs/acs.cpp \
+		 
 LINKSRC = src/link/linkmgr.cpp \
          src/link/link.cpp \
          src/link/link_packer.cpp \

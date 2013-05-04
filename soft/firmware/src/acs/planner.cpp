@@ -27,7 +27,7 @@
  * EXTERNS
  ******************************************************************************
  */
-WpDB wpdb;
+extern WpDB wpdb;
 
 extern GlobalFlags_t  GlobalFlags;
 extern EepromFile     MissionFile;
