@@ -77,7 +77,6 @@ static void heartbeat_blinker(void){
  * посылает heartbeat пакеты и моргает светодиодиком
  */
 static WORKING_AREA(SanityControlThreadWA, 128);
-__attribute__ ((__noreturn__))
 static msg_t SanityControlThread(void *arg) {
   chRegSetThreadName("Sanity");
   (void)arg;
@@ -122,6 +121,7 @@ static msg_t SanityControlThread(void *arg) {
     heartbeat_blinker();
     chThdSleepUntil(t);
   }
+  return 0;
 }
 
 /*

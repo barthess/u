@@ -3,7 +3,7 @@
 #include "param_registry.hpp"
 #include "waypoint_db.hpp"
 #include "servo.hpp"
-#include "mavcmd.hpp"
+#include "mission_planner.hpp"
 
 /*
  ******************************************************************************
@@ -16,8 +16,9 @@
  * EXTERNS
  ******************************************************************************
  */
-extern ParamRegistry param_registry;
+extern ParamRegistry      param_registry;
 extern mavlink_system_t   mavlink_system_struct;
+extern MissionPlanner     mav_executor;
 extern WpDB wpdb;
 
 /*
@@ -39,35 +40,22 @@ extern WpDB wpdb;
  ******************************************************************************
  ******************************************************************************
  */
-/**
- * Construct command long message from mission item to be executed
- */
-static void wp2cl(const mavlink_mission_item_t *wp,
-                  mavlink_command_long_t *cl){
-  cl->command = wp->command;
-  cl->param1  = wp->param1;
-  cl->param2  = wp->param2;
-  cl->param3  = wp->param3;
-  cl->param4  = wp->param4;
-  cl->param5  = wp->x;
-  cl->param6  = wp->y;
-  cl->param7  = wp->z;
-  cl->confirmation = 0;
-  cl->target_component = wp->target_component;
-  cl->target_system = wp->target_system;
-}
 
 /**
  *
  */
 acs_status_t ACS::navigating(void){
-  return ACS_STATUS_ERROR;
+  /* in command structure now stored current target coordinates.
+   * Navigate to them and check if wp reached. */
+  chDbgPanic("unrealized");
+  return ACS_STATUS_OK;
 }
 
 /**
  *
  */
 acs_status_t ACS::passing_wp(void){
+  chDbgPanic("unrealized");
   return ACS_STATUS_ERROR;
 }
 
@@ -75,6 +63,7 @@ acs_status_t ACS::passing_wp(void){
  *
  */
 acs_status_t ACS::loitering(void){
+  chDbgPanic("unrealized");
   return ACS_STATUS_ERROR;
 }
 
@@ -82,23 +71,9 @@ acs_status_t ACS::loitering(void){
  *
  */
 acs_status_t ACS::taking_off(void){
-
-  /* wait untill GPS fix */
-  if (in->gpsfix < 2)
-    return ACS_STATUS_OK;
-  else{
-    /* get 0-th waypoint */
-    wpdb.load(&wp, 0);
-
-    /* construct command from it */
-    wp2cl(&wp, &cl);
-
-    /* execute it */
-    ExecuteCommandLong(&cl);
-
-    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-    return ACS_STATUS_OK;
-  }
+  /* there is no special taking off for ground rover */
+  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+  return ACS_STATUS_OK;
 }
 
 /*
@@ -140,15 +115,23 @@ void ACS::start(const StateVector *in, Impact *out){
  */
 MAV_RESULT ACS::loiter(mavlink_command_long_t *clp){
   (void)clp;
+  chDbgPanic("unrealized");
   return MAV_RESULT_ACCEPTED;
 }
 
 /**
  *
  */
+static volatile uint32_t t0, t1;
+static mavlink_mission_item_t mi;
+
 acs_status_t ACS::update(void){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
   chDbgCheck((NULL != in) && (NULL != out), "");
+
+  t0 = hal_lld_get_counter_value();
+  wpdb.load(&mi, 0);
+  t1 = hal_lld_get_counter_value() - t0;
 
   switch(this->state){
   case ACS_STATE_IDLE:
@@ -195,7 +178,14 @@ MAV_RESULT ACS::takeoff(mavlink_command_long_t *clp){
   else{
     launch_lon = in->lon;
     launch_lat = in->lat;
-    state = ACS_STATE_TAKEOFF;
+
+    mav_executor.nextMission(&cl);
+    if (MAV_CMD_NAV_WAYPOINT == cl.command)
+      state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+    else if(MAV_CMD_NAV_TAKEOFF == cl.command)
+      state = ACS_STATE_TAKEOFF;
+    else
+      return MAV_RESULT_UNSUPPORTED;
     return MAV_RESULT_ACCEPTED;
   }
 }

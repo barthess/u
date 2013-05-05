@@ -26,6 +26,8 @@ typedef enum {
   ACS_STATE_NAVIGATE_TO_WAYPOINT,
   ACS_STATE_PASS_WAYPOINT,
   ACS_STATE_LOITER,
+  ACS_STATE_LANDING,
+  ACS_STATE_DEAD,
 }acs_state_t;
 
 /**
@@ -49,8 +51,7 @@ private:
   acs_status_t passing_wp(void);
   acs_status_t loitering(void);
   acs_status_t taking_off(void);
-  mavlink_mission_item_t wp;  // corrent waypoint navigating to
-  mavlink_command_long_t cl;  // command to execute constructed from mission item data
+  mavlink_command_long_t cl;  // command currently executed
   const StateVector *in;
   Impact *out;
   PIDControl<float> spd;
@@ -58,7 +59,6 @@ private:
   PIDControl<float> xtrack;
   float launch_lon; // cached value
   float launch_lat; // cached value
-  uint16_t seq;
   acs_state_t state;
 
   float const *speed_min;

@@ -1,6 +1,6 @@
 #include "main.h"
 #include "message.hpp"
-#include "mavcmd.hpp"
+#include "mission_planner.hpp"
 #include "speedometer.hpp"
 
 /*
@@ -15,6 +15,7 @@
  ******************************************************************************
  */
 extern mavlink_system_t   mavlink_system_struct;
+extern MissionPlanner     mav_executor;
 
 /*
  ******************************************************************************
@@ -44,7 +45,7 @@ void ControllerInit(void){
 
   case MAV_TYPE_GROUND_ROVER:
     /* create thread handling all commands from ground */
-    MavCommanderInit();
+    mav_executor.start(NORMALPRIO);
     SpeedometerInit();
     break;
 

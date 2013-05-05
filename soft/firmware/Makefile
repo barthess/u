@@ -146,7 +146,7 @@ ACSSRC = src/acs/controller.cpp \
          src/acs/wp_local.cpp \
          src/acs/wp_global.cpp \
 		 src/acs/acs.cpp \
-		 src/mavlink_local/mavcmd.cpp \
+		 src/acs/mission_planner.cpp \
 		          
 LINKSRC = src/link/linkmgr.cpp \
          src/link/link.cpp \

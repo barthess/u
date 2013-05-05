@@ -6,7 +6,8 @@
 #include "imu.hpp"
 #include "bmp085.hpp"
 #include "acs.hpp"
-#include "mavcmd.hpp"
+#include "mission_planner.hpp"
+#include "waypoint_db.hpp"
 
 /*
  ******************************************************************************
@@ -39,6 +40,7 @@ extern EventSource event_mavlink_in_command_long;
 
 extern IMU imu;
 extern ACS acs;
+extern WpDB wpdb;
 
 /*
  ******************************************************************************
@@ -175,88 +177,12 @@ static enum MAV_RESULT cmd_do_set_mode_handler(mavlink_command_long_t *cl){
   return MAV_RESULT_DENIED;
 }
 
-/**
- * Command processing thread.
- */
-static WORKING_AREA(CmdThreadWA, 512);
-static msg_t CmdThread(void* arg){
-  chRegSetThreadName("MAVCommand");
-  (void)arg;
-  eventmask_t evt = 0;
-
-  struct EventListener el_command_long;
-  struct EventListener el_manual_control;
-  struct EventListener el_set_mode;
-  struct EventListener el_mission_set_current;
-
-  chEvtRegisterMask(&event_mavlink_in_command_long,         &el_command_long, EVMSK_MAVLINK_IN_COMMAND_LONG);
-  chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,     EVMSK_MAVLINK_IN_MANUAL_CONTROL);
-  chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,           EVMSK_MAVLINK_IN_SET_MODE);
-  chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
-
-  /* wait modems */
-  while(GlobalFlags.messaging_ready == 0)
-  chThdSleepMilliseconds(50);
-
-  /* main loop */
-  while(!chThdShouldTerminate()){
-    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG |
-                              EVMSK_MAVLINK_IN_MANUAL_CONTROL |
-                              EVMSK_MAVLINK_IN_SET_MODE |
-                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT,
-                              MS2ST(50));
-
-    switch (evt){
-    case EVMSK_MAVLINK_IN_COMMAND_LONG:
-      ExecuteCommandLong(&mavlink_in_command_long_struct);
-      break;
-
-    case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
-      acs.manualControl(&mavlink_in_manual_control_struct);
-      break;
-
-    case EVMSK_MAVLINK_IN_SET_MODE:
-      acs.setMode(&mavlink_in_set_mode_struct);
-      break;
-
-    case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
-      acs.setCurrentMission(&mavlink_in_mission_set_current_struct);
-      break;
-
-    default:
-      break;
-    }
-  }
-
-  chEvtUnregister(&event_mavlink_in_manual_control,       &el_manual_control);
-  chEvtUnregister(&event_mavlink_in_set_mode,             &el_set_mode);
-  chEvtUnregister(&event_mavlink_in_mission_set_current,  &el_mission_set_current);
-  chEvtUnregister(&event_mavlink_in_command_long,         &el_command_long);
-  chThdExit(0);
-  return 0;
-}
-
-
-
-/*
- *******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************
- */
-void MavCommanderInit(void){
-
-  chThdCreateStatic(CmdThreadWA,
-        sizeof(CmdThreadWA),
-        NORMALPRIO,
-        CmdThread,
-        NULL);
-}
 
 /**
  * Parses and executes commands. Commands can be both from ground or
  * sent by ACS from mission list.
  */
-void ExecuteCommandLong(mavlink_command_long_t *clp){
+void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
   enum MAV_RESULT result = MAV_RESULT_DENIED;
 
   /* all this flags defined in MAV_CMD enum */
@@ -315,3 +241,108 @@ void ExecuteCommandLong(mavlink_command_long_t *clp){
     break;
   }
 }
+
+
+/**
+ * Command processing thread.
+ */
+msg_t MissionPlanner::main(void){
+  this->setName("MAVCommand");
+  eventmask_t evt = 0;
+
+  struct EventListener el_command_long;
+  struct EventListener el_manual_control;
+  struct EventListener el_set_mode;
+  struct EventListener el_mission_set_current;
+
+  chEvtRegisterMask(&event_mavlink_in_command_long,         &el_command_long, EVMSK_MAVLINK_IN_COMMAND_LONG);
+  chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,     EVMSK_MAVLINK_IN_MANUAL_CONTROL);
+  chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,           EVMSK_MAVLINK_IN_SET_MODE);
+  chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
+
+  /* wait modems */
+  while(GlobalFlags.messaging_ready == 0)
+    chThdSleepMilliseconds(50);
+
+  /* try to load 0-th mission item to RAM */
+  if (0 != wpdb.getCount()){
+    if (CH_SUCCESS != wpdb.load(&mi, 0))
+      chDbgPanic("can not acquare waypoint");
+    else
+      mission_load_status = CH_SUCCESS;
+  }
+
+  /* main loop */
+  while(!chThdShouldTerminate()){
+    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG |
+                              EVMSK_MAVLINK_IN_MANUAL_CONTROL |
+                              EVMSK_MAVLINK_IN_SET_MODE |
+                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT,
+                              MS2ST(50));
+
+    switch (evt){
+    case EVMSK_MAVLINK_IN_COMMAND_LONG:
+      executeCmd(&mavlink_in_command_long_struct);
+      break;
+
+    case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
+      acs.manualControl(&mavlink_in_manual_control_struct);
+      break;
+
+    case EVMSK_MAVLINK_IN_SET_MODE:
+      acs.setMode(&mavlink_in_set_mode_struct);
+      break;
+
+    case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
+      acs.setCurrentMission(&mavlink_in_mission_set_current_struct);
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  chEvtUnregister(&event_mavlink_in_manual_control,       &el_manual_control);
+  chEvtUnregister(&event_mavlink_in_set_mode,             &el_set_mode);
+  chEvtUnregister(&event_mavlink_in_mission_set_current,  &el_mission_set_current);
+  chEvtUnregister(&event_mavlink_in_command_long,         &el_command_long);
+  chThdExit(0);
+  return 0;
+}
+
+
+/*
+ *******************************************************************************
+ * EXPORTED FUNCTIONS
+ *******************************************************************************
+ */
+
+/**
+ *
+ */
+bool MissionPlanner::nextMission(mavlink_command_long_t *cl){
+  if (CH_SUCCESS != mission_load_status)
+    return CH_FAILED;
+  else{
+    /* construct command from cached mission item */
+    cl->command = mi.command;
+    cl->param1  = mi.param1;
+    cl->param2  = mi.param2;
+    cl->param3  = mi.param3;
+    cl->param4  = mi.param4;
+    cl->param5  = mi.x;
+    cl->param6  = mi.y;
+    cl->param7  = mi.z;
+    cl->confirmation = 0;
+    cl->target_component = mi.target_component;
+    cl->target_system = mi.target_system;
+
+    /* 0-th item must be handled separately*/
+//    if (0 != seq)
+//      broadcast_mission_item_reached(seq - 1);
+//    broadcast_mission_current(seq);
+
+    return CH_SUCCESS;
+  }
+}
+

@@ -57,7 +57,7 @@ Giovanni
 #include "tlm_sender.hpp"
 #include "linkmgr.hpp"
 #include "controller.hpp"
-#include "mavcmd.hpp"
+#include "mission_planner.hpp"
 #include "benchmark.hpp"
 #include "blinker.hpp"
 #include "waypoint_db.hpp"
@@ -123,6 +123,9 @@ Impact impact;
 
 /**/
 Drivetrain drivetrain;
+
+/**/
+MissionPlanner mav_executor;
 
 /*
  ******************************************************************************
