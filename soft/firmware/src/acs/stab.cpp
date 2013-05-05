@@ -201,11 +201,11 @@ Thread* StabInit(void){
   speedPid.iMin   = (const float*)param_registry.valueSearch("SPD_iMin");
   speedPid.iMax   = (const float*)param_registry.valueSearch("SPD_iMax");
 
-  headingPid.iGain  = (const float*)param_registry.valueSearch("HEAD_iGain");
-  headingPid.pGain  = (const float*)param_registry.valueSearch("HEAD_pGain");
-  headingPid.dGain  = (const float*)param_registry.valueSearch("HEAD_dGain");
-  headingPid.iMin   = (const float*)param_registry.valueSearch("HEAD_iMin");
-  headingPid.iMax   = (const float*)param_registry.valueSearch("HEAD_iMax");
+  headingPid.iGain  = (const float*)param_registry.valueSearch("HDG_iGain");
+  headingPid.pGain  = (const float*)param_registry.valueSearch("HDG_pGain");
+  headingPid.dGain  = (const float*)param_registry.valueSearch("HDG_dGain");
+  headingPid.iMin   = (const float*)param_registry.valueSearch("HDG_iMin");
+  headingPid.iMax   = (const float*)param_registry.valueSearch("HDG_iMax");
 
   xtrackPid.iGain  = (const float*)param_registry.valueSearch("XTRACK_iGain");
   xtrackPid.pGain  = (const float*)param_registry.valueSearch("XTRACK_pGain");
