@@ -179,9 +179,9 @@ CPPSRC = $(CHCPPSRC) \
          src/storage/eeprom_file_tree.cpp \
          src/cli/cli.cpp \
          src/cli/cli_cmd.cpp \
-         src/servo/servo.cpp \
-         src/servo/drivetrain.cpp \
-         src/servo/servo_cli.cpp \
+         src/drivetrain/servo.cpp \
+         src/drivetrain/drivetrain.cpp \
+         src/drivetrain/servo_cli.cpp \
          src/irq_storm.cpp \
          src/calibration/cli_cal.cpp \
          src/benchmark/benchmark.cpp
@@ -230,7 +230,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          src/kinematic \
          src/acs \
          src/mavlink_local \
-         src/servo \
+         src/drivetrain \
          src/math \
          src/calibration \
          src/utils \
