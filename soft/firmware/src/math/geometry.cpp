@@ -1,3 +1,17 @@
+/*
+ * Bearing Between Two Points:
+ * http://mathforum.org/library/drmath/view/55417.html
+ *
+ * Aviation Formulary V1.46:
+ * http://williams.best.vwh.net/avform.htm
+ *
+ * what is crosstrack error in pictures
+ * http://diydrones.com/profiles/blogs/705844:BlogPost:43438
+ *
+ * Calculate distance, bearing and more between Latitude/Longitude points
+ * http://www.movable-type.co.uk/scripts/latlong.html
+ */
+
 #include <math.h>
 
 #include "main.h"

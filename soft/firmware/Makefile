@@ -128,9 +128,7 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \
          src/mavlink_local/mavdbg.cpp \
-         src/mavlink_local/mavcmd.cpp \
          src/mavlink_local/param_cli.cpp \
-         src/mavlink_local/wps.cpp \
          src/mavlink_local/wps_cli.cpp \
          src/mavlink_local/waypoint_db.cpp \
          
@@ -142,14 +140,14 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
 
 ACSSRC = src/acs/controller.cpp \
          src/acs/ground_rover.cpp \
-         src/acs/fixed_wing.cpp \
          src/acs/planner.cpp \
          src/acs/stab.cpp \
          src/acs/wp.cpp \
          src/acs/wp_local.cpp \
          src/acs/wp_global.cpp \
 		 src/acs/acs.cpp \
-		 
+		 src/mavlink_local/mavcmd.cpp \
+		          
 LINKSRC = src/link/linkmgr.cpp \
          src/link/link.cpp \
          src/link/link_packer.cpp \
@@ -161,7 +159,6 @@ CPPSRC = $(CHCPPSRC) \
 		 $(SENSORSSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
-		 $(LINKSRC) \
 		 $(MATHSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
@@ -190,6 +187,7 @@ CPPSRC = $(CHCPPSRC) \
          src/benchmark/benchmark.cpp
 
 CPPSRC_DBG = $(ACSSRC) \
+		 $(LINKSRC) \
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler

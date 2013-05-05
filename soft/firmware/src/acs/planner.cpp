@@ -4,7 +4,6 @@
 #include "global_flags.h"
 #include "message.hpp"
 #include "waypoint_db.hpp"
-#include "wps.hpp"
 #include "mavdbg.hpp"
 #include "eeprom_file_tree.hpp"
 
@@ -67,7 +66,6 @@ extern EventSource event_mavlink_out_mission_ack;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Thread *planner_tp = NULL;
 static char dbg_str[64];
 
 /*
@@ -370,20 +368,11 @@ static msg_t PlannerThread(void* arg){
  ******************************************************************************
  */
 
-Thread* PlannerInit(void){
-
-  MavlinkWpmInit();
-
+void PlannerInit(void){
   wpdb.connect(&MissionFile);
-
-  planner_tp = chThdCreateStatic(PlannerThreadWA,
-                        sizeof(PlannerThreadWA),
-                        CONTROLLER_THREADS_PRIO,
-                        PlannerThread,
-                        NULL);
-
-  if (planner_tp == NULL)
-    chDbgPanic("can not allocate memory");
-
-  return planner_tp;
+  chThdCreateStatic(PlannerThreadWA,
+                    sizeof(PlannerThreadWA),
+                    CONTROLLER_THREADS_PRIO,
+                    PlannerThread,
+                    NULL);
 }

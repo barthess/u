@@ -28,6 +28,8 @@ void Servo5Set(uint8_t angle);
 void Servo6Set(uint8_t angle);
 void Servo7Set(uint8_t angle);
 void ServoCarThrustSet(uint8_t angle);
+uint8_t float2thrust(float v);
+uint8_t float2servo(float v);
 
 void ServoInit(void);
 

@@ -61,6 +61,7 @@ Giovanni
 #include "benchmark.hpp"
 #include "blinker.hpp"
 #include "waypoint_db.hpp"
+#include "planner.hpp"
 
 #include "imu.hpp"
 #include "acs.hpp"
@@ -165,13 +166,13 @@ int main(void) {
   EepromFileTreeInit();
   ParametersInit();   /* read parameters from EEPROM via I2C*/
   MavInit();          /* mavlink constants initialization must be called after parameters init */
-  ControllerInit();   /* must be started only after loading of parameters */
+  PlannerInit();
+  ControllerInit();
   LinkMgrInit();      /* launch after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
   SensorsInit();      /* Note. Sensors depends on I2C */
   PwrMgmtInit();
   TlmSenderInit();
-  MavCmdInitLocal();
   StorageInit();
 
   /**/
@@ -180,11 +181,11 @@ int main(void) {
 
   /* main cycle */
   imu.start();
-  acs.start();
+  acs.start(&state_vector, &impact);
 
   while (TRUE){
     if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){
-      acs.update(&state_vector, &impact);
+      acs.update();
       drivetrain.update(&impact);
     }
   }

@@ -3,12 +3,14 @@
  *      в пределах 1000 - 2000 uS. Середина - 1500 uS.
  *      Период - 20 mS.
  */
+#include <math.h>
 
 #include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "servo.hpp"
 #include "param_registry.hpp"
+#include "misc_math.hpp"
 
 /*
  ******************************************************************************
@@ -18,7 +20,8 @@
 extern GlobalFlags_t GlobalFlags;
 extern ParamRegistry param_registry;
 
-extern mavlink_system_t mavlink_system_struct;
+extern mavlink_system_t   mavlink_system_struct;
+extern mavlink_vfr_hud_t  mavlink_out_vfr_hud_struct;
 extern chibios_rt::BinarySemaphore servo_updated_sem;
 
 /*
@@ -240,6 +243,34 @@ void ServoCarThrustSet(uint8_t angle){
 }
 
 /**
+ * Convert from float -1..1 value to uint8_t 0..255
+ */
+uint8_t float2thrust(float v){
+  int32_t tmp = 0;
+  tmp = roundf((v + 1) * 128);
+
+  if (mavlink_system_struct.type == MAV_TYPE_GROUND_ROVER){
+    putinrange(v, 0.0f, 1.0f);
+    mavlink_out_vfr_hud_struct.throttle = roundf(v * 100);
+  }
+  else{
+    putinrange(v, -1.0f, 1.0f);
+    mavlink_out_vfr_hud_struct.throttle = roundf((v + 1.0f) * 50);
+  }
+
+  return __USAT(tmp, 8);
+}
+
+/**
+ * Convert from -0.2 .. 0.2 to uint8_t 0..255
+ */
+uint8_t float2servo(float v){
+  int32_t tmp =0;
+  tmp = roundf(128 * 5 * (v + 0.2f));
+  return __USAT(tmp, 8);
+}
+
+/**
  *
  */
 void ServoInit(void){
@@ -272,6 +303,25 @@ void ServoInit(void){
   /* this channel allways run in plane mode. It must be started _after_
    * PWM1 because of syncronization PID with them. */
   pwmStart(&PWMD4, &pwm4plane_cfg);
+
+  /* move all servos to neutral */
+  switch (mavlink_system_struct.type){
+  case MAV_TYPE_GROUND_ROVER:
+    Servo4Set(128);
+    Servo5Set(128);
+    Servo6Set(128);
+    Servo7Set(128);
+    ServoCarThrustSet(128);
+    break;
+
+  case MAV_TYPE_FIXED_WING:
+    chDbgPanic("Fixed wing mode not implemented yet");
+    break;
+
+  default:
+    chDbgPanic("This mode is unsupported");
+    break;
+  }
 }
 
 

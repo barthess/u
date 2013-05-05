@@ -90,6 +90,7 @@ typedef struct {
   float     ye;       // Y coordinate, East (m)
   float     vgps;     // speed from GPS (m/s)
   float     vodo;     // speed from odometer (m/s)
+  uint8_t   gpsfix;   // fix type (0-1: no fix, 2: 2D fix, 3: 3D fix)
 }StateVector;
 
 

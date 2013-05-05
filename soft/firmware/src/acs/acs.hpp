@@ -6,10 +6,6 @@
 #include "pid.hpp"
 #include "sensors.hpp"
 
-/*===========================================================================*/
-/* Driver data structures and types.                                         */
-/*===========================================================================*/
-
 /**
  * @brief   Status of operation returned by ACS
  */
@@ -26,6 +22,7 @@ typedef enum {
 typedef enum {
   ACS_STATE_UNINIT,
   ACS_STATE_IDLE,
+  ACS_STATE_TAKEOFF,
   ACS_STATE_NAVIGATE_TO_WAYPOINT,
   ACS_STATE_PASS_WAYPOINT,
   ACS_STATE_LOITER,
@@ -37,31 +34,34 @@ typedef enum {
 class ACS{
 public:
   ACS(void){state = ACS_STATE_UNINIT;};
-  void start(void);
-  acs_status_t launch(uint16_t seq);
-  acs_status_t update(const StateVector *in, Impact *out);
-  acs_status_t overwriteWp(uint16_t seq);
-  acs_status_t go_home(void);
-  acs_status_t loiter(systime_t t);
+  void start(const StateVector *in, Impact *out);
+  MAV_RESULT takeoff(mavlink_command_long_t *clp);
+  MAV_RESULT loiter(mavlink_command_long_t *clp);
+  MAV_RESULT owerwrite(mavlink_command_long_t *clp);
+  MAV_RESULT kill(mavlink_command_long_t *clp);
+  void setCurrentMission(mavlink_mission_set_current_t *sc);
+  void setMode(mavlink_set_mode_t *sm);
+  void manualControl(mavlink_manual_control_t *mc);
+  acs_status_t update(void);
 
 private:
-  acs_status_t navigating(const StateVector *in, Impact *out);
-  acs_status_t passing_wp(const StateVector *in, Impact *out);
-  acs_status_t loitering(const StateVector *in, Impact *out);
-  mavlink_mission_item_t wp;
-  uint16_t seq;
-  acs_state_t state;
+  acs_status_t navigating(void);
+  acs_status_t passing_wp(void);
+  acs_status_t loitering(void);
+  acs_status_t taking_off(void);
+  mavlink_mission_item_t wp;  // corrent waypoint navigating to
+  mavlink_command_long_t cl;  // command to execute constructed from mission item data
+  const StateVector *in;
+  Impact *out;
   PIDControl<float> spd;
   PIDControl<float> hdg;
   PIDControl<float> xtrack;
+  float launch_lon; // cached value
+  float launch_lat; // cached value
+  uint16_t seq;
+  acs_state_t state;
+
+  float const *speed_min;
 };
-
-/*===========================================================================*/
-/* Driver macros.                                                            */
-/*===========================================================================*/
-
-/*===========================================================================*/
-/* External declarations.                                                    */
-/*===========================================================================*/
 
 #endif /* ACS_H_ */
