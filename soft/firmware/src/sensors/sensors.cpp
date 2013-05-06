@@ -8,9 +8,6 @@
 #include "speedometer.hpp"
 
 #include "tmp75.hpp"
-#include "itg3200.hpp"
-#include "lsm303.hpp"
-#include "mma8451.hpp"
 #include "bmp085.hpp"
 #include "max1236.hpp"
 
@@ -38,9 +35,6 @@ extern chibios_rt::BinarySemaphore bmp085_sem;
  ******************************************************************************
  */
 static TMP75    tmp75(&I2CD2,   tmp75addr);
-static ITG3200  itg3200(&I2CD2, itg3200addr);
-static LSM303   lsm303(&I2CD2,  lsm303magaddr);
-static MMA8451  mma8451(&I2CD2, mma8451addr);
 static BMP085   bmp085(&I2CD2,  bmp085addr);
 static MAX1236  max1236(&I2CD2, max1236addr);
 

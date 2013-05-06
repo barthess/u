@@ -43,7 +43,6 @@ extern float LongitudeScale;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static float const *speed_min;
 
 /*
  ******************************************************************************
@@ -55,7 +54,7 @@ static float const *speed_min;
 /**
  * Calculate heading needed to reach waypoint and return TRUE if waypoint reached.
  */
-static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
+bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
   float delta_x;
   float delta_y;
 
