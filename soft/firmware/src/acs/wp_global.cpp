@@ -6,7 +6,17 @@
 #include "sensors.hpp"
 #include "gps.hpp"
 #include "param_registry.hpp"
-#include "stab.hpp"
+
+
+
+typedef enum {
+  WP_GOTO_REACHED = 0,
+  WP_GOTO_ABORTED = 1,
+  WP_GOTO_FAILED = 2,
+  WP_GOTO_RESCHEDULED = 3,
+} goto_wp_result_t;
+
+
 
 /*
  ******************************************************************************

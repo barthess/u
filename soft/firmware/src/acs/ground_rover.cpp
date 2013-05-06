@@ -4,7 +4,6 @@
 #include "servo.hpp"
 #include "controller.hpp"
 #include "dsp.hpp"
-#include "stab.hpp"
 #include "param_registry.hpp"
 
 /*
