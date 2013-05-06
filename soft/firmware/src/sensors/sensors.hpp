@@ -90,6 +90,8 @@ typedef struct {
   float     ye;       // Y coordinate, East (m)
   float     vgps;     // speed from GPS (m/s)
   float     vodo;     // speed from odometer (m/s)
+  float     Xsins;    // X coordinate measured by SINS, North (m)
+  float     Ysins;    // Y coordinate measured by SINS, EAST (m)
   uint8_t   gpsfix;   // fix type (0-1: no fix, 2: 2D fix, 3: 3D fix)
 }StateVector;
 
@@ -101,7 +103,8 @@ typedef struct {
   float     angle0;   // (rad)
   float     angle1;   // (rad)
   float     angle2;   // (rad)
-  uint8_t   thrust;   // (percents)
+  float     rud;      // (rad)
+  float     thrust;   // (n/a)
 }Impact;
 
 

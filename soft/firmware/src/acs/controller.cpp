@@ -15,7 +15,7 @@
  ******************************************************************************
  */
 extern mavlink_system_t   mavlink_system_struct;
-extern MissionPlanner     mav_executor;
+extern MissionPlanner     mission_planner;
 
 /*
  ******************************************************************************
@@ -45,7 +45,7 @@ void ControllerInit(void){
 
   case MAV_TYPE_GROUND_ROVER:
     /* create thread handling all commands from ground */
-    mav_executor.start(NORMALPRIO);
+    mission_planner.start(NORMALPRIO);
     SpeedometerInit();
     break;
 

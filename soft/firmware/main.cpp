@@ -65,6 +65,7 @@ Giovanni
 
 #include "imu.hpp"
 #include "acs.hpp"
+#include "sins.hpp"
 #include "drivetrain.hpp"
 
 /*
@@ -121,11 +122,14 @@ StateVector state_vector;
 ACS acs;
 Impact impact;
 
+/* automated control system */
+SINS sins;
+
 /**/
 Drivetrain drivetrain;
 
 /**/
-MissionPlanner mav_executor;
+MissionPlanner mission_planner;
 
 /*
  ******************************************************************************
@@ -185,11 +189,14 @@ int main(void) {
   /* main cycle */
   imu.start();
   acs.start(&state_vector, &impact);
+  drivetrain.start(&impact);
+  sins.start(&state_vector);
 
   while (TRUE){
     if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){
+      sins.update();
       acs.update();
-      drivetrain.update(&impact);
+      drivetrain.update();
     }
   }
 

@@ -123,7 +123,8 @@ SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/max1236.cpp \
          src/sensors/speedometer.cpp \
          src/sensors/imu.cpp \
-
+		 src/sensors/sins.cpp \
+		 
 MAVLINKSRC = src/mavlink_local/param.cpp \
          src/mavlink_local/param_registry.cpp \
          src/mavlink_local/param_validator.cpp \

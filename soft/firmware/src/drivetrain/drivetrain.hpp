@@ -5,7 +5,10 @@
 
 class Drivetrain{
 public:
-  void update(const Impact *impact);
+  void start(const Impact *impact);
+  void update(void);
+private:
+  const Impact *impact;
 };
 
 #endif /* DRIVETRAIN_HPP_ */

@@ -38,6 +38,15 @@ extern EventSource event_mavlink_in_mission_set_current;
 extern EventSource event_mavlink_out_command_ack;
 extern EventSource event_mavlink_in_command_long;
 
+
+extern mavlink_mission_current_t       mavlink_out_mission_current_struct;
+extern mavlink_mission_item_reached_t  mavlink_out_mission_item_reached_struct;
+extern EventSource event_mavlink_out_mission_current;
+extern EventSource event_mavlink_out_mission_item_reached;
+
+
+
+
 extern IMU imu;
 extern ACS acs;
 extern WpDB wpdb;
@@ -212,7 +221,16 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
     break;
 
   case (MAV_CMD_NAV_TAKEOFF):
-    result = acs.takeoff(clp);
+    /* try to load 0-th mission item to RAM */
+    if (0 != wpdb.getCount()){
+      if (CH_SUCCESS != wpdb.load(&mi, 0))
+        chDbgPanic("can not acquare waypoint");
+      /* perform take off*/
+      result = acs.takeoff(&mi);
+    }
+    else {
+      result = MAV_RESULT_TEMPORARILY_REJECTED;
+    }
     cmd_confirm(result, clp->command);
     break;
 
@@ -254,30 +272,25 @@ msg_t MissionPlanner::main(void){
   struct EventListener el_manual_control;
   struct EventListener el_set_mode;
   struct EventListener el_mission_set_current;
+  struct EventListener el_mission_item_reached;
 
-  chEvtRegisterMask(&event_mavlink_in_command_long,         &el_command_long, EVMSK_MAVLINK_IN_COMMAND_LONG);
-  chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,     EVMSK_MAVLINK_IN_MANUAL_CONTROL);
-  chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,           EVMSK_MAVLINK_IN_SET_MODE);
-  chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
+  chEvtRegisterMask(&event_mavlink_in_command_long,         &el_command_long,         EVMSK_MAVLINK_IN_COMMAND_LONG);
+  chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,       EVMSK_MAVLINK_IN_MANUAL_CONTROL);
+  chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,             EVMSK_MAVLINK_IN_SET_MODE);
+  chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,  EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
+  chEvtRegisterMask(&event_mavlink_out_mission_item_reached,&el_mission_item_reached, EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
 
   /* wait modems */
   while(GlobalFlags.messaging_ready == 0)
     chThdSleepMilliseconds(50);
-
-  /* try to load 0-th mission item to RAM */
-  if (0 != wpdb.getCount()){
-    if (CH_SUCCESS != wpdb.load(&mi, 0))
-      chDbgPanic("can not acquare waypoint");
-    else
-      mission_load_status = CH_SUCCESS;
-  }
 
   /* main loop */
   while(!chThdShouldTerminate()){
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG |
                               EVMSK_MAVLINK_IN_MANUAL_CONTROL |
                               EVMSK_MAVLINK_IN_SET_MODE |
-                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT,
+                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT |
+                              EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED,
                               MS2ST(50));
 
     switch (evt){
@@ -295,6 +308,11 @@ msg_t MissionPlanner::main(void){
 
     case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
       acs.setCurrentMission(&mavlink_in_mission_set_current_struct);
+      break;
+
+    case EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED:
+      if (CH_SUCCESS == wpdb.load(&mi, mavlink_out_mission_item_reached_struct.seq + 1))
+        acs.next(&mi);
       break;
 
     default:
@@ -317,32 +335,29 @@ msg_t MissionPlanner::main(void){
  *******************************************************************************
  */
 
-/**
- *
- */
-bool MissionPlanner::nextMission(mavlink_command_long_t *cl){
-  if (CH_SUCCESS != mission_load_status)
-    return CH_FAILED;
-  else{
-    /* construct command from cached mission item */
-    cl->command = mi.command;
-    cl->param1  = mi.param1;
-    cl->param2  = mi.param2;
-    cl->param3  = mi.param3;
-    cl->param4  = mi.param4;
-    cl->param5  = mi.x;
-    cl->param6  = mi.y;
-    cl->param7  = mi.z;
-    cl->confirmation = 0;
-    cl->target_component = mi.target_component;
-    cl->target_system = mi.target_system;
-
-    /* 0-th item must be handled separately*/
-//    if (0 != seq)
-//      broadcast_mission_item_reached(seq - 1);
-//    broadcast_mission_current(seq);
-
-    return CH_SUCCESS;
-  }
-}
+///**
+// *
+// */
+//bool MissionPlanner::nextMission(mavlink_mission_item_t *mip){
+//
+//    return CH_SUCCESS;
+//}
+//
+///**
+// *
+// */
+//bool MissionPlanner::firstMission(mavlink_mission_item_t *mip){
+//  seq = 0;
+//
+//  /* try to load 0-th mission item to RAM */
+//  if (0 != wpdb.getCount()){
+//    if (CH_SUCCESS != wpdb.load(&mi, 0))
+//      chDbgPanic("can not acquare waypoint");
+//    else
+//      mission_load_status = CH_SUCCESS;
+//  }
+//
+//  return CH_SUCCESS;
+//}
+//
 

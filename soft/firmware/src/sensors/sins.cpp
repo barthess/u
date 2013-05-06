@@ -1,6 +1,9 @@
+#include <math.h>
+
 #include "main.h"
-#include "drivetrain.hpp"
-#include "servo.hpp"
+#include "sins.hpp"
+#include "bkp.hpp"
+#include "param_registry.hpp"
 
 /*
  ******************************************************************************
@@ -13,6 +16,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern ParamRegistry param_registry;
 
 /*
  ******************************************************************************
@@ -42,15 +46,38 @@
 /**
  *
  */
-void Drivetrain::start(const Impact *impact){
-  this->impact = impact;
-  ServoInit();
-}
+void SINS::start(StateVector *in){
+  this->in = in;
+  prev_odo = bkpOdometer;
+  this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
+  in->Xsins = 0;
+  in->Ysins = 0;
+};
 
 /**
  *
  */
-void Drivetrain::update(void){
-  ServoCarYawSet(float2servo(impact->rud));
-  ServoCarThrustSet(float2thrust(impact->thrust));
-}
+void SINS::update(void){
+  float a;
+  uint32_t dtrip;
+
+  chSysLock();
+  dtrip = bkpOdometer - prev_odo;
+  prev_odo = bkpOdometer;
+  chSysUnlock();
+
+  if (0 == dtrip)
+    return;
+  else{
+    a = (prev_hdg + in->psi) / 2;
+    prev_hdg = in->psi;
+    in->Xsins += dtrip * sinf(a);
+    in->Ysins += dtrip * cosf(a);
+  }
+};
+
+
+
+
+
+
