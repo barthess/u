@@ -1,7 +1,6 @@
 #include "main.h"
 #include "message.hpp"
 #include "mission_planner.hpp"
-#include "speedometer.hpp"
 
 /*
  ******************************************************************************
@@ -44,9 +43,7 @@ void ControllerInit(void){
   switch (mavlink_system_struct.type){
 
   case MAV_TYPE_GROUND_ROVER:
-    /* create thread handling all commands from ground */
     mission_planner.start(NORMALPRIO);
-    SpeedometerInit();
     break;
 
   case MAV_TYPE_FIXED_WING:

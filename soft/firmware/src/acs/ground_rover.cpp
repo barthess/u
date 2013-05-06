@@ -1,13 +1,9 @@
-/*
- * Stores functions sutable for ground rover - pulses to speed conversion, etc.
- */
 #include "main.h"
 #include "global_flags.h"
 #include "message.hpp"
 #include "servo.hpp"
 #include "controller.hpp"
 #include "dsp.hpp"
-#include "mission_loader.hpp"
 #include "stab.hpp"
 #include "param_registry.hpp"
 
@@ -131,7 +127,6 @@ enum MAV_RESULT cmd_nav_land_handler(mavlink_command_long_t *cl){
  *
  */
 Thread *ControllerGroundRoverInit(void){
-  StabInit();
   return groundrover_tp;
 }
 

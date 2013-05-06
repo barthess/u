@@ -141,10 +141,7 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
 
 ACSSRC = src/acs/controller.cpp \
          src/acs/ground_rover.cpp \
-         src/acs/mission_loader.cpp \
-         src/acs/stab.cpp \
-         src/acs/wp.cpp \
-         src/acs/wp_local.cpp \
+         src/acs/mission_updater.cpp \
          src/acs/wp_global.cpp \
 		 src/acs/acs.cpp \
 		 src/acs/mission_planner.cpp \
@@ -161,6 +158,7 @@ CPPSRC = $(CHCPPSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
 		 $(MATHSRC) \
+	 	 $(LINKSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
@@ -188,7 +186,6 @@ CPPSRC = $(CHCPPSRC) \
          src/benchmark/benchmark.cpp
 
 CPPSRC_DBG = $(ACSSRC) \
-		 $(LINKSRC) \
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler

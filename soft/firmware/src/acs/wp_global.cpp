@@ -7,7 +7,6 @@
 #include "gps.hpp"
 #include "param_registry.hpp"
 #include "stab.hpp"
-#include "wp.hpp"
 
 /*
  ******************************************************************************
@@ -83,35 +82,3 @@ static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
-
-/**
- *
- */
-void WpGlobalInit(void){
-  speed_min = (const float*)param_registry.valueSearch("SPD_speed_min");
-}
-
-/**
- * Handle waypoint with MAV_FRAME_GLOBAL
- */
-goto_wp_result_t goto_wp_global(mavlink_mission_item_t *wp){
-  float target_heading = 0;
-
-  broadcast_mission_current(wp->seq);
-
-  /* stabilization loop for single waypoint */
-  while (!is_global_wp_reached(wp, &target_heading)){
-    if (GlobalFlags.mission_abort)
-      return WP_GOTO_ABORTED;
-
-    loiter_if_need();
-
-    if (WpSeqNew != 0)
-      return WP_GOTO_RESCHEDULED;
-
-    servo_updated_sem.wait();
-    pid_keep_speed(comp_data.groundspeed_odo, *speed_min);
-    pid_keep_heading(comp_data.heading, target_heading);
-  }
-  return WP_GOTO_REACHED;
-}

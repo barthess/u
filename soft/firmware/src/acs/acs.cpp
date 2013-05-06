@@ -8,6 +8,7 @@
 #include "mission_planner.hpp"
 #include "misc_math.hpp"
 #include "geometry.hpp"
+#include "logger.hpp"
 
 /*
  ******************************************************************************
@@ -27,6 +28,7 @@ extern mavlink_mission_current_t        mavlink_out_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_out_mission_item_reached_struct;
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
 extern mavlink_vfr_hud_t                mavlink_out_vfr_hud_struct;
+extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
 
 extern EventSource event_mavlink_out_mission_current;
 extern EventSource event_mavlink_out_mission_item_reached;
@@ -55,22 +57,34 @@ extern CompensatedData comp_data;
 /**
  *
  */
-bool ACS::is_wp_reached_local(void){
-  return false;
+static void broadcast_mission_current(uint16_t seq){
+  mavlink_out_mission_current_struct.seq = seq;
+  chEvtBroadcastFlags(&event_mavlink_out_mission_current, EVMSK_MAVLINK_OUT_MISSION_CURRENT);
+  log_write_schedule(MAVLINK_MSG_ID_MISSION_CURRENT, NULL, 0);
 }
 
 /**
  *
  */
-//void ACS::keep_heading(float current, float desired){
-//  float impact;
-//  float error;
-//
-//  error = wrap_pi(desired - current);
-//  impact = UpdatePID(&headingPid, error, current);
-//  putinrange(impact, -0.2f, 0.2f);
-//  ServoCarYawSet(float2servo(impact));
-//}
+static void broadcast_mission_item_reached(uint16_t seq){
+  mavlink_out_mission_item_reached_struct.seq = seq;
+  chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached, EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
+  log_write_schedule(MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL, 0);
+}
+
+/**
+ *
+ */
+bool ACS::is_wp_reached_local(void){
+  float sqr_target_radius = mi.param1 * mi.param1;
+  float dx = in->Xsins - mi.x;
+  float dy = in->Ysins - mi.y;
+
+  if ((dx*dx + dy*dy) < sqr_target_radius)
+    return true;
+  else
+    return false;
+}
 
 /**
  *
@@ -81,24 +95,36 @@ acs_status_t ACS::navigating(void){
   float error;
 
   switch(mi.frame){
+  /*
+   * Local NED
+   */
   case MAV_FRAME_LOCAL_NED:
-    /* heading update */
-    target_heading = atan2f(mi.y, mi.x);
-    error = wrap_pi(target_heading - in->psi);
-    impact = hdg.update(error, in->psi);
-    putinrange(impact, -0.2f, 0.2f);
-    out->rud = impact;
+    /* check reachablillity */
+    if (is_wp_reached_local()){
+      state = ACS_STATE_PASS_WAYPOINT;
+    }
+    else{
+      /* heading update */
+      //NOTE: atan2(0,0) is forbidden arguments
+      target_heading = atan2f(mi.y, mi.x);
+      error = wrap_pi(target_heading - in->psi);
+      impact = hdg.update(error, in->psi);
+      putinrange(impact, -0.2f, 0.2f);
+      out->rud = impact;
 
-    /* thrust update */
-    impact = spd.update(*speed_min - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-    mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
-    mavlink_out_nav_controller_output_struct.aspd_error = *speed_min - comp_data.groundspeed_odo;
-    /* this check need because we can not get direction of moving */
-    if (impact < 0)
-      impact = 0;
-    out->thrust = impact;
+      /* thrust update */
+      impact = spd.update(*speed_min - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+      mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
+      mavlink_out_nav_controller_output_struct.aspd_error = *speed_min - comp_data.groundspeed_odo;
+      if (impact < 0)  /* this check need because we can not get direction of moving */
+        impact = 0;
+      out->thrust = impact;
+    }
     break;
 
+  /*
+   * Global WGS-84
+   */
   case MAV_FRAME_GLOBAL:
     break;
   default:
@@ -108,19 +134,30 @@ acs_status_t ACS::navigating(void){
   return ACS_STATUS_OK;
 }
 
-
-
-
-
-
-
-
 /**
  *
  */
 acs_status_t ACS::passing_wp(void){
-  chDbgPanic("unrealized");
-  return ACS_STATUS_ERROR;
+
+  switch(mi.frame){
+  /*
+   * Local NED
+   */
+  case MAV_FRAME_LOCAL_NED:
+    mavlink_out_mission_item_reached_struct.seq = mi_prev.seq;
+    chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
+                          EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
+    break;
+
+  /*
+   * Global WGS-84
+   */
+  case MAV_FRAME_GLOBAL:
+    break;
+  default:
+    return ACS_STATUS_ERROR;
+  }
+  return ACS_STATUS_OK;
 }
 
 /**
@@ -175,6 +212,27 @@ void ACS::start(const StateVector *in, Impact *out){
                   (const float*)param_registry.valueSearch("XTRACK_iGain"),
                   (const float*)param_registry.valueSearch("XTRACK_pGain"),
                   (const float*)param_registry.valueSearch("XTRACK_dGain"));
+
+  mavlink_out_nav_controller_output_struct.nav_roll       = 0;
+  mavlink_out_nav_controller_output_struct.nav_pitch      = 0;
+  mavlink_out_nav_controller_output_struct.alt_error      = 0;
+  mavlink_out_nav_controller_output_struct.aspd_error     = 0;
+  mavlink_out_nav_controller_output_struct.wp_dist        = 0;
+  mavlink_out_nav_controller_output_struct.nav_bearing    = 0;
+  mavlink_out_nav_controller_output_struct.target_bearing = 0;
+  mavlink_out_nav_controller_output_struct.xtrack_error   = 0;
+
+  mavlink_out_local_position_ned_struct.x  = 0;
+  mavlink_out_local_position_ned_struct.y  = 0;
+  mavlink_out_local_position_ned_struct.z  = 0;
+  mavlink_out_local_position_ned_struct.vx = 0;
+  mavlink_out_local_position_ned_struct.vy = 0;
+  mavlink_out_local_position_ned_struct.vz = 0;
+  mavlink_out_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
+
+  spd.reset();
+  hdg.reset();
+  xtrack.reset();
 
   this->state = ACS_STATE_IDLE;
 }
@@ -275,8 +333,10 @@ MAV_RESULT ACS::next(mavlink_mission_item_t *mip){
   if (ACS_STATE_IDLE == state)
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
-  if ((ACS_STATE_NAVIGATE_TO_WAYPOINT == state) || (ACS_STATE_TAKEOFF == state)){
-    /* store this waipoint as cached */
+  if ((ACS_STATE_NAVIGATE_TO_WAYPOINT == state) ||
+      (ACS_STATE_TAKEOFF == state) ||
+      (ACS_STATE_PASS_WAYPOINT == state)){
+    /* cache this waipoint */
     chSysLock();
     mi = *mip;
     chSysUnlock();

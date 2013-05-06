@@ -392,7 +392,7 @@ static msg_t PlannerThread(void* arg){
  ******************************************************************************
  */
 
-void PlannerInit(void){
+void MissionUpdaterInit(void){
   wpdb.connect(&MissionFile);
   chThdCreateStatic(PlannerThreadWA,
                     sizeof(PlannerThreadWA),

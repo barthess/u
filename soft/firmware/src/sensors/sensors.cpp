@@ -5,6 +5,7 @@
 #include "exti_local.hpp"
 #include "gps.hpp"
 #include "imu.hpp"
+#include "speedometer.hpp"
 
 #include "tmp75.hpp"
 #include "itg3200.hpp"
@@ -151,6 +152,7 @@ void SensorsInit(void){
           PollBaroThread,
           NULL);
 
+  SpeedometerInit();
   GPSInit();
 }
 

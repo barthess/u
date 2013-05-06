@@ -61,7 +61,7 @@ Giovanni
 #include "benchmark.hpp"
 #include "blinker.hpp"
 #include "waypoint_db.hpp"
-#include "mission_loader.hpp"
+#include "mission_updater.hpp"
 
 #include "imu.hpp"
 #include "acs.hpp"
@@ -173,11 +173,11 @@ int main(void) {
   EepromFileTreeInit();
   ParametersInit();   /* read parameters from EEPROM via I2C*/
   MavInit();          /* mavlink constants initialization must be called after parameters init */
-  PlannerInit();
+  MissionUpdaterInit();
   ControllerInit();
   LinkMgrInit();      /* launch after controller to reduce memory fragmentation on thread creation */
   TimekeepingInit();
-  SensorsInit();      /* Note. Sensors depends on I2C */
+  SensorsInit();      /* Note! Sensors depends on I2C */
   PwrMgmtInit();
   TlmSenderInit();
   StorageInit();
