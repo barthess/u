@@ -7,7 +7,7 @@
 #include "servo.hpp"
 #include "controller.hpp"
 #include "dsp.hpp"
-#include "planner.hpp"
+#include "mission_loader.hpp"
 #include "stab.hpp"
 #include "param_registry.hpp"
 

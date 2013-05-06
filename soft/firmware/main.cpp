@@ -61,7 +61,7 @@ Giovanni
 #include "benchmark.hpp"
 #include "blinker.hpp"
 #include "waypoint_db.hpp"
-#include "planner.hpp"
+#include "mission_loader.hpp"
 
 #include "imu.hpp"
 #include "acs.hpp"

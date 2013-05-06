@@ -140,7 +140,7 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
 
 ACSSRC = src/acs/controller.cpp \
          src/acs/ground_rover.cpp \
-         src/acs/planner.cpp \
+         src/acs/mission_loader.cpp \
          src/acs/stab.cpp \
          src/acs/wp.cpp \
          src/acs/wp_local.cpp \
