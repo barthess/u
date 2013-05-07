@@ -158,7 +158,7 @@ acs_status_t ACS::loop_navigate(void){
     else{
       /* heading update */
       //NOTE: atan2(0,0) is forbidden arguments
-      target_heading = atan2f(mi.y, mi.x);
+      target_heading = atan2f(mi.y - in->Ysins, mi.x - in->Xsins);
       error = wrap_pi(target_heading - in->psi);
       impact = hdg.update(error, in->psi);
       putinrange(impact, -0.2f, 0.2f);
