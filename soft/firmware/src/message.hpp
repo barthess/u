@@ -25,6 +25,8 @@
 #define EVMSK_MAVLINK_OUT_MISSION_COUNT                     (1UL << 19)
 #define EVMSK_MAVLINK_OUT_MISSION_ITEM                      (1UL << 20)
 #define EVMSK_MAVLINK_OUT_MISSION_REQUEST                   (1UL << 21)
+#define EVMSK_MAVLINK_OUT_LOCAL_POSITION_NED                (1UL << 22)
+#define EVMSK_MAVLINK_OUT_NAV_CONTROLLER_OUTPUT             (1UL << 23)
 
 /* input messages events */
 #define EVMSK_MAVLINK_IN_PARAM_SET                          (1UL << 0)

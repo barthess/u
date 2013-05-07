@@ -195,7 +195,8 @@ int main(void) {
   while (TRUE){
     if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){
       sins.update();
-      acs.update();
+      if (ACS_STATUS_ERROR == acs.update())
+        chDbgPanic("");
       drivetrain.update();
     }
   }

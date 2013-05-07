@@ -140,7 +140,6 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/madgwick.cpp
 
 ACSSRC = src/acs/controller.cpp \
-         src/acs/ground_rover.cpp \
          src/acs/mission_updater.cpp \
          src/acs/wp_global.cpp \
 		 src/acs/acs.cpp \

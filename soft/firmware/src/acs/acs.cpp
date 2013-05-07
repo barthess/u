@@ -9,6 +9,7 @@
 #include "misc_math.hpp"
 #include "geometry.hpp"
 #include "logger.hpp"
+#include "mavdbg.hpp"
 
 /*
  ******************************************************************************
@@ -33,6 +34,8 @@ extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
 extern EventSource event_mavlink_out_mission_current;
 extern EventSource event_mavlink_out_mission_item_reached;
 extern CompensatedData comp_data;
+
+extern WpDB wpdb;
 
 /*
  ******************************************************************************
@@ -59,7 +62,8 @@ extern CompensatedData comp_data;
  */
 static void broadcast_mission_current(uint16_t seq){
   mavlink_out_mission_current_struct.seq = seq;
-  chEvtBroadcastFlags(&event_mavlink_out_mission_current, EVMSK_MAVLINK_OUT_MISSION_CURRENT);
+  chEvtBroadcastFlags(&event_mavlink_out_mission_current,
+                                          EVMSK_MAVLINK_OUT_MISSION_CURRENT);
   log_write_schedule(MAVLINK_MSG_ID_MISSION_CURRENT, NULL, 0);
 }
 
@@ -68,15 +72,31 @@ static void broadcast_mission_current(uint16_t seq){
  */
 static void broadcast_mission_item_reached(uint16_t seq){
   mavlink_out_mission_item_reached_struct.seq = seq;
-  chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached, EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
+  chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
+                                      EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
   log_write_schedule(MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL, 0);
 }
 
 /**
  *
  */
+void ACS::pull_the_break(void){
+  /* thrust update */
+  float impact;
+  impact = spd.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+  mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
+  mavlink_out_nav_controller_output_struct.aspd_error = 0 - comp_data.groundspeed_odo;
+
+  if (impact < 0)  /* this check need because we can not get direction of moving */
+    impact = 0;
+  out->thrust = impact;
+}
+
+/**
+ *
+ */
 bool ACS::is_wp_reached_local(void){
-  float sqr_target_radius = mi.param1 * mi.param1;
+  float sqr_target_radius = mi.param2 * mi.param2;
   float dx = in->Xsins - mi.x;
   float dy = in->Ysins - mi.y;
 
@@ -89,7 +109,38 @@ bool ACS::is_wp_reached_local(void){
 /**
  *
  */
-acs_status_t ACS::navigating(void){
+void ACS::what_to_do_here(void){
+  if ((mi.command == MAV_CMD_NAV_LOITER_UNLIM) ||
+      (mi.command == MAV_CMD_NAV_LOITER_TURNS) ||
+      (mi.command == MAV_CMD_NAV_LOITER_TIME)){
+    /* we must loter here according to mission plan */
+    state = ACS_STATE_LOITER;
+  }
+  else if(mi.command == MAV_CMD_NAV_WAYPOINT){
+    /* this is regular waypoint. Just go to next item */
+    state = ACS_STATE_LOAD_MISSION_ITEM;
+  }
+  else if(mi.command == MAV_CMD_NAV_TAKEOFF){
+    /* rover successfully navigate to takeoff point. Go to next item */
+    state = ACS_STATE_LOAD_MISSION_ITEM;
+  }
+  else if(mi.command == MAV_CMD_NAV_LAND){
+    /* landing point reached. Go to idle state */
+    state = ACS_STATE_IDLE;
+    mavlink_system_struct.mode &= ~MAV_MODE_FLAG_SAFETY_ARMED;
+    mavlink_system_struct.state = MAV_STATE_STANDBY;
+    mavlink_dbg_print(MAV_SEVERITY_INFO, "ACS: Landed");
+  }
+  else{
+    /* do not know hot to handle it. Just got to next */
+    state = ACS_STATE_LOAD_MISSION_ITEM;
+  }
+}
+
+/**
+ *
+ */
+acs_status_t ACS::loop_navigate(void){
   float target_heading = 0;
   float impact;
   float error;
@@ -101,7 +152,8 @@ acs_status_t ACS::navigating(void){
   case MAV_FRAME_LOCAL_NED:
     /* check reachablillity */
     if (is_wp_reached_local()){
-      state = ACS_STATE_PASS_WAYPOINT;
+      broadcast_mission_item_reached(mi.seq);
+      what_to_do_here();
     }
     else{
       /* heading update */
@@ -113,9 +165,9 @@ acs_status_t ACS::navigating(void){
       out->rud = impact;
 
       /* thrust update */
-      impact = spd.update(*speed_min - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+      impact = spd.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
       mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
-      mavlink_out_nav_controller_output_struct.aspd_error = *speed_min - comp_data.groundspeed_odo;
+      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
       if (impact < 0)  /* this check need because we can not get direction of moving */
         impact = 0;
       out->thrust = impact;
@@ -137,16 +189,13 @@ acs_status_t ACS::navigating(void){
 /**
  *
  */
-acs_status_t ACS::passing_wp(void){
-
+acs_status_t ACS::loop_pass_wp(void){
+  chDbgPanic("unrealized");
   switch(mi.frame){
   /*
    * Local NED
    */
   case MAV_FRAME_LOCAL_NED:
-    mavlink_out_mission_item_reached_struct.seq = mi_prev.seq;
-    chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
-                          EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
     break;
 
   /*
@@ -163,23 +212,69 @@ acs_status_t ACS::passing_wp(void){
 /**
  *
  */
-acs_status_t ACS::loitering(void){
+acs_status_t ACS::loop_loiter(void){
   chDbgPanic("unrealized");
+
+  switch(mi.command){
+  case MAV_CMD_NAV_LOITER_UNLIM:
+    break;
+  case MAV_CMD_NAV_LOITER_TURNS:
+    break;
+  case MAV_CMD_NAV_LOITER_TIME:
+    break;
+  default:
+    chDbgPanic("unhandled case");
+    break;
+  }
   return ACS_STATUS_ERROR;
 }
 
 /**
  *
  */
-acs_status_t ACS::taking_off(void){
-
-  chSysLock();
-  mi_prev = mi;
-  chSysUnlock();
-
-  mavlink_out_mission_item_reached_struct.seq = mi_prev.seq;
-  chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached, EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
+acs_status_t ACS::loop_land(void){
+  /* there is nothing special landing procedures for rover. Just navigate
+   * to landing point */
+  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
   return ACS_STATUS_OK;
+}
+
+/**
+ *
+ */
+acs_status_t ACS::loop_takeoff(void){
+  /* there is nothing special take off procedures for rover. Just navigate
+   * to lauch point */
+  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+  return ACS_STATUS_OK;
+}
+
+/**
+ *
+ */
+acs_status_t ACS::loop_load_mission_item(void){
+  bool load_status = CH_FAILED;
+
+  mi_prev = mi;
+  if (wpdb.getCount() <= (mi.seq + 1)){ // no more items
+    /* if we fall here than last mission was not 'land'. System do not know
+     * what to do so start unlimited loitering */
+    state = ACS_STATE_LOITER;
+    return ACS_STATUS_NO_MISSION;
+  }
+  else{
+    load_status = wpdb.load(&mi, mi_prev.seq + 1);
+    if (CH_SUCCESS != load_status){
+      /* something goes wrong with waypoint loading */
+      state = ACS_STATE_LOITER;
+      return ACS_STATUS_ERROR;
+    }
+    else{
+      broadcast_mission_current(mi.seq);
+      state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+      return ACS_STATUS_OK;
+    }
+  }
 }
 
 /*
@@ -195,7 +290,7 @@ void ACS::start(const StateVector *in, Impact *out){
   this->in = in;
   this->out = out;
 
-  this->speed_min = (const float*)param_registry.valueSearch("SPD_speed_min");
+  this->speed =   (const float*)param_registry.valueSearch("SPD_speed");
   this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
   this->hdg.start((const float*)param_registry.valueSearch("HDG_iMax"),
                   (const float*)param_registry.valueSearch("HDG_iMin"),
@@ -245,20 +340,33 @@ acs_status_t ACS::update(void){
   chDbgCheck((NULL != in) && (NULL != out), "");
 
   switch(this->state){
-  case ACS_STATE_IDLE:
-    return ACS_STATUS_OK;
-    break;
-
   case ACS_STATE_NAVIGATE_TO_WAYPOINT:
-    return navigating();
-    break;
-
-  case ACS_STATE_PASS_WAYPOINT:
-    return passing_wp();
+    return loop_navigate();
     break;
 
   case ACS_STATE_LOITER:
-    return loitering();
+    return loop_loiter();
+    break;
+
+  case ACS_STATE_PASS_WAYPOINT:
+    return loop_pass_wp();
+    break;
+
+  case ACS_STATE_TAKEOFF:
+    return loop_takeoff();
+    break;
+
+  case ACS_STATE_LOAD_MISSION_ITEM:
+    return loop_load_mission_item();
+    break;
+
+  case ACS_STATE_LAND:
+    return loop_land();
+    break;
+
+  case ACS_STATE_IDLE:
+    pull_the_break();
+    return ACS_STATUS_OK;
     break;
 
   default:
@@ -266,30 +374,44 @@ acs_status_t ACS::update(void){
     return ACS_STATUS_ERROR;
     break;
   }
+
+  /* warning supressor */
+  return ACS_STATUS_ERROR;
 }
 
 /**
  * @brief   Launch UAV
  */
-MAV_RESULT ACS::takeoff(mavlink_mission_item_t *mip){
+MAV_RESULT ACS::takeoff(void){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
 
   if (ACS_STATE_IDLE != state)    /* allready done */
     return MAV_RESULT_TEMPORARILY_REJECTED;
 
-  switch(mip->frame){
+  /* try to load start of mission to RAM */
+  if (0 == wpdb.getCount())
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  if (CH_SUCCESS != wpdb.load(&mi, 0))
+    chDbgPanic("can not acquare waypoint");
+  if (mi.command != MAV_CMD_NAV_TAKEOFF)
+    chDbgPanic("first item must be takeoff");
 
-  /* local fram handler */
+  switch(mi.frame){
+  /*
+   * local fram handler
+   */
   case MAV_FRAME_LOCAL_NED:
-    mi_prev = *mip;
+    mi_prev = mi; // hack to fill all other fields correctly
     mi_prev.x = 0;
     mi_prev.y = 0;
     mi_prev.z = 0;
-    launch_lon = 0;
     launch_lat = 0;
+    launch_lon = 0;
     break;
 
-  /* global fram handler */
+  /*
+   * global fram handler
+   */
   case MAV_FRAME_GLOBAL:
     if (in->gpsfix < 2)    /* can not fly without GPS */
       return MAV_RESULT_TEMPORARILY_REJECTED;
@@ -299,59 +421,71 @@ MAV_RESULT ACS::takeoff(mavlink_mission_item_t *mip){
     }
     break;
 
-  /* error trap */
+  /*
+   * error trap
+   */
   default:
-    chDbgPanic("unsupported frame");
+    chDbgPanic("unhandled case");
     break;
   }
 
-  if (MAV_CMD_NAV_WAYPOINT == mip->command)
-    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-  else if(MAV_CMD_NAV_TAKEOFF == mip->command)
-    state = ACS_STATE_TAKEOFF;
-  else
-    return MAV_RESULT_UNSUPPORTED;
-
-  mavlink_out_mission_current_struct.seq = mip->seq;
-  chEvtBroadcastFlags(&event_mavlink_out_mission_current, EVMSK_MAVLINK_OUT_MISSION_CURRENT);
-
-  /* store this waipoint as cached */
-  chSysLock();
-  mi = *mip;
-  chSysUnlock();
-
+  mavlink_dbg_print(MAV_SEVERITY_INFO, "ACS: Taking off");
+  state = ACS_STATE_TAKEOFF;
+  mavlink_system_struct.state = MAV_STATE_ACTIVE;
+  broadcast_mission_current(mi.seq);
   return MAV_RESULT_ACCEPTED;
 }
 
 /**
  *
  */
-MAV_RESULT ACS::next(mavlink_mission_item_t *mip){
-  chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
-
-  /* you have to take device off first */
-  if (ACS_STATE_IDLE == state)
-    return MAV_RESULT_TEMPORARILY_REJECTED;
-
-  if ((ACS_STATE_NAVIGATE_TO_WAYPOINT == state) ||
-      (ACS_STATE_TAKEOFF == state) ||
-      (ACS_STATE_PASS_WAYPOINT == state)){
-    /* cache this waipoint */
-    chSysLock();
-    mi = *mip;
-    chSysUnlock();
-
-    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-    return MAV_RESULT_ACCEPTED;
-  }
-  else
-    return MAV_RESULT_TEMPORARILY_REJECTED;
+MAV_RESULT ACS::land(mavlink_command_long_t *clp){
+  (void)clp;
+  chDbgPanic("unrealized");
+  return MAV_RESULT_ACCEPTED;
 }
 
 /**
  *
  */
-MAV_RESULT ACS::loiter(mavlink_command_long_t *clp){
+MAV_RESULT ACS::overrideGoto(mavlink_command_long_t *clp){
+  (void)clp;
+  /* Hold / continue the current action
+   * | MAV_GOTO_DO_HOLD: hold MAV_GOTO_DO_CONTINUE: continue with next item in mission plan
+   * | MAV_GOTO_HOLD_AT_CURRENT_POSITION: Hold at current position MAV_GOTO_HOLD_AT_SPECIFIED_POSITION: hold at specified position
+   * | MAV_FRAME coordinate frame of hold point
+   * | Desired yaw angle in degrees
+   * | Latitude / X position
+   * | Longitude / Y position
+   * | Altitude / Z position|  */
+  if (clp->param1 == MAV_GOTO_DO_HOLD &&
+      clp->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION &&
+      clp->param3 == 0 &&
+      clp->param4 == 0 &&
+      clp->param5 == 0 &&
+      clp->param6 == 0 &&
+      clp->param7 == 0){
+//    setGlobalFlag(GlobalFlags.mission_loiter);
+    return MAV_RESULT_ACCEPTED;
+  }
+  else if (clp->param1 == MAV_GOTO_DO_CONTINUE &&
+           clp->param2 == MAV_GOTO_HOLD_AT_CURRENT_POSITION &&
+           clp->param3 == 0 &&
+           clp->param4 == 0 &&
+           clp->param5 == 0 &&
+           clp->param6 == 0 &&
+           clp->param7 == 0){
+//    clearGlobalFlag(GlobalFlags.mission_loiter);
+    return MAV_RESULT_ACCEPTED;
+  }
+  /* default return value */
+  return MAV_RESULT_UNSUPPORTED;
+}
+
+/**
+ *
+ */
+MAV_RESULT ACS::returnToLaunch(mavlink_command_long_t *clp){
   (void)clp;
   chDbgPanic("unrealized");
   return MAV_RESULT_ACCEPTED;
@@ -394,3 +528,23 @@ void ACS::manualControl(mavlink_manual_control_t *mc){
 //    Servo7Set(v);
 //  }
 }
+
+///**
+// *
+// */
+//MAV_RESULT ACS::next(void){
+//  chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
+//
+//  /* you have to take device off first */
+//  if (ACS_STATE_WAIT_MISSION_ITEM == state){
+//    /* cache this waipoint */
+//    chSysLock();
+//    mi = *mip;
+//    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+//    chSysUnlock();
+//
+//    return MAV_RESULT_ACCEPTED;
+//  }
+//  else
+//    return MAV_RESULT_TEMPORARILY_REJECTED;
+//}

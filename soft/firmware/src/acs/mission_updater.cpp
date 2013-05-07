@@ -12,15 +12,14 @@
  * DEFINES
  ******************************************************************************
  */
-//MAVLINK_WPM_PROTOCOL_TIMEOUT_DEFAULT
-#define PLANNER_STANDBY_TMO     MS2ST(20) /* poll inbox period waiting message from ground */
-#define PLANNER_RETRY_CNT       5
-#define PLANNER_RETRY_TMO       MS2ST(1000)
-#define PLANNER_ADDITIONAL_TMO  MS2ST(10)
+#define PLANNER_STANDBY_TMO       MS2ST(20) /* poll inbox period waiting message from ground */
+#define PLANNER_RETRY_CNT         5
+#define PLANNER_RETRY_TMO         MS2ST(1000)
+#define PLANNER_ADDITIONAL_TMO    MS2ST(10)
 
 #define TARGET_RADIUS             param2  /* dirty fix to correspond QGC not mavlink lib */
-#define MIN_TARGET_RADIUS_WGS84   5       /* minimal allowed waypoint radius for global frame */
-#define MIN_TARGET_RADIUS_LOCAL   1       /* minimal allowed waypoint radius for local frame */
+#define MIN_TARGET_RADIUS_WGS84   5.0f    /* minimal allowed waypoint radius for global frame */
+#define MIN_TARGET_RADIUS_LOCAL   0.5f    /* minimal allowed waypoint radius for local frame */
 
 /*
  ******************************************************************************
@@ -114,7 +113,7 @@ static uint8_t check_wp(const mavlink_mission_item_t *wp, uint16_t seq){
   if ((wp->frame != MAV_FRAME_GLOBAL) && (wp->frame != MAV_FRAME_LOCAL_NED)){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d",
                                  "PLANNER: Unsupported frame #", (int)wp->seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, dbg_str);
     return MAV_MISSION_UNSUPPORTED_FRAME;
   }
 
@@ -122,10 +121,19 @@ static uint8_t check_wp(const mavlink_mission_item_t *wp, uint16_t seq){
   if (0 == seq)
     mission_frame = wp->frame;
 
+  /* first item must be take off */
+  if ((0 == seq) && (MAV_CMD_NAV_TAKEOFF != wp->command)){
+    snprintf(dbg_str, sizeof(dbg_str), "%s",
+                             "PLANNER: 0-th item must be TAKEOFF");
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, dbg_str);
+   return MAV_MISSION_UNSUPPORTED_FRAME;
+  }
+
   /* all waypoints in mission must be in one frame type. */
   if (wp->frame != mission_frame){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d",
                              "PLANNER: Unsupported frame #", (int)wp->seq);
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, dbg_str);
     return MAV_MISSION_UNSUPPORTED_FRAME;
   }
 
@@ -133,7 +141,7 @@ static uint8_t check_wp(const mavlink_mission_item_t *wp, uint16_t seq){
   if (wp->seq != seq){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d - %d",
                         "PLANNER: Invalid sequence #", (int)wp->seq, (int)seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, dbg_str);
     return MAV_MISSION_INVALID_SEQUENCE;
   }
 
@@ -142,7 +150,7 @@ static uint8_t check_wp(const mavlink_mission_item_t *wp, uint16_t seq){
       ((wp->TARGET_RADIUS < MIN_TARGET_RADIUS_LOCAL) && (wp->frame == MAV_FRAME_LOCAL_NED))){
     snprintf(dbg_str, sizeof(dbg_str), "%s%d",
                           "PLANNER: Not enough target radius #", (int)wp->seq);
-    mavlink_dbg_print(MAV_SEVERITY_WARNING, dbg_str);
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, dbg_str);
     return MAV_MISSION_INVALID_PARAM1;
   }
 

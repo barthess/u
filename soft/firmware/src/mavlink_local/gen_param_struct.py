@@ -204,7 +204,7 @@ param = [
 ("HDG_iMin",       -10000.0, 0,  10000.0,   "f", "default",    "NULL"),
 ("HDG_iMax",       -10000.0, 0,  10000.0,   "f", "default",    "NULL"),
 #/* device's speed limits */
-("SPD_speed_min",   0.0,    0,      60.0,   "f", "default",    "NULL"),
+("SPD_speed",       0.0,    0,      60.0,   "f", "default",    "NULL"),
 ("SPD_speed_max",   0.0,    0,      60.0,   "f", "default",    "NULL"),
 #/**** pid coefficients for cross track correction ****/
 ("XTRACK_iGain",    -1.0,     0, 1.0,       "f", "default",    "NULL"),

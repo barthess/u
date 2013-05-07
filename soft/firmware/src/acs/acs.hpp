@@ -11,6 +11,7 @@
  */
 typedef enum {
   ACS_STATUS_OK,
+  ACS_STATUS_NO_MISSION,
   ACS_STATUS_ERROR,
 }acs_status_t;
 
@@ -21,10 +22,11 @@ typedef enum {
   ACS_STATE_UNINIT,
   ACS_STATE_IDLE,
   ACS_STATE_TAKEOFF,
+  ACS_STATE_LOAD_MISSION_ITEM,
   ACS_STATE_NAVIGATE_TO_WAYPOINT,
   ACS_STATE_PASS_WAYPOINT,
   ACS_STATE_LOITER,
-  ACS_STATE_LANDING,
+  ACS_STATE_LAND,
   ACS_STATE_DEAD,
 }acs_state_t;
 
@@ -35,24 +37,26 @@ class ACS{
 public:
   ACS(void){state = ACS_STATE_UNINIT;};
   void start(const StateVector *in, Impact *out);
-  MAV_RESULT takeoff(mavlink_mission_item_t *mip);
-  MAV_RESULT next(mavlink_mission_item_t *mip);
-  /**
-   * @brief   Emergency loiter
-   */
-  MAV_RESULT loiter(mavlink_command_long_t *clp);
-  MAV_RESULT owerwrite(mavlink_mission_item_t *mip);
-  MAV_RESULT kill(mavlink_mission_item_t *mip);
+  MAV_RESULT takeoff();
+  MAV_RESULT kill(void);
+  MAV_RESULT returnToLaunch(mavlink_command_long_t *clp);
+  MAV_RESULT goHome(void);
+  MAV_RESULT overrideGoto(mavlink_command_long_t *clp);
+  MAV_RESULT land(mavlink_command_long_t *clp);
   void setCurrentMission(mavlink_mission_set_current_t *scp);
   void setMode(mavlink_set_mode_t *smp);
   void manualControl(mavlink_manual_control_t *mcp);
   acs_status_t update(void);
 
 private:
-  acs_status_t navigating(void);
-  acs_status_t passing_wp(void);
-  acs_status_t loitering(void);
-  acs_status_t taking_off(void);
+  acs_status_t loop_navigate(void);
+  acs_status_t loop_pass_wp(void);
+  acs_status_t loop_loiter(void);
+  acs_status_t loop_takeoff(void);
+  acs_status_t loop_land(void);
+  acs_status_t loop_load_mission_item(void);
+  void pull_the_break(void);
+  void what_to_do_here(void);
   bool is_wp_reached_local(void);
   mavlink_mission_item_t mi;        // mission item currently executed
   mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation path
@@ -65,7 +69,7 @@ private:
   float launch_lat; // cached value
   acs_state_t state;
 
-  float const *speed_min, *pulse2m;
+  float const *speed, *pulse2m;
 };
 
 #endif /* ACS_H_ */

@@ -9,6 +9,8 @@ names = [
     ["attitude", "attitude"],
     ["scal_press", "scaled_pressure"],
     ["vfr_hud", "vfr_hud"],
+    ["position_ned", "local_position_ned"],
+    ["nav_output", "nav_controller_output"],
 ]
 
 head = """

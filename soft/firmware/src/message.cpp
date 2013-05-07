@@ -87,6 +87,8 @@ EventSource event_mavlink_out_scaled_pressure;
 EventSource event_mavlink_out_sys_status;
 EventSource event_mavlink_out_vfr_hud;
 EventSource event_mavlink_out_global_position_int;
+EventSource event_mavlink_out_local_position_ned;
+EventSource event_mavlink_out_nav_controller_output;
 EventSource event_mavlink_out_attitude;
 EventSource event_mavlink_out_mission_current;
 EventSource event_mavlink_out_mission_item_reached;
@@ -158,6 +160,8 @@ void MsgInit(void){
   chEvtInit(&event_mavlink_out_sys_status);
   chEvtInit(&event_mavlink_out_vfr_hud);
   chEvtInit(&event_mavlink_out_global_position_int);
+  chEvtInit(&event_mavlink_out_local_position_ned);
+  chEvtInit(&event_mavlink_out_nav_controller_output);
   chEvtInit(&event_mavlink_out_attitude);
   chEvtInit(&event_mavlink_out_mission_count);
   chEvtInit(&event_mavlink_out_mission_item);

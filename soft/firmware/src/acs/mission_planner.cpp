@@ -31,18 +31,15 @@ extern mavlink_set_mode_t mavlink_in_set_mode_struct;
 extern mavlink_mission_set_current_t mavlink_in_mission_set_current_struct;
 extern mavlink_command_ack_t mavlink_out_command_ack_struct;
 extern mavlink_command_long_t mavlink_in_command_long_struct;
-extern mavlink_mission_item_reached_t  mavlink_out_mission_item_reached_struct;
 
 extern EventSource event_mavlink_in_manual_control;
 extern EventSource event_mavlink_in_set_mode;
 extern EventSource event_mavlink_in_mission_set_current;
 extern EventSource event_mavlink_out_command_ack;
 extern EventSource event_mavlink_in_command_long;
-extern EventSource event_mavlink_out_mission_item_reached;
 
 extern IMU imu;
 extern ACS acs;
-extern WpDB wpdb;
 
 /*
  ******************************************************************************
@@ -225,22 +222,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    * take off handler
    */
   case (MAV_CMD_NAV_TAKEOFF):
-    if (mavlink_system_struct.state != MAV_STATE_STANDBY){
-      result = MAV_RESULT_TEMPORARILY_REJECTED;
-    }
-    else{
-      /* try to load 0-th mission item to RAM */
-      if (0 != wpdb.getCount()){
-        if (CH_SUCCESS != wpdb.load(&mi, 0))
-          chDbgPanic("can not acquare waypoint");
-        /* perform take off*/
-        result = acs.takeoff(&mi);
-      }
-      else {
-        result = MAV_RESULT_TEMPORARILY_REJECTED;
-      }
-    }
-
+    result = acs.takeoff();
     cmd_confirm(result, clp->command);
     break;
 
@@ -248,7 +230,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_RETURN_TO_LAUNCH):
-    result = cmd_nav_return_to_launch_handler(clp);
+    result = acs.returnToLaunch(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -256,15 +238,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_LAND):
-    result = cmd_nav_land_handler(clp);
-    cmd_confirm(result, clp->command);
-    break;
-
-  /*
-   *
-   */
-  case (MAV_CMD_NAV_LOITER_UNLIM):
-    result = acs.loiter(clp);
+    result = acs.land(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -272,7 +246,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_OVERRIDE_GOTO):
-    result = cmd_override_goto_handler(clp);
+    result = acs.overrideGoto(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -297,13 +271,11 @@ msg_t MissionPlanner::main(void){
   struct EventListener el_manual_control;
   struct EventListener el_set_mode;
   struct EventListener el_mission_set_current;
-  struct EventListener el_mission_item_reached;
 
   chEvtRegisterMask(&event_mavlink_in_command_long,         &el_command_long,         EVMSK_MAVLINK_IN_COMMAND_LONG);
   chEvtRegisterMask(&event_mavlink_in_manual_control,       &el_manual_control,       EVMSK_MAVLINK_IN_MANUAL_CONTROL);
   chEvtRegisterMask(&event_mavlink_in_set_mode,             &el_set_mode,             EVMSK_MAVLINK_IN_SET_MODE);
   chEvtRegisterMask(&event_mavlink_in_mission_set_current,  &el_mission_set_current,  EVMSK_MAVLINK_IN_MISSION_SET_CURRENT);
-  chEvtRegisterMask(&event_mavlink_out_mission_item_reached,&el_mission_item_reached, EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
 
   /* wait modems */
   while(GlobalFlags.messaging_ready == 0)
@@ -314,8 +286,7 @@ msg_t MissionPlanner::main(void){
     evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_IN_COMMAND_LONG |
                               EVMSK_MAVLINK_IN_MANUAL_CONTROL |
                               EVMSK_MAVLINK_IN_SET_MODE |
-                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT |
-                              EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED,
+                              EVMSK_MAVLINK_IN_MISSION_SET_CURRENT,
                               MS2ST(50));
 
     switch (evt){
@@ -335,11 +306,6 @@ msg_t MissionPlanner::main(void){
       acs.setCurrentMission(&mavlink_in_mission_set_current_struct);
       break;
 
-    case EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED:
-      if (CH_SUCCESS == wpdb.load(&mi, mavlink_out_mission_item_reached_struct.seq + 1))
-        acs.next(&mi);
-      break;
-
     default:
       break;
     }
@@ -349,7 +315,6 @@ msg_t MissionPlanner::main(void){
   chEvtUnregister(&event_mavlink_in_set_mode,             &el_set_mode);
   chEvtUnregister(&event_mavlink_in_mission_set_current,  &el_mission_set_current);
   chEvtUnregister(&event_mavlink_in_command_long,         &el_command_long);
-  chEvtUnregister(&event_mavlink_out_mission_item_reached,&el_mission_item_reached);
   chThdExit(0);
   return 0;
 }

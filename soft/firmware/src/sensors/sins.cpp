@@ -71,8 +71,8 @@ void SINS::update(void){
   else{
     a = (prev_hdg + in->psi) / 2;
     prev_hdg = in->psi;
-    in->Xsins += dtrip * sinf(a) * *pulse2m;
-    in->Ysins += dtrip * cosf(a) * *pulse2m;
+    in->Ysins += dtrip * sinf(a) * *pulse2m;
+    in->Xsins += dtrip * cosf(a) * *pulse2m;
   }
 };
 

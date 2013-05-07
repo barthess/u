@@ -68,6 +68,12 @@ extern EventSource event_mavlink_out_mission_item_reached;
 extern mavlink_mission_current_t mavlink_out_mission_current_struct;
 extern EventSource event_mavlink_out_mission_current;
 
+extern mavlink_local_position_ned_t mavlink_out_local_position_ned_struct;
+extern EventSource event_mavlink_out_local_position_ned;
+
+extern mavlink_nav_controller_output_t mavlink_out_nav_controller_output_struct;
+extern EventSource event_mavlink_out_nav_controller_output;
+
 
 void PackCycle(SerialDriver *sdp){
   struct EventListener el_gps_raw_int;
@@ -124,13 +130,19 @@ void PackCycle(SerialDriver *sdp){
   struct EventListener el_mission_current;
   chEvtRegisterMask(&event_mavlink_out_mission_current, &el_mission_current, EVMSK_MAVLINK_OUT_MISSION_CURRENT);
 
+  struct EventListener el_local_position_ned;
+  chEvtRegisterMask(&event_mavlink_out_local_position_ned, &el_local_position_ned, EVMSK_MAVLINK_OUT_LOCAL_POSITION_NED);
+
+  struct EventListener el_nav_controller_output;
+  chEvtRegisterMask(&event_mavlink_out_nav_controller_output, &el_nav_controller_output, EVMSK_MAVLINK_OUT_NAV_CONTROLLER_OUTPUT);
+
   eventmask_t evt = 0;
   mavlink_message_t mavlink_message_struct;
   uint8_t sendbuf[MAVLINK_MAX_PACKET_LEN];
   uint16_t len = 0;
   char dbg_string[52];
   while (!chThdShouldTerminate()) {
-    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM | EVMSK_MAVLINK_OUT_MISSION_ACK | EVMSK_MAVLINK_OUT_MISSION_REQUEST | EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED | EVMSK_MAVLINK_OUT_MISSION_CURRENT, MS2ST(50));
+    evt = chEvtWaitOneTimeout(EVMSK_MAVLINK_OUT_GPS_RAW_INT | EVMSK_MAVLINK_OUT_RAW_IMU | EVMSK_MAVLINK_OUT_SCALED_IMU | EVMSK_MAVLINK_OUT_RAW_PRESSURE | EVMSK_MAVLINK_OUT_SCALED_PRESSURE | EVMSK_MAVLINK_OUT_SYS_STATUS | EVMSK_MAVLINK_OUT_VFR_HUD | EVMSK_MAVLINK_OUT_GLOBAL_POSITION_INT | EVMSK_MAVLINK_OUT_ATTITUDE | EVMSK_MAVLINK_OUT_HEARTBEAT | EVMSK_MAVLINK_OUT_PARAM_VALUE | EVMSK_MAVLINK_OUT_STATUSTEXT | EVMSK_MAVLINK_OUT_MISSION_COUNT | EVMSK_MAVLINK_OUT_MISSION_ITEM | EVMSK_MAVLINK_OUT_MISSION_ACK | EVMSK_MAVLINK_OUT_MISSION_REQUEST | EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED | EVMSK_MAVLINK_OUT_MISSION_CURRENT | EVMSK_MAVLINK_OUT_LOCAL_POSITION_NED | EVMSK_MAVLINK_OUT_NAV_CONTROLLER_OUTPUT, MS2ST(50));
     switch(evt){
     case EVMSK_MAVLINK_OUT_GPS_RAW_INT:
       memcpy_ts(sendbuf, &mavlink_out_gps_raw_int_struct, sizeof(mavlink_out_gps_raw_int_struct), 4);
@@ -222,6 +234,16 @@ void PackCycle(SerialDriver *sdp){
       mavlink_msg_mission_current_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_mission_current_t *)sendbuf);
       break;
 
+    case EVMSK_MAVLINK_OUT_LOCAL_POSITION_NED:
+      memcpy_ts(sendbuf, &mavlink_out_local_position_ned_struct, sizeof(mavlink_out_local_position_ned_struct), 4);
+      mavlink_msg_local_position_ned_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_local_position_ned_t *)sendbuf);
+      break;
+
+    case EVMSK_MAVLINK_OUT_NAV_CONTROLLER_OUTPUT:
+      memcpy_ts(sendbuf, &mavlink_out_nav_controller_output_struct, sizeof(mavlink_out_nav_controller_output_struct), 4);
+      mavlink_msg_nav_controller_output_encode(mavlink_system_struct.sysid, MAV_COMP_ID_ALL, &mavlink_message_struct, (mavlink_nav_controller_output_t *)sendbuf);
+      break;
+
 
     default: // probably timeout
       if (evt != 0){
@@ -255,4 +277,6 @@ void PackCycle(SerialDriver *sdp){
   chEvtUnregister(&event_mavlink_out_mission_request, &el_mission_request);
   chEvtUnregister(&event_mavlink_out_mission_item_reached, &el_mission_item_reached);
   chEvtUnregister(&event_mavlink_out_mission_current, &el_mission_current);
+  chEvtUnregister(&event_mavlink_out_local_position_ned, &el_local_position_ned);
+  chEvtUnregister(&event_mavlink_out_nav_controller_output, &el_nav_controller_output);
 }

@@ -19,6 +19,8 @@ names = [
     "mission_request",
     "mission_item_reached",
     "mission_current",
+    "local_position_ned",
+    "nav_controller_output",
     ]
 
 def head(f):

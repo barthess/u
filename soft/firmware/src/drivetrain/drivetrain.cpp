@@ -1,6 +1,7 @@
 #include "main.h"
 #include "drivetrain.hpp"
 #include "servo.hpp"
+#include "message.hpp"
 
 /*
  ******************************************************************************
@@ -13,6 +14,7 @@
  * EXTERNS
  ******************************************************************************
  */
+extern mavlink_system_t   mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -52,5 +54,12 @@ void Drivetrain::start(const Impact *impact){
  */
 void Drivetrain::update(void){
   ServoCarYawSet(float2servo(impact->rud));
-  ServoCarThrustSet(float2thrust(impact->thrust));
+
+  /* motor control protected by safety bit */
+  if (mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED)
+    ServoCarThrustSet(float2thrust(impact->thrust));
+  else
+    ServoCarThrustSet(float2thrust(0));
 }
+
+

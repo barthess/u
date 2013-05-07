@@ -20,6 +20,8 @@ Do not edit it manually.
 #define start_attitude_vt() {chVTSetI(&attitude_vt, MS2ST(*attitude), &attitude_vtcb, NULL);}
 #define start_scal_press_vt() {chVTSetI(&scal_press_vt, MS2ST(*scal_press), &scal_press_vtcb, NULL);}
 #define start_vfr_hud_vt() {chVTSetI(&vfr_hud_vt, MS2ST(*vfr_hud), &vfr_hud_vtcb, NULL);}
+#define start_position_ned_vt() {chVTSetI(&position_ned_vt, MS2ST(*position_ned), &position_ned_vtcb, NULL);}
+#define start_nav_output_vt() {chVTSetI(&nav_output_vt, MS2ST(*nav_output), &nav_output_vtcb, NULL);}
 
 
 /*
@@ -38,6 +40,8 @@ extern EventSource event_mavlink_out_global_position_int;
 extern EventSource event_mavlink_out_attitude;
 extern EventSource event_mavlink_out_scaled_pressure;
 extern EventSource event_mavlink_out_vfr_hud;
+extern EventSource event_mavlink_out_local_position_ned;
+extern EventSource event_mavlink_out_nav_controller_output;
 
 
 /*
@@ -53,6 +57,8 @@ static uint32_t const *gps_int;
 static uint32_t const *attitude;
 static uint32_t const *scal_press;
 static uint32_t const *vfr_hud;
+static uint32_t const *position_ned;
+static uint32_t const *nav_output;
 
 static VirtualTimer raw_imu_vt;
 static VirtualTimer scal_imu_vt;
@@ -62,6 +68,8 @@ static VirtualTimer gps_int_vt;
 static VirtualTimer attitude_vt;
 static VirtualTimer scal_press_vt;
 static VirtualTimer vfr_hud_vt;
+static VirtualTimer position_ned_vt;
+static VirtualTimer nav_output_vt;
 
 static uint32_t raw_imu_cached = SEND_OFF;
 static uint32_t scal_imu_cached = SEND_OFF;
@@ -71,6 +79,8 @@ static uint32_t gps_int_cached = SEND_OFF;
 static uint32_t attitude_cached = SEND_OFF;
 static uint32_t scal_press_cached = SEND_OFF;
 static uint32_t vfr_hud_cached = SEND_OFF;
+static uint32_t position_ned_cached = SEND_OFF;
+static uint32_t nav_output_cached = SEND_OFF;
 
 
 /*
@@ -160,6 +170,26 @@ static void vfr_hud_vtcb(void *par){
   chSysUnlockFromIsr();
 }
 
+static void position_ned_vtcb(void *par){
+  (void)par;
+  chSysLockFromIsr();
+  chEvtBroadcastFlagsI(&event_mavlink_out_local_position_ned, EVMSK_MAVLINK_OUT_LOCAL_POSITION_NED);
+  position_ned_cached = *position_ned;
+  if (*position_ned != SEND_OFF) // self restarting only if sending for this parameter not disabled
+    start_position_ned_vt();
+  chSysUnlockFromIsr();
+}
+
+static void nav_output_vtcb(void *par){
+  (void)par;
+  chSysLockFromIsr();
+  chEvtBroadcastFlagsI(&event_mavlink_out_nav_controller_output, EVMSK_MAVLINK_OUT_NAV_CONTROLLER_OUTPUT);
+  nav_output_cached = *nav_output;
+  if (*nav_output != SEND_OFF) // self restarting only if sending for this parameter not disabled
+    start_nav_output_vt();
+  chSysUnlockFromIsr();
+}
+
 
 /**
  * Listen events with new parameters
@@ -182,6 +212,8 @@ static msg_t TlmSenderThread(void *arg) {
   attitude = (const uint32_t*)param_registry.valueSearch("T_attitude");
   scal_press = (const uint32_t*)param_registry.valueSearch("T_scal_press");
   vfr_hud = (const uint32_t*)param_registry.valueSearch("T_vfr_hud");
+  position_ned = (const uint32_t*)param_registry.valueSearch("T_position_ned");
+  nav_output = (const uint32_t*)param_registry.valueSearch("T_nav_output");
 
   do{
     if ((raw_imu_cached == SEND_OFF) && (*raw_imu != SEND_OFF)){
@@ -237,6 +269,20 @@ static msg_t TlmSenderThread(void *arg) {
       chSysLock();
       vfr_hud_cached = *vfr_hud;
       start_vfr_hud_vt();
+      chSysUnlock();
+    }
+
+    if ((position_ned_cached == SEND_OFF) && (*position_ned != SEND_OFF)){
+      chSysLock();
+      position_ned_cached = *position_ned;
+      start_position_ned_vt();
+      chSysUnlock();
+    }
+
+    if ((nav_output_cached == SEND_OFF) && (*nav_output != SEND_OFF)){
+      chSysLock();
+      nav_output_cached = *nav_output;
+      start_nav_output_vt();
       chSysUnlock();
     }
 
