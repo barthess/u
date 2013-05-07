@@ -10,6 +10,7 @@
 #include "geometry.hpp"
 #include "logger.hpp"
 #include "mavdbg.hpp"
+#include "sins.hpp"
 
 /*
  ******************************************************************************
@@ -36,6 +37,7 @@ extern EventSource event_mavlink_out_mission_item_reached;
 extern CompensatedData comp_data;
 
 extern WpDB wpdb;
+extern SINS sins;
 
 /*
  ******************************************************************************
@@ -429,6 +431,7 @@ MAV_RESULT ACS::takeoff(void){
     break;
   }
 
+  sins.reset();
   mavlink_dbg_print(MAV_SEVERITY_INFO, "ACS: Taking off");
   state = ACS_STATE_TAKEOFF;
   mavlink_system_struct.state = MAV_STATE_ACTIVE;

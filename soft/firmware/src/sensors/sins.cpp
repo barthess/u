@@ -76,6 +76,15 @@ void SINS::update(void){
   }
 };
 
+/**
+ *
+ */
+void SINS::reset(void){
+  in->Ysins = 0;
+  in->Xsins = 0;
+}
+
+
 
 
 
