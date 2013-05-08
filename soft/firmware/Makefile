@@ -156,6 +156,8 @@ CPPSRC = $(CHCPPSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
 	 	 $(LINKSRC) \
+ 		 $(MATHSRC) \
+ 		 $(SENSORSSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
          src/message.cpp \
@@ -183,8 +185,7 @@ CPPSRC = $(CHCPPSRC) \
          src/benchmark/benchmark.cpp
 
 CPPSRC_DBG = $(ACSSRC) \
-		 $(MATHSRC) \
- 		 $(SENSORSSRC) \
+
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler

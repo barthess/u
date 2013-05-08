@@ -11,6 +11,7 @@
 #include "logger.hpp"
 #include "mavdbg.hpp"
 #include "sins.hpp"
+#include "navigation.hpp"
 
 /*
  ******************************************************************************
@@ -58,6 +59,26 @@ extern SINS sins;
  ******************************************************************************
  ******************************************************************************
  */
+
+
+
+
+
+
+//  float xtd, atd;
+//  GreatCyrcle<float> cyrcle;
+//  cyrcle.reset(deg2rad((float)lat1), deg2rad((float)lon1), deg2rad((float)lat2), deg2rad((float)lon2));
+//
+//  t0 = hal_lld_get_counter_value();
+//  cyrcle.crosstrack(deg2rad((float)lat3), deg2rad((float)lon3), &xtd, &atd);
+//  t1 = hal_lld_get_counter_value() - t0;
+//
+//  xtd = rad2m(xtd);
+//  atd = rad2m(atd);
+
+
+
+
 
 /**
  *
