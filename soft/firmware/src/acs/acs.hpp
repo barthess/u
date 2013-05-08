@@ -5,6 +5,7 @@
 #include "mavlink.h"
 #include "pid.hpp"
 #include "sensors.hpp"
+#include "navigation.hpp"
 
 /**
  * @brief   Status of operation returned by ACS
@@ -62,11 +63,13 @@ private:
   mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation path
   const StateVector *in;
   Impact *out;
-  PIDControl<float> spd;
-  PIDControl<float> hdg;
-  PIDControl<float> xtrack;
+  PIDControl<float> spdPID;
+  PIDControl<float> hdgPID;
+  PIDControl<float> xtdPID;
+  NavigationSphere<float> sphere;
   float launch_lon; // cached value
   float launch_lat; // cached value
+  float launch_alt; // cached value
   acs_state_t state;
 
   float const *speed, *pulse2m;

@@ -53,7 +53,8 @@ static float const *pulse2m;
  */
 static float calc_ground_rover_speed(uint32_t rtt){
 
-  uint32_t uS = tacho_filter.update(RTT2US(rtt));
+//  uint32_t uS = tacho_filter.update(RTT2US(rtt));
+  uint32_t uS = RTT2US(rtt);
 
   if (uS == 0)/* prevent division by zero */
     return 3;

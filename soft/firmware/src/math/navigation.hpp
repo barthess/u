@@ -8,27 +8,32 @@
  * Object for great cyrcle navigation
  */
 template<typename T>
-class NavSphere{
+class NavigationSphere{
 public:
-  bool reset(T latA, T lonA, T latB, T lonB);
+  NavigationSphere(void){ready = false;};
+  bool updatePoints(T latA, T lonA, T latB, T lonB);
   bool crosstrack(T latD, T lonD, T *xtd, T *atd);
+  bool course(T latD, T lonD, T *crsres, T *distres);
 
 private:
   T latA, lonA, latB, lonB;
   T crsAB, distAB;
+  bool ready;
 };
 
 /**
- *
+ * @brief   Update points of path
  */
 template<typename T>
-bool NavSphere<T>::reset(T latA, T lonA, T latB, T lonB){
+bool NavigationSphere<T>::updatePoints(T latA, T lonA, T latB, T lonB){
   this->latA = latA;
   this->lonA = lonA;
   this->latB = latB;
   this->lonB = lonB;
   this->distAB = dist_cyrcle<T>(latA, lonA, latB, lonB);
   this->crsAB = course_cyrcle<T>(latA, lonA, latB, lonB, this->distAB);
+
+  ready = true;
   return CH_SUCCESS;
 }
 
@@ -43,7 +48,9 @@ bool NavSphere<T>::reset(T latA, T lonA, T latB, T lonB){
  * (positive XTD means right of course, negative means left)
  */
 template<typename T>
-bool NavSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
+bool NavigationSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
+  chDbgCheck(true == ready, "no path loaded");
+
   T xtd, atd;
   T distAD = dist_cyrcle<T>(this->latA, this->lonA, latD, lonD);
   T crsAD = course_cyrcle<T>(this->latA, this->lonA, latD, lonD, distAD);
@@ -80,13 +87,23 @@ bool NavSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
   return CH_SUCCESS;
 }
 
-
-
 /**
- * Object for great cyrcle navigation
+ * course from current point D to target point B
  */
 template<typename T>
-class NavPlane{
+bool NavigationSphere<T>::course(T latD, T lonD, T *crsres, T *distres){
+  T distDB = dist_cyrcle<T>(latD, lonD, this->latB, this->lonB);
+  T crs = course_cyrcle<T>(latD, lonD, this->latB, this->lonB, distDB);
+  *crsres = crs;
+  *distres = distDB;
+  return CH_SUCCESS;
+}
+
+/**
+ * Object for navigation on plane
+ */
+template<typename T>
+class NavigationPlane{
 public:
   bool reset(T latA, T lonA, T latB, T lonB);
   bool crosstrack(T latD, T lonD, T *xtd, T *atd);

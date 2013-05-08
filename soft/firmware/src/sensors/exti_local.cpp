@@ -109,7 +109,7 @@ static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
 
-  const uint32_t TACHO_LIM = MS2RTT(15);/* for rejecting spikes shorter than 15 ms */
+  const uint32_t TACHO_LIM = MS2RTT(1);/* for rejecting spikes shorter than 15 ms */
 
   tmStopMeasurement(&tacho_tmup);
 

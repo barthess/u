@@ -106,7 +106,7 @@ static void broadcast_mission_item_reached(uint16_t seq){
 void ACS::pull_the_break(void){
   /* thrust update */
   float impact;
-  impact = spd.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+  impact = spdPID.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
   mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
   mavlink_out_nav_controller_output_struct.aspd_error = 0 - comp_data.groundspeed_odo;
 
@@ -165,8 +165,11 @@ void ACS::what_to_do_here(void){
  */
 acs_status_t ACS::loop_navigate(void){
   float target_heading = 0;
+  float target_distance = 0;
+  float xtd_corr = 0;
   float impact;
   float error;
+  float xtd = 0, atd = 0;
 
   switch(mi.frame){
   /*
@@ -183,12 +186,12 @@ acs_status_t ACS::loop_navigate(void){
       //NOTE: atan2(0,0) is forbidden arguments
       target_heading = atan2f(mi.y - in->Ysins, mi.x - in->Xsins);
       error = wrap_pi(target_heading - in->psi);
-      impact = hdg.update(error, in->psi);
+      impact = hdgPID.update(error, in->psi);
       putinrange(impact, -0.2f, 0.2f);
       out->rud = impact;
 
       /* thrust update */
-      impact = spd.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+      impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
       mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
       mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
       if (impact < 0)  /* this check need because we can not get direction of moving */
@@ -201,7 +204,34 @@ acs_status_t ACS::loop_navigate(void){
    * Global WGS-84
    */
   case MAV_FRAME_GLOBAL:
+    /* check reachablillity */
+    if (is_wp_reached_local()){
+      broadcast_mission_item_reached(mi.seq);
+      what_to_do_here();
+    }
+    else{
+      /* heading update */
+      sphere.crosstrack(in->lat, in->lon, &xtd, &atd);
+      sphere.course(in->lat, in->lon, &target_heading, &target_distance);
+      xtd_corr = xtdPID.update(xtd, 0);
+      error = wrap_pi(target_heading - in->psi - xtd_corr);
+      impact = hdgPID.update(error, in->psi);
+      putinrange(impact, -0.2f, 0.2f);
+      out->rud = impact;
+
+      /* thrust update */
+      impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
+      mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
+      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
+      if (impact < 0)  /* this check need because we can not get direction of moving */
+        impact = 0;
+      out->thrust = impact;
+    }
     break;
+
+  /*
+   *
+   */
   default:
     return ACS_STATUS_ERROR;
   }
@@ -294,6 +324,7 @@ acs_status_t ACS::loop_load_mission_item(void){
     }
     else{
       broadcast_mission_current(mi.seq);
+      sphere.updatePoints(mi_prev.x, mi_prev.y, mi.x, mi.y);
       state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
       return ACS_STATUS_OK;
     }
@@ -315,17 +346,17 @@ void ACS::start(const StateVector *in, Impact *out){
 
   this->speed =   (const float*)param_registry.valueSearch("SPD_speed");
   this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
-  this->hdg.start((const float*)param_registry.valueSearch("HDG_iMax"),
+  this->hdgPID.start((const float*)param_registry.valueSearch("HDG_iMax"),
                   (const float*)param_registry.valueSearch("HDG_iMin"),
                   (const float*)param_registry.valueSearch("HDG_iGain"),
                   (const float*)param_registry.valueSearch("HDG_pGain"),
                   (const float*)param_registry.valueSearch("HDG_dGain"));
-  this->spd.start((const float*)param_registry.valueSearch("SPD_iMax"),
+  this->spdPID.start((const float*)param_registry.valueSearch("SPD_iMax"),
                   (const float*)param_registry.valueSearch("SPD_iMin"),
                   (const float*)param_registry.valueSearch("SPD_iGain"),
                   (const float*)param_registry.valueSearch("SPD_pGain"),
                   (const float*)param_registry.valueSearch("SPD_dGain"));
-  this->xtrack.start((const float*)param_registry.valueSearch("XTRACK_iMax"),
+  this->xtdPID.start((const float*)param_registry.valueSearch("XTRACK_iMax"),
                   (const float*)param_registry.valueSearch("XTRACK_iMin"),
                   (const float*)param_registry.valueSearch("XTRACK_iGain"),
                   (const float*)param_registry.valueSearch("XTRACK_pGain"),
@@ -348,9 +379,9 @@ void ACS::start(const StateVector *in, Impact *out){
   mavlink_out_local_position_ned_struct.vz = 0;
   mavlink_out_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
 
-  spd.reset();
-  hdg.reset();
-  xtrack.reset();
+  spdPID.reset();
+  hdgPID.reset();
+  xtdPID.reset();
 
   this->state = ACS_STATE_IDLE;
 }
@@ -430,6 +461,7 @@ MAV_RESULT ACS::takeoff(void){
     mi_prev.z = 0;
     launch_lat = 0;
     launch_lon = 0;
+    launch_alt = 0;
     break;
 
   /*
@@ -441,6 +473,11 @@ MAV_RESULT ACS::takeoff(void){
     else{
       launch_lon = in->lon;
       launch_lat = in->lat;
+      launch_alt = in->hmsl;
+      mi_prev = mi; // hack to fill all other fields correctly
+      mi_prev.x = launch_lat;
+      mi_prev.y = launch_lon;
+      mi_prev.z = launch_alt;
     }
     break;
 
