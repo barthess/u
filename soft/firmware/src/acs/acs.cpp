@@ -588,7 +588,9 @@ inline bool armed_changed(mavlink_set_mode_t *sm){
 void ACS::setMode(mavlink_set_mode_t *sm){
   /* safety armed bit can be changed only in STANDBY mode*/
   if (armed_changed(sm)){
-    if ((MAV_STATE_STANDBY != mavlink_system_struct.state) || (ACS_STATE_IDLE != state)){
+    if ((MAV_STATE_STANDBY != mavlink_system_struct.state) ||
+        (ACS_STATE_IDLE != state) ||
+        (ACS_STATE_DEAD != state)){
       mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: system must be in STANDBY");
       return;
     }
