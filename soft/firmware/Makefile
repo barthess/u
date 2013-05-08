@@ -106,7 +106,6 @@ MATHSRC = src/math/misc_math.cpp \
          src/math/sphere.cpp \
      	 src/math/geometry.cpp \
      	 src/math/dsp.cpp \
-     	 src/math/quaternion.cpp \
      
 SENSORSSRC = src/sensors/sensors.cpp \
          src/sensors/adc_local.cpp \
@@ -136,7 +135,6 @@ MAVLINKSRC = src/mavlink_local/param.cpp \
 KINEMATICSRC = src/kinematic/dcm.cpp \
          src/kinematic/dcm_cli.cpp \
          src/kinematic/airspeed.cpp \
-         src/kinematic/pid.cpp \
          src/kinematic/madgwick.cpp
 
 ACSSRC = src/acs/controller.cpp \
