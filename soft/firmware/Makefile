@@ -142,12 +142,12 @@ ACSSRC = src/acs/controller.cpp \
 		 src/acs/acs.cpp \
 		 src/acs/mission_planner.cpp \
 		          
-LINKSRC = src/link/linkmgr.cpp \
-         src/link/link.cpp \
-         src/link/link_packer.cpp \
-         src/link/link_unpacker.cpp \
-         src/link/tlm_sender.cpp \
-         src/link/usbcfg.cpp
+LINKSRC = src/datalink/linkmgr.cpp \
+         src/datalink/link.cpp \
+         src/datalink/link_packer.cpp \
+         src/datalink/link_unpacker.cpp \
+         src/datalink/tlm_sender.cpp \
+         src/datalink/usbcfg.cpp
 
 CPPSRC = $(CHCPPSRC) \
 		 $(MAVLINKSRC) \
@@ -218,7 +218,7 @@ INCDIR = $(PORTINC) $(KERNINC) $(TESTINC) \
          $(CHCPPINC) \
          src \
          src/eeprom/cpp \
-         src/link \
+         src/datalink \
          src/cli \
          src/sensors \
          src/storage \

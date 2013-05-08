@@ -476,8 +476,10 @@ MAV_RESULT ACS::takeoff(void){
    * global fram handler
    */
   case MAV_FRAME_GLOBAL:
-    if (in->gpsfix < 2)    /* can not fly without GPS */
+    if (in->gpsfix < 2){    /* can not fly without GPS */
+      mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: no GPS fix");
       return MAV_RESULT_TEMPORARILY_REJECTED;
+    }
     else{
       launch_lon = in->lon;
       launch_lat = in->lat;
@@ -574,7 +576,7 @@ void ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
 /**
  * helper
  */
-inline bool armed_changed(mavlink_set_mode_t *sm){
+inline static bool armed_changed(mavlink_set_mode_t *sm){
   if ((mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED) !=
                             (sm->base_mode & MAV_MODE_FLAG_SAFETY_ARMED))
     return true;
