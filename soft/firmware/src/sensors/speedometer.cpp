@@ -1,7 +1,6 @@
 #include "main.h"
 #include "sensors.hpp"
 #include "message.hpp"
-#include "ground_rover.hpp"
 #include "dsp.hpp"
 #include "param_registry.hpp"
 
@@ -19,9 +18,9 @@
  */
 extern chibios_rt::Mailbox speedometer_mb;
 extern CompensatedData comp_data;
-extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 extern ParamRegistry param_registry;
 extern StateVector state_vector;
+extern mavlink_vfr_hud_t mavlink_out_vfr_hud_struct;
 
 /*
  ******************************************************************************
@@ -34,8 +33,9 @@ extern StateVector state_vector;
  * GLOBAL VARIABLES
  ******************************************************************************
  */
-static Median<uint32_t, 3> tacho_filter;
+static AlphaBeta<float> abeta;
 static float const *pulse2m;
+static int32_t const *filterlen;
 
 /*
  ******************************************************************************
@@ -53,7 +53,6 @@ static float const *pulse2m;
  */
 static float calc_ground_rover_speed(uint32_t rtt){
 
-//  uint32_t uS = tacho_filter.update(RTT2US(rtt));
   uint32_t uS = RTT2US(rtt);
 
   if (uS == 0)/* prevent division by zero */
@@ -81,11 +80,11 @@ static msg_t SpeedometerThread(void *arg){
     else
       comp_data.groundspeed_odo = 0; /* device is still */
 
-    /**/
+    /* update global structures */
+    mavlink_out_vfr_hud_struct.groundspeed =
+                    abeta.update(comp_data.groundspeed_odo, *filterlen);
     state_vector.vodo = comp_data.groundspeed_odo;
-    mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
   }
-
   return 0;
 }
 
@@ -98,6 +97,7 @@ static msg_t SpeedometerThread(void *arg){
 
 void SpeedometerInit(void){
   pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
+  filterlen = (const int32_t*)param_registry.valueSearch("FLEN_gnd_speed");
 
   chThdCreateStatic(SpeedometerThreadWA,
           sizeof(SpeedometerThreadWA),

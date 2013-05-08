@@ -2,7 +2,6 @@
 #include "global_flags.h"
 #include "message.hpp"
 #include "param_registry.hpp"
-#include "ground_rover.hpp"
 #include "imu.hpp"
 #include "bmp085.hpp"
 #include "acs.hpp"
@@ -238,7 +237,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_LAND):
-    result = acs.land(clp);
+    result = acs.emergencyLand(clp);
     cmd_confirm(result, clp->command);
     break;
 

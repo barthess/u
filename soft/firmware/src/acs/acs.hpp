@@ -43,7 +43,7 @@ public:
   MAV_RESULT returnToLaunch(mavlink_command_long_t *clp);
   MAV_RESULT goHome(void);
   MAV_RESULT overrideGoto(mavlink_command_long_t *clp);
-  MAV_RESULT land(mavlink_command_long_t *clp);
+  MAV_RESULT emergencyLand(mavlink_command_long_t *clp);
   void setCurrentMission(mavlink_mission_set_current_t *scp);
   void setMode(mavlink_set_mode_t *smp);
   void manualControl(mavlink_manual_control_t *mcp);
@@ -58,7 +58,8 @@ private:
   acs_status_t loop_load_mission_item(void);
   void pull_the_break(void);
   void what_to_do_here(void);
-  bool is_wp_reached_local(void);
+  bool is_wp_reached_local(float *target_distance);
+  bool is_wp_reached_global(void);
   mavlink_mission_item_t mi;        // mission item currently executed
   mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation path
   const StateVector *in;

@@ -139,7 +139,6 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
 
 ACSSRC = src/acs/controller.cpp \
          src/acs/mission_updater.cpp \
-         src/acs/wp_global.cpp \
 		 src/acs/acs.cpp \
 		 src/acs/mission_planner.cpp \
 		          

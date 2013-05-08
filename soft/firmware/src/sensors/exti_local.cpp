@@ -22,6 +22,8 @@
 /* строка для (пере)запуска тахометрового таймера*/
 #define starttacho_vt() {chVTSetI(&tachocheck_vt, MS2ST(TACHO_CHECK_T), &vt_tachocheck_cb, NULL);}
 
+/* for rejecting spikes shorter than 15 ms */
+#define TACHO_LIM (uint32_t)MS2RTT(15)
 
 /*
  ******************************************************************************
@@ -108,8 +110,6 @@ static void rtcwakeup_cb(EXTDriver *extp, expchannel_t channel){
 static void tachometer_cb(EXTDriver *extp, expchannel_t channel){
   (void)extp;
   (void)channel;
-
-  const uint32_t TACHO_LIM = MS2RTT(1);/* for rejecting spikes shorter than 15 ms */
 
   tmStopMeasurement(&tacho_tmup);
 

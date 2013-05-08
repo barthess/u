@@ -30,7 +30,6 @@ extern mavlink_system_t   mavlink_system_struct;
 extern mavlink_mission_current_t        mavlink_out_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_out_mission_item_reached_struct;
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
-extern mavlink_vfr_hud_t                mavlink_out_vfr_hud_struct;
 extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
 
 extern EventSource event_mavlink_out_mission_current;
@@ -60,26 +59,6 @@ extern SINS sins;
  ******************************************************************************
  */
 
-
-
-
-
-
-//  float xtd, atd;
-//  GreatCyrcle<float> cyrcle;
-//  cyrcle.reset(deg2rad((float)lat1), deg2rad((float)lon1), deg2rad((float)lat2), deg2rad((float)lon2));
-//
-//  t0 = hal_lld_get_counter_value();
-//  cyrcle.crosstrack(deg2rad((float)lat3), deg2rad((float)lon3), &xtd, &atd);
-//  t1 = hal_lld_get_counter_value() - t0;
-//
-//  xtd = rad2m(xtd);
-//  atd = rad2m(atd);
-
-
-
-
-
 /**
  *
  */
@@ -107,7 +86,6 @@ void ACS::pull_the_break(void){
   /* thrust update */
   float impact;
   impact = spdPID.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-  mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
   mavlink_out_nav_controller_output_struct.aspd_error = 0 - comp_data.groundspeed_odo;
 
   if (impact < 0)  /* this check need because we can not get direction of moving */
@@ -118,15 +96,22 @@ void ACS::pull_the_break(void){
 /**
  *
  */
-bool ACS::is_wp_reached_local(void){
-  float sqr_target_radius = mi.param2 * mi.param2;
+bool ACS::is_wp_reached_local(float *target_distance){
   float dx = in->Xsins - mi.x;
   float dy = in->Ysins - mi.y;
 
-  if ((dx*dx + dy*dy) < sqr_target_radius)
+  *target_distance = sqrtf(dx*dx + dy*dy);
+  if (*target_distance < mi.param2)
     return true;
   else
     return false;
+}
+
+/**
+ *
+ */
+bool ACS::is_wp_reached_global(void){
+  return false;
 }
 
 /**
@@ -177,7 +162,7 @@ acs_status_t ACS::loop_navigate(void){
    */
   case MAV_FRAME_LOCAL_NED:
     /* check reachablillity */
-    if (is_wp_reached_local()){
+    if (is_wp_reached_local(&target_distance)){
       broadcast_mission_item_reached(mi.seq);
       what_to_do_here();
     }
@@ -192,11 +177,14 @@ acs_status_t ACS::loop_navigate(void){
 
       /* thrust update */
       impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-      mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
-      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
       if (impact < 0)  /* this check need because we can not get direction of moving */
         impact = 0;
       out->thrust = impact;
+
+      /* fill telemetry messages */
+      mavlink_out_nav_controller_output_struct.xtrack_error = 0;
+      mavlink_out_nav_controller_output_struct.wp_dist = target_distance;
+      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
     }
     break;
 
@@ -205,7 +193,7 @@ acs_status_t ACS::loop_navigate(void){
    */
   case MAV_FRAME_GLOBAL:
     /* check reachablillity */
-    if (is_wp_reached_local()){
+    if (is_wp_reached_global()){
       broadcast_mission_item_reached(mi.seq);
       what_to_do_here();
     }
@@ -221,11 +209,14 @@ acs_status_t ACS::loop_navigate(void){
 
       /* thrust update */
       impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-      mavlink_out_vfr_hud_struct.groundspeed = comp_data.groundspeed_odo;
-      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
       if (impact < 0)  /* this check need because we can not get direction of moving */
         impact = 0;
       out->thrust = impact;
+
+      /* telemetry data */
+      mavlink_out_nav_controller_output_struct.xtrack_error = xtd;
+      mavlink_out_nav_controller_output_struct.wp_dist = rad2m(target_distance);
+      mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
     }
     break;
 
@@ -287,7 +278,7 @@ acs_status_t ACS::loop_loiter(void){
  */
 acs_status_t ACS::loop_land(void){
   /* there is nothing special landing procedures for rover. Just navigate
-   * to landing point */
+   * to landing waypoint */
   state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
   return ACS_STATUS_OK;
 }
@@ -297,7 +288,7 @@ acs_status_t ACS::loop_land(void){
  */
 acs_status_t ACS::loop_takeoff(void){
   /* there is nothing special take off procedures for rover. Just navigate
-   * to lauch point */
+   * to lauch waypoint */
   state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
   return ACS_STATUS_OK;
 }
@@ -439,12 +430,29 @@ acs_status_t ACS::update(void){
 MAV_RESULT ACS::takeoff(void){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
 
-  if (ACS_STATE_IDLE != state)    /* allready done */
+  /* check system state */
+  if (MAV_STATE_STANDBY != mavlink_system_struct.state){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: system must be in STANDBY");
     return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
+
+  /* system disarmed */
+  if (!(mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED)){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: motors disarmed");
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
+
+  /* allready done */
+  if (ACS_STATE_IDLE != state){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: mission in process");
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
 
   /* try to load start of mission to RAM */
-  if (0 == wpdb.getCount())
+  if (0 == wpdb.getCount()){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: mission empty");
     return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
   if (CH_SUCCESS != wpdb.load(&mi, 0))
     chDbgPanic("can not acquare waypoint");
   if (mi.command != MAV_CMD_NAV_TAKEOFF)
@@ -452,7 +460,7 @@ MAV_RESULT ACS::takeoff(void){
 
   switch(mi.frame){
   /*
-   * local fram handler
+   * local frame handler
    */
   case MAV_FRAME_LOCAL_NED:
     mi_prev = mi; // hack to fill all other fields correctly
@@ -500,7 +508,7 @@ MAV_RESULT ACS::takeoff(void){
 /**
  *
  */
-MAV_RESULT ACS::land(mavlink_command_long_t *clp){
+MAV_RESULT ACS::emergencyLand(mavlink_command_long_t *clp){
   (void)clp;
   chDbgPanic("unrealized");
   return MAV_RESULT_ACCEPTED;
@@ -564,9 +572,29 @@ void ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
 }
 
 /**
+ * helper
+ */
+inline bool armed_changed(mavlink_set_mode_t *sm){
+  if ((mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED) !=
+                            (sm->base_mode & MAV_MODE_FLAG_SAFETY_ARMED))
+    return true;
+  else
+    return false;
+}
+
+/**
  * Set autopilot mode logic.
  */
 void ACS::setMode(mavlink_set_mode_t *sm){
+  /* safety armed bit can be changed only in STANDBY mode*/
+  if (armed_changed(sm)){
+    if ((MAV_STATE_STANDBY != mavlink_system_struct.state) || (ACS_STATE_IDLE != state)){
+      mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: system must be in STANDBY");
+      return;
+    }
+  }
+
+  /* mode can be changed */
   mavlink_system_struct.mode = sm->custom_mode | sm->base_mode;
 }
 

@@ -242,7 +242,6 @@ void LSM303::start(void){
 
   sortmtrx  = (const uint32_t*)param_registry.valueSearch("MAG_sortmtrx");
   zerocnt   = (const uint32_t*)param_registry.valueSearch("MAG_zerocnt");
-  filterlen = (const int32_t*)param_registry.valueSearch("FLEN_magnetom");
 
   still_thr = (const float*)param_registry.valueSearch("MAG_still_thr");
   still_flen= (const int32_t*)param_registry.valueSearch("MAG_still_flen");

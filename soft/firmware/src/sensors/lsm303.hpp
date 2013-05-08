@@ -49,7 +49,7 @@ private:
   float    const *still_thr;
   int32_t  const *xpol,     *ypol,     *zpol;
   uint32_t const *sortmtrx, *zerocnt;
-  int32_t  const *filterlen, *still_flen;
+  int32_t  const *still_flen;
 };
 
 
