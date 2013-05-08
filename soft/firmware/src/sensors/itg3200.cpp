@@ -84,9 +84,9 @@ void ITG3200::pickle(float *result, uint32_t still_msk){
   mavlink_out_raw_imu_struct.time_usec = pnsGetTimeUnixUsec();
 
   /* now get angular rate in rad/sec */
-  result[0] = fdeg2rad(((float)raw[0] - *x_offset) / *xsens);
-  result[1] = fdeg2rad(((float)raw[1] - *y_offset) / *ysens);
-  result[2] = fdeg2rad(((float)raw[2] - *z_offset) / *zsens);
+  result[0] = deg2rad(((float)raw[0] - *x_offset) / *xsens);
+  result[1] = deg2rad(((float)raw[1] - *y_offset) / *ysens);
+  result[2] = deg2rad(((float)raw[2] - *z_offset) / *zsens);
 
   /* calibrating data update */
   calibrator.update(raw, still_msk);

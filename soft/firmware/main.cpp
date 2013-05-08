@@ -145,7 +145,26 @@ MissionPlanner mission_planner;
  *******************************************************************************
  *******************************************************************************
  */
+volatile uint32_t t0,t1;
+volatile double dist_d = 0.3;
+volatile float dist_f = 0.31;
+
+#include <cmath>
+
 int main(void) {
+
+  t0 = hal_lld_get_counter_value();
+  dist_f = cos(dist_f);
+  t1 = hal_lld_get_counter_value() - t0;
+
+  t0 = hal_lld_get_counter_value();
+  dist_d = cos(dist_d);
+  t1 = hal_lld_get_counter_value() - t0;
+
+
+
+
+
   halInit();
   System::init();
   chThdSleepMilliseconds(1);
@@ -201,6 +220,8 @@ int main(void) {
     }
   }
 
+  (void)dist_f;
+  (void)dist_d;
   return 0;
 }
 

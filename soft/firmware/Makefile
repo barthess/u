@@ -153,10 +153,8 @@ LINKSRC = src/link/linkmgr.cpp \
          src/link/usbcfg.cpp
 
 CPPSRC = $(CHCPPSRC) \
-		 $(SENSORSSRC) \
 		 $(MAVLINKSRC) \
 		 $(KINEMATICSRC) \
-		 $(MATHSRC) \
 	 	 $(LINKSRC) \
 		 main.cpp \
 		 src/gcc_stubs.cpp \
@@ -185,6 +183,8 @@ CPPSRC = $(CHCPPSRC) \
          src/benchmark/benchmark.cpp
 
 CPPSRC_DBG = $(ACSSRC) \
+		 $(MATHSRC) \
+ 		 $(SENSORSSRC) \
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler

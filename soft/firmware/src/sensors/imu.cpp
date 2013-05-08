@@ -6,6 +6,7 @@
 #include "param_registry.hpp"
 #include "logger.hpp"
 #include "imu.hpp"
+#include "geometry.hpp"
 
 /*
  ******************************************************************************
@@ -59,7 +60,7 @@ static void dcm2attitude(mavlink_attitude_t *mavlink_attitude_struct,
   }
 
   /* get yaw from DCM */
-  comp_data.heading = atan2f(Rxy, -Rxx) - PI - fdeg2rad(*declination);
+  comp_data.heading = atan2f(Rxy, -Rxx) - PI - deg2rad(*declination);
   comp_data.heading = wrap_2pi(comp_data.heading);
   mavlink_attitude_struct->yaw = comp_data.heading;
 
@@ -199,6 +200,25 @@ imu_update_result_t IMU::update(StateVector *state_vector){
     t1 = hal_lld_get_counter_value() - t0;
     quat2attitude(&mavlink_out_attitude_struct, gyro, &MadgwickQuat);
   }
+
+
+  double dist_d;
+  float dist_f;
+  #define lat1 53.8946650
+  #define lat2 53.8946700
+  #define lon1 27.5601690
+  #define lon2 27.5601700
+
+  t0 = hal_lld_get_counter_value();
+  dist_d = dist_cyrcle(deg2rad((double)lat1), deg2rad((double)lon1), deg2rad((double)lat2), deg2rad((double)lon2));
+  dist_f = dist_cyrcle(deg2rad((float)lat1), deg2rad((float)lon1), deg2rad((float)lat2), deg2rad((float)lon2));
+  // convert from radians to meters
+  dist_d = rad2m(dist_d);
+  dist_f = rad2m(dist_f);
+  t1 = hal_lld_get_counter_value() - t0;
+
+
+
 
   state_vector->psi = comp_data.heading;
   log_write_schedule(MAVLINK_MSG_ID_ATTITUDE, NULL, 0);

@@ -3,26 +3,26 @@
 
 #include "math.h"
 
-/**
- * Fast hardware square root
- */
-__attribute__((always_inline)) __STATIC_INLINE float __VSQRT(float value)
-{
-  float result;
-  __ASM volatile ("vsqrt.f32 %0, %1" : "=w"(result) : "w"(value));
-  return(result);
-}
-
-/**
- * Overload function
- */
-inline float sqrt(float v){
-#if CORTEX_USE_FPU
-  return __VSQRT(v);
-#else
-  return sqrtf(v);
-#endif /* CORTEX_USE_FPU */
-}
+///**
+// * Fast hardware square root
+// */
+//__attribute__((always_inline)) __STATIC_INLINE float __VSQRT(float value)
+//{
+//  float result;
+//  __ASM volatile ("vsqrt.f32 %0, %1" : "=w"(result) : "w"(value));
+//  return(result);
+//}
+//
+///**
+// * Overload function
+// */
+//inline float sqrt(float v){
+//#if CORTEX_USE_FPU
+//  return __VSQRT(v);
+//#else
+//  return sqrtf(v);
+//#endif /* CORTEX_USE_FPU */
+//}
 
 /**
  * Clamper function
