@@ -19,6 +19,7 @@
  * DEFINES
  ******************************************************************************
  */
+#define METERS_IN_DEGREE    111194.93f  /* meter in degree on equator */
 
 /*
  ******************************************************************************
@@ -108,65 +109,27 @@ bool ACS::is_wp_reached_local(float *target_distance){
     return false;
 }
 
-
-
-/**
- * Calculate heading needed to reach waypoint and return TRUE if waypoint reached.
- */
-static bool_t is_global_wp_reached(mavlink_mission_item_t *wp, float *heading){
-  float delta_x;
-  float delta_y;
-
-  currWpFrame = MAV_FRAME_GLOBAL;
-
-  delta_x = wp->x - (raw_data.gps_latitude  / GPS_FIXED_POINT_SCALE);
-  delta_y = wp->y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
-  delta_y *= LongitudeScale;
-
-  mavlink_out_nav_controller_output_struct.wp_dist =
-      sqrtf(delta_x*delta_x + delta_y*delta_y) * METERS_IN_DEGREE;
-
-  //NOTE: atan2(0,0) is forbidden arguments
-  if (mavlink_out_nav_controller_output_struct.wp_dist > wp->TARGET_RADIUS){
-    *heading = atan2f(delta_y, delta_x);
-    return FALSE;
-  }
-  else
-    return TRUE;
-}
-
-
-
 /**
  *
  */
 bool ACS::is_wp_reached_global(void){
-  float delta_x;
-  float delta_y;
+  float dx;
+  float dy;
   float dist;
 
-  delta_x = mi.x - (raw_data.gps_latitude  / GPS_FIXED_POINT_SCALE);
-  delta_y = mi.y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
-  delta_y *= LongitudeScale;
+  dx = mi.x - (raw_data.gps_latitude  / GPS_FIXED_POINT_SCALE);
+  dy = mi.y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
+  dy *= LongitudeScale;
 
-  delta_x *= METERS_IN_DEGREE;
-  delta_y *= METERS_IN_DEGREE;
+  dx *= METERS_IN_DEGREE;
+  dy *= METERS_IN_DEGREE;
 
-  dist = sqrtf(delta_x*delta_x + delta_y*delta_y);
-  if (dist < mi.param1)
+  dist = sqrtf(dx*dx + dy*dy);
+  if (dist < mi.param2)
     return true;
   else
     return false;
 }
-
-
-
-
-
-
-
-
-
 
 /**
  *

@@ -5,7 +5,8 @@
 #include "ch.hpp"
 
 /**
- * Object for great cyrcle navigation
+ * @brief   Object for great cyrcle navigation.
+ * @note    All values in radians!
  */
 template<typename T>
 class NavigationSphere{
@@ -16,8 +17,8 @@ public:
   bool course(T latD, T lonD, T *crsres, T *distres);
 
 private:
-  T latA, lonA, latB, lonB;
-  T crsAB, distAB;
+  T latA, lonA, latB, lonB; // radians
+  T crsAB, distAB; // radians
   bool ready;
 };
 
@@ -42,8 +43,7 @@ bool NavigationSphere<T>::updatePoints(T latA, T lonA, T latB, T lonB){
  * (course =crs_AB) and end up at D, perhaps off course.
  * (We presume that A is not a pole!) You can calculate the course from
  * A to D (crs_AD) and the distance from A to D (dist_AD) using the
- * formulae above. In terms of these the cross track error, XTD,
- * (distance off course) is given by
+ * formulae above.
  *
  * (positive XTD means right of course, negative means left)
  */
