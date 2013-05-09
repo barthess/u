@@ -578,7 +578,7 @@ void ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
  */
 inline static bool armed_changed(mavlink_set_mode_t *sm){
   if ((mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED) !=
-                            (sm->base_mode & MAV_MODE_FLAG_SAFETY_ARMED))
+                   (sm->base_mode & MAV_MODE_FLAG_SAFETY_ARMED))
     return true;
   else
     return false;
@@ -590,9 +590,9 @@ inline static bool armed_changed(mavlink_set_mode_t *sm){
 void ACS::setMode(mavlink_set_mode_t *sm){
   /* safety armed bit can be changed only in STANDBY mode*/
   if (armed_changed(sm)){
-    if ((MAV_STATE_STANDBY != mavlink_system_struct.state) ||
-        (ACS_STATE_IDLE != state) ||
-        (ACS_STATE_DEAD != state)){
+    if (MAV_STATE_STANDBY != mavlink_system_struct.state ||
+           ACS_STATE_IDLE != state ||
+           ACS_STATE_DEAD != state){
       mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: system must be in STANDBY");
       return;
     }
