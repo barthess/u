@@ -59,7 +59,7 @@ private:
   void pull_the_break(void);
   void what_to_do_here(void);
   bool is_wp_reached_local(float *target_distance);
-  bool is_wp_reached_global(void);
+  bool is_wp_reached_global(float dist);
   mavlink_mission_item_t mi;        // mission item currently executed
   mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation path
   const StateVector *in;

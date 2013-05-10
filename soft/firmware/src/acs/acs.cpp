@@ -26,9 +26,11 @@
  * EXTERNS
  ******************************************************************************
  */
-extern ParamRegistry      param_registry;
-extern mavlink_system_t   mavlink_system_struct;
+extern ParamRegistry param_registry;
+extern RawData raw_data;
+extern float LongitudeScale;
 
+extern mavlink_system_t                 mavlink_system_struct;
 extern mavlink_mission_current_t        mavlink_out_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_out_mission_item_reached_struct;
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
@@ -112,20 +114,8 @@ bool ACS::is_wp_reached_local(float *target_distance){
 /**
  *
  */
-bool ACS::is_wp_reached_global(void){
-  float dx;
-  float dy;
-  float dist;
-
-  dx = mi.x - (raw_data.gps_latitude  / GPS_FIXED_POINT_SCALE);
-  dy = mi.y - (raw_data.gps_longitude / GPS_FIXED_POINT_SCALE);
-  dy *= LongitudeScale;
-
-  dx *= METERS_IN_DEGREE;
-  dy *= METERS_IN_DEGREE;
-
-  dist = sqrtf(dx*dx + dy*dy);
-  if (dist < mi.param2)
+bool ACS::is_wp_reached_global(float dist){
+  if (rad2m(dist) < mi.param2)
     return true;
   else
     return false;
@@ -167,7 +157,7 @@ void ACS::what_to_do_here(void){
  */
 acs_status_t ACS::loop_navigate(void){
   float target_heading = 0;
-  float target_distance = 0;
+  float target_distance = 10000;
   float xtd_corr = 0;
   float impact;
   float error;
@@ -210,7 +200,7 @@ acs_status_t ACS::loop_navigate(void){
    */
   case MAV_FRAME_GLOBAL:
     /* check reachablillity */
-    if (is_wp_reached_global()){
+    if (is_wp_reached_global(target_distance)){
       broadcast_mission_item_reached(mi.seq);
       what_to_do_here();
     }
@@ -332,7 +322,8 @@ acs_status_t ACS::loop_load_mission_item(void){
     }
     else{
       broadcast_mission_current(mi.seq);
-      sphere.updatePoints(mi_prev.x, mi_prev.y, mi.x, mi.y);
+      sphere.updatePoints(deg2rad(mi_prev.x), deg2rad(mi_prev.y),
+                          deg2rad(mi.x),      deg2rad(mi.y));
       state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
       return ACS_STATUS_OK;
     }

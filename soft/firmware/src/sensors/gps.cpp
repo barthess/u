@@ -258,8 +258,8 @@ static void parse_gga(uint8_t *ggabuf, mavlink_global_position_int_t *global_pos
     if (LongitudeScale == 0)
       LongitudeScale = cosf(deg2rad((float)gps_longitude / GPS_FIXED_POINT_SCALE));
 
-    state_vector.lat    = deg2rad((float)gps_latitude / 10000000.0f);
-    state_vector.lon    = deg2rad((float)gps_longitude / 10000000.0f);
+    state_vector.lat    = deg2rad((float)gps_latitude / GPS_FIXED_POINT_SCALE);
+    state_vector.lon    = deg2rad((float)gps_longitude / GPS_FIXED_POINT_SCALE);
     state_vector.hmsl   = (float)gps_latitude / 1000.0f;
     state_vector.gpsfix = fix;
 
