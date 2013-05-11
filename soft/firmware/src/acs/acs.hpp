@@ -54,6 +54,9 @@ private:
   acs_status_t loop_navigate(void);
   acs_status_t loop_pass_wp(void);
   acs_status_t loop_loiter(void);
+  acs_status_t loop_loiter_time(void);
+  acs_status_t loop_loiter_turns(void);
+  acs_status_t loop_loiter_unlim(void);
   acs_status_t loop_takeoff(void);
   acs_status_t loop_land(void);
   acs_status_t loop_load_mission_item(void);
