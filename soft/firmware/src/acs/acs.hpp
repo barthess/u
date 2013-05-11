@@ -27,6 +27,7 @@ typedef enum {
   ACS_STATE_NAVIGATE_TO_WAYPOINT,
   ACS_STATE_PASS_WAYPOINT,
   ACS_STATE_LOITER,
+  ACS_STATE_PAUSE,
   ACS_STATE_LAND,
   ACS_STATE_DEAD,
 }acs_state_t;
@@ -56,12 +57,11 @@ private:
   acs_status_t loop_takeoff(void);
   acs_status_t loop_land(void);
   acs_status_t loop_load_mission_item(void);
-  void pull_the_break(void);
+  acs_status_t loop_pause(void);
+  void pull_handbreak(void);
   void what_to_do_here(void);
-  bool is_wp_reached_local(float *target_distance);
-  bool is_wp_reached_global(float dist);
   mavlink_mission_item_t mi;        // mission item currently executed
-  mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation path
+  mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation line
   const StateVector *in;
   Impact *out;
   PIDControl<float> spdPID;
@@ -72,6 +72,8 @@ private:
   float launch_lat; // cached value
   float launch_alt; // cached value
   acs_state_t state;
+  systime_t loiter_timestamp;
+  uint32_t loiter_halfturns;
 
   float const *speed, *pulse2m;
 };

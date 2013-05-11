@@ -5,8 +5,11 @@
 #ifndef GPS_H_
 #define GPS_H_
 
+/* meter in one degree on equator */
+#define METERS_IN_DEGREE        111194.93f
+
 /* divide by this value to obtain degreese */
-#define GPS_FIXED_POINT_SCALE 100000.0f
+#define GPS_FIXED_POINT_SCALE   100000.0f
 
 /* From standard: A sentence may contain up to 80 characters plus "$" and CR/LF.
  * так же вычтем первые 5 символов, которые мы не сохраняем в буфер*/

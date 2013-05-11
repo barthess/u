@@ -50,7 +50,7 @@ extern EventSource event_mavlink_out_statustext;
  * text[in]       text to send
  */
 void mavlink_dbg_print(uint8_t severity, const char *text){
-  uint32_t n = sizeof(mavlink_out_statustext_struct.text);
+  size_t n = sizeof(mavlink_out_statustext_struct.text);
 
   mavlink_out_statustext_struct.severity = severity;
   memset(mavlink_out_statustext_struct.text, 0, n);
