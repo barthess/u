@@ -52,7 +52,9 @@ public:
 
 private:
   acs_status_t loop_navigate(void);
-  acs_status_t loop_pass_wp(void);
+  acs_status_t loop_navigate_local(void);
+  acs_status_t loop_navigate_global(void);
+  acs_status_t loop_passwp(void);
   acs_status_t loop_loiter(void);
   acs_status_t loop_loiter_time(void);
   acs_status_t loop_loiter_turns(void);
@@ -61,6 +63,8 @@ private:
   acs_status_t loop_land(void);
   acs_status_t loop_load_mission_item(void);
   acs_status_t loop_pause(void);
+  void broadcast_mission_current(uint16_t seq);
+  void broadcast_mission_item_reached(uint16_t seq);
   void pull_handbreak(void);
   void what_to_do_here(void);
   mavlink_mission_item_t mi;        // mission item currently executed

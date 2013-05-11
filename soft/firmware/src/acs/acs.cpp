@@ -4,7 +4,6 @@
 #include "acs.hpp"
 #include "param_registry.hpp"
 #include "waypoint_db.hpp"
-#include "servo.hpp"
 #include "mission_planner.hpp"
 #include "misc_math.hpp"
 #include "geometry.hpp"
@@ -62,7 +61,7 @@ extern SINS sins;
 /**
  *
  */
-static void broadcast_mission_current(uint16_t seq){
+void ACS::broadcast_mission_current(uint16_t seq){
   mavlink_out_mission_current_struct.seq = seq;
   chEvtBroadcastFlags(&event_mavlink_out_mission_current,
                                           EVMSK_MAVLINK_OUT_MISSION_CURRENT);
@@ -72,7 +71,7 @@ static void broadcast_mission_current(uint16_t seq){
 /**
  *
  */
-static void broadcast_mission_item_reached(uint16_t seq){
+void ACS::broadcast_mission_item_reached(uint16_t seq){
   mavlink_out_mission_item_reached_struct.seq = seq;
   chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
                                       EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
@@ -125,237 +124,6 @@ void ACS::what_to_do_here(void){
     /* do not know hot to handle it. Just got to next */
     state = ACS_STATE_LOAD_MISSION_ITEM;
   }
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_navigate(void){
-  float target_heading = 0;
-  float target_distance = 10000;
-  float xtd_corr = 0;
-  float impact = 0;
-  float error = 0;
-  float xtd = 0, atd = 0;
-  float dx = 0, dy = 0;
-
-  switch(mi.frame){
-  /************
-   * Local NED
-   ***********/
-  case MAV_FRAME_LOCAL_NED:
-    /* heading update. NOTE: atan2(0,0) is forbidden arguments */
-    target_heading = atan2f(mi.y - in->Ysins, mi.x - in->Xsins);
-    error = wrap_pi(target_heading - in->psi);
-    impact = hdgPID.update(error, in->psi);
-    putinrange(impact, -0.2f, 0.2f);
-    out->rud = impact;
-
-    /* thrust update */
-    impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-    if (impact < 0)  /* this check need because we can not get direction of moving */
-      impact = 0;
-    out->thrust = impact;
-
-    /* fill telemetry messages */
-    mavlink_out_nav_controller_output_struct.xtrack_error = 0;
-    mavlink_out_nav_controller_output_struct.wp_dist = target_distance;
-    mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
-
-    /* check reachability */
-    dx = in->Xsins - mi.x;
-    dy = in->Ysins - mi.y;
-    target_distance = sqrtf(dx*dx + dy*dy);
-    if (target_distance < mi.param2){
-      broadcast_mission_item_reached(mi.seq);
-      what_to_do_here();
-    }
-    break;
-
-  /***************
-   * Global WGS-84
-   ***************/
-  case MAV_FRAME_GLOBAL:
-    /* heading update */
-    sphere.crosstrack(in->lat, in->lon, &xtd, &atd);
-    sphere.course(in->lat, in->lon, &target_heading, &target_distance);
-    xtd_corr = xtdPID.update(xtd, in->psi);
-    error = wrap_pi(target_heading - in->psi - xtd_corr);
-    impact = hdgPID.update(error, in->psi);
-    putinrange(impact, -0.2f, 0.2f);
-    out->rud = impact;
-
-    /* thrust update */
-    impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-    if (impact < 0)  /* this check need because we can not get direction of moving */
-      impact = 0;
-    out->thrust = impact;
-
-    /* fill telemetry data */
-    mavlink_out_nav_controller_output_struct.xtrack_error = xtd;
-    mavlink_out_nav_controller_output_struct.wp_dist = rad2m(target_distance);
-    mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
-
-    /* check reachablillity */
-    if (rad2m(target_distance) < mi.param2){
-      broadcast_mission_item_reached(mi.seq);
-      what_to_do_here();
-    }
-    break;
-
-  /*
-   *
-   */
-  default:
-    return ACS_STATUS_ERROR;
-  }
-
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_pause(void){
-  /* for ground rover we must just to pull handbrake and wait next command */
-  pull_handbreak();
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_pass_wp(void){
-  chDbgPanic("unrealized");
-  switch(mi.frame){
-  /***********
-   * Local NED
-   ***********/
-  case MAV_FRAME_LOCAL_NED:
-    break;
-
-  /****************
-   * Global WGS-84
-   ***************/
-  case MAV_FRAME_GLOBAL:
-    break;
-  default:
-    return ACS_STATUS_ERROR;
-  }
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_loiter_turns(void){
-  float impact = 0;
-
-  /* set rudder */
-  if (mi.param3 > 0)
-    out->rud = 0.2f;
-  else
-    out->rud = -0.2f;
-
-  /* thrust update */
-  impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-  if (impact < 0)  /* this check need because we can not get direction of moving */
-    impact = 0;
-  out->thrust = impact;
-
-  /* count halfturns instead of turns to use halfcyrcle as hysteresis */
-  if (loiter_halfturns & 1){
-    if((in->psi > 0) && (in->psi < PI))
-      loiter_halfturns++;
-  }
-  else{
-    if((in->psi > PI) && (in->psi < (2*PI)))
-      loiter_halfturns++;
-  }
-
-  /* is loitering done */
-  if ((loiter_halfturns / 2) >= mi.param2){
-    state = ACS_STATE_LOAD_MISSION_ITEM;
-  }
-
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_loiter_time(void){
-  float impact = 0;
-
-  /* set rudder */
-  if (mi.param3 > 0)
-    out->rud = 0.2f;
-  else
-    out->rud = -0.2f;
-
-  /* thrust update */
-  impact = spdPID.update(*speed - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-  if (impact < 0)  /* this check need because we can not get direction of moving */
-    impact = 0;
-  out->thrust = impact;
-
-  /* is loitering done */
-  if ((chTimeNow() - loiter_timestamp) < S2ST((systime_t)mi.param1)){
-    state = ACS_STATE_LOAD_MISSION_ITEM;
-  }
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_loiter_unlim(void){
-  state = ACS_STATE_LOAD_MISSION_ITEM;
-  mavlink_dbg_print(MAV_SEVERITY_WARNING, "WARNING: Unlimited loiter unrealized");
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_loiter(void){
-  switch(mi.command){
-  case MAV_CMD_NAV_LOITER_TURNS:
-    return loop_loiter_turns();
-    break;
-
-  case MAV_CMD_NAV_LOITER_TIME:
-    return loop_loiter_time();
-    break;
-
-  case MAV_CMD_NAV_LOITER_UNLIM:
-    return loop_loiter_unlim();
-    break;
-
-  default:
-    return ACS_STATUS_ERROR;
-    break;
-  }
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_land(void){
-  /* there is nothing special landing procedures for rover. Just navigate
-   * to landing waypoint */
-  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-  return ACS_STATUS_OK;
-}
-
-/**
- *
- */
-acs_status_t ACS::loop_takeoff(void){
-  /* there is nothing special take off procedures for rover. Just navigate
-   * to lauch waypoint */
-  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-  return ACS_STATUS_OK;
 }
 
 /**
@@ -462,7 +230,7 @@ acs_status_t ACS::update(void){
     break;
 
   case ACS_STATE_PASS_WAYPOINT:
-    return loop_pass_wp();
+    return loop_passwp();
     break;
 
   case ACS_STATE_TAKEOFF:
@@ -709,22 +477,3 @@ void ACS::manualControl(mavlink_manual_control_t *mc){
 //  }
 }
 
-///**
-// *
-// */
-//MAV_RESULT ACS::next(void){
-//  chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
-//
-//  /* you have to take device off first */
-//  if (ACS_STATE_WAIT_MISSION_ITEM == state){
-//    /* cache this waipoint */
-//    chSysLock();
-//    mi = *mip;
-//    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
-//    chSysUnlock();
-//
-//    return MAV_RESULT_ACCEPTED;
-//  }
-//  else
-//    return MAV_RESULT_TEMPORARILY_REJECTED;
-//}
