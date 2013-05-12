@@ -324,6 +324,7 @@ MAV_RESULT ACS::takeoff(void){
       launch_lon = in->lon;
       launch_lat = in->lat;
       launch_alt = in->hmsl;
+      sphere.updatePoints(launch_lat, launch_lon, deg2rad(mi.x), deg2rad(mi.y));
       mi_prev = mi; // hack to fill all other fields correctly
       mi_prev.x = launch_lat;
       mi_prev.y = launch_lon;

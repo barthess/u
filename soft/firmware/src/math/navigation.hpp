@@ -81,8 +81,15 @@ bool NavigationSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
     atd = sqrt(sindist*sindist - sinxtd*sinxtd);
     atd = asin(atd / cos(xtd));
   }
-  *xtdres = xtd;
-  *atdres = atd;
+
+  if (isinf(xtd) || isnan(xtd))
+    *xtdres = 0;
+  else
+    *xtdres = xtd;
+  if (isinf(atd) || isnan(atd))
+    *atdres = 0;
+  else
+    *atdres = atd;
 
   return CH_SUCCESS;
 }

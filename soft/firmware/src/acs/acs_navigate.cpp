@@ -91,7 +91,10 @@ acs_status_t ACS::loop_navigate_global(void){
   /* heading update */
   sphere.crosstrack(in->lat, in->lon, &xtd, &atd);
   sphere.course(in->lat, in->lon, &target_heading, &target_distance);
-  xtd_corr = xtdPID.update(xtd, in->psi);
+//  xtd_corr = xtdPID.update(xtd, in->psi);
+//  if(isinf(xtd_corr) || isnan(xtd_corr))
+    xtd_corr = 0;
+  target_heading -= deg2rad(270);
   error = wrap_pi(target_heading - in->psi - xtd_corr);
   impact = hdgPID.update(error, in->psi);
   putinrange(impact, -0.2f, 0.2f);
@@ -104,7 +107,9 @@ acs_status_t ACS::loop_navigate_global(void){
   out->thrust = impact;
 
   /* fill telemetry data */
-  mavlink_out_nav_controller_output_struct.xtrack_error = xtd;
+  mavlink_out_nav_controller_output_struct.nav_bearing = rad2deg(in->psi);
+  mavlink_out_nav_controller_output_struct.target_bearing = rad2deg(target_heading);
+  mavlink_out_nav_controller_output_struct.xtrack_error = rad2m(xtd);
   mavlink_out_nav_controller_output_struct.wp_dist = rad2m(target_distance);
   mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
 
