@@ -2,6 +2,7 @@
 
 #include "main.h"
 #include "acs.hpp"
+#include "gps.hpp"
 
 /*
  ******************************************************************************
@@ -15,6 +16,7 @@
  ******************************************************************************
  */
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
+extern mavlink_global_position_int_t  mavlink_out_global_position_int_struct;
 extern CompensatedData comp_data;
 
 /*
@@ -87,17 +89,30 @@ acs_status_t ACS::loop_navigate_global(void){
   float impact = 0;
   float error = 0;
   float xtd = 0, atd = 0;
+  float xtdm = 0;
 
   /* heading update */
   sphere.crosstrack(in->lat, in->lon, &xtd, &atd);
   sphere.course(in->lat, in->lon, &target_heading, &target_distance);
-//  xtd_corr = xtdPID.update(xtd, in->psi);
-//  if(isinf(xtd_corr) || isnan(xtd_corr))
-    xtd_corr = 0;
-  target_heading -= deg2rad(270);
-  error = wrap_pi(target_heading - in->psi - xtd_corr);
+  //sphere.updatePoints(deg2rad((double)*this->dbg_lat), deg2rad((double)*this->dbg_lon), deg2rad((double)mi.x), deg2rad((double)mi.y));
+  //sphere.course(deg2rad((double)*this->dbg_lat), deg2rad((double)*this->dbg_lon), &target_heading, &target_distance);
+  //sphere.updatePoints(deg2rad(*this->dbg_lat), deg2rad(*this->dbg_lon), deg2rad(mi.x), deg2rad(mi.y));
+//  sphere.course(deg2rad(*this->dbg_lat), deg2rad(*this->dbg_lon), &target_heading, &target_distance);
+//  sphere.crosstrack(deg2rad(*this->dbg_lat), deg2rad(*this->dbg_lon), &xtd, &atd);
+
+  xtdm = rad2m(xtd);
+  if(isinf(xtdm) || isnan(xtdm))
+    xtd_corr = xtdPID.update(0, 0);
+  else
+    xtd_corr = xtdPID.update(xtdm, 0);
+
+//  mavlink_out_global_position_int_struct.lat = *this->dbg_lat * 10000000.0f;
+//  mavlink_out_global_position_int_struct.lon = *this->dbg_lon * 10000000.0f;
+
+  target_heading = wrap_2pi(-target_heading);
+  error = wrap_pi(target_heading - in->psi + xtd_corr);
   impact = hdgPID.update(error, in->psi);
-  putinrange(impact, -0.2f, 0.2f);
+  putinrange(impact, (typeof(impact))-0.2, (typeof(impact))0.2);
   out->rud = impact;
 
   /* thrust update */
@@ -109,7 +124,7 @@ acs_status_t ACS::loop_navigate_global(void){
   /* fill telemetry data */
   mavlink_out_nav_controller_output_struct.nav_bearing = rad2deg(in->psi);
   mavlink_out_nav_controller_output_struct.target_bearing = rad2deg(target_heading);
-  mavlink_out_nav_controller_output_struct.xtrack_error = rad2m(xtd);
+  mavlink_out_nav_controller_output_struct.xtrack_error = xtdm;
   mavlink_out_nav_controller_output_struct.wp_dist = rad2m(target_distance);
   mavlink_out_nav_controller_output_struct.aspd_error = *speed - comp_data.groundspeed_odo;
 

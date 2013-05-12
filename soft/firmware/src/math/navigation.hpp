@@ -59,7 +59,7 @@ bool NavigationSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
   /* We obtain the initial course, tc1, (at point 1) from point 1 to
   point 2 by the following. The formula fails if the initial point is a
   pole. We can special case this with: */
-  if(cos(latA) < FLT_EPSILON){
+  if(cos(latA) < (T)FLT_EPSILON){
     // starting from N pole
     if(latA > 0){
       xtd = asin(sin(distAD) * sin(lonD - this->lonB));
@@ -72,7 +72,7 @@ bool NavigationSphere<T>::crosstrack(T latD, T lonD, T *xtdres, T *atdres){
     xtd = asin(sin(distAD) * sin(crsAD - this->crsAB));
 
   /* */
-  if (distAD > 0.05)
+  if (distAD > (T)0.05)
     atd = acos(cos(distAD) / cos(xtd));
   else{
     //For very short distances:

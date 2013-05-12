@@ -187,6 +187,9 @@ void ACS::start(const StateVector *in, Impact *out){
                   (const float*)param_registry.valueSearch("XTRACK_pGain"),
                   (const float*)param_registry.valueSearch("XTRACK_dGain"));
 
+  dbg_lat = (const float*)param_registry.valueSearch("DBG_lat");
+  dbg_lon = (const float*)param_registry.valueSearch("DBG_lon");
+
   mavlink_out_nav_controller_output_struct.nav_roll       = 0;
   mavlink_out_nav_controller_output_struct.nav_pitch      = 0;
   mavlink_out_nav_controller_output_struct.alt_error      = 0;

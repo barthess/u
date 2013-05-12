@@ -214,9 +214,9 @@ param = [
 ("XTRACK_iMax",     -10000.0, 0, 10000.0,   "f", "default",    "NULL"),
 
 #/**** Variables for debugging purposes ****/
-("DBG_reserved0",   0,      0,      10000,  "u", "default",    "NULL"),
-("DBG_reserved1",   0,      0,      10000,  "u", "default",    "NULL"),
-("DBG_reserved2",   0,      0,      10000,  "u", "default",    "NULL"),
+("DBG_lat",         -360,   0,      360,    "f", "default",    "NULL"),
+("DBG_lon",         -360,   0,      360,    "f", "default",    "NULL"),
+("DBG_reserved2",   0,      0,      10000,  "f", "default",    "NULL"),
 
 #/**** fake field with 14 symbols name ****/
 ("param_end_mark",  0,      0,      1224,   "u", "default",    "Fake parameter with maximum allowable name length"),

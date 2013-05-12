@@ -82,7 +82,7 @@ private:
   systime_t loiter_timestamp;
   uint32_t loiter_halfturns;
 
-  float const *speed, *pulse2m;
+  float const *speed, *pulse2m, *dbg_lat, *dbg_lon;
 };
 
 #endif /* ACS_H_ */

@@ -45,7 +45,7 @@ T dist_cyrcle(T lat1, T lon1, T lat2, T lon2){
   slat = sin((lat1 - lat2) / 2);
   slon = sin((lon1 - lon2) / 2);
   dist = sqrt(slat*slat + cos(lat1) * cos(lat2) * slon*slon);
-  dist = putinrange(dist, 0.0f, 1.0f);
+  dist = putinrange(dist, (T)0.0, (T)1.0);
   return 2 * asin(dist);
 }
 
@@ -57,9 +57,9 @@ T course_cyrcle(T lat1, T lon1, T lat2, T lon2, T dist){
   /* We obtain the initial course, tc1, (at point 1) from point 1 to
   point 2 by the following. The formula fails if the initial point is a
   pole. We can special case this with: */
-  float crs;
+  T crs;
 
-  if(cos(lat1) < FLT_EPSILON){
+  if(cos(lat1) < (T)FLT_EPSILON){
     if(lat1 > 0)
       return (T)PI;        //  starting from N pole
     else
@@ -69,12 +69,12 @@ T course_cyrcle(T lat1, T lon1, T lat2, T lon2, T dist){
   /* For starting points other than the poles: */
   if(sin(lon2-lon1)<0){
     crs = (sin(lat2)-sin(lat1)*cos(dist))/(sin(dist)*cos(lat1));
-    crs = putinrange(crs, -1.0f, 1.0f);
+    crs = putinrange(crs, (T)-1.0, (T)1.0);
     crs = acos(crs);
   }
   else{
     crs = (sin(lat2)-sin(lat1)*cos(dist)) / (sin(dist)*cos(lat1));
-    crs = putinrange(crs, -1.0f, 1.0f);
+    crs = putinrange(crs, (T)-1.0, (T)1.0);
     crs = 2*(T)PI - acos(crs);
   }
 
