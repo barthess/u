@@ -352,11 +352,56 @@ MAV_RESULT ACS::takeoff(void){
 }
 
 /**
- *
+ * Set specified waypoint as current and go to it
  */
-MAV_RESULT ACS::emergencyLand(mavlink_command_long_t *clp){
+MAV_RESULT ACS::jump_to(uint16_t seq){
+  bool load_status = CH_FAILED;
+
+  /* check current state of ACS */
+  if (! ((ACS_STATE_LOAD_MISSION_ITEM == state) ||
+      (ACS_STATE_NAVIGATE_TO_WAYPOINT == state) ||
+             (ACS_STATE_PASS_WAYPOINT == state) ||
+                    (ACS_STATE_LOITER == state) ||
+                     (ACS_STATE_PAUSE == state))){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: Can not jump in this state");
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
+
+  // set current location as previouse point
+  mi_prev.x = in->lat;
+  mi_prev.y = in->lon;
+  mi_prev.z = in->hmsl;
+
+  // load last waypoint
+  load_status = wpdb.load(&mi, seq);
+  if (CH_SUCCESS != load_status){
+    /* something goes wrong with waypoint loading */
+    state = ACS_STATE_LOITER;
+    return MAV_RESULT_FAILED;
+  }
+  else{
+    broadcast_mission_current(mi.seq);
+    sphere.updatePoints(deg2rad(mi_prev.x), deg2rad(mi_prev.y),
+                        deg2rad(mi.x),      deg2rad(mi.y));
+    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+    return MAV_RESULT_ACCEPTED;
+  }
+}
+
+/**
+ * Set last waypoint as current and go to it
+ */
+MAV_RESULT ACS::emergencyGotoLand(mavlink_command_long_t *clp){
   (void)clp;
-  chDbgPanic("unrealized");
+  return jump_to(wpdb.getCount() - 1);
+}
+
+/**
+ * @brief   Kill uas. Pull break for rover. Eject parachute for airplane.
+ */
+MAV_RESULT ACS::kill(void){
+  state = ACS_STATE_IDLE;
+  pull_handbreak();
   return MAV_RESULT_ACCEPTED;
 }
 
@@ -428,19 +473,15 @@ MAV_RESULT ACS::overrideGoto(mavlink_command_long_t *clp){
  */
 MAV_RESULT ACS::returnToLaunch(mavlink_command_long_t *clp){
   (void)clp;
-  chDbgPanic("unrealized");
-  return MAV_RESULT_ACCEPTED;
+  return jump_to(0);
 }
 
 /**
  *
  */
-void ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
+MAV_RESULT ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
-
-  (void)sc;
-  chDbgPanic("unrealized");
-  return;
+  return jump_to(sc->seq);
 }
 
 /**
@@ -470,7 +511,7 @@ void ACS::manualControl(mavlink_manual_control_t *mc){
   uint32_t v = 0;
   (void)v;
   (void)mc;
-  chDbgPanic("unrealized");
+  mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: manual control unrealized");
 //  if (mc->thrust_manual == 1){
 //    v = float2thrust(mc->thrust);
 //    ServoCarThrustSet(v);

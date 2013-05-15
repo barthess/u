@@ -237,7 +237,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_LAND):
-    result = acs.emergencyLand(clp);
+    result = acs.emergencyGotoLand(clp);
     cmd_confirm(result, clp->command);
     break;
 

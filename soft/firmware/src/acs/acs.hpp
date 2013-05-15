@@ -39,16 +39,16 @@ class ACS{
 public:
   ACS(void){state = ACS_STATE_UNINIT;};
   void start(const StateVector *in, Impact *out);
-  MAV_RESULT takeoff();
+  acs_status_t update(void);
+  MAV_RESULT takeoff(void);
   MAV_RESULT kill(void);
-  MAV_RESULT returnToLaunch(mavlink_command_long_t *clp);
   MAV_RESULT goHome(void);
+  MAV_RESULT returnToLaunch(mavlink_command_long_t *clp);
   MAV_RESULT overrideGoto(mavlink_command_long_t *clp);
-  MAV_RESULT emergencyLand(mavlink_command_long_t *clp);
-  void setCurrentMission(mavlink_mission_set_current_t *scp);
+  MAV_RESULT emergencyGotoLand(mavlink_command_long_t *clp);
+  MAV_RESULT setCurrentMission(mavlink_mission_set_current_t *scp);
   void setMode(mavlink_set_mode_t *smp);
   void manualControl(mavlink_manual_control_t *mcp);
-  acs_status_t update(void);
 
 private:
   acs_status_t loop_navigate(void);
@@ -63,6 +63,7 @@ private:
   acs_status_t loop_land(void);
   acs_status_t loop_load_mission_item(void);
   acs_status_t loop_pause(void);
+  MAV_RESULT jump_to(uint16_t seq);
   void broadcast_mission_current(uint16_t seq);
   void broadcast_mission_item_reached(uint16_t seq);
   void pull_handbreak(void);

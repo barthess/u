@@ -118,7 +118,7 @@ param = [
 
 #/**** PMU - pressure measurement unit ****/
 #// coefficients for thermal compensation
-("PMU_reserved0",   -2000000, 0, 2000000,   "i", "default",     "NULL"),
+("PMU_above_msl",   -200,   255,    4000,   "i", "default",     "Height of barometric sensor above sea level in meters"),
 ("PMU_reserved1",   -2000000, 0, 2000000,   "i", "default",     "NULL"),
 
 #/**** ADC coefficients ****/
