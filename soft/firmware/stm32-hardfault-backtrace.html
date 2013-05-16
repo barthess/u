@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body>
+<div>
+<p>When you reference an illegal pointer on STM32 (and possibly other Cortex-M3 processors), it jumps to the <strong>hardfault</strong> handler.
+All fine and good, but gdb doesn't quite understand this and gives a rather unhelpful stack trace:</p>
+<pre>(gdb) bt
+#0  _unhandled_exception () at chibios/os/ports/GCC/ARMCMx/STM32/vectors.c:190
+#1  &lt;signal handler called&gt;
+Cannot access memory at address 0x2000201c
+</pre>
+<p>To get information about the actual stuff that caused the error, you need to get the process stack pointer from a shadow register.
+Unfortunately I did not find a way to do this directly from gdb, but if you add this to your exception handler:</p>
+<pre>void **HARDFAULT_PSP;
+register void *stack_pointer asm("sp");
+
+void HardFaultVector()
+{
+    // Hijack the process stack pointer to make backtrace work
+    asm("mrs %0, psp" : "=r"(HARDFAULT_PSP) : :);
+    stack_pointer = HARDFAULT_PSP;
+    while(1);
+}
+</pre>
+<p>then backtrace will work just as expected:</p>
+<pre>(gdb) bt
+#1  HardFaultVector () at debug.c:18
+#2  &lt;signal handler called&gt;
+#3  pb_encode (stream=0x20001ac0, fields=&lt;value optimized out&gt;, 
+    src_struct=&lt;value optimized out&gt;) at nanopb/pb_encode.c:171
+#4  0x0800345e in pb_enc_submessage (stream=0x20001b38, field=0x80044c0, 
+    src=0x20001fd8) at nanopb/pb_encode.c:356
+#5  0x08003386 in encode_array (stream=0x20001b38, fields=&lt;value optimized out&gt;, 
+    src_struct=&lt;value optimized out&gt;) at nanopb/pb_encode.c:134
+#6  pb_encode (stream=0x20001b38, fields=&lt;value optimized out&gt;, 
+    src_struct=&lt;value optimized out&gt;) at nanopb/pb_encode.c:182
+#7  0x08002898 in rpc_prepare (rpc=0x20001bb0, src=0x20001b84) at rpc/rpc.c:136
+#8  0x08002b48 in rpc_respond (rpc=0x20001bb0, src=0x20001b84) at rpc/rpc.c:170
+#9  0x08002f52 in rpc_ThreadStatus (rpc=0x20001bb0) at rpc/rpccommands.c:62
+#10 0x08002e06 in rpc_dispatch (io=0x200002b4) at rpc/rpc.c:336
+#11 rpc_server (io=0x200002b4) at rpc/rpc.c:373
+#12 0x08001e42 in main () at main.c:42
+</pre>
+
+</div>
+
+
+</body></html>

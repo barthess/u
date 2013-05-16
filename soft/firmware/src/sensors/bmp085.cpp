@@ -33,6 +33,7 @@ extern ParamRegistry param_registry;
 
 extern mavlink_vfr_hud_t          mavlink_out_vfr_hud_struct;
 extern mavlink_scaled_pressure_t  mavlink_out_scaled_pressure_struct;
+extern mavlink_raw_pressure_t     mavlink_out_raw_pressure_struct;
 
 /*
  ******************************************************************************
@@ -63,7 +64,17 @@ static float climb = 0;
  */
 static float press_to_height_f32(uint32_t pval){
   const float p0 = 101325.0f;
-  return 44330.0f * (1.0f - powf((float)pval/p0, 1.0f/5.255f));
+  const float e = 1.0f/5.255f;
+  return 44330.0f * (1.0f - powf((float)pval/p0, e));
+}
+
+/**
+ *
+ */
+static float press_to_msl(uint32_t pval, int32_t above_msl){
+  float p;
+  p = 1.0f - above_msl / 44330.0f;
+  return (float)pval / powf(p, 5.255f);
 }
 
 /**
@@ -121,13 +132,16 @@ void BMP085::process_pressure(uint32_t pval){
   (void)press_to_height_tab(pval);
   altitude = press_to_height_f32(pval);
 
-//  altitude = press_to_height_tab(pval);
-//  (void)press_to_height_f32(pval);
-
-  comp_data.baro_altitude = bmp085_filter.update(altitude, *flen_pres_stat);
+  if (*flen_pres_stat == flen_pres_stat_cached)
+    comp_data.baro_altitude = bmp085_filter.update(altitude, *flen_pres_stat);
+  else{
+    bmp085_filter.reset(altitude, *flen_pres_stat);
+    flen_pres_stat_cached = *flen_pres_stat;
+  }
 
   measurement_time = chTimeNow();
-  climb = (comp_data.baro_altitude - altitude_prev) * (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
+  climb = (comp_data.baro_altitude - altitude_prev) *
+          (float)(CH_FREQUENCY / (measurement_time - measurement_time_prev));
   measurement_time_prev = measurement_time;
   altitude_prev = comp_data.baro_altitude;
 
@@ -135,8 +149,8 @@ void BMP085::process_pressure(uint32_t pval){
 
   mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
   mavlink_out_vfr_hud_struct.climb = comp_data.baro_climb;
-  mavlink_out_vfr_hud_struct.alt = comp_data.baro_altitude;
-  mavlink_out_scaled_pressure_struct.press_abs = (float)pval / 100.0f;
+  mavlink_out_scaled_pressure_struct.press_abs = press_to_msl(pval, *above_msl) / 100.0f;
+  mavlink_out_raw_pressure_struct.press_abs = pval / 100;
 }
 
 /*
@@ -154,6 +168,7 @@ I2CSensor(i2cdp, addr)
   up  = 0; ut  = 0;
   ac1 = 0; ac2 = 0; ac3 = 0; b1 = 0; b2 = 0; mb = 0; mc = 0; md = 0;
   ac4 = 0; ac5 = 0; ac6 = 0;
+  flen_pres_stat_cached = 1;
   ready = false;
 }
 
@@ -218,6 +233,8 @@ void BMP085::start(void) {
 
   flen_pres_stat = (const uint32_t*)param_registry.valueSearch("FLEN_pres_stat");
   flen_climb     = (const uint32_t*)param_registry.valueSearch("FLEN_climb");
+  above_msl      = (const int32_t*)param_registry.valueSearch("PMU_above_msl");
+
   ready = true;
 }
 

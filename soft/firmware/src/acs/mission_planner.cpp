@@ -4,7 +4,7 @@
 #include "param_registry.hpp"
 #include "imu.hpp"
 #include "bmp085.hpp"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 #include "mission_planner.hpp"
 #include "waypoint_db.hpp"
 
@@ -38,7 +38,7 @@ extern EventSource event_mavlink_out_command_ack;
 extern EventSource event_mavlink_in_command_long;
 
 extern IMU imu;
-extern ACS acs;
+extern ACSRover acs_rover;
 
 /*
  ******************************************************************************
@@ -221,7 +221,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    * take off handler
    */
   case (MAV_CMD_NAV_TAKEOFF):
-    result = acs.takeoff();
+    result = acs_rover.takeoff();
     cmd_confirm(result, clp->command);
     break;
 
@@ -229,7 +229,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_RETURN_TO_LAUNCH):
-    result = acs.returnToLaunch(clp);
+    result = acs_rover.returnToLaunch(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -237,7 +237,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_NAV_LAND):
-    result = acs.emergencyLand(clp);
+    result = acs_rover.emergencyGotoLand(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -245,7 +245,7 @@ void MissionPlanner::executeCmd(mavlink_command_long_t *clp){
    *
    */
   case (MAV_CMD_OVERRIDE_GOTO):
-    result = acs.overrideGoto(clp);
+    result = acs_rover.overrideGoto(clp);
     cmd_confirm(result, clp->command);
     break;
 
@@ -294,15 +294,15 @@ msg_t MissionPlanner::main(void){
       break;
 
     case EVMSK_MAVLINK_IN_MANUAL_CONTROL:
-      acs.manualControl(&mavlink_in_manual_control_struct);
+      acs_rover.manualControl(&mavlink_in_manual_control_struct);
       break;
 
     case EVMSK_MAVLINK_IN_SET_MODE:
-      acs.setMode(&mavlink_in_set_mode_struct);
+      acs_rover.setMode(&mavlink_in_set_mode_struct);
       break;
 
     case EVMSK_MAVLINK_IN_MISSION_SET_CURRENT:
-      acs.setCurrentMission(&mavlink_in_mission_set_current_struct);
+      acs_rover.setCurrentMission(&mavlink_in_mission_set_current_struct);
       break;
 
     default:

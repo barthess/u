@@ -40,8 +40,9 @@ private:
   uint8_t rxbuf[BMP085_RX_DEPTH];
   uint8_t txbuf[BMP085_TX_DEPTH];
   /* length of filter */
-  uint32_t const *flen_pres_stat;
-  uint32_t const *flen_climb;
+  uint32_t const *flen_pres_stat, *flen_climb;
+  uint32_t flen_pres_stat_cached;
+  int32_t const *above_msl;
   measurement_t measure;
   // uncompensated temperature and pressure values
   uint32_t up, ut;

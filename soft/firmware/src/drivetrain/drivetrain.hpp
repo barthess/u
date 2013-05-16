@@ -5,7 +5,8 @@
 
 class Drivetrain{
 public:
-  void start(const Impact *impact);
+  Drivetrain(const Impact *impact);
+  void start(void);
   void update(void);
 private:
   const Impact *impact;

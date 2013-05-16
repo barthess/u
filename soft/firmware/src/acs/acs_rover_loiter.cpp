@@ -1,5 +1,5 @@
 #include "main.h"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 #include "mavdbg.hpp"
 
 /*
@@ -38,7 +38,7 @@ extern CompensatedData comp_data;
 /**
  *
  */
-acs_status_t ACS::loop_loiter_turns(void){
+acs_status_t ACSRover::loop_loiter_turns(void){
   float impact = 0;
 
   /* set rudder */
@@ -74,7 +74,7 @@ acs_status_t ACS::loop_loiter_turns(void){
 /**
  *
  */
-acs_status_t ACS::loop_loiter_time(void){
+acs_status_t ACSRover::loop_loiter_time(void){
   float impact = 0;
 
   /* set rudder */
@@ -99,7 +99,7 @@ acs_status_t ACS::loop_loiter_time(void){
 /**
  *
  */
-acs_status_t ACS::loop_loiter_unlim(void){
+acs_status_t ACSRover::loop_loiter_unlim(void){
   state = ACS_STATE_LOAD_MISSION_ITEM;
   mavlink_dbg_print(MAV_SEVERITY_WARNING, "WARNING: Unlimited loiter unrealized");
   return ACS_STATUS_OK;
@@ -108,7 +108,7 @@ acs_status_t ACS::loop_loiter_unlim(void){
 /**
  *
  */
-acs_status_t ACS::loop_loiter(void){
+acs_status_t ACSRover::loop_loiter(void){
   switch(mi.command){
   case MAV_CMD_NAV_LOITER_TURNS:
     return loop_loiter_turns();

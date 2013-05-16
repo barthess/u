@@ -1,7 +1,7 @@
+#include <math.h>
+
 #include "main.h"
-#include "drivetrain.hpp"
-#include "servo.hpp"
-#include "message.hpp"
+#include "acs_rover.hpp"
 
 /*
  ******************************************************************************
@@ -14,7 +14,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern mavlink_system_t   mavlink_system_struct;
 
 /*
  ******************************************************************************
@@ -36,37 +35,13 @@ extern mavlink_system_t   mavlink_system_struct;
  ******************************************************************************
  */
 
-/*
- ******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************
- */
-
 /**
  *
  */
-Drivetrain::Drivetrain(const Impact *impact){
-  this->impact = impact;
+acs_status_t ACSRover::loop_land(void){
+  /* there is nothing special landing procedures for rover. Just navigate
+   * to landing waypoint */
+  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+  return ACS_STATUS_OK;
 }
-
-/**
- *
- */
-void Drivetrain::start(void){
-  ServoInit();
-}
-
-/**
- *
- */
-void Drivetrain::update(void){
-  ServoCarYawSet(float2servo(impact->rud));
-
-  /* motor control protected by safety bit */
-  if (mavlink_system_struct.mode & MAV_MODE_FLAG_SAFETY_ARMED)
-    ServoCarThrustSet(float2thrust(impact->thrust));
-  else
-    ServoCarThrustSet(float2thrust(0));
-}
-
 

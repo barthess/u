@@ -6,7 +6,8 @@
 
 class SINS{
 public:
-  void start(StateVector *in);
+  SINS(StateVector *in);
+  void start(void);
   void update(void);
   void reset(void);
 

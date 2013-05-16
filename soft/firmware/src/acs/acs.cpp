@@ -23,8 +23,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern ParamRegistry param_registry;
-
 extern mavlink_system_t                 mavlink_system_struct;
 extern mavlink_mission_current_t        mavlink_out_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_out_mission_item_reached_struct;
@@ -33,7 +31,6 @@ extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
 
 extern EventSource event_mavlink_out_mission_current;
 extern EventSource event_mavlink_out_mission_item_reached;
-extern CompensatedData comp_data;
 
 extern WpDB wpdb;
 extern SINS sins;
@@ -76,20 +73,6 @@ void ACS::broadcast_mission_item_reached(uint16_t seq){
   chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
                                       EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
   log_write_schedule(MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL, 0);
-}
-
-/**
- *
- */
-void ACS::pull_handbreak(void){
-  /* thrust update */
-  float impact;
-  impact = spdPID.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-  mavlink_out_nav_controller_output_struct.aspd_error = 0 - comp_data.groundspeed_odo;
-
-  if (impact < 0)  /* this check need because we can not get direction of moving */
-    impact = 0;
-  out->thrust = impact;
 }
 
 /**
@@ -162,33 +145,9 @@ acs_status_t ACS::loop_load_mission_item(void){
  ******************************************************************************
  */
 
-/**
- *
- */
-void ACS::start(const StateVector *in, Impact *out){
+ACS::ACS(const StateVector *in, Impact *out){
   this->in = in;
   this->out = out;
-
-  this->speed =   (const float*)param_registry.valueSearch("SPD_speed");
-  this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
-  this->hdgPID.start((const float*)param_registry.valueSearch("HDG_iMax"),
-                  (const float*)param_registry.valueSearch("HDG_iMin"),
-                  (const float*)param_registry.valueSearch("HDG_iGain"),
-                  (const float*)param_registry.valueSearch("HDG_pGain"),
-                  (const float*)param_registry.valueSearch("HDG_dGain"));
-  this->spdPID.start((const float*)param_registry.valueSearch("SPD_iMax"),
-                  (const float*)param_registry.valueSearch("SPD_iMin"),
-                  (const float*)param_registry.valueSearch("SPD_iGain"),
-                  (const float*)param_registry.valueSearch("SPD_pGain"),
-                  (const float*)param_registry.valueSearch("SPD_dGain"));
-  this->xtdPID.start((const float*)param_registry.valueSearch("XTRACK_iMax"),
-                  (const float*)param_registry.valueSearch("XTRACK_iMin"),
-                  (const float*)param_registry.valueSearch("XTRACK_iGain"),
-                  (const float*)param_registry.valueSearch("XTRACK_pGain"),
-                  (const float*)param_registry.valueSearch("XTRACK_dGain"));
-
-  dbg_lat = (const float*)param_registry.valueSearch("DBG_lat");
-  dbg_lon = (const float*)param_registry.valueSearch("DBG_lon");
 
   mavlink_out_nav_controller_output_struct.nav_roll       = 0;
   mavlink_out_nav_controller_output_struct.nav_pitch      = 0;
@@ -207,13 +166,7 @@ void ACS::start(const StateVector *in, Impact *out){
   mavlink_out_local_position_ned_struct.vz = 0;
   mavlink_out_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
 
-  spdPID.reset();
-  hdgPID.reset();
-  xtdPID.reset();
-
-  this->loiter_timestamp = chTimeNow();
-  this->loiter_halfturns = 0;
-  this->state = ACS_STATE_IDLE;
+  state = ACS_STATE_UNINIT;
 }
 
 /**
@@ -253,8 +206,7 @@ acs_status_t ACS::update(void){
     break;
 
   case ACS_STATE_IDLE:
-    pull_handbreak();
-    return ACS_STATUS_OK;
+    return loop_idle();
     break;
 
   default:
@@ -352,13 +304,67 @@ MAV_RESULT ACS::takeoff(void){
 }
 
 /**
- *
+ * Set specified waypoint as current and go to it
  */
-MAV_RESULT ACS::emergencyLand(mavlink_command_long_t *clp){
+MAV_RESULT ACS::jump_to(uint16_t seq){
+  bool load_status = CH_FAILED;
+
+  /* check current state of ACS */
+  if (! ((ACS_STATE_LOAD_MISSION_ITEM == state) ||
+      (ACS_STATE_NAVIGATE_TO_WAYPOINT == state) ||
+             (ACS_STATE_PASS_WAYPOINT == state) ||
+                    (ACS_STATE_LOITER == state) ||
+                     (ACS_STATE_PAUSE == state))){
+    mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: Can not jump in this state");
+    return MAV_RESULT_TEMPORARILY_REJECTED;
+  }
+
+  // set current location as previouse point
+  mi_prev.x = in->lat;
+  mi_prev.y = in->lon;
+  mi_prev.z = in->hmsl;
+
+  // load last waypoint
+  load_status = wpdb.load(&mi, seq);
+  if (CH_SUCCESS != load_status){
+    /* something goes wrong with waypoint loading */
+    state = ACS_STATE_LOITER;
+    return MAV_RESULT_FAILED;
+  }
+  else{
+    broadcast_mission_current(mi.seq);
+    sphere.updatePoints(deg2rad(mi_prev.x), deg2rad(mi_prev.y),
+                        deg2rad(mi.x),      deg2rad(mi.y));
+    state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+    return MAV_RESULT_ACCEPTED;
+  }
+}
+
+
+
+
+
+/**
+ * Set last waypoint as current and go to it
+ */
+MAV_RESULT ACS::emergencyGotoLand(mavlink_command_long_t *clp){
   (void)clp;
-  chDbgPanic("unrealized");
+  //return jump_to(wpdb.getCount() - 1);
+
+  // HACK: to emergency stop uas
+  state = ACS_STATE_IDLE;
+  mavlink_system_struct.mode &= ~MAV_MODE_FLAG_SAFETY_ARMED;
+  mavlink_system_struct.state = MAV_STATE_STANDBY;
+  mavlink_dbg_print(MAV_SEVERITY_INFO, "ACS: Landed");
+
   return MAV_RESULT_ACCEPTED;
 }
+
+
+
+
+
+
 
 /**
  * @brief   Used for emergency pause the mission.
@@ -428,19 +434,15 @@ MAV_RESULT ACS::overrideGoto(mavlink_command_long_t *clp){
  */
 MAV_RESULT ACS::returnToLaunch(mavlink_command_long_t *clp){
   (void)clp;
-  chDbgPanic("unrealized");
-  return MAV_RESULT_ACCEPTED;
+  return jump_to(0);
 }
 
 /**
  *
  */
-void ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
+MAV_RESULT ACS::setCurrentMission(mavlink_mission_set_current_t *sc){
   chDbgCheck(ACS_STATE_UNINIT != this->state, "invalid state");
-
-  (void)sc;
-  chDbgPanic("unrealized");
-  return;
+  return jump_to(sc->seq);
 }
 
 /**
@@ -470,7 +472,7 @@ void ACS::manualControl(mavlink_manual_control_t *mc){
   uint32_t v = 0;
   (void)v;
   (void)mc;
-  chDbgPanic("unrealized");
+  mavlink_dbg_print(MAV_SEVERITY_ERROR, "ERROR: manual control unrealized");
 //  if (mc->thrust_manual == 1){
 //    v = float2thrust(mc->thrust);
 //    ServoCarThrustSet(v);

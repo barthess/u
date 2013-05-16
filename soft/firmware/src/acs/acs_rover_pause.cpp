@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "main.h"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 
 /*
  ******************************************************************************
@@ -38,9 +38,9 @@
 /**
  *
  */
-acs_status_t ACS::loop_takeoff(void){
-  /* there is nothing special take off procedures for rover. Just navigate
-   * to lauch waypoint */
-  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
+acs_status_t ACSRover::loop_pause(void){
+  /* for ground rover we must just to pull handbrake and wait next command */
+  pull_handbreak();
   return ACS_STATUS_OK;
 }
+
