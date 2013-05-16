@@ -19,12 +19,12 @@ public:
   /**
    *
    */
-  void start(T const *iMax,  T const *iMin,  T const *iGain,
-             T const *pGain, T const *dGain){
-    this->iMax = iMax;
+  void start(T const *iMin,  T const *iMax,
+             T const *pGain, T const *iGain, T const *dGain){
     this->iMin = iMin;
-    this->iGain = iGain;
+    this->iMax = iMax;
     this->pGain = pGain;
+    this->iGain = iGain;
     this->dGain = dGain;
   };
   /**

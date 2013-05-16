@@ -71,20 +71,21 @@ ACSRover::ACSRover(const StateVector *in, Impact *out):
 void ACSRover::start(void){
   this->speed =   (const float*)param_registry.valueSearch("SPD_speed");
   this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
-  this->hdgPID.start((const float*)param_registry.valueSearch("HDG_iMax"),
-                  (const float*)param_registry.valueSearch("HDG_iMin"),
-                  (const float*)param_registry.valueSearch("HDG_iGain"),
+
+  this->hdgPID.start((const float*)param_registry.valueSearch("HDG_iMin"),
+                  (const float*)param_registry.valueSearch("HDG_iMax"),
                   (const float*)param_registry.valueSearch("HDG_pGain"),
+                  (const float*)param_registry.valueSearch("HDG_iGain"),
                   (const float*)param_registry.valueSearch("HDG_dGain"));
-  this->spdPID.start((const float*)param_registry.valueSearch("SPD_iMax"),
-                  (const float*)param_registry.valueSearch("SPD_iMin"),
-                  (const float*)param_registry.valueSearch("SPD_iGain"),
+  this->spdPID.start((const float*)param_registry.valueSearch("SPD_iMin"),
+                  (const float*)param_registry.valueSearch("SPD_iMax"),
                   (const float*)param_registry.valueSearch("SPD_pGain"),
+                  (const float*)param_registry.valueSearch("SPD_iGain"),
                   (const float*)param_registry.valueSearch("SPD_dGain"));
-  this->xtdPID.start((const float*)param_registry.valueSearch("XTRACK_iMax"),
-                  (const float*)param_registry.valueSearch("XTRACK_iMin"),
-                  (const float*)param_registry.valueSearch("XTRACK_iGain"),
+  this->xtdPID.start((const float*)param_registry.valueSearch("XTRACK_iMin"),
+                  (const float*)param_registry.valueSearch("XTRACK_iMax"),
                   (const float*)param_registry.valueSearch("XTRACK_pGain"),
+                  (const float*)param_registry.valueSearch("XTRACK_iGain"),
                   (const float*)param_registry.valueSearch("XTRACK_dGain"));
 
   dbg_lat = (const float*)param_registry.valueSearch("DBG_lat");
