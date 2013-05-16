@@ -64,7 +64,7 @@ Giovanni
 #include "mission_updater.hpp"
 
 #include "imu.hpp"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 #include "sins.hpp"
 #include "drivetrain.hpp"
 
@@ -114,13 +114,17 @@ chibios_rt::MailboxBuffer<2> blue_blink_mb;
 /* waypoint DB interface */
 WpDB wpdb;
 
-/* inertial measurement unit */
-IMU imu;
+/* State vector of system. Caclculated mostly in IMU, used mostly in ACS */
 StateVector state_vector;
 
-/* automated control system */
-ACS acs;
+/* Structure to pass impacts from IMU to ACS */
 Impact impact;
+
+/* inertial measurement unit */
+IMU imu;
+
+/* automated control system */
+ACSRover acs_rover(&state_vector, &impact);
 
 /* automated control system */
 SINS sins;
@@ -188,14 +192,14 @@ int main(void) {
 
   /* main cycle */
   imu.start();
-  acs.start(&state_vector, &impact);
+  acs_rover.start();
   drivetrain.start(&impact);
   sins.start(&state_vector);
 
   while (TRUE){
     if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){
       sins.update();
-      if (ACS_STATUS_ERROR == acs.update())
+      if (ACS_STATUS_ERROR == acs_rover.update())
         chDbgPanic("");
       drivetrain.update();
     }

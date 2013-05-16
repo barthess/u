@@ -23,8 +23,6 @@
  * EXTERNS
  ******************************************************************************
  */
-extern ParamRegistry param_registry;
-
 extern mavlink_system_t                 mavlink_system_struct;
 extern mavlink_mission_current_t        mavlink_out_mission_current_struct;
 extern mavlink_mission_item_reached_t   mavlink_out_mission_item_reached_struct;
@@ -33,7 +31,6 @@ extern mavlink_local_position_ned_t     mavlink_out_local_position_ned_struct;
 
 extern EventSource event_mavlink_out_mission_current;
 extern EventSource event_mavlink_out_mission_item_reached;
-extern CompensatedData comp_data;
 
 extern WpDB wpdb;
 extern SINS sins;
@@ -76,20 +73,6 @@ void ACS::broadcast_mission_item_reached(uint16_t seq){
   chEvtBroadcastFlags(&event_mavlink_out_mission_item_reached,
                                       EVMSK_MAVLINK_OUT_MISSION_ITEM_REACHED);
   log_write_schedule(MAVLINK_MSG_ID_MISSION_ITEM_REACHED, NULL, 0);
-}
-
-/**
- *
- */
-void ACS::pull_handbreak(void){
-  /* thrust update */
-  float impact;
-  impact = spdPID.update(0 - comp_data.groundspeed_odo, comp_data.groundspeed_odo);
-  mavlink_out_nav_controller_output_struct.aspd_error = 0 - comp_data.groundspeed_odo;
-
-  if (impact < 0)  /* this check need because we can not get direction of moving */
-    impact = 0;
-  out->thrust = impact;
 }
 
 /**
@@ -162,33 +145,9 @@ acs_status_t ACS::loop_load_mission_item(void){
  ******************************************************************************
  */
 
-/**
- *
- */
-void ACS::start(const StateVector *in, Impact *out){
+ACS::ACS(const StateVector *in, Impact *out){
   this->in = in;
   this->out = out;
-
-  this->speed =   (const float*)param_registry.valueSearch("SPD_speed");
-  this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
-  this->hdgPID.start((const float*)param_registry.valueSearch("HDG_iMax"),
-                  (const float*)param_registry.valueSearch("HDG_iMin"),
-                  (const float*)param_registry.valueSearch("HDG_iGain"),
-                  (const float*)param_registry.valueSearch("HDG_pGain"),
-                  (const float*)param_registry.valueSearch("HDG_dGain"));
-  this->spdPID.start((const float*)param_registry.valueSearch("SPD_iMax"),
-                  (const float*)param_registry.valueSearch("SPD_iMin"),
-                  (const float*)param_registry.valueSearch("SPD_iGain"),
-                  (const float*)param_registry.valueSearch("SPD_pGain"),
-                  (const float*)param_registry.valueSearch("SPD_dGain"));
-  this->xtdPID.start((const float*)param_registry.valueSearch("XTRACK_iMax"),
-                  (const float*)param_registry.valueSearch("XTRACK_iMin"),
-                  (const float*)param_registry.valueSearch("XTRACK_iGain"),
-                  (const float*)param_registry.valueSearch("XTRACK_pGain"),
-                  (const float*)param_registry.valueSearch("XTRACK_dGain"));
-
-  dbg_lat = (const float*)param_registry.valueSearch("DBG_lat");
-  dbg_lon = (const float*)param_registry.valueSearch("DBG_lon");
 
   mavlink_out_nav_controller_output_struct.nav_roll       = 0;
   mavlink_out_nav_controller_output_struct.nav_pitch      = 0;
@@ -207,13 +166,7 @@ void ACS::start(const StateVector *in, Impact *out){
   mavlink_out_local_position_ned_struct.vz = 0;
   mavlink_out_local_position_ned_struct.time_boot_ms = TIME_BOOT_MS;
 
-  spdPID.reset();
-  hdgPID.reset();
-  xtdPID.reset();
-
-  this->loiter_timestamp = chTimeNow();
-  this->loiter_halfturns = 0;
-  this->state = ACS_STATE_IDLE;
+  state = ACS_STATE_UNINIT;
 }
 
 /**
@@ -253,8 +206,7 @@ acs_status_t ACS::update(void){
     break;
 
   case ACS_STATE_IDLE:
-    pull_handbreak();
-    return ACS_STATUS_OK;
+    return loop_idle();
     break;
 
   default:
@@ -394,15 +346,6 @@ MAV_RESULT ACS::jump_to(uint16_t seq){
 MAV_RESULT ACS::emergencyGotoLand(mavlink_command_long_t *clp){
   (void)clp;
   return jump_to(wpdb.getCount() - 1);
-}
-
-/**
- * @brief   Kill uas. Pull break for rover. Eject parachute for airplane.
- */
-MAV_RESULT ACS::kill(void){
-  state = ACS_STATE_IDLE;
-  pull_handbreak();
-  return MAV_RESULT_ACCEPTED;
 }
 
 /**

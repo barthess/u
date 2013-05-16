@@ -37,11 +37,9 @@ typedef enum {
  */
 class ACS{
 public:
-  ACS(void){state = ACS_STATE_UNINIT;};
-  void start(const StateVector *in, Impact *out);
+  ACS(const StateVector *in, Impact *out);
   acs_status_t update(void);
   MAV_RESULT takeoff(void);
-  MAV_RESULT kill(void);
   MAV_RESULT goHome(void);
   MAV_RESULT returnToLaunch(mavlink_command_long_t *clp);
   MAV_RESULT overrideGoto(mavlink_command_long_t *clp);
@@ -50,40 +48,48 @@ public:
   void setMode(mavlink_set_mode_t *smp);
   void manualControl(mavlink_manual_control_t *mcp);
 
+public:
+  virtual void start(void) = 0;
+  virtual MAV_RESULT kill(void) = 0;
+
 private:
-  acs_status_t loop_navigate(void);
-  acs_status_t loop_navigate_local(void);
-  acs_status_t loop_navigate_global(void);
-  acs_status_t loop_passwp(void);
-  acs_status_t loop_loiter(void);
-  acs_status_t loop_loiter_time(void);
-  acs_status_t loop_loiter_turns(void);
-  acs_status_t loop_loiter_unlim(void);
-  acs_status_t loop_takeoff(void);
-  acs_status_t loop_land(void);
   acs_status_t loop_load_mission_item(void);
-  acs_status_t loop_pause(void);
   MAV_RESULT jump_to(uint16_t seq);
+
+private:
+  virtual acs_status_t loop_loiter(void) = 0;
+  virtual acs_status_t loop_loiter_time(void) = 0;
+  virtual acs_status_t loop_loiter_turns(void) = 0;
+  virtual acs_status_t loop_loiter_unlim(void) = 0;
+  virtual acs_status_t loop_takeoff(void) = 0;
+  virtual acs_status_t loop_navigate(void) = 0;
+  virtual acs_status_t loop_navigate_local(void) = 0;
+  virtual acs_status_t loop_navigate_global(void) = 0;
+  virtual acs_status_t loop_passwp(void) = 0;
+  virtual acs_status_t loop_land(void) = 0;
+  virtual acs_status_t loop_pause(void) = 0;
+  virtual acs_status_t loop_idle(void) = 0;
+
+protected:
   void broadcast_mission_current(uint16_t seq);
   void broadcast_mission_item_reached(uint16_t seq);
-  void pull_handbreak(void);
   void what_to_do_here(void);
+
+protected:
   mavlink_mission_item_t mi;        // mission item currently executed
   mavlink_mission_item_t mi_prev;   // previouse mission item to construct navigation line
   const StateVector *in;
   Impact *out;
-  PIDControl<float> spdPID;
-  PIDControl<float> hdgPID;
-  PIDControl<float> xtdPID;
   NavigationSphere<float> sphere;
   float launch_lon; // cached value
   float launch_lat; // cached value
   float launch_alt; // cached value
-  acs_state_t state;
   systime_t loiter_timestamp;
   uint32_t loiter_halfturns;
-
   float const *speed, *pulse2m, *dbg_lat, *dbg_lon;
+  acs_state_t state;
 };
 
 #endif /* ACS_H_ */
+
+

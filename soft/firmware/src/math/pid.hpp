@@ -5,6 +5,10 @@
 template <typename T>
 class PIDControl{
 public:
+  PIDControl(void){
+    iState = 0;
+    dState = 0;
+  };
   /**
    *
    */

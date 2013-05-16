@@ -140,12 +140,14 @@ KINEMATICSRC = src/kinematic/dcm.cpp \
 ACSSRC = src/acs/controller.cpp \
          src/acs/mission_updater.cpp \
 		 src/acs/acs.cpp \
-		 src/acs/acs_loiter.cpp \
-		 src/acs/acs_navigate.cpp \
-		 src/acs/acs_takeoff.cpp \
-		 src/acs/acs_land.cpp \
-		 src/acs/acs_pause.cpp \
-		 src/acs/acs_passwp.cpp \
+		 src/acs/acs_rover.cpp \
+		 src/acs/acs_rover_loiter.cpp \
+		 src/acs/acs_rover_takeoff.cpp \
+		 src/acs/acs_rover_navigate.cpp \
+		 src/acs/acs_rover_passwp.cpp \
+		 src/acs/acs_rover_land.cpp \
+		 src/acs/acs_rover_pause.cpp \
+		 src/acs/acs_rover_idle.cpp \
 		 src/acs/mission_planner.cpp \
 		          
 LINKSRC = src/datalink/linkmgr.cpp \

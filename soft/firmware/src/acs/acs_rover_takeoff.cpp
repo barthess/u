@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "main.h"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 
 /*
  ******************************************************************************
@@ -38,23 +38,9 @@
 /**
  *
  */
-acs_status_t ACS::loop_passwp(void){
-  chDbgPanic("unrealized");
-  switch(mi.frame){
-  /***********
-   * Local NED
-   ***********/
-  case MAV_FRAME_LOCAL_NED:
-    break;
-
-  /****************
-   * Global WGS-84
-   ***************/
-  case MAV_FRAME_GLOBAL:
-    break;
-  default:
-    return ACS_STATUS_ERROR;
-  }
+acs_status_t ACSRover::loop_takeoff(void){
+  /* there is nothing special take off procedures for rover. Just navigate
+   * to lauch waypoint */
+  state = ACS_STATE_NAVIGATE_TO_WAYPOINT;
   return ACS_STATUS_OK;
 }
-

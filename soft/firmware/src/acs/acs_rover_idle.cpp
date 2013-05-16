@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "main.h"
-#include "acs.hpp"
+#include "acs_rover.hpp"
 
 /*
  ******************************************************************************
@@ -38,8 +38,8 @@
 /**
  *
  */
-acs_status_t ACS::loop_pause(void){
-  /* for ground rover we must just to pull handbrake and wait next command */
+acs_status_t ACSRover::loop_idle(void){
+  /* for ground rover we must just to pull handbrake and wait command */
   pull_handbreak();
   return ACS_STATUS_OK;
 }
