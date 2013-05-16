@@ -41,11 +41,18 @@ extern mavlink_system_t   mavlink_system_struct;
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
+
 /**
  *
  */
-void Drivetrain::start(const Impact *impact){
+Drivetrain::Drivetrain(const Impact *impact){
   this->impact = impact;
+}
+
+/**
+ *
+ */
+void Drivetrain::start(void){
   ServoInit();
 }
 

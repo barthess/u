@@ -127,10 +127,10 @@ IMU imu;
 ACSRover acs_rover(&state_vector, &impact);
 
 /* automated control system */
-SINS sins;
+SINS sins(&state_vector);
 
 /**/
-Drivetrain drivetrain;
+Drivetrain drivetrain(&impact);
 
 /**/
 MissionPlanner mission_planner;
@@ -193,8 +193,8 @@ int main(void) {
   /* main cycle */
   imu.start();
   acs_rover.start();
-  drivetrain.start(&impact);
-  sins.start(&state_vector);
+  drivetrain.start();
+  sins.start();
 
   while (TRUE){
     if (IMU_UPDATE_RESULT_OK == imu.update(&state_vector)){

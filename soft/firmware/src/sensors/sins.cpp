@@ -43,11 +43,18 @@ extern ParamRegistry param_registry;
  * EXPORTED FUNCTIONS
  ******************************************************************************
  */
+
 /**
  *
  */
-void SINS::start(StateVector *in){
+SINS::SINS(StateVector *in){
   this->in = in;
+}
+
+/**
+ *
+ */
+void SINS::start(void){
   prev_odo = bkpOdometer;
   this->pulse2m = (const float*)param_registry.valueSearch("SPD_pulse2m");
   in->Xsins = 0;
