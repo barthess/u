@@ -340,13 +340,31 @@ MAV_RESULT ACS::jump_to(uint16_t seq){
   }
 }
 
+
+
+
+
 /**
  * Set last waypoint as current and go to it
  */
 MAV_RESULT ACS::emergencyGotoLand(mavlink_command_long_t *clp){
   (void)clp;
-  return jump_to(wpdb.getCount() - 1);
+  //return jump_to(wpdb.getCount() - 1);
+
+  // HACK: to emergency stop uas
+  state = ACS_STATE_IDLE;
+  mavlink_system_struct.mode &= ~MAV_MODE_FLAG_SAFETY_ARMED;
+  mavlink_system_struct.state = MAV_STATE_STANDBY;
+  mavlink_dbg_print(MAV_SEVERITY_INFO, "ACS: Landed");
+
+  return MAV_RESULT_ACCEPTED;
 }
+
+
+
+
+
+
 
 /**
  * @brief   Used for emergency pause the mission.

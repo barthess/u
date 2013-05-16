@@ -16,7 +16,7 @@
  ******************************************************************************
  */
 extern mavlink_nav_controller_output_t  mavlink_out_nav_controller_output_struct;
-extern mavlink_global_position_int_t  mavlink_out_global_position_int_struct;
+extern mavlink_global_position_int_t    mavlink_out_global_position_int_struct;
 extern CompensatedData comp_data;
 
 /*
@@ -72,6 +72,7 @@ acs_status_t ACSRover::loop_navigate_local(void){
   dy = in->Ysins - mi.y;
   target_distance = sqrtf(dx*dx + dy*dy);
   if (target_distance < mi.param2){
+    this->xtdPID.reset();
     broadcast_mission_item_reached(mi.seq);
     what_to_do_here();
   }
@@ -130,6 +131,7 @@ acs_status_t ACSRover::loop_navigate_global(void){
 
   /* check reachablillity */
   if (rad2m(target_distance) < mi.param2){
+    this->xtdPID.reset();
     broadcast_mission_item_reached(mi.seq);
     what_to_do_here();
   }
