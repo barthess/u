@@ -8,7 +8,7 @@ typedef struct ShellCmd_t ShellCmd_t;
 
 /**
  * Fucnction executing command job.
- * @return    Pointer to created thread. Must be NULL if no thread crated.
+ * @return    Pointer to created thread. Must be NULL if no thread created.
  */
 typedef Thread* (*cmdfunction_t)(int argc, const char * const * argv, SerialDriver *sdp);
 
