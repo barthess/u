@@ -287,7 +287,7 @@ WARN = -Wall -Wextra -Wdouble-promotion -Wformat #-Wconversion -Werror
 CWARN = $(WARN) -Wstrict-prototypes
 
 # Define C++ warning options here
-CPPWARN = $(WARN)
+CPPWARN = $(WARN) -Woverloaded-virtual -Wctor-dtor-privacy  -Winit-self -Wunreachable-code #-Wconversion -Wsign-conversion #-Wold-style-cast #-Wnon-virtual-dtor #-Weffc++
 
 #
 # Compiler settings
