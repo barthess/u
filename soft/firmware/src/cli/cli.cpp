@@ -25,7 +25,7 @@
  * DEFINES
  ******************************************************************************
  */
-#define _NUM_OF_CMD (sizeof(chibiutils)/sizeof(ShellCmd_t))
+#define _NUM_OF_CMD (sizeof(cliutils)/sizeof(ShellCmd_t))
 
 /*
  ******************************************************************************
@@ -49,7 +49,7 @@ static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sd
  ******************************************************************************
  */
 
-static const ShellCmd_t chibiutils[] = {
+static const ShellCmd_t cliutils[] = {
     {"clear",     &clear_clicmd,      "clear screen"},
     {"cal",       &cal_clicmd,        "start calibration of onboard sensors"},
     {"date",      &date_clicmd,       "print and set current date"},
@@ -114,7 +114,7 @@ static int execute (int argc, const char * const * argv){
   int i = 0;
 
   /* search first token */
-  i = cmd_search(argv[0], chibiutils);
+  i = cmd_search(argv[0], cliutils);
   if (i == -1){
     cli_print ("command: '");
     cli_print ((char*)argv[0]);
@@ -122,9 +122,9 @@ static int execute (int argc, const char * const * argv){
   }
   else{
     if (argc > 1)
-      current_cmd_tp = chibiutils[i].func(argc - 1, &argv[1], ShellSDp);
+      current_cmd_tp = cliutils[i].func(argc - 1, &argv[1], ShellSDp);
     else
-      current_cmd_tp = chibiutils[i].func(0, NULL, ShellSDp);
+      current_cmd_tp = cliutils[i].func(0, NULL, ShellSDp);
   }
   return 0;
 }
@@ -144,15 +144,15 @@ static char ** complete(int argc, const char * const * argv)
     // get last entered token
     char * bit = (char*)argv [argc-1];
     // iterate through our available token and match it
-    while (chibiutils[i].name != NULL){
-      if (strstr(chibiutils[i].name, bit) == chibiutils[i].name)
-        compl_world[j++] = (char *)chibiutils[i].name;
+    while (cliutils[i].name != NULL){
+      if (strstr(cliutils[i].name, bit) == cliutils[i].name)
+        compl_world[j++] = (char *)cliutils[i].name;
       i++;
     }
   }
   else { // if there is no token in cmdline, just print all available token
-    while (chibiutils[j].name != NULL){
-      compl_world[j] = (char *)chibiutils[j].name;
+    while (cliutils[j].name != NULL){
+      compl_world[j] = (char *)cliutils[j].name;
       j++;
     }
   }
@@ -262,10 +262,10 @@ static Thread* help_clicmd(int argc, const char * const * argv, SerialDriver *sd
   cli_println("Available commands are:");
   cli_println("-------------------------------------------------------------");
 
-  while(chibiutils[i].name != NULL){
-    cli_print(chibiutils[i].name);
+  while(cliutils[i].name != NULL){
+    cli_print(cliutils[i].name);
     cli_print(" - ");
-    cli_println(chibiutils[i].help);
+    cli_println(cliutils[i].help);
     i++;
   }
 

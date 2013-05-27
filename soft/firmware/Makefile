@@ -173,7 +173,7 @@ CPPSRC = $(CHCPPSRC) \
 		 src/eeprom/cpp/eeprom_file.cpp \
          src/eeprom/cpp/eeprom_fs.cpp \
          src/eeprom/cpp/eeprom_mtd.cpp \
-         src/eeprom/cpp/eeprom_testsuit.cpp \
+         src/eeprom/cpp/eeprom_testsuite.cpp \
          src/i2c_local.cpp \
          src/utils/memfunc.cpp \
          src/storage/microsd.cpp \
