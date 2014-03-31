@@ -1,19 +1,20 @@
 [Eagle]
-Version="06 01 00"
+Version="06 05 00"
 Platform="Linux"
-Serial="7004B95A68-LSR-WLM-1CP"
+Serial="62191E841E-LSR-WLM-1EL"
 Globals="Globals"
 Desktop="Desktop"
 
 [Globals]
 AutoSaveProject=1
+UsedLibrary="/home/barthess/projects/eagle_libs/barthess.lbr"
 
 [Win_1]
 Type="Control Panel"
 Loc="0 0 1038 649"
-State=2
+State=0
 Number=0
 
 [Desktop]
-Screen="1600 900"
+Screen="1600 1200"
 Window="Win_1"
