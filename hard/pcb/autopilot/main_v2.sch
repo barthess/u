@@ -10126,7 +10126,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="P+8" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="VD4" library="barthess" deviceset="BAR43" device=""/>
 <part name="C40" library="SparkFun" deviceset="CAP" device="0805" value="0.1uF"/>
-<part name="P+21" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="JP6" library="barthess" deviceset="M05X2" device="SHD"/>
 <part name="P+22" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="GND27" library="SparkFun" deviceset="GND" device=""/>
@@ -10381,7 +10380,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <instance part="P+8" gate="G$1" x="289.56" y="-208.28"/>
 <instance part="VD4" gate="1" x="-73.66" y="68.58"/>
 <instance part="C40" gate="G$1" x="-53.34" y="63.5" rot="MR0"/>
-<instance part="P+21" gate="G$1" x="-53.34" y="71.12"/>
 <instance part="JP6" gate="G$1" x="198.12" y="195.58"/>
 <instance part="P+22" gate="G$1" x="185.42" y="200.66"/>
 <instance part="GND27" gate="1" x="210.82" y="203.2" rot="R180"/>
@@ -10650,16 +10648,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="DA6" gate="G$1" pin="VDD"/>
 <pinref part="P+8" gate="G$1" pin="3.3V"/>
 <wire x1="289.56" y1="-208.28" x2="289.56" y2="-213.36" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="DD1" gate="G$1" pin="V_BAT"/>
-<wire x1="-33.02" y1="68.58" x2="-53.34" y2="68.58" width="0.1524" layer="91"/>
-<pinref part="VD4" gate="1" pin="C"/>
-<pinref part="C40" gate="G$1" pin="1"/>
-<wire x1="-53.34" y1="68.58" x2="-71.12" y2="68.58" width="0.1524" layer="91"/>
-<junction x="-53.34" y="68.58"/>
-<pinref part="P+21" gate="G$1" pin="3.3V"/>
-<wire x1="-53.34" y1="68.58" x2="-53.34" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="JP6" gate="G$1" pin="1"/>
@@ -12919,6 +12907,16 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="R60" gate="G$1" pin="1"/>
 <pinref part="U$7" gate="G$1" pin="RED"/>
 <wire x1="170.18" y1="96.52" x2="187.96" y2="96.52" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$33" class="0">
+<segment>
+<pinref part="DD1" gate="G$1" pin="V_BAT"/>
+<wire x1="-33.02" y1="68.58" x2="-53.34" y2="68.58" width="0.1524" layer="91"/>
+<pinref part="VD4" gate="1" pin="C"/>
+<pinref part="C40" gate="G$1" pin="1"/>
+<wire x1="-53.34" y1="68.58" x2="-71.12" y2="68.58" width="0.1524" layer="91"/>
+<junction x="-53.34" y="68.58"/>
 </segment>
 </net>
 </nets>
