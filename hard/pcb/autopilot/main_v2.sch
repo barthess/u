@@ -1000,17 +1000,16 @@ TS-003</description>
 <wire x1="41.75" y1="-2.25" x2="-2.25" y2="-2.25" width="0.6096" layer="21" style="longdash"/>
 <smd name="2" x="25.3" y="3.25" dx="1.37" dy="0.61" layer="1" rot="R90"/>
 <smd name="1" x="25.3" y="0.05" dx="1.37" dy="0.61" layer="1" rot="R90"/>
-<wire x1="-2.25" y1="-2.25" x2="-2.25" y2="44.75" width="0.127" layer="51"/>
-<wire x1="-2.25" y1="44.75" x2="41.75" y2="44.75" width="0.127" layer="51"/>
-<wire x1="41.75" y1="44.75" x2="41.75" y2="-2.25" width="0.127" layer="51"/>
-<wire x1="41.75" y1="-2.25" x2="29.5" y2="-2.25" width="0.127" layer="51"/>
-<wire x1="29.5" y1="-2.25" x2="10.25" y2="-2.25" width="0.127" layer="51"/>
-<wire x1="-2.25" y1="-2.25" x2="10.25" y2="-2.25" width="0.127" layer="51"/>
-<wire x1="10.25" y1="-2.25" x2="10.25" y2="7" width="0.127" layer="51"/>
-<wire x1="10.25" y1="7" x2="29.5" y2="7" width="0.127" layer="51"/>
-<wire x1="29.5" y1="7" x2="29.5" y2="-2.25" width="0.127" layer="51"/>
-<text x="15" y="-4.8" size="1.016" layer="21">&gt;NAME</text>
-<text x="15.5" y="24.75" size="1.016" layer="21">&gt;VALUE</text>
+<wire x1="-2.25" y1="-2.25" x2="-2.25" y2="44.75" width="0.127" layer="41"/>
+<wire x1="-2.25" y1="44.75" x2="41.75" y2="44.75" width="0.127" layer="41"/>
+<wire x1="41.75" y1="44.75" x2="41.75" y2="-2.25" width="0.127" layer="41"/>
+<wire x1="41.75" y1="-2.25" x2="29.5" y2="-2.25" width="0.127" layer="41"/>
+<wire x1="-2.25" y1="-2.25" x2="10.25" y2="-2.25" width="0.127" layer="41"/>
+<wire x1="10.25" y1="-2.25" x2="10.25" y2="5" width="0.127" layer="41"/>
+<wire x1="10.25" y1="5" x2="29.5" y2="5" width="0.127" layer="41"/>
+<wire x1="29.5" y1="5" x2="29.5" y2="-2.25" width="0.127" layer="41"/>
+<text x="15" y="-4.8" size="1.016" layer="25">&gt;NAME</text>
+<text x="15.5" y="24.75" size="1.016" layer="27">&gt;VALUE</text>
 <circle x="0" y="42.6" radius="2.690721875" width="0.127" layer="40"/>
 <circle x="39.6" y="42.6" radius="2.690721875" width="0.127" layer="40"/>
 <circle x="39.6" y="0" radius="2.690721875" width="0.127" layer="40"/>
@@ -7401,8 +7400,8 @@ www.irf.com / irlml5203.pdf</description>
 <smd name="P$2" x="4.3" y="0" dx="5.5" dy="1.5" layer="1"/>
 </package>
 <package name="CRYSTAL-32KHZ-SMD-3.2X1.5">
-<smd name="P$1" x="-1.3" y="0.05" dx="1.1" dy="1.9" layer="1"/>
-<smd name="P$2" x="1.2" y="0.05" dx="1.1" dy="1.9" layer="1"/>
+<smd name="1" x="-1.3" y="0.05" dx="1.1" dy="1.9" layer="1"/>
+<smd name="2" x="1.2" y="0.05" dx="1.1" dy="1.9" layer="1"/>
 <rectangle x1="-0.75" y1="-0.9" x2="0.65" y2="1" layer="39"/>
 <text x="-1.85" y="1.55" size="1.27" layer="25">&gt;NAME</text>
 <text x="-1.85" y="-2.65" size="1.27" layer="27">&gt;VALUE</text>
@@ -7518,8 +7517,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </device>
 <device name="3.2X.1.5" package="CRYSTAL-32KHZ-SMD-3.2X1.5">
 <connects>
-<connect gate="G$1" pin="P$1" pad="P$1"/>
-<connect gate="G$1" pin="P$2" pad="P$2"/>
+<connect gate="G$1" pin="P$1" pad="1"/>
+<connect gate="G$1" pin="P$2" pad="2"/>
 </connects>
 <technologies>
 <technology name=""/>
