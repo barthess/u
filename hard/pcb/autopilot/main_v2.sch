@@ -7842,6 +7842,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <text x="177.8" y="131.572" size="1.27" layer="98">xbee_sleep</text>
 <text x="41.91" y="-51.308" size="1.27" layer="98">an_reserved</text>
 <text x="208.28" y="136.652" size="1.27" layer="98">xbee_RTS</text>
+<text x="284.48" y="-15.748" size="1.27" layer="98">TMP75_alert</text>
 </plain>
 <instances>
 <instance part="DD1" gate="G$1" x="0" y="0"/>
@@ -9306,18 +9307,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="DD5" gate="G$1" pin="SCL"/>
 <wire x1="360.68" y1="-53.34" x2="368.3" y2="-53.34" width="0.1524" layer="91"/>
 <label x="368.3" y="-53.34" size="1.27" layer="95" xref="yes"/>
-</segment>
-</net>
-<net name="TMP75_ALERT" class="0">
-<segment>
-<wire x1="297.18" y1="-15.24" x2="294.64" y2="-15.24" width="0.1524" layer="91"/>
-<label x="294.64" y="-15.24" size="1.27" layer="95" rot="R180" xref="yes"/>
-<pinref part="U2" gate="G$1" pin="ALERT"/>
-</segment>
-<segment>
-<label x="48.26" y="-10.16" size="1.27" layer="95" xref="yes"/>
-<pinref part="DD1" gate="G$1" pin="PE6"/>
-<wire x1="48.26" y1="-10.16" x2="40.64" y2="-10.16" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="PRESS_DIFF" class="0">
