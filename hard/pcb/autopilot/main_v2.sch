@@ -1772,6 +1772,36 @@ TS-003</description>
 <text x="3.23" y="1.738" size="0.4064" layer="25" rot="R90">&gt;Name</text>
 <text x="-2.976" y="1.484" size="0.4064" layer="27" rot="R90">&gt;Value</text>
 </package>
+<package name="LED-TRICOLOR-5050">
+<description>&lt;H3&gt;5050 SMD RGB LED&lt;/h3&gt;
+5.0mm x 5.0mm, 2.6mm thickness</description>
+<wire x1="-2.5" y1="-2.5" x2="-2.5" y2="2.5" width="0.127" layer="51"/>
+<wire x1="-2.5" y1="2.5" x2="2.5" y2="2.5" width="0.127" layer="51"/>
+<wire x1="2.5" y1="2.5" x2="2.5" y2="-2.5" width="0.127" layer="51"/>
+<wire x1="2.5" y1="-2.5" x2="-2.5" y2="-2.5" width="0.127" layer="51"/>
+<wire x1="-1" y1="2.5" x2="1" y2="2.5" width="0.127" layer="21"/>
+<wire x1="-1" y1="-2.5" x2="1" y2="-2.5" width="0.127" layer="21"/>
+<wire x1="-2.5" y1="0.7" x2="-2.5" y2="0.9" width="0.127" layer="21"/>
+<wire x1="-2.5" y1="-0.9" x2="-2.5" y2="-0.7" width="0.127" layer="21"/>
+<wire x1="2.5" y1="-0.9" x2="2.5" y2="-0.7" width="0.127" layer="21"/>
+<wire x1="2.5" y1="0.7" x2="2.5" y2="0.9" width="0.127" layer="21"/>
+<circle x="-0.7" y="2" radius="0.2236" width="0.127" layer="21"/>
+<circle x="0" y="0" radius="2" width="0.127" layer="51"/>
+<smd name="1" x="-2.2" y="1.8" dx="2" dy="1.4" layer="1"/>
+<smd name="6" x="2.2" y="1.8" dx="2" dy="1.4" layer="1"/>
+<smd name="3" x="-2.2" y="-1.8" dx="2" dy="1.4" layer="1"/>
+<smd name="4" x="2.2" y="-1.8" dx="2" dy="1.4" layer="1"/>
+<smd name="2" x="-2.2" y="0" dx="2" dy="1" layer="1"/>
+<smd name="5" x="2.2" y="0" dx="2" dy="1" layer="1"/>
+<text x="-2.54" y="2.794" size="0.762" layer="25">&gt;Name</text>
+<text x="-2.54" y="-3.556" size="0.762" layer="27">&gt;Value</text>
+<rectangle x1="1.7" y1="-0.45" x2="2.7" y2="0.45" layer="51"/>
+<rectangle x1="1.7" y1="1.15" x2="2.7" y2="2.05" layer="51"/>
+<rectangle x1="1.7" y1="-2.05" x2="2.7" y2="-1.15" layer="51"/>
+<rectangle x1="-2.7" y1="1.15" x2="-1.7" y2="2.05" layer="51" rot="R180"/>
+<rectangle x1="-2.7" y1="-0.45" x2="-1.7" y2="0.45" layer="51" rot="R180"/>
+<rectangle x1="-2.7" y1="-2.05" x2="-1.7" y2="-1.15" layer="51" rot="R180"/>
+</package>
 </packages>
 <symbols>
 <symbol name="STM32F407V">
@@ -2337,6 +2367,44 @@ TS-003</description>
 <rectangle x1="-1.872" y1="0.287" x2="-1.745" y2="1.176" layer="94"/>
 <pin name="+" x="0" y="2.54" visible="off" length="short" direction="pas" swaplevel="1" rot="R270"/>
 <pin name="-" x="0" y="-5.08" visible="off" length="short" direction="pas" swaplevel="1" rot="R90"/>
+</symbol>
+<symbol name="LED-TRICOLOR-INDV">
+<wire x1="10.16" y1="5.08" x2="10.16" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="10.16" y1="-5.08" x2="-10.16" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="-5.08" x2="-10.16" y2="5.08" width="0.254" layer="94"/>
+<wire x1="-10.16" y1="5.08" x2="10.16" y2="5.08" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="1.27" x2="-0.508" y2="0" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="0" x2="-0.508" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="-1.27" x2="0.762" y2="0" width="0.254" layer="94"/>
+<wire x1="0.762" y1="0" x2="-0.508" y2="1.27" width="0.254" layer="94"/>
+<wire x1="0.762" y1="1.27" x2="0.762" y2="0" width="0.254" layer="94"/>
+<wire x1="0.762" y1="0" x2="0.762" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="0.762" y1="0" x2="2.032" y2="0" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="0" x2="-1.778" y2="0" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="-1.778" x2="-0.508" y2="-3.048" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="-3.048" x2="-0.508" y2="-4.318" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="-4.318" x2="0.762" y2="-3.048" width="0.254" layer="94"/>
+<wire x1="0.762" y1="-3.048" x2="-0.508" y2="-1.778" width="0.254" layer="94"/>
+<wire x1="0.762" y1="-1.778" x2="0.762" y2="-3.048" width="0.254" layer="94"/>
+<wire x1="0.762" y1="-3.048" x2="0.762" y2="-4.318" width="0.254" layer="94"/>
+<wire x1="0.762" y1="-3.048" x2="2.032" y2="-3.048" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="-3.048" x2="-1.778" y2="-3.048" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="4.318" x2="-0.508" y2="3.048" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="3.048" x2="-0.508" y2="1.778" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="1.778" x2="0.762" y2="3.048" width="0.254" layer="94"/>
+<wire x1="0.762" y1="3.048" x2="-0.508" y2="4.318" width="0.254" layer="94"/>
+<wire x1="0.762" y1="4.318" x2="0.762" y2="3.048" width="0.254" layer="94"/>
+<wire x1="0.762" y1="3.048" x2="0.762" y2="1.778" width="0.254" layer="94"/>
+<wire x1="0.762" y1="3.048" x2="2.032" y2="3.048" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="3.048" x2="-1.778" y2="3.048" width="0.254" layer="94"/>
+<text x="-12.7" y="5.842" size="1.778" layer="95">&gt;NAME</text>
+<text x="-12.7" y="-7.62" size="1.778" layer="95">&gt;VALUE</text>
+<pin name="RC" x="12.7" y="0" visible="pin" length="short" rot="R180"/>
+<pin name="BC" x="12.7" y="2.54" visible="pin" length="short" rot="R180"/>
+<pin name="GA" x="-12.7" y="-2.54" visible="pin" length="short"/>
+<pin name="GC" x="12.7" y="-2.54" visible="pin" length="short" rot="R180"/>
+<pin name="BA" x="-12.7" y="2.54" visible="pin" length="short"/>
+<pin name="RA" x="-12.7" y="0" visible="pin" length="short"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -3919,6 +3987,26 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </device>
 </devices>
 </deviceset>
+<deviceset name="LED-TRICOLOR-5050" prefix="LED">
+<gates>
+<gate name="G$1" symbol="LED-TRICOLOR-INDV" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="LED-TRICOLOR-5050">
+<connects>
+<connect gate="G$1" pin="BA" pad="1"/>
+<connect gate="G$1" pin="BC" pad="6"/>
+<connect gate="G$1" pin="GA" pad="3"/>
+<connect gate="G$1" pin="GC" pad="4"/>
+<connect gate="G$1" pin="RA" pad="2"/>
+<connect gate="G$1" pin="RC" pad="5"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
 </devicesets>
 </library>
 <library name="SparkFun">
@@ -5233,21 +5321,6 @@ chip</description>
 <vertex x="1.8364" y="-0.0051" curve="-90.012967"/>
 </polygon>
 </package>
-<package name="LED-TRICOLOR-SMD">
-<wire x1="-1.3" y1="1.3" x2="-1.6" y2="1.3" width="0.2032" layer="21"/>
-<wire x1="-1.6" y1="1.3" x2="-1.6" y2="-1.3" width="0.2032" layer="21"/>
-<wire x1="-1.6" y1="-1.3" x2="-1.3" y2="-1.3" width="0.2032" layer="21"/>
-<wire x1="1.3" y1="1.3" x2="1.6" y2="1.3" width="0.2032" layer="21"/>
-<wire x1="1.6" y1="1.3" x2="1.6" y2="-1.3" width="0.2032" layer="21"/>
-<wire x1="1.6" y1="-1.3" x2="1.3" y2="-1.3" width="0.2032" layer="21"/>
-<wire x1="0" y1="-1.6" x2="0" y2="-1.8" width="0.2032" layer="21"/>
-<smd name="G" x="-0.7" y="1.5" dx="0.7" dy="1.2" layer="1"/>
-<smd name="B" x="0.7" y="1.5" dx="0.7" dy="1.2" layer="1"/>
-<smd name="R" x="-0.7" y="-1.5" dx="0.7" dy="1.2" layer="1"/>
-<smd name="A" x="0.7" y="-1.5" dx="0.7" dy="1.2" layer="1"/>
-<text x="-1.016" y="0.127" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-1.016" y="-0.635" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
 <package name="STAND-OFF">
 <description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
 This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
@@ -5519,26 +5592,6 @@ Yageo CFR series &lt;a href="http://www.yageo.com/pdf/yageo/Leaded-R_CFR_2008.pd
 <rectangle x1="-2.032" y1="1.524" x2="2.032" y2="2.032" layer="94"/>
 <pin name="1" x="0" y="5.08" visible="off" length="short" direction="pas" swaplevel="1" rot="R270"/>
 <pin name="2" x="0" y="-2.54" visible="off" length="short" direction="pas" swaplevel="1" rot="R90"/>
-</symbol>
-<symbol name="LED-TRICOLORSMD">
-<wire x1="10.16" y1="2.54" x2="10.16" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="10.16" y1="-7.62" x2="-7.62" y2="-7.62" width="0.254" layer="94"/>
-<wire x1="-7.62" y1="-7.62" x2="-7.62" y2="2.54" width="0.254" layer="94"/>
-<wire x1="-7.62" y1="2.54" x2="10.16" y2="2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-3.81" x2="2.54" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-2.54" x2="2.54" y2="-1.27" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-1.27" x2="1.27" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="1.27" y1="-2.54" x2="2.54" y2="-3.81" width="0.254" layer="94"/>
-<wire x1="1.27" y1="-3.81" x2="1.27" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="1.27" y1="-2.54" x2="1.27" y2="-1.27" width="0.254" layer="94"/>
-<wire x1="1.27" y1="-2.54" x2="0" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="2.54" y1="-2.54" x2="3.81" y2="-2.54" width="0.254" layer="94"/>
-<text x="-7.62" y="3.302" size="1.778" layer="95">&gt;NAME</text>
-<text x="-7.62" y="-10.16" size="1.778" layer="95">&gt;VALUE</text>
-<pin name="GRN" x="-10.16" y="-5.08" visible="pin" length="short"/>
-<pin name="BLU" x="-10.16" y="-2.54" visible="pin" length="short"/>
-<pin name="A" x="12.7" y="-2.54" visible="pin" length="short" rot="R180"/>
-<pin name="RED" x="-10.16" y="0" visible="pin" length="short"/>
 </symbol>
 <symbol name="STAND-OFF">
 <circle x="0" y="0" radius="1.27" width="0.254" layer="94"/>
@@ -6238,26 +6291,6 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="LED-TRICOLOR">
-<description>&lt;b&gt;Tri-Color LED SMD&lt;/b&gt;
-Proven layout and schematic for triple color LED in SMD package - common anode. Spark Fun Electronics SKU : COM-07844</description>
-<gates>
-<gate name="G$1" symbol="LED-TRICOLORSMD" x="0" y="2.54"/>
-</gates>
-<devices>
-<device name="" package="LED-TRICOLOR-SMD">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="BLU" pad="B"/>
-<connect gate="G$1" pin="GRN" pad="G"/>
-<connect gate="G$1" pin="RED" pad="R"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -7719,11 +7752,10 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="C54" library="SparkFun" deviceset="CAP" device="0805" value="0.1uF"/>
 <part name="C55" library="SparkFun" deviceset="CAP" device="0805" value="0.1uF"/>
 <part name="IC3" library="linear" deviceset="LP2950" device="Z"/>
-<part name="U$7" library="SparkFun" deviceset="LED-TRICOLOR" device=""/>
 <part name="P+23" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="R30" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="68"/>
-<part name="R31" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="68"/>
-<part name="R60" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="68"/>
+<part name="R31" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="0"/>
+<part name="R60" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="0"/>
 <part name="T3" library="transistor" deviceset="BC848" device=""/>
 <part name="R61" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="1k"/>
 <part name="U$1" library="barthess" deviceset="6V" device=""/>
@@ -7826,6 +7858,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="C46" library="SparkFun" deviceset="CAP" device="0805" value="0.1uF"/>
 <part name="VD5" library="barthess" deviceset="BAR43" device=""/>
 <part name="P+21" library="SparkFun" deviceset="3.3V" device=""/>
+<part name="LED3" library="barthess" deviceset="LED-TRICOLOR-5050" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -7976,11 +8009,10 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <instance part="C54" gate="G$1" x="-281.94" y="-96.52"/>
 <instance part="C55" gate="G$1" x="-266.7" y="-109.22"/>
 <instance part="IC3" gate="G$1" x="-243.84" y="-101.6"/>
-<instance part="U$7" gate="G$1" x="198.12" y="96.52" rot="MR180"/>
-<instance part="P+23" gate="G$1" x="213.36" y="99.06" rot="MR90"/>
-<instance part="R30" gate="G$1" x="165.1" y="101.6" rot="MR0"/>
-<instance part="R31" gate="G$1" x="175.26" y="99.06" rot="MR0"/>
-<instance part="R60" gate="G$1" x="165.1" y="96.52" rot="MR0"/>
+<instance part="P+23" gate="G$1" x="147.32" y="104.14" rot="MR270"/>
+<instance part="R30" gate="G$1" x="190.5" y="101.6" rot="MR180"/>
+<instance part="R31" gate="G$1" x="198.12" y="104.14" rot="MR180"/>
+<instance part="R60" gate="G$1" x="198.12" y="99.06" rot="MR180"/>
 <instance part="T3" gate="G$1" x="-302.26" y="-96.52"/>
 <instance part="R61" gate="G$1" x="-312.42" y="-96.52" rot="R180"/>
 <instance part="U$1" gate="6V" x="114.3" y="152.4"/>
@@ -8083,6 +8115,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <instance part="C46" gate="G$1" x="-43.18" y="58.42"/>
 <instance part="VD5" gate="1" x="-63.5" y="76.2" rot="R270"/>
 <instance part="P+21" gate="G$1" x="-63.5" y="81.28"/>
+<instance part="LED3" gate="G$1" x="170.18" y="101.6"/>
 </instances>
 <busses>
 </busses>
@@ -8241,9 +8274,18 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="DA1" gate="G$1" pin="OUT"/>
 </segment>
 <segment>
-<wire x1="213.36" y1="99.06" x2="210.82" y2="99.06" width="0.1524" layer="91"/>
 <pinref part="P+23" gate="G$1" pin="3.3V"/>
-<pinref part="U$7" gate="G$1" pin="A"/>
+<pinref part="LED3" gate="G$1" pin="BA"/>
+<wire x1="147.32" y1="104.14" x2="152.4" y2="104.14" width="0.1524" layer="91"/>
+<pinref part="LED3" gate="G$1" pin="RA"/>
+<wire x1="152.4" y1="104.14" x2="157.48" y2="104.14" width="0.1524" layer="91"/>
+<wire x1="157.48" y1="101.6" x2="152.4" y2="101.6" width="0.1524" layer="91"/>
+<wire x1="152.4" y1="101.6" x2="152.4" y2="104.14" width="0.1524" layer="91"/>
+<junction x="152.4" y="104.14"/>
+<pinref part="LED3" gate="G$1" pin="GA"/>
+<wire x1="157.48" y1="99.06" x2="152.4" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="152.4" y1="99.06" x2="152.4" y2="101.6" width="0.1524" layer="91"/>
+<junction x="152.4" y="101.6"/>
 </segment>
 <segment>
 <wire x1="-152.4" y1="-157.48" x2="-137.16" y2="-157.48" width="0.1524" layer="91"/>
@@ -9681,17 +9723,10 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="DD1" gate="G$1" pin="PD10"/>
 </segment>
 </net>
-<net name="N$56" class="0">
-<segment>
-<wire x1="187.96" y1="99.06" x2="180.34" y2="99.06" width="0.1524" layer="91"/>
-<pinref part="U$7" gate="G$1" pin="BLU"/>
-<pinref part="R31" gate="G$1" pin="1"/>
-</segment>
-</net>
 <net name="LED_G" class="0">
 <segment>
-<wire x1="160.02" y1="96.52" x2="157.48" y2="96.52" width="0.1524" layer="91"/>
-<label x="157.48" y="96.52" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<wire x1="203.2" y1="99.06" x2="205.74" y2="99.06" width="0.1524" layer="91"/>
+<label x="205.74" y="99.06" size="1.27" layer="95" rot="MR180" xref="yes"/>
 <pinref part="R60" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -9702,8 +9737,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="LED_B" class="0">
 <segment>
-<wire x1="170.18" y1="99.06" x2="157.48" y2="99.06" width="0.1524" layer="91"/>
-<label x="157.48" y="99.06" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<wire x1="203.2" y1="104.14" x2="205.74" y2="104.14" width="0.1524" layer="91"/>
+<label x="205.74" y="104.14" size="1.27" layer="95" rot="MR180" xref="yes"/>
 <pinref part="R31" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -9714,8 +9749,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="LED_R" class="0">
 <segment>
-<wire x1="160.02" y1="101.6" x2="157.48" y2="101.6" width="0.1524" layer="91"/>
-<label x="157.48" y="101.6" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<wire x1="195.58" y1="101.6" x2="205.74" y2="101.6" width="0.1524" layer="91"/>
+<label x="205.74" y="101.6" size="1.27" layer="95" rot="MR180" xref="yes"/>
 <pinref part="R30" gate="G$1" pin="2"/>
 </segment>
 <segment>
@@ -10559,20 +10594,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <junction x="-292.1" y="-78.74"/>
 </segment>
 </net>
-<net name="N$8" class="0">
-<segment>
-<pinref part="R30" gate="G$1" pin="1"/>
-<pinref part="U$7" gate="G$1" pin="GRN"/>
-<wire x1="170.18" y1="101.6" x2="187.96" y2="101.6" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$12" class="0">
-<segment>
-<pinref part="R60" gate="G$1" pin="1"/>
-<pinref part="U$7" gate="G$1" pin="RED"/>
-<wire x1="170.18" y1="96.52" x2="187.96" y2="96.52" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$33" class="0">
 <segment>
 <pinref part="DD1" gate="G$1" pin="V_BAT"/>
@@ -10590,6 +10611,27 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="D2" gate="G$1" pin="C"/>
 <wire x1="-317.5" y1="5.08" x2="-309.88" y2="5.08" width="0.1524" layer="91"/>
 <pinref part="F1" gate="G$1" pin="1"/>
+</segment>
+</net>
+<net name="N$8" class="0">
+<segment>
+<pinref part="R31" gate="G$1" pin="1"/>
+<pinref part="LED3" gate="G$1" pin="BC"/>
+<wire x1="193.04" y1="104.14" x2="182.88" y2="104.14" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$12" class="0">
+<segment>
+<pinref part="R30" gate="G$1" pin="1"/>
+<pinref part="LED3" gate="G$1" pin="RC"/>
+<wire x1="185.42" y1="101.6" x2="182.88" y2="101.6" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$31" class="0">
+<segment>
+<pinref part="R60" gate="G$1" pin="1"/>
+<pinref part="LED3" gate="G$1" pin="GC"/>
+<wire x1="193.04" y1="99.06" x2="182.88" y2="99.06" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
