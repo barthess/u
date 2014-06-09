@@ -567,8 +567,8 @@ package type ST</description>
 <wire x1="-1.27" y1="-0.635" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
 <wire x1="0.635" y1="-1.27" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
 <wire x1="3.81" y1="0.635" x2="3.81" y2="-0.635" width="0.2032" layer="21"/>
-<pad name="1" x="0" y="0" drill="1.016" diameter="1.8796" rot="R90"/>
-<pad name="2" x="2.54" y="0" drill="1.016" diameter="1.8796" rot="R90"/>
+<pad name="1" x="0" y="0" drill="1" shape="octagon" rot="R90"/>
+<pad name="2" x="2.54" y="0" drill="1" rot="R90"/>
 <text x="-1.3462" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
 <text x="-1.27" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
 <rectangle x1="2.286" y1="-0.254" x2="2.794" y2="0.254" layer="51"/>
@@ -1840,6 +1840,102 @@ TS-003</description>
 <rectangle x1="-1.5" y1="-2.4" x2="-1" y2="2.4" layer="51"/>
 <rectangle x1="1" y1="-2.4" x2="1.5" y2="2.4" layer="51"/>
 </package>
+<package name="STAND-OFF">
+<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
+This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
+<wire x1="0" y1="1.8542" x2="0" y2="-1.8542" width="0.2032" layer="41" curve="-180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="41" curve="-180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="-180"/>
+<circle x="0" y="0" radius="2.794" width="0.127" layer="39"/>
+<hole x="0" y="0" drill="3.3"/>
+</package>
+<package name="STAND-OFF-TIGHT">
+<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
+This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
+<wire x1="0" y1="1.8542" x2="0" y2="-1.8542" width="0.2032" layer="41" curve="-180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="41" curve="-180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="180"/>
+<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="-180"/>
+<circle x="0" y="0" radius="2.794" width="0.127" layer="39"/>
+<hole x="0" y="0" drill="3.05"/>
+</package>
+<package name="PLD_1X03">
+<wire x1="3.81" y1="0.635" x2="4.445" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="4.445" y1="1.27" x2="5.715" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="5.715" y1="1.27" x2="6.35" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="6.35" y1="-0.635" x2="5.715" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="5.715" y1="-1.27" x2="4.445" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="4.445" y1="-1.27" x2="3.81" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-0.635" y1="1.27" x2="0.635" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="0.635" y1="1.27" x2="1.27" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="1.27" y1="-0.635" x2="0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="1.27" y1="0.635" x2="1.905" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="1.905" y1="1.27" x2="3.175" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="3.175" y1="1.27" x2="3.81" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="3.81" y1="-0.635" x2="3.175" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="3.175" y1="-1.27" x2="1.905" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="1.905" y1="-1.27" x2="1.27" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-1.27" y1="0.635" x2="-1.27" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-0.635" y1="1.27" x2="-1.27" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="-1.27" y1="-0.635" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="0.635" y1="-1.27" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="6.35" y1="0.635" x2="6.35" y2="-0.635" width="0.2032" layer="21"/>
+<pad name="1" x="0" y="0" drill="1" shape="octagon" rot="R90"/>
+<pad name="2" x="2.54" y="0" drill="1" rot="R90"/>
+<pad name="3" x="5.08" y="0" drill="1" rot="R90"/>
+<text x="-1.3462" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-1.27" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
+<rectangle x1="4.826" y1="-0.254" x2="5.334" y2="0.254" layer="51"/>
+<rectangle x1="2.286" y1="-0.254" x2="2.794" y2="0.254" layer="51"/>
+<rectangle x1="-0.254" y1="-0.254" x2="0.254" y2="0.254" layer="51"/>
+</package>
+<package name="PLD_1X03_LONGPAD">
+<wire x1="3.81" y1="0.635" x2="4.445" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="4.445" y1="1.27" x2="5.715" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="5.715" y1="1.27" x2="6.35" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="6.35" y1="-0.635" x2="5.715" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="5.715" y1="-1.27" x2="4.445" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="4.445" y1="-1.27" x2="3.81" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-0.635" y1="1.27" x2="0.635" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="0.635" y1="1.27" x2="1.27" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="1.27" y1="-0.635" x2="0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="1.27" y1="0.635" x2="1.905" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="1.905" y1="1.27" x2="3.175" y2="1.27" width="0.2032" layer="21"/>
+<wire x1="3.175" y1="1.27" x2="3.81" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="3.81" y1="-0.635" x2="3.175" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="3.175" y1="-1.27" x2="1.905" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="1.905" y1="-1.27" x2="1.27" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-1.27" y1="0.635" x2="-1.27" y2="-0.635" width="0.2032" layer="21"/>
+<wire x1="-0.635" y1="1.27" x2="-1.27" y2="0.635" width="0.2032" layer="21"/>
+<wire x1="-1.27" y1="-0.635" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="0.635" y1="-1.27" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
+<wire x1="6.33" y1="0.635" x2="6.33" y2="-0.635" width="0.2032" layer="21"/>
+<pad name="1" x="0" y="0" drill="1.1" shape="long" rot="R90"/>
+<pad name="2" x="2.54" y="0" drill="1.1" shape="long" rot="R90"/>
+<pad name="3" x="5.08" y="0" drill="1.1" shape="long" rot="R90"/>
+<text x="-1.3462" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-1.27" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
+<text x="-2.54" y="-1.27" size="1.27" layer="21">1</text>
+<rectangle x1="4.826" y1="-0.254" x2="5.334" y2="0.254" layer="51"/>
+<rectangle x1="2.286" y1="-0.254" x2="2.794" y2="0.254" layer="51"/>
+<rectangle x1="-0.254" y1="-0.254" x2="0.254" y2="0.254" layer="51"/>
+</package>
+<package name="PLD_1X03_PSEUDOSMD">
+<wire x1="1.1" y1="3.8" x2="-1.55" y2="3.8" width="0.127" layer="51"/>
+<wire x1="-1.55" y1="3.8" x2="-1.55" y2="-3.8" width="0.127" layer="51"/>
+<wire x1="-1.55" y1="-3.8" x2="1.1" y2="-3.8" width="0.127" layer="51"/>
+<wire x1="1.1" y1="-3.8" x2="1.1" y2="3.8" width="0.127" layer="51"/>
+<circle x="-6.985" y="2.54" radius="0.449" width="0.254" layer="21"/>
+<smd name="1" x="-3.81" y="2.54" dx="4" dy="2" layer="1"/>
+<smd name="2" x="-3.81" y="0" dx="4" dy="2" layer="1" rot="R180"/>
+<smd name="3" x="-3.81" y="-2.54" dx="4" dy="2" layer="1"/>
+<text x="-1.451" y="4.129" size="0.4064" layer="27" font="vector">&gt;VALUE</text>
+<text x="-1.451" y="-4.507" size="0.4064" layer="25">&gt;NAME</text>
+<rectangle x1="-3.81" y1="2.2225" x2="5.715" y2="2.8575" layer="51"/>
+<rectangle x1="-3.81" y1="-0.3175" x2="5.715" y2="0.3175" layer="51"/>
+<rectangle x1="-3.81" y1="-2.8575" x2="5.715" y2="-2.2225" layer="51"/>
+</package>
 </packages>
 <symbols>
 <symbol name="STM32F407V">
@@ -2441,6 +2537,24 @@ TS-003</description>
 <pin name="GC" x="12.7" y="-2.54" visible="pin" length="short" rot="R180"/>
 <pin name="BA" x="-12.7" y="2.54" visible="pin" length="short"/>
 <pin name="RA" x="-12.7" y="0" visible="pin" length="short"/>
+</symbol>
+<symbol name="STAND-OFF">
+<circle x="0" y="0" radius="1.27" width="0.254" layer="94"/>
+</symbol>
+<symbol name="PLD_1X03">
+<wire x1="-1.778" y1="-6.096" x2="-1.778" y2="1.27" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="1.27" x2="-2.54" y2="-6.096" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="0" x2="-4.064" y2="1.016" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="0" x2="-4.064" y2="-1.016" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-2.54" x2="-4.064" y2="-3.556" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-2.54" x2="-4.064" y2="-1.524" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-5.08" x2="-4.064" y2="-4.064" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-5.08" x2="-4.064" y2="-6.096" width="0.254" layer="94"/>
+<text x="-4.826" y="2.286" size="1.778" layer="95">&gt;NAME</text>
+<text x="-4.572" y="-8.763" size="1.778" layer="96">&gt;VALUE</text>
+<pin name="1" x="0" y="0" visible="off" length="middle" direction="pas" swaplevel="1" rot="R180"/>
+<pin name="2" x="0" y="-2.54" visible="off" length="middle" direction="pas" swaplevel="1" rot="R180"/>
+<pin name="3" x="0" y="-5.08" visible="off" length="middle" direction="pas" swaplevel="1" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -4056,6 +4170,62 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </device>
 </devices>
 </deviceset>
+<deviceset name="STAND-OFF" prefix="JP">
+<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
+This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
+<gates>
+<gate name="G$1" symbol="STAND-OFF" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="STAND-OFF">
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="TIGHT" package="STAND-OFF-TIGHT">
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="PLD_1X03" prefix="XP" uservalue="yes">
+<gates>
+<gate name="G$1" symbol="PLD_1X03" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="PLD_1X03">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="LONGPAD" package="PLD_1X03_LONGPAD">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="PSEUDOSMD" package="PLD_1X03_PSEUDOSMD">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
 </devicesets>
 </library>
 <library name="SparkFun">
@@ -4389,96 +4559,6 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <smd name="A" x="1.65" y="0" dx="1.9" dy="1.6" layer="1"/>
 <text x="-2.54" y="1.381" size="0.4064" layer="25">&gt;NAME</text>
 <text x="0.408" y="1.332" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
-<package name="SJ_3">
-<wire x1="1.27" y1="-1.016" x2="-1.27" y2="-1.016" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="1.016" x2="1.524" y2="0.762" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="0.762" x2="-1.27" y2="1.016" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.27" y2="-1.016" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.27" y1="-1.016" x2="1.524" y2="-0.762" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.524" y1="-0.762" x2="1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.27" y1="1.016" x2="1.27" y2="1.016" width="0.1524" layer="21"/>
-<smd name="1" x="-0.889" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="2" x="0" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="3" x="0.889" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<text x="-1.27" y="1.27" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-0.1001" y="0" size="0.02" layer="27">&gt;VALUE</text>
-<text x="-1.27" y="-1.905" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
-<package name="1X03">
-<wire x1="3.81" y1="0.635" x2="4.445" y2="1.27" width="0.2032" layer="21"/>
-<wire x1="4.445" y1="1.27" x2="5.715" y2="1.27" width="0.2032" layer="21"/>
-<wire x1="5.715" y1="1.27" x2="6.35" y2="0.635" width="0.2032" layer="21"/>
-<wire x1="6.35" y1="-0.635" x2="5.715" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="5.715" y1="-1.27" x2="4.445" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="4.445" y1="-1.27" x2="3.81" y2="-0.635" width="0.2032" layer="21"/>
-<wire x1="-0.635" y1="1.27" x2="0.635" y2="1.27" width="0.2032" layer="21"/>
-<wire x1="0.635" y1="1.27" x2="1.27" y2="0.635" width="0.2032" layer="21"/>
-<wire x1="1.27" y1="-0.635" x2="0.635" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="1.27" y1="0.635" x2="1.905" y2="1.27" width="0.2032" layer="21"/>
-<wire x1="1.905" y1="1.27" x2="3.175" y2="1.27" width="0.2032" layer="21"/>
-<wire x1="3.175" y1="1.27" x2="3.81" y2="0.635" width="0.2032" layer="21"/>
-<wire x1="3.81" y1="-0.635" x2="3.175" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="3.175" y1="-1.27" x2="1.905" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="1.905" y1="-1.27" x2="1.27" y2="-0.635" width="0.2032" layer="21"/>
-<wire x1="-1.27" y1="0.635" x2="-1.27" y2="-0.635" width="0.2032" layer="21"/>
-<wire x1="-0.635" y1="1.27" x2="-1.27" y2="0.635" width="0.2032" layer="21"/>
-<wire x1="-1.27" y1="-0.635" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="0.635" y1="-1.27" x2="-0.635" y2="-1.27" width="0.2032" layer="21"/>
-<wire x1="6.35" y1="0.635" x2="6.35" y2="-0.635" width="0.2032" layer="21"/>
-<pad name="1" x="0" y="0" drill="1.016" diameter="1.8796" rot="R90"/>
-<pad name="2" x="2.54" y="0" drill="1.016" diameter="1.8796" rot="R90"/>
-<pad name="3" x="5.08" y="0" drill="1.016" diameter="1.8796" rot="R90"/>
-<text x="-1.3462" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="-1.27" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
-<rectangle x1="4.826" y1="-0.254" x2="5.334" y2="0.254" layer="51"/>
-<rectangle x1="2.286" y1="-0.254" x2="2.794" y2="0.254" layer="51"/>
-<rectangle x1="-0.254" y1="-0.254" x2="0.254" y2="0.254" layer="51"/>
-</package>
-<package name="SJ_3_PASTE1&amp;2">
-<wire x1="1.27" y1="-1.016" x2="-1.27" y2="-1.016" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="1.016" x2="1.524" y2="0.762" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="0.762" x2="-1.27" y2="1.016" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.27" y2="-1.016" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.27" y1="-1.016" x2="1.524" y2="-0.762" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.524" y1="-0.762" x2="1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.27" y1="1.016" x2="1.27" y2="1.016" width="0.1524" layer="21"/>
-<wire x1="0.1905" y1="0.508" x2="-1.016" y2="0.508" width="0.127" layer="51"/>
-<wire x1="-1.016" y1="0.508" x2="-1.016" y2="-0.508" width="0.127" layer="51"/>
-<wire x1="-1.016" y1="-0.508" x2="0.1905" y2="-0.508" width="0.127" layer="51"/>
-<wire x1="0.1905" y1="-0.508" x2="0.1905" y2="0.508" width="0.127" layer="51"/>
-<smd name="1" x="-0.8128" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="2" x="0" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="3" x="0.8128" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<text x="-1.27" y="1.27" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-0.1001" y="0" size="0.02" layer="27">&gt;VALUE</text>
-<text x="-1.27" y="-1.905" size="0.4064" layer="27">&gt;VALUE</text>
-<text x="-0.762" y="-0.4445" size="0.254" layer="51" rot="R40">PASTE</text>
-<rectangle x1="-1.4478" y1="-1.016" x2="0.2794" y2="0.9398" layer="31"/>
-</package>
-<package name="SJ_3_PASTE2&amp;3">
-<wire x1="1.27" y1="-1.016" x2="-1.27" y2="-1.016" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="1.016" x2="1.524" y2="0.762" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="0.762" x2="-1.27" y2="1.016" width="0.1524" layer="21" curve="-90"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.27" y2="-1.016" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.27" y1="-1.016" x2="1.524" y2="-0.762" width="0.1524" layer="21" curve="90"/>
-<wire x1="1.524" y1="-0.762" x2="1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.524" y1="-0.762" x2="-1.524" y2="0.762" width="0.1524" layer="21"/>
-<wire x1="-1.27" y1="1.016" x2="1.27" y2="1.016" width="0.1524" layer="21"/>
-<wire x1="1.016" y1="0.508" x2="-0.1905" y2="0.508" width="0.127" layer="51"/>
-<wire x1="-0.1905" y1="0.508" x2="-0.1905" y2="-0.508" width="0.127" layer="51"/>
-<wire x1="-0.1905" y1="-0.508" x2="1.016" y2="-0.508" width="0.127" layer="51"/>
-<wire x1="1.016" y1="-0.508" x2="1.016" y2="0.508" width="0.127" layer="51"/>
-<smd name="1" x="-0.8128" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="2" x="0" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<smd name="3" x="0.8128" y="0" dx="0.635" dy="1.27" layer="1" cream="no"/>
-<text x="-1.27" y="1.27" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-0.1001" y="0" size="0.02" layer="27">&gt;VALUE</text>
-<text x="-1.27" y="-1.905" size="0.4064" layer="27">&gt;VALUE</text>
-<text x="0.0635" y="-0.4445" size="0.254" layer="51" rot="R40">PASTE</text>
-<rectangle x1="-0.2794" y1="-1.016" x2="1.4224" y2="0.9906" layer="31"/>
 </package>
 <package name="1210">
 <wire x1="-1.6" y1="1.3" x2="1.6" y2="1.3" width="0.127" layer="51"/>
@@ -5240,26 +5320,6 @@ chip</description>
 <text x="-2" y="3" size="0.4064" layer="25">&gt;NAME</text>
 <text x="-2" y="-3.4" size="0.4064" layer="27">&gt;VALUE</text>
 </package>
-<package name="STAND-OFF">
-<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
-This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
-<wire x1="0" y1="1.8542" x2="0" y2="-1.8542" width="0.2032" layer="41" curve="-180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="41" curve="-180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="-180"/>
-<circle x="0" y="0" radius="2.794" width="0.127" layer="39"/>
-<hole x="0" y="0" drill="3.302"/>
-</package>
-<package name="STAND-OFF-TIGHT">
-<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
-This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
-<wire x1="0" y1="1.8542" x2="0" y2="-1.8542" width="0.2032" layer="41" curve="-180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="41" curve="-180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="180"/>
-<wire x1="0" y1="-1.8542" x2="0" y2="1.8542" width="0.2032" layer="42" curve="-180"/>
-<circle x="0" y="0" radius="2.794" width="0.127" layer="39"/>
-<hole x="0" y="0" drill="3.048"/>
-</package>
 <package name="AXIAL-0.3">
 <wire x1="-2.54" y1="0.762" x2="2.54" y2="0.762" width="0.2032" layer="21"/>
 <wire x1="2.54" y1="0.762" x2="2.54" y2="0" width="0.2032" layer="21"/>
@@ -5608,25 +5668,6 @@ Commonly used for 1/4W through-hole resistors. 0.3" pitch between holes.&lt;br&g
 <text x="-2.54" y="-2.54" size="1.778" layer="96">&gt;VALUE</text>
 <pin name="GND" x="0" y="2.54" visible="off" length="short" direction="sup" rot="R270"/>
 </symbol>
-<symbol name="JUMPER-3">
-<wire x1="0" y1="0" x2="0" y2="1.27" width="0.1524" layer="94"/>
-<wire x1="0" y1="2.54" x2="0" y2="1.27" width="0.4064" layer="94"/>
-<wire x1="2.54" y1="0" x2="2.54" y2="1.27" width="0.1524" layer="94"/>
-<wire x1="2.54" y1="2.54" x2="2.54" y2="1.27" width="0.4064" layer="94"/>
-<wire x1="-0.635" y1="0" x2="2.54" y2="0" width="0.4064" layer="94"/>
-<wire x1="2.54" y1="0" x2="5.08" y2="0" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="0" x2="5.715" y2="0" width="0.4064" layer="94"/>
-<wire x1="5.715" y1="0" x2="5.715" y2="0.635" width="0.4064" layer="94"/>
-<wire x1="5.715" y1="0.635" x2="-0.635" y2="0.635" width="0.4064" layer="94"/>
-<wire x1="-0.635" y1="0.635" x2="-0.635" y2="0" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="1.27" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="0" x2="5.08" y2="1.27" width="0.1524" layer="94"/>
-<text x="-1.27" y="0" size="1.778" layer="95" rot="R90">&gt;NAME</text>
-<text x="8.255" y="0" size="1.778" layer="96" rot="R90">&gt;VALUE</text>
-<pin name="1" x="0" y="-2.54" visible="off" length="short" direction="pas" rot="R90"/>
-<pin name="2" x="2.54" y="-2.54" visible="off" length="short" direction="pas" rot="R90"/>
-<pin name="3" x="5.08" y="-2.54" visible="off" length="short" direction="pas" rot="R90"/>
-</symbol>
 <symbol name="BATTERY">
 <wire x1="-1.27" y1="3.81" x2="-1.27" y2="-3.81" width="0.4064" layer="94"/>
 <wire x1="0" y1="1.27" x2="0" y2="-1.27" width="0.4064" layer="94"/>
@@ -5657,9 +5698,6 @@ Commonly used for 1/4W through-hole resistors. 0.3" pitch between holes.&lt;br&g
 <rectangle x1="-2.032" y1="1.524" x2="2.032" y2="2.032" layer="94"/>
 <pin name="1" x="0" y="5.08" visible="off" length="short" direction="pas" swaplevel="1" rot="R270"/>
 <pin name="2" x="0" y="-2.54" visible="off" length="short" direction="pas" swaplevel="1" rot="R90"/>
-</symbol>
-<symbol name="STAND-OFF">
-<circle x="0" y="0" radius="1.27" width="0.254" layer="94"/>
 </symbol>
 <symbol name="RESISTOR">
 <wire x1="-2.54" y1="0" x2="-2.159" y2="1.016" width="0.1524" layer="94"/>
@@ -5869,53 +5907,6 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </gates>
 <devices>
 <device name="">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="JUMPER-3" prefix="JP">
-<gates>
-<gate name="G$1" symbol="JUMPER-3" x="-2.54" y="0"/>
-</gates>
-<devices>
-<device name="SMD" package="SJ_3">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-<connect gate="G$1" pin="3" pad="3"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="PTH" package="1X03">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-<connect gate="G$1" pin="3" pad="3"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="1-2" package="SJ_3_PASTE1&amp;2">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-<connect gate="G$1" pin="3" pad="3"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="2-3" package="SJ_3_PASTE2&amp;3">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-<connect gate="G$1" pin="3" pad="3"/>
-</connects>
 <technologies>
 <technology name=""/>
 </technologies>
@@ -6357,25 +6348,6 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="STAND-OFF" prefix="JP">
-<description>&lt;b&gt;Stand Off&lt;/b&gt;&lt;p&gt;
-This is the mechanical footprint for a #4 phillips button head screw. Use the keepout ring to avoid running the screw head into surrounding components. SKU : PRT-00447</description>
-<gates>
-<gate name="G$1" symbol="STAND-OFF" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="STAND-OFF">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-<device name="TIGHT" package="STAND-OFF-TIGHT">
 <technologies>
 <technology name=""/>
 </technologies>
@@ -7715,8 +7687,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="P+3" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="R2" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="10k"/>
 <part name="R3" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="10k"/>
-<part name="JP4" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="boot_0"/>
-<part name="JP5" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="boot_1"/>
+<part name="JP4" library="barthess" deviceset="PLD_1X03" device="" value="boot_0"/>
+<part name="JP5" library="barthess" deviceset="PLD_1X03" device="" value="boot_1"/>
 <part name="P+4" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="GND5" library="SparkFun" deviceset="GND" device=""/>
 <part name="GND6" library="SparkFun" deviceset="GND" device=""/>
@@ -7784,19 +7756,19 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="P+19" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="BAT1" library="SparkFun" deviceset="BATTERY" device="20PTH" value="3V"/>
 <part name="VD8" library="barthess" deviceset="BZV55" device="-C3V3"/>
-<part name="XP2" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="RECEIVER"/>
+<part name="XP2" library="barthess" deviceset="PLD_1X03" device="" value="RECEIVER"/>
 <part name="GND15" library="SparkFun" deviceset="GND" device=""/>
 <part name="R29" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="1k"/>
 <part name="R32" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="100k"/>
-<part name="XP6" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="sonar"/>
-<part name="XP8" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM1"/>
-<part name="XP9" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM2"/>
-<part name="XP10" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM3"/>
-<part name="XP11" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM4"/>
-<part name="XP12" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM5"/>
-<part name="XP13" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM6"/>
-<part name="XP14" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM7"/>
-<part name="XP15" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="PWM8"/>
+<part name="XP6" library="barthess" deviceset="PLD_1X03" device="" value="sonar"/>
+<part name="XP8" library="barthess" deviceset="PLD_1X03" device="" value="PWM1"/>
+<part name="XP9" library="barthess" deviceset="PLD_1X03" device="" value="PWM2"/>
+<part name="XP10" library="barthess" deviceset="PLD_1X03" device="" value="PWM3"/>
+<part name="XP11" library="barthess" deviceset="PLD_1X03" device="" value="PWM4"/>
+<part name="XP12" library="barthess" deviceset="PLD_1X03" device="" value="PWM5"/>
+<part name="XP13" library="barthess" deviceset="PLD_1X03" device="" value="PWM6"/>
+<part name="XP14" library="barthess" deviceset="PLD_1X03" device="" value="PWM7"/>
+<part name="XP15" library="barthess" deviceset="PLD_1X03" device="" value="PWM8"/>
 <part name="GND44" library="SparkFun" deviceset="GND" device=""/>
 <part name="R33" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="100k"/>
 <part name="R45" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="10k"/>
@@ -7830,19 +7802,19 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <part name="GND57" library="SparkFun" deviceset="GND" device=""/>
 <part name="S2" library="barthess" deviceset="BUTTON_6X3.5" device="" value="RESET"/>
 <part name="C24" library="SparkFun" deviceset="CAP" device="0805" value="0.1uF"/>
-<part name="XP17" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="power"/>
+<part name="XP17" library="barthess" deviceset="PLD_1X03" device="" value="power"/>
 <part name="R36" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="47"/>
 <part name="R51" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="47"/>
 <part name="IC2" library="barthess" deviceset="INA194" device=""/>
 <part name="C45" library="SparkFun" deviceset="CAP" device="1206" value="10uF"/>
 <part name="XP18" library="barthess" deviceset="1X2" device="DIP" value="current_sens"/>
-<part name="JP3" library="SparkFun" deviceset="STAND-OFF" device="TIGHT"/>
-<part name="JP7" library="SparkFun" deviceset="STAND-OFF" device="TIGHT"/>
-<part name="JP8" library="SparkFun" deviceset="STAND-OFF" device="TIGHT"/>
-<part name="JP9" library="SparkFun" deviceset="STAND-OFF" device="TIGHT"/>
+<part name="JP3" library="barthess" deviceset="STAND-OFF" device=""/>
+<part name="JP7" library="barthess" deviceset="STAND-OFF" device=""/>
+<part name="JP8" library="barthess" deviceset="STAND-OFF" device=""/>
+<part name="JP9" library="barthess" deviceset="STAND-OFF" device=""/>
 <part name="C31" library="barthess" deviceset="CAP_POL" device="7343" value="330uF/10v"/>
 <part name="C34" library="barthess" deviceset="CAP_POL" device="7343" value="470uF/6.3v"/>
-<part name="XP16" library="SparkFun" deviceset="JUMPER-3" device="PTH" value="tacho"/>
+<part name="XP16" library="barthess" deviceset="PLD_1X03" device="" value="tacho"/>
 <part name="GND10" library="SparkFun" deviceset="GND" device=""/>
 <part name="P+27" library="SparkFun" deviceset="3.3V" device=""/>
 <part name="R75" library="SparkFun" deviceset="RESISTOR" device="0805-RES" value="1k"/>
@@ -7969,8 +7941,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <attribute name="NAME" x="46.99" y="179.2986" size="1.778" layer="95"/>
 <attribute name="VALUE" x="52.07" y="179.578" size="1.778" layer="96"/>
 </instance>
-<instance part="JP4" gate="G$1" x="30.48" y="175.26" rot="R90"/>
-<instance part="JP5" gate="G$1" x="30.48" y="137.16" rot="R90"/>
+<instance part="JP4" gate="G$1" x="25.4" y="175.26" rot="MR180"/>
+<instance part="JP5" gate="G$1" x="25.4" y="137.16" rot="MR180"/>
 <instance part="P+4" gate="G$1" x="33.02" y="144.78"/>
 <instance part="GND5" gate="1" x="33.02" y="119.38"/>
 <instance part="GND6" gate="1" x="33.02" y="157.48"/>
@@ -8038,19 +8010,19 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <instance part="P+19" gate="G$1" x="284.48" y="20.32" rot="R90"/>
 <instance part="BAT1" gate="G$1" x="-86.36" y="68.58" rot="R180"/>
 <instance part="VD8" gate="G$1" x="129.54" y="139.7" rot="R90"/>
-<instance part="XP2" gate="G$1" x="109.22" y="142.24" rot="MR270"/>
+<instance part="XP2" gate="G$1" x="104.14" y="142.24"/>
 <instance part="GND15" gate="1" x="114.3" y="132.08"/>
 <instance part="R29" gate="G$1" x="121.92" y="142.24"/>
 <instance part="R32" gate="G$1" x="63.5" y="-76.2" rot="R270"/>
-<instance part="XP6" gate="G$1" x="-154.94" y="-170.18" rot="MR270"/>
-<instance part="XP8" gate="G$1" x="-101.6" y="-160.02"/>
-<instance part="XP9" gate="G$1" x="-88.9" y="-160.02"/>
-<instance part="XP10" gate="G$1" x="-76.2" y="-160.02"/>
-<instance part="XP11" gate="G$1" x="-63.5" y="-160.02"/>
-<instance part="XP12" gate="G$1" x="-50.8" y="-160.02"/>
-<instance part="XP13" gate="G$1" x="-38.1" y="-160.02"/>
-<instance part="XP14" gate="G$1" x="-25.4" y="-160.02"/>
-<instance part="XP15" gate="G$1" x="-12.7" y="-160.02"/>
+<instance part="XP6" gate="G$1" x="-154.94" y="-170.18"/>
+<instance part="XP8" gate="G$1" x="-101.6" y="-154.94" rot="MR270"/>
+<instance part="XP9" gate="G$1" x="-88.9" y="-154.94" rot="MR270"/>
+<instance part="XP10" gate="G$1" x="-76.2" y="-154.94" rot="MR270"/>
+<instance part="XP11" gate="G$1" x="-63.5" y="-154.94" rot="MR270"/>
+<instance part="XP12" gate="G$1" x="-50.8" y="-154.94" rot="MR270"/>
+<instance part="XP13" gate="G$1" x="-38.1" y="-154.94" rot="MR270"/>
+<instance part="XP14" gate="G$1" x="-25.4" y="-154.94" rot="MR270"/>
+<instance part="XP15" gate="G$1" x="-12.7" y="-154.94" rot="MR270"/>
 <instance part="GND44" gate="1" x="27.94" y="-167.64" rot="R90"/>
 <instance part="R33" gate="G$1" x="350.52" y="-215.9"/>
 <instance part="R45" gate="G$1" x="340.36" y="-215.9" rot="MR180"/>
@@ -8087,19 +8059,19 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <instance part="GND57" gate="1" x="-289.56" y="-20.32"/>
 <instance part="S2" gate="1" x="-30.48" y="170.18"/>
 <instance part="C24" gate="G$1" x="363.22" y="-210.82" rot="R90"/>
-<instance part="XP17" gate="G$1" x="0" y="-160.02"/>
+<instance part="XP17" gate="G$1" x="0" y="-154.94" rot="MR270"/>
 <instance part="R36" gate="G$1" x="302.26" y="-119.38" rot="MR180"/>
 <instance part="R51" gate="G$1" x="302.26" y="-129.54" rot="MR180"/>
 <instance part="IC2" gate="G$1" x="330.2" y="-124.46"/>
 <instance part="C45" gate="G$1" x="309.88" y="-127"/>
-<instance part="XP18" gate="G$1" x="289.56" y="-121.92" rot="MR270"/>
+<instance part="XP18" gate="G$1" x="292.1" y="-119.38"/>
 <instance part="JP3" gate="G$1" x="-248.92" y="-175.26" rot="R90"/>
 <instance part="JP7" gate="G$1" x="-248.92" y="-170.18" rot="R90"/>
 <instance part="JP8" gate="G$1" x="-241.3" y="-175.26" rot="R90"/>
 <instance part="JP9" gate="G$1" x="-241.3" y="-170.18" rot="R90"/>
 <instance part="C31" gate="G$1" x="-269.24" y="-10.16"/>
 <instance part="C34" gate="G$1" x="-218.44" y="-10.16"/>
-<instance part="XP16" gate="G$1" x="-154.94" y="-160.02" rot="R90"/>
+<instance part="XP16" gate="G$1" x="-154.94" y="-160.02" rot="MR180"/>
 <instance part="GND10" gate="1" x="-129.54" y="-154.94" rot="R90"/>
 <instance part="P+27" gate="G$1" x="-137.16" y="-157.48" rot="R270"/>
 <instance part="R75" gate="G$1" x="335.28" y="15.24" rot="MR0"/>
@@ -8239,12 +8211,14 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="P+3" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
+<wire x1="25.4" y1="142.24" x2="33.02" y2="142.24" width="0.1524" layer="91"/>
 <wire x1="33.02" y1="142.24" x2="33.02" y2="144.78" width="0.1524" layer="91"/>
 <pinref part="JP5" gate="G$1" pin="3"/>
 <pinref part="P+4" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
 <wire x1="33.02" y1="182.88" x2="33.02" y2="180.34" width="0.1524" layer="91"/>
+<wire x1="33.02" y1="180.34" x2="25.4" y2="180.34" width="0.1524" layer="91"/>
 <pinref part="JP4" gate="G$1" pin="3"/>
 <pinref part="P+5" gate="G$1" pin="3.3V"/>
 </segment>
@@ -8353,7 +8327,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <junction x="152.4" y="101.6"/>
 </segment>
 <segment>
-<wire x1="-152.4" y1="-157.48" x2="-137.16" y2="-157.48" width="0.1524" layer="91"/>
+<wire x1="-154.94" y1="-157.48" x2="-137.16" y2="-157.48" width="0.1524" layer="91"/>
 <pinref part="XP16" gate="G$1" pin="2"/>
 <pinref part="P+27" gate="G$1" pin="3.3V"/>
 </segment>
@@ -8372,7 +8346,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <junction x="327.66" y="160.02"/>
 </segment>
 <segment>
-<wire x1="-152.4" y1="-172.72" x2="-132.08" y2="-172.72" width="0.1524" layer="91"/>
+<wire x1="-154.94" y1="-172.72" x2="-132.08" y2="-172.72" width="0.1524" layer="91"/>
 <pinref part="XP6" gate="G$1" pin="2"/>
 <pinref part="P+9" gate="G$1" pin="3.3V"/>
 </segment>
@@ -8498,6 +8472,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="GND4" gate="1" pin="GND"/>
 </segment>
 <segment>
+<wire x1="25.4" y1="137.16" x2="33.02" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="33.02" y1="137.16" x2="33.02" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="121.92" x2="33.02" y2="121.92" width="0.1524" layer="91"/>
 <junction x="33.02" y="121.92"/>
@@ -8507,6 +8482,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </segment>
 <segment>
 <wire x1="33.02" y1="160.02" x2="33.02" y2="175.26" width="0.1524" layer="91"/>
+<wire x1="33.02" y1="175.26" x2="25.4" y2="175.26" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="160.02" x2="33.02" y2="160.02" width="0.1524" layer="91"/>
 <junction x="33.02" y="160.02"/>
 <pinref part="JP4" gate="G$1" pin="1"/>
@@ -8697,13 +8673,13 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="C31" gate="G$1" pin="-"/>
 </segment>
 <segment>
-<wire x1="-152.4" y1="-154.94" x2="-132.08" y2="-154.94" width="0.1524" layer="91"/>
+<wire x1="-154.94" y1="-154.94" x2="-132.08" y2="-154.94" width="0.1524" layer="91"/>
 <pinref part="XP16" gate="G$1" pin="3"/>
 <pinref part="GND10" gate="1" pin="GND"/>
 </segment>
 <segment>
 <wire x1="114.3" y1="134.62" x2="114.3" y2="137.16" width="0.1524" layer="91"/>
-<wire x1="114.3" y1="137.16" x2="111.76" y2="137.16" width="0.1524" layer="91"/>
+<wire x1="114.3" y1="137.16" x2="104.14" y2="137.16" width="0.1524" layer="91"/>
 <wire x1="129.54" y1="137.16" x2="114.3" y2="137.16" width="0.1524" layer="91"/>
 <junction x="114.3" y="137.16"/>
 <pinref part="GND15" gate="1" pin="GND"/>
@@ -8780,7 +8756,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <junction x="327.66" y="129.54"/>
 </segment>
 <segment>
-<wire x1="-147.32" y1="-175.26" x2="-152.4" y2="-175.26" width="0.1524" layer="91"/>
+<wire x1="-147.32" y1="-175.26" x2="-154.94" y2="-175.26" width="0.1524" layer="91"/>
 <pinref part="XP6" gate="G$1" pin="3"/>
 <pinref part="GND17" gate="1" pin="GND"/>
 </segment>
@@ -9005,7 +8981,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="N$3" class="0">
 <segment>
-<wire x1="40.64" y1="139.7" x2="33.02" y2="139.7" width="0.1524" layer="91"/>
+<wire x1="40.64" y1="139.7" x2="25.4" y2="139.7" width="0.1524" layer="91"/>
 <junction x="40.64" y="139.7"/>
 <pinref part="R4" gate="G$1" pin="1"/>
 <pinref part="JP5" gate="G$1" pin="2"/>
@@ -9175,7 +9151,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="N$5" class="0">
 <segment>
-<wire x1="33.02" y1="177.8" x2="40.64" y2="177.8" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="177.8" x2="40.64" y2="177.8" width="0.1524" layer="91"/>
 <wire x1="40.64" y1="177.8" x2="45.72" y2="177.8" width="0.1524" layer="91"/>
 <junction x="40.64" y="177.8"/>
 <pinref part="JP4" gate="G$1" pin="2"/>
@@ -9470,28 +9446,28 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="PWM1" class="0">
 <segment>
-<wire x1="-101.6" y1="-162.56" x2="-101.6" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-101.6" y1="-154.94" x2="-101.6" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP8" gate="G$1" pin="1"/>
 <pinref part="R38" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM2" class="0">
 <segment>
-<wire x1="-88.9" y1="-162.56" x2="-88.9" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-88.9" y1="-154.94" x2="-88.9" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP9" gate="G$1" pin="1"/>
 <pinref part="R39" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM3" class="0">
 <segment>
-<wire x1="-76.2" y1="-162.56" x2="-76.2" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-76.2" y1="-154.94" x2="-76.2" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP10" gate="G$1" pin="1"/>
 <pinref part="R40" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM4" class="0">
 <segment>
-<wire x1="-63.5" y1="-162.56" x2="-63.5" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-63.5" y1="-154.94" x2="-63.5" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP11" gate="G$1" pin="1"/>
 <pinref part="R41" gate="G$1" pin="2"/>
 </segment>
@@ -9513,28 +9489,28 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="PWM8" class="0">
 <segment>
-<wire x1="-12.7" y1="-162.56" x2="-12.7" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-12.7" y1="-154.94" x2="-12.7" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP15" gate="G$1" pin="1"/>
 <pinref part="R46" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM7" class="0">
 <segment>
-<wire x1="-25.4" y1="-162.56" x2="-25.4" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="-154.94" x2="-25.4" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP14" gate="G$1" pin="1"/>
 <pinref part="R44" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM6" class="0">
 <segment>
-<wire x1="-38.1" y1="-162.56" x2="-38.1" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-38.1" y1="-154.94" x2="-38.1" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP13" gate="G$1" pin="1"/>
 <pinref part="R43" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="PWM5" class="0">
 <segment>
-<wire x1="-50.8" y1="-162.56" x2="-50.8" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-50.8" y1="-154.94" x2="-50.8" y2="-170.18" width="0.1524" layer="91"/>
 <pinref part="XP12" gate="G$1" pin="1"/>
 <pinref part="R42" gate="G$1" pin="2"/>
 </segment>
@@ -9590,7 +9566,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </segment>
 <segment>
 <wire x1="114.3" y1="152.4" x2="114.3" y2="139.7" width="0.1524" layer="91"/>
-<wire x1="114.3" y1="139.7" x2="111.76" y2="139.7" width="0.1524" layer="91"/>
+<wire x1="114.3" y1="139.7" x2="104.14" y2="139.7" width="0.1524" layer="91"/>
 <pinref part="U$1" gate="6V" pin="6V"/>
 <pinref part="XP2" gate="G$1" pin="2"/>
 </segment>
@@ -9658,7 +9634,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="TACHOMETER" class="0">
 <segment>
-<wire x1="-152.4" y1="-160.02" x2="-149.86" y2="-160.02" width="0.1524" layer="91"/>
+<wire x1="-154.94" y1="-160.02" x2="-149.86" y2="-160.02" width="0.1524" layer="91"/>
 <label x="-149.86" y="-160.02" size="1.27" layer="95" xref="yes"/>
 <pinref part="XP16" gate="G$1" pin="1"/>
 </segment>
@@ -9844,17 +9820,17 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <wire x1="-60.96" y1="-165.1" x2="-48.26" y2="-165.1" width="0.1524" layer="91"/>
 <wire x1="-48.26" y1="-165.1" x2="-35.56" y2="-165.1" width="0.1524" layer="91"/>
 <wire x1="-35.56" y1="-165.1" x2="-22.86" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-99.06" y1="-165.1" x2="-99.06" y2="-162.56" width="0.1524" layer="91"/>
-<wire x1="-86.36" y1="-162.56" x2="-86.36" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-73.66" y1="-162.56" x2="-73.66" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-60.96" y1="-162.56" x2="-60.96" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-48.26" y1="-162.56" x2="-48.26" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-35.56" y1="-162.56" x2="-35.56" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-22.86" y1="-162.56" x2="-22.86" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="-162.56" x2="-10.16" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-99.06" y1="-165.1" x2="-99.06" y2="-154.94" width="0.1524" layer="91"/>
+<wire x1="-86.36" y1="-154.94" x2="-86.36" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-73.66" y1="-154.94" x2="-73.66" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-60.96" y1="-154.94" x2="-60.96" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-48.26" y1="-154.94" x2="-48.26" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-35.56" y1="-154.94" x2="-35.56" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-22.86" y1="-154.94" x2="-22.86" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="-154.94" x2="-10.16" y2="-165.1" width="0.1524" layer="91"/>
 <wire x1="-22.86" y1="-165.1" x2="-10.16" y2="-165.1" width="0.1524" layer="91"/>
 <wire x1="-99.06" y1="-165.1" x2="-106.68" y2="-165.1" width="0.1524" layer="91"/>
-<wire x1="2.54" y1="-162.56" x2="2.54" y2="-165.1" width="0.1524" layer="91"/>
+<wire x1="2.54" y1="-154.94" x2="2.54" y2="-165.1" width="0.1524" layer="91"/>
 <wire x1="2.54" y1="-165.1" x2="-10.16" y2="-165.1" width="0.1524" layer="91"/>
 <junction x="-86.36" y="-165.1"/>
 <junction x="-73.66" y="-165.1"/>
@@ -9878,7 +9854,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="SONAR_PWM" class="0">
 <segment>
-<wire x1="-152.4" y1="-170.18" x2="-147.32" y2="-170.18" width="0.1524" layer="91"/>
+<wire x1="-154.94" y1="-170.18" x2="-147.32" y2="-170.18" width="0.1524" layer="91"/>
 <label x="-147.32" y="-170.18" size="1.27" layer="95" xref="yes"/>
 <pinref part="XP6" gate="G$1" pin="1"/>
 </segment>
@@ -9912,7 +9888,6 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <net name="N$39" class="0">
 <segment>
 <wire x1="297.18" y1="-119.38" x2="292.1" y2="-119.38" width="0.1524" layer="91"/>
-<wire x1="292.1" y1="-119.38" x2="289.56" y2="-121.92" width="0.1524" layer="91"/>
 <pinref part="R36" gate="G$1" pin="1"/>
 <pinref part="XP18" gate="G$1" pin="1"/>
 </segment>
@@ -10089,7 +10064,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </net>
 <net name="N$32" class="0">
 <segment>
-<wire x1="116.84" y1="142.24" x2="111.76" y2="142.24" width="0.1524" layer="91"/>
+<wire x1="116.84" y1="142.24" x2="104.14" y2="142.24" width="0.1524" layer="91"/>
 <pinref part="R29" gate="G$1" pin="1"/>
 <pinref part="XP2" gate="G$1" pin="1"/>
 </segment>
@@ -10097,20 +10072,20 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <net name="N$78" class="0">
 <segment>
 <wire x1="5.08" y1="-167.64" x2="10.16" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="5.08" y1="-162.56" x2="5.08" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-7.62" y1="-162.56" x2="-7.62" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="-154.94" x2="5.08" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-7.62" y1="-154.94" x2="-7.62" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-7.62" y1="-167.64" x2="5.08" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-20.32" y1="-162.56" x2="-20.32" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-20.32" y1="-154.94" x2="-20.32" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-20.32" y1="-167.64" x2="-7.62" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-33.02" y1="-162.56" x2="-33.02" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-33.02" y1="-154.94" x2="-33.02" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-33.02" y1="-167.64" x2="-20.32" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-45.72" y1="-162.56" x2="-45.72" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-45.72" y1="-154.94" x2="-45.72" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-45.72" y1="-167.64" x2="-33.02" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-58.42" y1="-167.64" x2="-45.72" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-58.42" y1="-162.56" x2="-58.42" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-71.12" y1="-162.56" x2="-71.12" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-83.82" y1="-162.56" x2="-83.82" y2="-167.64" width="0.1524" layer="91"/>
-<wire x1="-96.52" y1="-162.56" x2="-96.52" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-58.42" y1="-154.94" x2="-58.42" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-71.12" y1="-154.94" x2="-71.12" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-83.82" y1="-154.94" x2="-83.82" y2="-167.64" width="0.1524" layer="91"/>
+<wire x1="-96.52" y1="-154.94" x2="-96.52" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-96.52" y1="-167.64" x2="-83.82" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-83.82" y1="-167.64" x2="-71.12" y2="-167.64" width="0.1524" layer="91"/>
 <wire x1="-71.12" y1="-167.64" x2="-58.42" y2="-167.64" width="0.1524" layer="91"/>
