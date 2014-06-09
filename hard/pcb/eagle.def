@@ -1,0 +1,1343 @@
+; Device definitions for EAGLE version 6.5.0:
+;
+; [NAME]  device name (as in command line option "-d" or menu)
+; @NAME   inherits data from [NAME] (max. nesting level is 10!)
+; Type    basic device type (must immediately follow [NAME]):
+;
+;         PenPlotter    pen plotter
+;         PhotoPlotter  photoplotter
+;         DrillStation  drill station
+;         Generic       generic device (used for e.g. PostScript)
+;         Calcomp       Calcomp pen plotter
+;         CalcompE      CalComp electrostatic plotter
+;
+; Common parameters for all types of devices:
+;
+; Long        long name (description) of device
+; Init        string to initialize device before printing
+; Reset       string to reset device after printing
+; ResX/Y      resolution in X/Y direction (dots or steps per inch, default = 1000)
+; CorrectX/Y  used to correct hardware tolerances (default = 1.0)
+; OffsetX/Y   defines an offset from the machine's origin (default = 0.0)
+; Width       page width (inch) (default = 8.0)
+; Height      page height (inch) (default = 12.0)
+; Output      name of the output file or port
+; Color.NN    color number to use for layer NN, e.g.
+;                Color.120 = 3 ; will use color '3' for layer '120'
+;
+; Parameters for drawing devices (PenPlotter, PhotoPlotter):
+;
+; Draw        draw a line to (x, y)
+; Move        move the pen to (x, y)
+; PenDown     lower the pen
+; PenUp       lift the pen
+; AreaBegin   begin of a polygon area definition (edges are drawn with Move/Draw
+;             and are considered to have zero width)
+; AreaEnd     end of polygon area definition
+;
+; Parameters for pen plotters (PenPlotter):
+;
+; PenArcCxCyAd           draw an arc from CP with center (Cx, Cy) and angle Ad
+; PenCircleCxCyRxCxCyRx  draw a circle at (Cx, Cy) with radius Rx
+; PenCircleCxCyRxRy      draw a circle at (Cx, Cy) with radius Rx and Ry
+; PenCircleRxCxCy        draw a circle at (Cx, Cy) with radius Rx
+; PenCircleRxn           draw a circle at CP with radius Rx (negtive!)
+; PenCircleRxRx          draw a circle ar CP with radius Rx
+; PenSelect              select pen
+; PenSpeed               string to set pen speed
+; PenDiameter            pen diameter (mm)
+; PenVelocity            pen velocity (device dependent value)
+;
+; Parameters for drill stations (DrillStation):
+;
+; DrillSize   string for drill size definition in output file
+; AutoDrill   string for automatic drill generation
+; FirstDrill  number of the first drill to use with AutoDrill
+; BeginData   string to mark the beginning of the actual drill data
+; Select      string to select a tool
+; Divide      divides coordinates (default = 1.0)
+; Drill       string to drill a hole at (x, y) [with tool]
+; Info        string that is copied into the drill info file
+; Rack        name of the drill rack file
+;
+; Parameters for photo plotters (PhotoPlotter):
+;
+; AutoAperture      string for automatic aperture generation
+; Aperture          string to select an aperture
+; Flash             string to flash an aperture
+; Info              string that is copied into the photo plotter info file
+; Wheel             name of the aperture wheel file name
+; FirstAperture     number of the first aperture to use with AutoAperture
+; ToleranceDrawM    negative draw tolerance
+; ToleranceDrawP    positive draw tolerance
+; ToleranceFlashM   negative flash tolerance
+; ToleranceFlashP   positive flash tolerance
+; EmulateApertures  turns aperture emulation on (YES) or off (NO)
+; Circle            defines embedded circle aperture
+; Rectangle         defines embedded rectangle aperture
+; Octagon           defines embedded octagon aperture
+; Oval              defines embedded oval aperture
+; MaxApertureSize   maximum physical aperture size (inch)
+;
+; Parameters for DrillStation and PhotoPlotter;
+;
+; Units             the units used in *.GPI and *.DRI files
+;                   valid units are Inch, MM and Auto[default] (automatically
+;                   chooses the unit with the least decimal digits)
+; Decimals          the number of decimals to use when Units is set to Inch
+;                   or MM (default = 4). Values are rounded to this number of
+;                   decimals.
+;
+; Parameters for generic devices:
+;
+; Header1         header string used for PostScript
+; Header2         header string used for PostScript
+; Header3         header string used for PostScript
+; StartPage       string that starts a new page
+; EndPage         string that ends a page
+; ArcCxCyRWSaEaC  string that draws an arc at (Cx, Cy) with Radius, Width, Start angle, End angle and line Cap
+; Bar             string that draws a bar
+; Circle          string that draws a circle
+; Line            string that draws a line
+; Octagon         string that draws an octagon
+; Pie             string that draws a pie
+; Hole            string that draws a hole
+; HwArcX1Y1CxCyA  string that draws an arc with hardware coordinates
+; HwArc           string that draws an arc with hardware coordinates
+; HwCircle        string that draws a circle with hardware coordinates
+; HwColor         string that sets the color
+; HwLine          string that draws a line with hardware coordinates
+; HwPie           string that draws a pie with hardware coordinates
+; HwPoly1         string that start a polygon with hardware coordinates
+; HwPoly2         string that draws a polygon edge with hardware coordinates
+; HwPoly3         string that ends a polygon with hardware coordinates
+; HwStartPage     string that starts a page
+; HwWidth         string that sets line width with hardware units
+; MaxHwWidth      maximum hardware line width
+;
+; Strings have to be enclosed in double quotes ("...").
+; If a double quote has to be part of the string, it must be escaped with
+; a backslash, e.g. "abc\"def".
+; If a backslash has to appear in the string, it has to be doubled,
+; e.g. "abc\\def" would result in abc\def.
+; Non-printable characters inside strings are written as "\xhh" with 2
+; hex digits, e.g. "\x1B" would mean ESCape; the digits may be upper- or
+; lowercase, but it has to be exactly two of them!
+; The following characters have special meanings when escaped with
+; a backslash:
+;
+;   \0     NUL      integer 0        \x00
+;   \a     BEL      alert            \x07
+;   \b     BS       backspace        \x08
+;   \f     FF       form feed        \x0C
+;   \n     NL (LF)  newline          \x0D\x0A
+;   \r     CR       carriage return  \x0D
+;   \t     HT       horizontal tab   \x09
+;   \v     VT       vertical tab     \x0B
+;   \xhh   hh       hex number       \xhh
+;
+; If a string parameter is too long to fit into one line it can be continued
+; on the next line by escaping the end of line with a backslash, e.g.
+;    Parameter = "A very long string "  \
+;                "which takes several " \ some comment
+;                "lines.\n"
+; Note that the backslash terminates the line, so everything after the '\'
+; character is discarded (this may be used for additional comments).
+
+[HPPJETXL300C]
+
+@HPGL2
+Long     = "HP PaintJet XL300 (150 dpi, 16.8M colors)"
+; The HP PaintJet XL300 can print up to 16.8M colors. However, these are
+; always created by mixing the basic colors cyan, magenta, and yellow.
+; Thus non-basic colors (especially light tones) will appear rastered when
+; closely viewed.
+;
+; The default INIT string of the HPGL2 driver sets the printer up for
+;
+; 'NP14'                14 pens
+; 'CR0,15,0,15,0,15'    a color range from 0 to 15 for each bacic color,
+;                       which results in a maximum of 4096 different colors
+; 'MC1'                 transparent printing (overlapping colors mix!)
+; 'PC 1,15, 0,15'       pen  1: magenta
+; 'PC 2, 0,15,15'       pen  2: cyan
+; 'PC 3, 0, 0,15'       pen  3: blue
+; 'PC 4,15,15, 0'       pen  4: yellow
+; 'PC 5,15, 0, 0'       pen  5: red
+; 'PC 6, 0,15, 0'       pen  6: green
+; 'PC 7, 0, 0, 0'       pen  7: black
+; 'PC 8,15,12,15'       pen  8: light magenta
+; 'PC 9,12,15,15'       pen  9: light cyan
+; 'PC10,12,12,15'       pen 10: light blue
+; 'PC11,15,15,12'       pen 11: light yellow
+; 'PC12,15,12, 0'       pen 12: light red
+; 'PC13,12,15, 0'       pen 13: light green
+; 'PC14,11,11,11'       pen 14: grey
+;
+; You can modify the colors by changing the 'PCn,r,g,b' commands, where
+;
+; n = pen number
+; r = red component
+; g = green component
+; b = blue component
+;
+; Note that although the printer has cyan, magenta and yellow as basic
+; colors, the 'PC' commands use RGB (red-green-blue) values, according to
+; the NTSC specification!
+
+[DESIGNJET220]
+
+@HPGL2
+Long     = "HP DesignJet 220, HPGL2-Mode"
+Init     = "\x1B%%1BIN;IP0,0,100,100SC0,100,0,100"\
+           "WU1MC1NP14CR0,15,0,15,0,15"\
+           "PC1,15,0,15PC2,0,15,15PC3,0,0,15PC4,15,15,0"\
+           "PC5,15,0,0PC6,0,15,0PC7,0,0,0PC8,15,12,15"\
+           "PC9,12,15,15PC10,12,12,15PC11,15,15,12PC12,15,12,0"\
+           "PC13,12,15,0PC14,11,11,11"\
+           "PA;\n"
+Reset    = "PG;\x1B%%0A\f"
+HwColor  = "SP%u" ; (Pen-Number)  precede this line with ';' for b/w
+
+;Use the following as first line of the Init string for A3 sized paper:
+;Init     = "\x1B&l27A\x1B%%-1BIN;IP0,0,100,100SC0,100,0,100"\
+
+[DESIGNJET650]
+Type     = Generic
+Long     = "HP DesigJet 650C, HPGL2"
+Init     = "\x1B%%-12345X@@PJL ENTER LANGUAGE = HPGL2\n"\
+           "\x1B%%-1BBIN;IP0,0,100,100SC0,100,0,100"\
+           "WU1MC1NP14CR0,15,0,15,0,15"\
+           "PC1,15,0,15PC2,0,15,15PC3,0,0,15PC4,15,15,0"\
+           "PC5,15,0,0PC6,0,15,0PC7,0,0,0PC8,15,12,15"\
+           "PC9,12,15,15PC10,12,12,15PC11,15,15,12PC12,15,12,0"\
+           "PC13,12,15,0PC14,11,11,11"\
+           "PA;\n"
+Reset    = "PUSP0PG;"
+ResX     = 1016
+ResY     = 1016
+HwArcX1Y1CxCyA = "PU%d,%dPDAA%d,%d,%d\n" ; (x1, y1, xc, yc, ArcAngle)
+HwColor  = "SP%u" ; (Pen-Number)
+HwLine   = "PU%d,%dPD%d,%d\n"
+HwPoly1  = "PU%d,%dPM0PA%d,%d"           ; first edge
+HwPoly2  = ",%d,%d"                      ; other points
+HwPoly3  = "PM2FP;\n"                    ; end of polygon
+HwWidth  = "PW%u" ; (Pen-Width)
+MaxHwWidth = 5
+
+[HPGL]
+
+Type     = PenPlotter
+Long     = "HP-GL plotter"
+Init     = "IN; IP 0,0,100,100; SC 0,100,0,100;\n"
+Reset    = "PU; SP 0; PA 0,0;\n"
+Width    = 16
+Height   = 11
+ResX     = 1016
+ResY     = 1016
+PenSelect  = "SP %u;\n"  ;; Pens numbered 1..n
+PenSpeed   = "VS %1.0f;\n"
+PenUp      = "PU;\n"
+PenDown    = "PD;\n"
+Move       = "PA %d,%d;\n"
+Draw       = "PA %d,%d;\n"
+PenCircleCxCyRxRy = "AA %d,%d,360;\n"   ; (assumes CP is left?!)
+PenArcCxCyAd      = "AA %d,%d,%1.2f;\n" ; (assumes CP is at start of arc)
+; Cx/y    Center X/Y (long)
+; Rx/y    Radius X/Y (long)
+; Ad      Angle in degrees (double)
+
+[HPGLX]
+
+@HPGL
+Long     = "HP-GL plotter (serial, with Xon/Xoff handshake)"
+Init     = "\x1B.I;;17:\x1B.N;19:"\
+           "IN; IP 0,0,100,100; SC 0,100,0,100;\n"
+
+[SPL10]
+
+@HPGL
+Long     = "Sekonic SPL 10 plotter"
+
+[CX6000]
+
+Type     = PenPlotter
+Long     = "C.Itoh CX6000 plotter"
+Init     = ""
+Reset    = "M0,0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "C%u\n"  ;; Pens numbered 0..n-1
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+
+[DXY800]
+
+Type     = PenPlotter
+Long     = "Roland DXY-800 plotter"
+Init     = ""
+Reset    = "J0\nH\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "J %u\n"
+Move       = "M %d,%d\n"
+Draw       = "D %d,%d\n"
+PenCircleRxRx = "E %d,180,360\nE %d,0,180\n"
+
+[DPX2200]
+
+@HPGL
+Long     = "Roland DPX-2200 plotter"
+
+[ADCOMP]
+
+Type     = PenPlotter
+Long     = "ADCOMP X 100 plotter"
+Init     = ""
+Reset    = "M0,0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "C%u\n"  ;; Pens numbered 1..n
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+PenCircleCxCyRxCxCyRx = "W%d,%d,%d,180,360,1\nW%d,%d,%d,0,180,1\n"
+
+[WX4671]
+
+Type     = PenPlotter
+Long     = "Watanabe WX4671 plotter"
+Init     = ""
+Reset    = "M0,0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+
+[HPX84]
+
+Type     = PenPlotter
+Long     = "HPX-84 plotter"
+Init     = "SH\n"
+Reset    = "SH\nAP 0 0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenUp    = "SH\n"
+PenDown  = "SS\n"
+Move     = "AP %d %d\n"
+Draw     = "AP %d %d\n"
+PenCircleCxCyRxRy = "SH\nAK %d %d %d\n"
+
+[YEWPL]
+
+Type     = PenPlotter
+Long     = "Yokogawa PL 1000 plotter"
+Init     = "IP 0;IW 0,0,380,250; IP 1;\n"
+Reset    = "MA 0,0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "PS %u\n"
+PenSpeed   = "PV %1.0f\n"
+Move       = "MA %d,%d\n"
+Draw       = "DA %d,%d\n"
+PenCircleRxCxCy = "AC %d,%d,%d,1800,5400\n"
+
+[ADCOMP300]
+
+Type     = PenPlotter
+Long     = "ADCOMP X 300 plotter"
+Init     = "H\n"
+Reset    = "J0\nH\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "J%u\n"
+PenSpeed   = "T%1.0f\n" ;;max(min(sround(PenVelocity / 2), 10), 1)
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+PenCircleCxCyRxRy = "W%d,%d,%d,%d,1800,5400\n"
+
+[MP1000]
+
+Type     = PenPlotter
+Long     = "Watanabe MP1000 plotter"
+Init     = ""
+Reset    = "J0\nH\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "J%u\n"
+PenSpeed   = "T%1.0f\n"
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+
+[EPSONHI80]
+
+@MP1000
+Long     = "EPSON HI-80 plotter (Plot-Mode 1)"
+
+[SWEET]
+
+Type     = PenPlotter
+Long     = "SWEET-P 100 plotter"
+Init     = "RE;\n"
+Reset    = "HO;\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSpeed   = "VS %1.0f;\n" ;;max(15, sround((PenVelocity * 15) / 75))
+Move       = "MA %d,%d;\n"
+Draw       = "DA %d,%d;\n"
+
+[TEWIP281]
+
+Type     = PenPlotter
+Long     = "tewidata P 281 plotter"
+Init     = "H\n"
+Reset    = "HF0\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "F%u\n"
+PenUp      = "H"
+PenDown    = "I"
+Move       = "%d/%dK\n"
+Draw       = "%d/%dK\n"
+PenCircleRxn = "O%d,180,540\n" ; Rxn = Radius X (long, negative)
+
+[SE281]
+
+@TEWIP281
+Long     = "Goerz Servogor SE 281 plotter"
+
+[RY10MZ]
+
+Type     = PenPlotter
+Long     = "Rikadenki RY-10 MZ plotter"
+Init     = ""
+Reset    = "H\n"
+Width    = 16
+Height   = 11
+ResX     = 254
+ResY     = 254
+PenSelect  = "K%u\n"
+PenSpeed   = "T%1.0f\n"
+Move       = "M%d,%d\n"
+Draw       = "D%d,%d\n"
+PenCircleCxCyRxRy = "W%d,%d C%d,180,360\n"
+
+[HIDMP]
+
+Type     = PenPlotter
+Long     = "Houston Instrument DMP plotter"
+Init     = ";:H A EC1 \n"
+Reset    = "P0 @\n"
+Width    = 16
+Height   = 11
+ResX     = 1000
+ResY     = 1000
+PenSelect  = "P%u\n"
+PenSpeed   = "V%1.0f\n"
+Move       = "U %d,%d\n"
+Draw       = "D %d,%d\n"
+PenCircleCxCyRxRy = "CA %d,%d 360\n"
+
+[EPS]
+
+Type     = Generic
+Long     = "Encapsulated PostScript"
+ResX     = 254000  ; this gives us editor coordinates!
+ResY     = 254000
+Width    = 100.00  ; virtually infinite
+Height   = 100.00
+ArcCxCyRWSaEaC = "%d %d %d %d %1.2f %1.2f %d a\n" ; (CenterX, CenterY, Radius, Width, StartAngle, EndAngle, LineCap)
+Bar      = "%d %d %d %d %.1f b\n"        ; (x1, y1, x2, y2, Angle)
+Circle   = "%d %d %d %d c\n"             ; (x, y, Radius, Width)
+Line     = "%d %d %d %d %d l\n"          ; (x1, y1, x2, y2, Width)
+Octagon  = "%d %d %d %d %.1f o\n"        ; (x, y, dx, dy, Angle)
+Pie      = "%d %d %d p\n"                ; (x, y, d)
+Hole     = "%d %d %d h\n"                ; (x, y, d)
+
+Header1  = "%%!PS-Adobe-3.0 EPSF-3.0\n"     \
+           "%%%%Title: EAGLE Drawing %s\n"  \
+           "%%%%Creator: EAGLE\n"           \
+           "%%%%Pages: %d\n"                \
+           "%%%%BoundingBox: 0 0 %d %d\n"   \
+           "%%%%EndComments\n"              \
+           "\n"\
+           "%% Coordinate transfer:\n"\
+           "\n"\
+           "/EU { 254 div 0.072 mul } def\n"\
+           "/inch { 72 mul } def\n"\
+           "\n"\
+           "%% Linestyle:\n"\
+           "\n"\
+           "1 setlinecap\n"\
+           "1 setlinejoin\n"\
+           "\n"\
+           "%% Drawing functions:\n"\
+           "\n"\
+           "/l {  %% draw a line\n"\
+           "   /lw exch def\n"\
+           "   /y2 exch def\n"\
+           "   /x2 exch def\n"\
+           "   /y1 exch def\n"\
+           "   /x1 exch def\n"\
+           "   newpath\n"\
+           "   x1 EU y1 EU moveto\n"\
+           "   x2 EU y2 EU lineto\n"\
+           "   lw EU setlinewidth\n"\
+           "   stroke\n"\
+           "   } def\n"\
+           "\n"\
+           "/h {  %% draw a hole\n"\
+           "   /d  exch def\n"\
+           "   /y  exch def\n"\
+           "   /x  exch def\n"\
+           "   d 0 gt {\n"\
+           "     newpath\n"\
+           "     x EU y EU d 2 div EU 0 360 arc\n"\
+           "     currentgray dup\n"\
+           "     1 exch sub setgray\n"\
+           "     fill\n"\
+           "     setgray\n"\
+           "     } if\n"\
+           "   } def\n"\
+           "\n"\
+           "/b {  %% draw a bar\n"\
+           "   /an exch def\n"\
+           "   /y2 exch def\n"\
+           "   /x2 exch def\n"\
+           "   /y1 exch def\n"\
+           "   /x1 exch def\n"\
+           "   /w2 x2 x1 sub 2 div EU def\n"\
+           "   /h2 y2 y1 sub 2 div EU def\n"\
+           "   gsave\n"\
+           "   x1 x2 add 2 div EU y1 y2 add 2 div EU translate\n"\
+           "   an rotate\n"\
+           "   newpath\n"\
+           "   w2     h2     moveto\n"\
+           "   w2 neg h2     lineto\n"\
+           "   w2 neg h2 neg lineto\n"\
+           "   w2     h2 neg lineto\n"\
+           "   closepath\n"\
+           "   fill\n"\
+           "   grestore\n"\
+           "   } def\n"\
+           "\n"\
+           "/c {  %% draw a circle\n"\
+           "   /lw exch def\n"\
+           "   /rd exch def\n"\
+           "   /y  exch def\n"\
+           "   /x  exch def\n"\
+           "   newpath\n"\
+           "   lw EU setlinewidth\n"\
+           "   x EU y EU rd EU 0 360 arc\n"\
+           "   stroke\n"\
+           "   } def\n"\
+           "\n"\
+           "/a {  %% draw an arc\n"\
+           "   /lc exch def\n"\
+           "   /ae exch def\n"\
+           "   /as exch def\n"\
+           "   /lw exch def\n"\
+           "   /rd exch def\n"\
+           "   /y  exch def\n"\
+           "   /x  exch def\n"\
+           "   lw rd 2 mul gt {\n"\
+           "     /rd rd lw 2 div add 2 div def\n"\
+           "     /lw rd 2 mul def\n"\
+           "     } if\n"\
+           "   currentlinecap currentlinejoin\n"\
+           "   lc setlinecap 0 setlinejoin\n"\
+           "   newpath\n"\
+           "   lw EU setlinewidth\n"\
+           "   x EU y EU rd EU as ae arc\n"\
+           "   stroke\n"\
+           "   setlinejoin setlinecap\n"\
+           "   } def\n"\
+           "\n"\
+           "/p {  %% draw a pie\n"\
+           "   /d exch def\n"\
+           "   /y exch def\n"\
+           "   /x exch def\n"\
+           "   newpath\n"\
+           "   x EU y EU d 2 div EU 0 360 arc\n"\
+           "   fill\n"\
+           "   } def\n"\
+           "\n"\
+           "/edge { 0.20710678119 mul } def\n"\
+           "\n"\
+           "/o {  %% draw an octagon\n"\
+           "   /an exch def\n"\
+           "   /dy exch def\n"\
+           "   /dx exch def\n"\
+           "   /y  exch def\n"\
+           "   /x  exch def\n"\
+           "   gsave\n"\
+           "   x EU y EU translate\n"\
+           "   an dx dy lt { 90 add /dx dy /dy dx def def } if rotate\n"\
+           "   newpath\n"\
+           "      0 dx 2 div sub EU                    0 dy edge  add EU moveto\n"\
+           "      0 dx dy sub 2 div sub dy edge sub EU 0 dy 2 div add EU lineto\n"\
+           "      0 dx dy sub 2 div add dy edge add EU 0 dy 2 div add EU lineto\n"\
+           "      0 dx 2 div add EU                    0 dy edge  add EU lineto\n"\
+           "      0 dx 2 div add EU                    0 dy edge  sub EU lineto\n"\
+           "      0 dx dy sub 2 div add dy edge add EU 0 dy 2 div sub EU lineto\n"\
+           "      0 dx dy sub 2 div sub dy edge sub EU 0 dy 2 div sub EU lineto\n"\
+           "      0 dx 2 div sub EU                    0 dy edge  sub EU lineto\n"\
+           "   closepath\n"\
+           "   fill\n"\
+           "   grestore\n"\
+           "   } def\n"\
+           "\n"
+           ;(Name, NrPages, (x2 - x1) * 0.072 * ScaleFactor, (y2 - y1) * 0.072 * ScaleFactor)
+
+[PS]
+
+@EPS
+Long     = "PostScript (printable)"
+Width    =  7.75
+Height   = 11.00
+
+Header2  = "%% the real drawing size:\n"\
+           "\n"\
+           "/MinDrawX %6d EU def\n"\
+           "/MinDrawY %6d EU def\n"\
+           "/MaxDrawX %6d EU def\n"\
+           "/MaxDrawY %6d EU def\n"\
+           "\n"\
+           "%% the usable page size:\n"\
+           "\n"\
+           "/LeftMargin 0.25 inch def  %% change these if drawing gets clipped!\n"\
+           "/BotMargin  0.25 inch def\n"\
+           "/PageWidth  %7.4f inch def\n"\
+           "/PageHeight %7.4f inch def\n"\
+           "\n"\
+           "%% are we going to rotate?:\n"\
+           "\n"\
+           "/RotateDrawing %d 0 ne def\n"\
+           "\n"
+           ;(x1, y1, x2, y2, Width, Height, DoRotate)
+
+Header3  = "%% Media size functions:\n"\
+           "\n"\
+           "/AbortMessage {  %% Show a message in a box and stop printing\n"\
+           "   /h 100 def\n"\
+           "   /Courier findfont 12 scalefont setfont\n"\
+           "   mediawidth pagemargin sub h 1 setpage\n"\
+           "   newpath\n"\
+           "   0 0 moveto\n"\
+           "   0 h rlineto\n"\
+           "   mediawidth pagemargin sub 0 rlineto\n"\
+           "   0 h neg rlineto\n"\
+           "   closepath\n"\
+           "   5 setlinewidth\n"\
+           "   stroke\n"\
+           "   newpath 50 60 moveto (ERROR: Jobsize exceeds physical printing area!) show\n"\
+           "   newpath 50 40 moveto (       Job has been aborted!) show\n"\
+           "   showpage\n"\
+           "   stop\n"\
+           "   } def\n"\
+           "\n"\
+           "/SelectPage {  %% Select the page identified by Row and Column\n"\
+           "   /Column exch def\n"\
+           "   /Row    exch def\n"\
+           "\n"\
+           "   %% the actually exposed area (if the machine knows these parameters!):\n"\
+           "\n"\
+           "   /DrawX MaxDrawX MinDrawX sub def\n"\
+           "   /DrawY MaxDrawY MinDrawY sub def\n"\
+           "   statusdict /setpage known\n"\
+           "   statusdict /mediawidth known and\n"\
+           "   statusdict /medialength known and\n"\
+           "   statusdict /pagemargin known and {\n"\
+           "      %% this is for machines that can tell the media size:\n"\
+           "      statusdict begin\n"\
+           "         /MediaW mediawidth pagemargin sub def\n"\
+           "         DrawX DrawY ge {\n"\
+           "            DrawX MediaW le DrawY medialength le and {\n"\
+           "               MediaW DrawY 1 setpage\n"\
+           "               MediaW DrawX sub 2 div 0 translate\n"\
+           "               }{\n"\
+           "            DrawY MediaW le DrawX medialength le and {\n"\
+           "               MediaW DrawX 0 setpage\n"\
+           "               0 MediaW DrawY sub 2 div translate\n"\
+           "               }{\n"\
+           "               AbortMessage\n"\
+           "               } ifelse\n"\
+           "               } ifelse\n"\
+           "            }{\n"\
+           "            DrawY MediaW le DrawX medialength le and {\n"\
+           "               MediaW DrawX 0 setpage\n"\
+           "               0 MediaW DrawY sub 2 div translate\n"\
+           "               }{\n"\
+           "            DrawX MediaW le DrawY medialength le and {\n"\
+           "               MediaW DrawY 1 setpage\n"\
+           "               MediaW DrawX sub 2 div 0 translate\n"\
+           "               }{\n"\
+           "               AbortMessage\n"\
+           "               } ifelse\n"\
+           "               } ifelse\n"\
+           "            } ifelse\n"\
+           "         end\n"\
+           "      }{\n"\
+           "      %% this is for machines that can NOT tell the media size:\n"\
+           "      %% (Ghostscript doesn't like this!)\n"\
+           "      /Product product length string def\n"\
+           "      /i 0 def\n"\
+           "      product { dup 97 lt { 32 add } if Product exch i exch put /i i 1 add def } forall \n"\
+           "      Product (ghostscript) search dup /IsGhostscript exch def\n"\
+           "      { pop pop } if\n"\
+           "      pop\n"\
+           "      IsGhostscript not {\n"\
+           "         statusdict /setpage known {\n"\
+           "            statusdict begin\n"\
+           "               RotateDrawing {\n"\
+           "                  LeftMargin PageHeight add BotMargin DrawY add\n"\
+           "                  }{\n"\
+           "                  BotMargin DrawY add LeftMargin DrawX add \n"\
+           "                  } ifelse\n"\
+           "               0 setpage\n"\
+           "               end\n"\
+           "            } if\n"\
+           "         } if\n"\
+           "      %% set clipping boundary:\n"\
+           "      newpath\n"\
+           "      LeftMargin BotMargin moveto\n"\
+           "      0 PageHeight rlineto\n"\
+           "      PageWidth  0 rlineto\n"\
+           "      0 PageHeight neg rlineto\n"\
+           "      closepath\n"\
+           "      clip\n"\
+           "      %% set the origin:\n"\
+           "      LeftMargin BotMargin translate\n"\
+           "      RotateDrawing {\n"\
+           "         0 PageHeight translate\n"\
+           "         -90 rotate\n"\
+           "         PageHeight Column mul neg PageWidth Row mul neg translate\n"\
+           "         }{\n"\
+           "         PageWidth Column mul neg PageHeight Row mul neg translate\n"\
+           "         } ifelse\n"\
+           "      } ifelse\n"\
+           "   %% move the lower left corner of the drawing to the origin:\n"\
+           "   MinDrawX neg MinDrawY neg translate\n"\
+           "   \n"\
+           "   %% Linestyle:\n"\
+           "   \n"\
+           "   1 setlinecap\n"\
+           "   1 setlinejoin\n"\
+           "   \n"\
+           "   } def\n"\
+           "\n"\
+           "%% TheDrawing\n"
+
+StartPage= "\ngsave %d %d SelectPage\n" ;(Row, Column)
+EndPage  = "showpage grestore\n"
+
+[PS_INVERTED]
+
+@PS
+Long     = "PostScript (printable, inverted)"
+
+Header3  = "%% Media size functions:\n"\
+           "\n"\
+           "/AbortMessage {  %% Show a message in a box and stop printing\n"\
+           "   /h 100 def\n"\
+           "   /Courier findfont 12 scalefont setfont\n"\
+           "   mediawidth pagemargin sub h 1 setpage\n"\
+           "   newpath\n"\
+           "   0 0 moveto\n"\
+           "   0 h rlineto\n"\
+           "   mediawidth pagemargin sub 0 rlineto\n"\
+           "   0 h neg rlineto\n"\
+           "   closepath\n"\
+           "   5 setlinewidth\n"\
+           "   stroke\n"\
+           "   newpath 50 60 moveto (ERROR: Jobsize exceeds physical printing area!) show\n"\
+           "   newpath 50 40 moveto (       Job has been aborted!) show\n"\
+           "   showpage\n"\
+           "   stop\n"\
+           "   } def\n"\
+           "\n"\
+           "/SelectPage {  %% Select the page identified by Row and Column\n"\
+           "   /Column exch def\n"\
+           "   /Row    exch def\n"\
+           "\n"\
+           "   %% the actually exposed area (if the machine knows these parameters!):\n"\
+           "\n"\
+           "   /DrawX MaxDrawX MinDrawX sub def\n"\
+           "   /DrawY MaxDrawY MinDrawY sub def\n"\
+           "   statusdict /setpage known\n"\
+           "   statusdict /mediawidth known and\n"\
+           "   statusdict /medialength known and\n"\
+           "   statusdict /pagemargin known and {\n"\
+           "      %% this is for machines that can tell the media size:\n"\
+           "      statusdict begin\n"\
+           "         /MediaW mediawidth pagemargin sub def\n"\
+           "         DrawX DrawY ge {\n"\
+           "            DrawX MediaW le DrawY medialength le and {\n"\
+           "               MediaW DrawY 1 setpage\n"\
+           "               MediaW DrawX sub 2 div 0 translate\n"\
+           "               }{\n"\
+           "            DrawY MediaW le DrawX medialength le and {\n"\
+           "               MediaW DrawX 0 setpage\n"\
+           "               0 MediaW DrawY sub 2 div translate\n"\
+           "               }{\n"\
+           "               AbortMessage\n"\
+           "               } ifelse\n"\
+           "               } ifelse\n"\
+           "            }{\n"\
+           "            DrawY MediaW le DrawX medialength le and {\n"\
+           "               MediaW DrawX 0 setpage\n"\
+           "               0 MediaW DrawY sub 2 div translate\n"\
+           "               }{\n"\
+           "            DrawX MediaW le DrawY medialength le and {\n"\
+           "               MediaW DrawY 1 setpage\n"\
+           "               MediaW DrawX sub 2 div 0 translate\n"\
+           "               }{\n"\
+           "               AbortMessage\n"\
+           "               } ifelse\n"\
+           "               } ifelse\n"\
+           "            } ifelse\n"\
+           "         end\n"\
+           "      }{\n"\
+           "      %% this is for machines that can NOT tell the media size:\n"\
+           "      %% (Ghostscript doesn't like this!)\n"\
+           "      /Product product length string def\n"\
+           "      /i 0 def\n"\
+           "      product { dup 97 lt { 32 add } if Product exch i exch put /i i 1 add def } forall \n"\
+           "      Product (ghostscript) search dup /IsGhostscript exch def\n"\
+           "      { pop pop } if\n"\
+           "      pop\n"\
+           "      IsGhostscript not {\n"\
+           "         statusdict /setpage known {\n"\
+           "            statusdict begin\n"\
+           "               RotateDrawing {\n"\
+           "                  LeftMargin PageHeight add BotMargin DrawY add\n"\
+           "                  }{\n"\
+           "                  BotMargin DrawY add LeftMargin DrawX add \n"\
+           "                  } ifelse\n"\
+           "               0 setpage\n"\
+           "               end\n"\
+           "            } if\n"\
+           "         } if\n"\
+           "      %% set clipping boundary:\n"\
+           "      newpath\n"\
+           "      LeftMargin BotMargin moveto\n"\
+           "      0 PageHeight rlineto\n"\
+           "      PageWidth  0 rlineto\n"\
+           "      0 PageHeight neg rlineto\n"\
+           "      closepath\n"\
+           "      clip\n"\
+           "      %% set the origin:\n"\
+           "      LeftMargin BotMargin translate\n"\
+           "      RotateDrawing {\n"\
+           "         0 PageHeight translate\n"\
+           "         -90 rotate\n"\
+           "         PageHeight Column mul neg PageWidth Row mul neg translate\n"\
+           "         }{\n"\
+           "         PageWidth Column mul neg PageHeight Row mul neg translate\n"\
+           "         } ifelse\n"\
+           "      } ifelse\n"\
+           "   %% move the lower left corner of the drawing to the origin:\n"\
+           "   MinDrawX neg MinDrawY neg translate\n"\
+           "   \n"\
+           "   %% Linestyle:\n"\
+           "   \n"\
+           "   1 setlinecap\n"\
+           "   1 setlinejoin\n"\
+           "   \n"\
+           "   %% invert drawing:\n"\
+           "   newpath\n"\
+           "   MinDrawX MinDrawY moveto\n"\
+           "   MaxDrawX MinDrawY lineto\n"\
+           "   MaxDrawX MaxDrawY lineto\n"\
+           "   MinDrawX MaxDrawY lineto\n"\
+           "   0 setgray\n"\
+           "   closepath fill\n"\
+           "   1 setgray\n"\
+           "   \n"\
+           "   } def\n"\
+           "\n"\
+           "%% TheDrawing\n"
+
+[PS_DINA3]
+
+@PS
+Long    = "Postscript (printable) DIN A3"
+Width   = 11.36
+Height  = 16.00
+
+[HPGL2]
+
+Type     = Generic
+Long     = "HP-GL/2 printer"
+Init     = "\x1B%%1BIN;IP0,0,100,100SC0,100,0,100"\
+           "WU1MC1NP14CR0,15,0,15,0,15"\
+           "PC1,15,0,15PC2,0,15,15PC3,0,0,15PC4,15,15,0"\
+           "PC5,15,0,0PC6,0,15,0PC7,0,0,0PC8,15,12,15"\
+           "PC9,12,15,15PC10,12,12,15PC11,15,15,12PC12,15,12,0"\
+           "PC13,12,15,0PC14,11,11,11"\
+           "PA;\n"
+
+;Use the following as first line of the Init string for A3 sized paper:
+;Init     = "\x1B&l27A\x1B%%-1BIN;IP0,0,100,100SC0,100,0,100"\
+
+Reset    = "\x1B%%0A\f"
+ResX     = 1016
+ResY     = 1016
+HwArcX1Y1CxCyA = "PU%d,%dPDAA%d,%d,%d\n" ; (x1, y1, xc, yc, ArcAngle)
+HwColor  = "SP%u" ; (Pen-Number)
+HwLine   = "PU%d,%dPD%d,%d\n"
+HwPoly1  = "PU%d,%dPM0PA%d,%d"           ; first edge
+HwPoly2  = ",%d,%d"                      ; other points
+HwPoly3  = "PM2FP;\n"                    ; end of polygon
+HwWidth  = "PW%u" ; (Pen-Width)
+MaxHwWidth = 5
+
+[GERBER]
+
+Type     = PhotoPlotter
+Long     = "Gerber photoplotter"
+Init     = "G01*\nX000000Y000000D02*\n"
+Reset    = "X000000Y000000D02*\nM02*\n"
+ResX     = 10000
+ResY     = 10000
+;Wheel    = ""
+Move     = "X%0.6dY%0.6dD02*\n"    ; (x, y)
+Draw     = "X%0.6dY%0.6dD01*\n"    ; (x, y)
+Flash    = "X%0.6dY%0.6dD03*\n"    ; (x, y)
+Aperture = "%s*\n"               ; (Aperture code)
+Units    = Inch
+Info     = "Plotfile Info:\n"\
+           "\n"\
+           " Coordinate Format : 2.4\n"\
+           " Coordinate Units  : Inch\n"\
+           " Data Mode         : Absolute\n"\
+           " Zero Suppression  : None\n"\
+           " End Of Block      : *\n"\
+           "\n"
+
+[GERBERAUTO]
+
+@GERBER
+Long          = "Gerber photoplotter with automatic aperture wheel generation"
+Wheel         = "" ; avoids message!
+AutoAperture  = "D%d" ; (Aperture number)
+FirstAperture = 10
+Units         = Inch
+;MaxApertureSize = 0.2 ; Inch
+
+[GERBER_RS274X]
+
+@GERBERAUTO
+Long          = "Gerber RS-274-X photoplotter, coordinate format 2.4 inch"
+Units         = Inch
+Init          = "G75*\n"           \ allow positive and negative coordinates
+                "%%MOIN*%%\n"      \ MOde of units is INch (MM for mm)
+                "%%OFA0B0*%%\n"    \ horizonal and vertical OFfset is 0
+                "%%FSLAX24Y24*%%\n"\ Format Statement is Absolute (I for incremental) 2.4
+                "%%IPPOS*%%\n"     \ Image Polarity is POSitive (NEG for negative)
+                "%%LPD*%%\n"       \ Layer Polarity Dark (C for clear on negative planes)
+                "%%AMOC8*\n5,1,8,0,0,1.08239X$1,22.5*\n"\ Octagons are emulated with a circle (using 8 vertices)
+                "%%\n"            ; and therefore the diameter must be enlarged with '1 / cos(pi / 8)'
+Reset         = "M02*\n"
+Circle        = "%%AD%sC,%6.4f*%%\n"        ; (code, diameter)
+Rectangle     = "%%AD%sR,%6.4fX%6.4f*%%\n"  ; (code, dx, dy)
+Oval          = "%%AD%sO,%6.4fX%6.4f*%%\n"  ; (code, dx, dy)
+; According to the RS-274-X specs there is an aperture macro
+; primitive that allows us to specify an octagon (i.e. a polygon with
+; 8 vertices). As some Gerber viewers seem to have problems with that,
+; we would have to use a round shape for that.
+; If your Gerber processor cannot handle the polygon primitive you may
+; uncomment the following line and comment out the line after it:
+;Octagon       = "%%AD%sC,%6.4f*%%\n"   ; (code, diameter) (looks like there is no octagon, so we take a circle)
+Octagon       = "%%AD%sOC8,%6.4f*%%\n" ; (code, diameter)
+AreaBegin     = "G36*\n"
+AreaEnd       = "G37*\n"
+
+[GERBER_RS274X_25]
+
+@GERBERAUTO
+Long          = "Gerber RS-274-X photoplotter, coordinate format 2.5 inch"
+Units         = Inch
+Info          = "Plotfile Info:\n"\
+                "\n"\
+                " Coordinate Format : 2.5\n"\
+                " Coordinate Units  : Inch\n"\
+                " Data Mode         : Absolute\n"\
+                " Zero Suppression  : None\n"\
+                " End Of Block      : *\n"\
+                "\n"
+Init          = "G75*\n"           \ allow positive and negative coordinates
+                "%%MOIN*%%\n"      \ MOde of units is INch (MM for mm)
+                "%%OFA0B0*%%\n"    \ horizonal and vertical OFfset is 0
+                "%%FSLAX25Y25*%%\n"\ Format Statement is Absolute (I for incremental) 2.5
+                "%%IPPOS*%%\n"     \ Image Polarity is POSitive (NEG for negative)
+                "%%LPD*%%\n"       \ Layer Polarity Dark (C for clear on negative planes)
+                "%%AMOC8*\n5,1,8,0,0,1.08239X$1,22.5*\n"\ Octagons are emulated with a circle (using 8 vertices)
+                "%%\n"            ; and therefore the diameter must be enlarged with '1 / cos(pi / 8)'
+Reset         = "M02*\n"
+ResX          = 100000
+ResY          = 100000
+Move          = "X%0.7dY%0.7dD02*\n"    ; (x, y)
+Draw          = "X%0.7dY%0.7dD01*\n"    ; (x, y)
+Flash         = "X%0.7dY%0.7dD03*\n"    ; (x, y)
+Circle        = "%%AD%sC,%7.5f*%%\n"        ; (code, diameter)
+Rectangle     = "%%AD%sR,%7.5fX%7.5f*%%\n"  ; (code, dx, dy)
+Oval          = "%%AD%sO,%7.5fX%7.5f*%%\n"  ; (code, dx, dy)
+; According to the RS-274-X specs there is an aperture macro
+; primitive that allows us to specify an octagon (i.e. a polygon with
+; 8 vertices). As some Gerber viewers seem to have problems with that,
+; we would have to use a round shape for that.
+; If your Gerber processor cannot handle the polygon primitive you may
+; uncomment the following line and comment out the line after it:
+;Octagon       = "%%AD%sC,%7.5f*%%\n"   ; (code, diameter) (looks like there is no octagon, so we take a circle)
+Octagon       = "%%AD%sOC8,%7.5f*%%\n" ; (code, diameter)
+AreaBegin     = "G36*\n"
+AreaEnd       = "G37*\n"
+
+[GERBER_23]
+
+Type     = PhotoPlotter
+Long     = "Gerber photoplotter, coordinate format 2.3 inch"
+Init     = "G01*\nX00000Y00000D02*\n"
+Reset    = "X00000Y00000D02*\nM02*\n"
+ResX     = 1000
+ResY     = 1000
+;Wheel    = ""
+Move     = "X%0.5dY%0.5dD02*\n"    ; (x, y)
+Draw     = "X%0.5dY%0.5dD01*\n"    ; (x, y)
+Flash    = "X%0.5dY%0.5dD03*\n"    ; (x, y)
+Aperture = "%s*\n"               ; (Aperture code)
+Units    = Inch
+Info     = "Plotfile Info:\n"\
+           "\n"\
+           " Coordinate Format : 2.3\n"\
+           " Coordinate Units  : Inch\n"\
+           " Data Mode         : Absolute\n"\
+           " Zero Suppression  : None\n"\
+           " End Of Block      : *\n"\
+           "\n"
+
+[GERBERAUTO_23]
+
+@GERBER_23
+Long          = "Gerber photoplotter with automatic aperture wheel generation"
+Wheel         = "" ; avoids message!
+AutoAperture  = "D%d" ; (Aperture number)
+FirstAperture = 10
+Units         = Inch
+
+[EMMA]
+
+Type     = PhotoPlotter
+Long     = "EMMA 30/80 photoplotter"
+Init     = "%%\nS7X000000Y000000\n"
+Reset    = "S7X000000Y000000\n$\n"
+ResX     = 20000
+ResY     = 20000
+;Wheel    = ""
+Move     = "S7X%0.6dY%0.6d\n"      ; (x, y)
+Draw     = "S2X%0.6dY%0.6d\n"      ; (x, y)
+Flash    = "S1X%0.6dY%0.6d\n"      ; (x, y)
+Aperture = "%s\n"                ; (Aperture code)
+Info     = "Plotfile Info:\n"\
+           "\n"\
+           " Coordinate Format : 6\n"\
+           " Coordinate Units  : 1/800 mm\n"\
+           " Data Mode         : Absolute\n"\
+           " Zero Suppression  : None\n"\
+           "\n"
+
+[GLASER]
+
+Type     = PhotoPlotter
+Long     = "GLASER DP-1504 photoplotter"
+Init     = "IN;FC0.0254;CS1,1,0;SI1,1;\n"
+Reset    = "PU;PA0,0;\n"
+ResX     = 1000
+ResY     = 1000
+Wheel    = "glaser.whl"
+Move     = "PA%d,%d;\n"          ; (x, y)
+Draw     = "PA%d,%d;\n"          ; (x, y)
+PenDown  = "PD;\n"
+PenUp    = "PU;\n"
+Flash    = "PA%d,%d;%s\n"        ; (x, y, Aperture code)
+Aperture = "%s\n"                ; (Aperture code)
+Info     = "Plotfile Info:\n"\
+           "\n"\
+           " Coordinate Units  : 1/1000 Inch\n"\
+           " Data Mode         : Absolute\n"\
+           "\n"
+
+[EXCELLON]
+
+Type     = DrillStation
+Long     = "Excellon drill station"
+Init     = "%%\nM48\nM72\n"
+Reset    = "M30\n"
+ResX     = 10000
+ResY     = 10000
+;Rack     = ""
+DrillSize  = "%sC%0.4f\n"        ; (Tool code, tool size)
+AutoDrill  = "T%02d"             ; (Tool number)
+FirstDrill = 1
+BeginData  = "%%\n"
+Units    = Inch
+Select   = "%s\n"                ; (Drill code)
+Drill    = "X%1.0fY%1.0f\n"      ; (x, y)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Data Mode         : Absolute\n"\
+           " Units             : 1/10000 Inch\n"\
+           "\n"
+
+[EXCELLON_RACK]
+
+Type     = DrillStation
+Long     = "Excellon drill station with user supplied rack file"
+Init     = "%%\n"
+Reset    = "M30\n"
+ResX     = 10000
+ResY     = 10000
+;Rack     = ""
+Select   = "%s\n"                ; (Drill code)
+Drill    = "X%1.0fY%1.0f\n"      ; (x, y)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Data Mode         : Absolute\n"\
+           " Units             : 1/10000 Inch\n"\
+           "\n"
+
+[SM1000]
+
+Type     = DrillStation
+Long     = "Sieb & Meyer 1000 drill station"
+Init     = "%%%%1000\n"
+Reset    = "M30\n"
+ResX     = 2540
+ResY     = 2540
+;Rack     = ""
+Drill    = "X%1.0fY%1.0f%s\n"    ; (x, y, drill code)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Data Mode         : Absolute\n"\
+           " Units             : 1/100 mm\n"\
+           "\n"
+
+[SM3000]
+
+Type     = DrillStation
+Long     = "Sieb & Meyer 3000 drill station"
+Init     = "%%%%3000\n"
+Reset    = "M30\n"
+ResX     = 25400
+ResY     = 25400
+Divide   = 1000                  ; makes coordinates MM
+;Rack     = ""
+Drill    = "X%1.3fY%1.3f%s\n"    ; (x, y, drill code)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Data Mode         : Absolute\n"\
+           " Units             : mm\n"\
+           "\n"
+
+[SMS68]
+
+Type     = DrillStation
+Long     = "SMS68 drill station"
+Init     = ";\n"
+Reset    = "TO0;PA0,0;\n"
+ResX     = 25400
+ResY     = 25400
+;Rack     = ""
+Select   = "%s;\n"               ; (Drill code)
+Drill    = "PA%1.0f,%1.0f;PD;PU;\n"  ; (x, y)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Data Mode         : Absolute\n"\
+           " Units             : 1/1000 mm\n"\
+           "\n"
+
+[GBRDRL]
+
+Type     = DrillStation
+Long     = "Gerber Drill Code"
+Init     = "G01*\nX00000Y00000D02*\n"
+Reset    = "X00000Y00000D02*\nM02*\n"
+ResX     = 1000
+ResY     = 1000
+;Rack     = ""
+Select   = "%s*\n"               ; (Drill code)
+Drill    = "X%05.0fY%05.0fD03*\n"  ; (x, y)
+Info     = "Drill File Info:\n"\
+           "\n"\
+           " Coordinate Format : 2.3\n"\
+           " Coordinate Units  : Inch\n"\
+           " Data Mode         : Absolute\n"\
+           " Zero Suppression  : None\n"\
+           " End Of Block      : *\n"\
+           "\n"
+
+[CALCOMP]
+
+Type     = Calcomp
+Long     = "CalComp PCI pen plotter"
+Init     = "\x08\x0B"  \ Init
+           "\x09\x01"  ; Scaling 1
+Reset    = ""
+ResX     = 2032
+ResY     = 2032
+PenSelect  = "\x04%c"  ; Pens numbered 1..n
+Sync     = "\x02"
+Bias     = 0x20
+Radix    = 0x40
+Buffer   = 256
+Checksum = YES
+
+[CALCOMPE]
+
+Type     = CalcompE
+Long     = "CalComp PCI electrostatic plotter"
+Init     = "\x08\x0B"  \ Init
+           "\x09\x01"  ; Scaling 1
+Reset    = ""
+ResX     = 2032
+ResY     = 2032
+Sync     = "\x02"
+Bias     = 0x20
+Radix    = 0x40
+Buffer   = 256
+Checksum = YES
+
+[CALCOMP_M84]
+
+Type            = PenPlotter
+Long            = "Calcomp M84 Plotter"
+Init            = ""
+Reset           = "F\nH\nR0\n"
+Width           = 16
+Height          = 11
+ResX            = 254
+ResY            = 254
+PenSelect       = "F%u\n"
+Move            = "C %d,%d HK\n"
+Draw            = "C %d,%d IK\n"
+PenCircleCxCyRxCxCyRx  = "C %d,%d HK \n O0 %d,0,360\n"
+PenVelocity     = "F10,%d\n"
+
+
+; User defined metric devices
+
+[EXCELLON_MM33]
+
+Type = DrillStation
+Long = "Excellon drill station (metric units)"
+Init = "%%\n"\
+"M48\n"\
+"M71\n"
+Reset = "M30\n"
+ResX = 25400
+ResY = 25400
+;Rack = ""
+DrillSize = "%sC%0.2f\n" ; (Tool code, tool size)
+AutoDrill = "T%02d" ; (Tool number)
+FirstDrill = 1
+BeginData = "%%\n"
+Units = mm
+Decimals = 3
+Select = "%s\n" ; (Drill code)
+Drill = "X%1.0fY%1.0f\n" ; (x, y)
+Info = "Drill File Info:\n"\
+"\n"\
+" Data Mode : Absolute\n"\
+" Units : 1/1000 mm\n"\
+"\n"
+
+[GERBER_MM_33]
+
+Type = PhotoPlotter
+Long = "Gerber photoplotter"
+Init = "G01*\nX000000Y000000D02*\n"
+Reset = "X000000Y000000D02*\nM02*\n"
+ResX = 25400
+ResY = 25400
+;Wheel = ""
+Move = "X%0.6dY%0.6dD02*\n" ; (x, y)
+Draw = "X%0.6dY%0.6dD01*\n" ; (x, y)
+Flash = "X%0.6dY%0.6dD03*\n" ; (x, y)
+Aperture = "%s*\n" ; (Aperture code)
+Units = mm
+Decimals = 4
+Info = "Plotfile Info:\n"\
+"\n"\
+" Coordinate Format : 3.3\n"\
+" Coordinate Units : mm\n"\
+" Data Mode : Absolute\n"\
+" Zero Suppression : None\n"\
+" End Of Block : *\n"\
+"\n"
+
+[GERBERAUTO_MM_33]
+
+@GERBER_MM_33
+Long = "Gerber photoplotter with automatic aperture wheel generation"
+Wheel = "" ; avoids message!
+AutoAperture = "D%d" ; (Aperture number)
+FirstAperture = 10
+Decimals = 4
+Units = mm
+
+
+
+[GERBER_RS274X_MM_33]
+
+@GERBERAUTO_MM_33
+Long = "Gerber photoplotter with RS-274-X aperture generation"
+Units = mm
+Init =	"G75*\n" \ allow positive and negative coordinates
+		"G71*\n" \ units are mm
+		"%%OFA0B0*%%\n" \ horizonal and vertical OFfset is 0
+		"%%FSLAX33Y33*%%\n"\ Format Statement is Absolute (I for incremental) 3.3
+		"%%IPPOS*%%\n" \ Image Polarity is POSitive (NEG for negative)
+		"%%LPD*%%\n" \ Layer Polarity Dark (C for clear on negative planes)
+		"%%AMOC8*\n5,1,8,0,0,1.08239X$1,22.5*\n"\ Octagons are emulated with a circle (using 8 vertices)
+		"%%\n" ; and therefore the diameter must be enlarged with '1 / cos(pi / 8)'
+Reset = "M02*\n"
+Circle = "%%AD%sC,%6.3f*%%\n" ; (code, diameter)
+Rectangle = "%%AD%sR,%6.3fX%6.3f*%%\n" ; (code, dx, dy)
+Oval = "%%AD%sO,%6.3fX%6.3f*%%\n" ; (code, dx, dy)
+; According to the RS-274-X specs there is an aperture macro
+; primitive that allows us to specify an octagon (i.e. a polygon with
+; 8 vertices). As some Gerber viewers seem to have problems with that,
+; we would have to use a round shape for that.
+; If your Gerber processor cannot handle the polygon primitive you may
+; uncomment the following line and comment out the line after it:
+;Octagon = "%%AD%sC,%6.3f*%%\n" ; (code, diameter) (looks like there is no octagon, so we take a circle)
+Octagon = "%%AD%sOC8,%6.3f*%%\n" ; (code, diameter)
+Annulus = "%%AMAN%s*\n1,1,%6.3f,0,0*\n1,0,%6.3f,0,0*\n"\
+"%%\n"\
+"%%AD%sAN%s*%%\n" ; (code, diameter, inner diameter, code, code)
+Thermal = "%%AMTH%sX*\n1,1,%6.3f,0,0*\n1,0,%6.3f,0,0*\n"\
+"21,0,%6.3f,%6.3f,0,0,45*\n21,0,%6.3f,%6.3f,0,0,135*\n"\
+"%%\n"\
+"%%AD%sTH%sX*%%\n"; (code, diameter, inner diameter, diameter + 2mil, gap, diameter + 2mil, gap, code, code)
+
+
