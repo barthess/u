@@ -1252,6 +1252,7 @@ Type = DrillStation
 Long = "Excellon drill station (metric units)"
 Init = "%%\n"\
 "M48\n"\
+"METRIC,TZ\n"\
 "M71\n"
 Reset = "M30\n"
 ResX = 25400
@@ -1266,10 +1267,10 @@ Decimals = 3
 Select = "%s\n" ; (Drill code)
 Drill = "X%1.0fY%1.0f\n" ; (x, y)
 Info = "Drill File Info:\n"\
-"\n"\
-" Data Mode : Absolute\n"\
-" Units : 1/1000 mm\n"\
-"\n"
+		"\n"\
+		" Data Mode : Absolute\n"\
+		" Units : 1/1000 mm\n"\
+		"\n"
 
 [GERBER_MM_33]
 

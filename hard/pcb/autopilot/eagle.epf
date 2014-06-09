@@ -68,7 +68,7 @@ Number=0
 [Win_3]
 Type="Board Editor"
 Loc="0 0 1599 1149"
-State=3
+State=1
 Number=2
 File="main_v2.brd"
 View="-15.5517 -6.94753 107.269 74.0797"
