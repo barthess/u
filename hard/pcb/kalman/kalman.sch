@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.6.0">
+<eagle version="7.2.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
@@ -5010,8 +5010,8 @@ SMD Leds</description>
 <instance part="JP5" gate="G$1" x="114.3" y="83.82" rot="R180"/>
 <instance part="JP6" gate="G$1" x="114.3" y="78.74" rot="R180"/>
 <instance part="JP10" gate="G$1" x="114.3" y="73.66" rot="R180"/>
-<instance part="JP11" gate="G$1" x="114.3" y="68.58" rot="R180"/>
-<instance part="JP12" gate="G$1" x="114.3" y="63.5" rot="R180"/>
+<instance part="JP11" gate="G$1" x="114.3" y="63.5" rot="R180"/>
+<instance part="JP12" gate="G$1" x="114.3" y="68.58" rot="R180"/>
 <instance part="JP14" gate="G$1" x="124.46" y="93.98"/>
 <instance part="JP15" gate="G$1" x="124.46" y="88.9"/>
 <instance part="JP16" gate="G$1" x="124.46" y="83.82"/>
@@ -5672,8 +5672,8 @@ SMD Leds</description>
 </segment>
 <segment>
 <label x="35.56" y="58.42" size="1.27" layer="95" xref="yes"/>
+<wire x1="35.56" y1="58.42" x2="30.48" y2="58.42" width="0.1524" layer="91"/>
 <pinref part="U$4" gate="G$1" pin="PE5"/>
-<wire x1="30.48" y1="58.42" x2="35.56" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="LED_R" class="0">
@@ -5684,8 +5684,8 @@ SMD Leds</description>
 </segment>
 <segment>
 <label x="35.56" y="60.96" size="1.27" layer="95" xref="yes"/>
+<wire x1="35.56" y1="60.96" x2="30.48" y2="60.96" width="0.1524" layer="91"/>
 <pinref part="U$4" gate="G$1" pin="PE4"/>
-<wire x1="30.48" y1="60.96" x2="35.56" y2="60.96" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$12" class="0">
@@ -5709,9 +5709,9 @@ SMD Leds</description>
 <label x="-127" y="104.14" size="1.27" layer="95" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U$4" gate="G$1" pin="PA10"/>
-<wire x1="-43.18" y1="-43.18" x2="-53.34" y2="-43.18" width="0.1524" layer="91"/>
-<label x="-53.34" y="-43.18" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="-53.34" y="-40.64" size="1.27" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$4" gate="G$1" pin="PA9"/>
+<wire x1="-53.34" y1="-40.64" x2="-43.18" y2="-40.64" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -6197,8 +6197,8 @@ SMD Leds</description>
 <net name="ISR_KALMAN" class="0">
 <segment>
 <pinref part="JP11" gate="G$1" pin="1"/>
-<wire x1="106.68" y1="68.58" x2="88.9" y2="68.58" width="0.1524" layer="91"/>
-<label x="88.9" y="68.58" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="106.68" y1="63.5" x2="88.9" y2="63.5" width="0.1524" layer="91"/>
+<label x="88.9" y="63.5" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PI2"/>
@@ -6209,8 +6209,8 @@ SMD Leds</description>
 <net name="ISR_UART" class="0">
 <segment>
 <pinref part="JP12" gate="G$1" pin="1"/>
-<wire x1="106.68" y1="63.5" x2="88.9" y2="63.5" width="0.1524" layer="91"/>
-<label x="88.9" y="63.5" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="106.68" y1="68.58" x2="88.9" y2="68.58" width="0.1524" layer="91"/>
+<label x="88.9" y="68.58" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PI3"/>
@@ -6491,9 +6491,9 @@ SMD Leds</description>
 <junction x="43.18" y="152.4"/>
 </segment>
 <segment>
-<pinref part="U$4" gate="G$1" pin="PE3"/>
-<wire x1="30.48" y1="63.5" x2="35.56" y2="63.5" width="0.1524" layer="91"/>
-<label x="35.56" y="63.5" size="1.27" layer="95" xref="yes"/>
+<label x="35.56" y="55.88" size="1.27" layer="95" xref="yes"/>
+<wire x1="30.48" y1="55.88" x2="35.56" y2="55.88" width="0.1524" layer="91"/>
+<pinref part="U$4" gate="G$1" pin="PE6"/>
 </segment>
 </net>
 </nets>
