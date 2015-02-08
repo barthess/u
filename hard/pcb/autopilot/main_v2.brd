@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.6.0">
+<eagle version="7.2.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
@@ -6228,6 +6228,9 @@ design rules under a new name.</description>
 <autorouter>
 <pass name="Default">
 <param name="RoutingGrid" value="50mil"/>
+<param name="AutoGrid" value="1"/>
+<param name="Efforts" value="0"/>
+<param name="TopRouterVariant" value="1"/>
 <param name="tpViaShape" value="round"/>
 <param name="PrefDir.1" value="|"/>
 <param name="PrefDir.2" value="0"/>
@@ -7764,7 +7767,7 @@ design rules under a new name.</description>
 <wire x1="44.8" y1="49.2" x2="44.4" y2="49.6" width="0.2" layer="16"/>
 <wire x1="94.5" y1="33.4" x2="96.41" y2="35.31" width="0.2" layer="16"/>
 </signal>
-<signal name="GPS_PPS">
+<signal name="GPS_ENABLE">
 <contactref element="DD1" pad="97"/>
 <contactref element="JP2" pad="4"/>
 <via x="94.8" y="32.2" extent="1-16" drill="0.5"/>
@@ -7785,7 +7788,7 @@ design rules under a new name.</description>
 <wire x1="94.8" y1="32.2" x2="95.37" y2="32.77" width="0.2" layer="16"/>
 <wire x1="95.37" y1="32.77" x2="97.7" y2="32.77" width="0.2" layer="16"/>
 </signal>
-<signal name="GPS_ENABLE">
+<signal name="GPS_PPS">
 <contactref element="JP2" pad="7"/>
 <contactref element="DD1" pad="23"/>
 <wire x1="97.7" y1="27.69" x2="96.51" y2="27.69" width="0.2" layer="1"/>

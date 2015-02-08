@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.5.0">
+<eagle version="7.2.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
@@ -7913,6 +7913,8 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <text x="41.91" y="-51.308" size="1.27" layer="98">an_reserved</text>
 <text x="208.28" y="136.652" size="1.27" layer="98">xbee_RTS</text>
 <text x="284.48" y="-15.748" size="1.27" layer="98">TMP75_alert</text>
+<text x="205.74" y="174.752" size="1.27" layer="98">WARNING: PPS and Enable pins swapped on PCB
+in order to connect it to 32-bit timer (TIM5)</text>
 </plain>
 <instances>
 <instance part="DD1" gate="G$1" x="0" y="0"/>
@@ -9347,7 +9349,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="DD1" gate="G$1" pin="PA10"/>
 </segment>
 </net>
-<net name="GPS_PPS" class="0">
+<net name="GPS_ENABLE" class="0">
 <segment>
 <wire x1="40.64" y1="5.08" x2="48.26" y2="5.08" width="0.1524" layer="91"/>
 <label x="48.26" y="5.08" size="1.27" layer="95" xref="yes"/>
@@ -9359,7 +9361,7 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 <pinref part="JP2" gate="G$1" pin="4"/>
 </segment>
 </net>
-<net name="GPS_ENABLE" class="0">
+<net name="GPS_PPS" class="0">
 <segment>
 <wire x1="190.5" y1="165.1" x2="182.88" y2="165.1" width="0.1524" layer="91"/>
 <label x="182.88" y="165.1" size="1.27" layer="95" rot="R180" xref="yes"/>
@@ -10679,4 +10681,10 @@ Various standard crystals. Proven footprints. Spark Fun Electronics SKU : COM-00
 </sheets>
 </schematic>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>
