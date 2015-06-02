@@ -5005,11 +5005,11 @@ SMD Leds</description>
 <instance part="R36" gate="G$1" x="99.06" y="38.1" rot="MR0"/>
 <instance part="R37" gate="G$1" x="99.06" y="43.18" rot="MR0"/>
 <instance part="GND2" gate="1" x="109.22" y="-121.92"/>
-<instance part="JP1" gate="G$1" x="114.3" y="93.98" rot="R180"/>
-<instance part="JP4" gate="G$1" x="114.3" y="88.9" rot="R180"/>
-<instance part="JP5" gate="G$1" x="114.3" y="83.82" rot="R180"/>
-<instance part="JP6" gate="G$1" x="114.3" y="78.74" rot="R180"/>
-<instance part="JP10" gate="G$1" x="114.3" y="73.66" rot="R180"/>
+<instance part="JP1" gate="G$1" x="114.3" y="83.82" rot="R180"/>
+<instance part="JP4" gate="G$1" x="114.3" y="78.74" rot="R180"/>
+<instance part="JP5" gate="G$1" x="114.3" y="73.66" rot="R180"/>
+<instance part="JP6" gate="G$1" x="114.3" y="93.98" rot="R180"/>
+<instance part="JP10" gate="G$1" x="114.3" y="88.9" rot="R180"/>
 <instance part="JP11" gate="G$1" x="114.3" y="63.5" rot="R180"/>
 <instance part="JP12" gate="G$1" x="114.3" y="68.58" rot="R180"/>
 <instance part="JP14" gate="G$1" x="124.46" y="93.98"/>
@@ -5020,11 +5020,11 @@ SMD Leds</description>
 <instance part="JP19" gate="G$1" x="124.46" y="68.58"/>
 <instance part="JP20" gate="G$1" x="124.46" y="63.5"/>
 <instance part="GND10" gate="1" x="132.08" y="55.88"/>
-<instance part="R39" gate="G$1" x="96.52" y="73.66"/>
-<instance part="R40" gate="G$1" x="96.52" y="78.74"/>
-<instance part="R41" gate="G$1" x="96.52" y="83.82"/>
-<instance part="R42" gate="G$1" x="96.52" y="88.9"/>
-<instance part="R43" gate="G$1" x="96.52" y="93.98"/>
+<instance part="R39" gate="G$1" x="96.52" y="88.9"/>
+<instance part="R40" gate="G$1" x="96.52" y="93.98"/>
+<instance part="R41" gate="G$1" x="96.52" y="73.66"/>
+<instance part="R42" gate="G$1" x="96.52" y="78.74"/>
+<instance part="R43" gate="G$1" x="96.52" y="83.82"/>
 <instance part="JP22" gate="G$1" x="114.3" y="111.76" rot="R180"/>
 <instance part="P+3" gate="G$1" x="88.9" y="111.76" rot="R90"/>
 <instance part="VD1" gate="G$1" x="35.56" y="144.78" rot="R180"/>
@@ -6136,9 +6136,9 @@ SMD Leds</description>
 </net>
 <net name="!UB" class="0">
 <segment>
-<label x="88.9" y="78.74" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="88.9" y="93.98" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="R40" gate="G$1" pin="1"/>
-<wire x1="91.44" y1="78.74" x2="88.9" y2="78.74" width="0.1524" layer="91"/>
+<wire x1="91.44" y1="93.98" x2="88.9" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PE1"/>
@@ -6148,9 +6148,9 @@ SMD Leds</description>
 </net>
 <net name="!LB" class="0">
 <segment>
-<label x="88.9" y="73.66" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="88.9" y="88.9" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="R39" gate="G$1" pin="1"/>
-<wire x1="91.44" y1="73.66" x2="88.9" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="91.44" y1="88.9" x2="88.9" y2="88.9" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PE0"/>
@@ -6160,9 +6160,9 @@ SMD Leds</description>
 </net>
 <net name="!OE" class="0">
 <segment>
-<label x="88.9" y="83.82" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="88.9" y="73.66" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="R41" gate="G$1" pin="1"/>
-<wire x1="88.9" y1="83.82" x2="91.44" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="88.9" y1="73.66" x2="91.44" y2="73.66" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PD4"/>
@@ -6172,9 +6172,9 @@ SMD Leds</description>
 </net>
 <net name="!WE" class="0">
 <segment>
-<label x="88.9" y="88.9" size="1.27" layer="95" rot="R180" xref="yes"/>
+<label x="88.9" y="78.74" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="R42" gate="G$1" pin="1"/>
-<wire x1="91.44" y1="88.9" x2="88.9" y2="88.9" width="0.1524" layer="91"/>
+<wire x1="91.44" y1="78.74" x2="88.9" y2="78.74" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$4" gate="G$1" pin="PD5"/>
@@ -6184,8 +6184,8 @@ SMD Leds</description>
 </net>
 <net name="!CE" class="0">
 <segment>
-<label x="88.9" y="93.98" size="1.27" layer="95" rot="R180" xref="yes"/>
-<wire x1="88.9" y1="93.98" x2="91.44" y2="93.98" width="0.1524" layer="91"/>
+<label x="88.9" y="83.82" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="88.9" y1="83.82" x2="91.44" y2="83.82" width="0.1524" layer="91"/>
 <pinref part="R43" gate="G$1" pin="1"/>
 </segment>
 <segment>
@@ -6222,35 +6222,35 @@ SMD Leds</description>
 <segment>
 <pinref part="JP1" gate="G$1" pin="1"/>
 <pinref part="R43" gate="G$1" pin="2"/>
-<wire x1="106.68" y1="93.98" x2="101.6" y2="93.98" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="83.82" x2="101.6" y2="83.82" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$42" class="0">
 <segment>
 <pinref part="JP4" gate="G$1" pin="1"/>
 <pinref part="R42" gate="G$1" pin="2"/>
-<wire x1="106.68" y1="88.9" x2="101.6" y2="88.9" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="78.74" x2="101.6" y2="78.74" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$43" class="0">
 <segment>
 <pinref part="JP5" gate="G$1" pin="1"/>
 <pinref part="R41" gate="G$1" pin="2"/>
-<wire x1="106.68" y1="83.82" x2="101.6" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="73.66" x2="101.6" y2="73.66" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$44" class="0">
 <segment>
 <pinref part="JP6" gate="G$1" pin="1"/>
 <pinref part="R40" gate="G$1" pin="2"/>
-<wire x1="106.68" y1="78.74" x2="101.6" y2="78.74" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="93.98" x2="101.6" y2="93.98" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$45" class="0">
 <segment>
 <pinref part="JP10" gate="G$1" pin="1"/>
 <pinref part="R39" gate="G$1" pin="2"/>
-<wire x1="106.68" y1="73.66" x2="101.6" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="88.9" x2="101.6" y2="88.9" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$10" class="0">
