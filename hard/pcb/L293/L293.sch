@@ -993,6 +993,8 @@ Standard 1-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <part name="GND4" library="SparkFun" deviceset="GND" device=""/>
 <part name="GND5" library="SparkFun" deviceset="GND" device=""/>
 <part name="JP12" library="SparkFun-Connectors" deviceset="M01" device="PTH"/>
+<part name="JP13" library="SparkFun-Connectors" deviceset="M01" device="PTH_2MM"/>
+<part name="U$4" library="SparkFun" deviceset="1.0V" device="" value="11V"/>
 </parts>
 <sheets>
 <sheet>
@@ -1021,6 +1023,8 @@ Standard 1-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <instance part="GND4" gate="1" x="2.54" y="63.5" rot="R90"/>
 <instance part="GND5" gate="1" x="2.54" y="88.9" rot="R90"/>
 <instance part="JP12" gate="G$1" x="-10.16" y="78.74"/>
+<instance part="JP13" gate="G$1" x="83.82" y="114.3" rot="R180"/>
+<instance part="U$4" gate="G$1" x="66.04" y="114.3" rot="R90"/>
 </instances>
 <busses>
 </busses>
@@ -1093,6 +1097,11 @@ Standard 1-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 <pinref part="JP5" gate="G$1" pin="1"/>
 <pinref part="U$3" gate="G$1" pin="1.0V"/>
 <wire x1="76.2" y1="119.38" x2="66.04" y2="119.38" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="JP13" gate="G$1" pin="1"/>
+<pinref part="U$4" gate="G$1" pin="1.0V"/>
+<wire x1="76.2" y1="114.3" x2="66.04" y2="114.3" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="5V" class="0">
